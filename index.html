@@ -1136,10 +1136,12 @@ function loadScoutStats(){
     if(c&&(Date.now()-c.ts)<SCOUT_STATS_TTL){applyScoutStats(c.data);setScoutLiveTag(new Date(c.ts));return;}
   }catch(e){}
   fetch("/api/players?team=496&season=2025&page=1")
-    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
-    .then(function(d){
-      console.log("[Scout API] risposta:",d);
-      if(!d.response||!d.response.length){console.warn("[Scout API] nessun giocatore. errors:",d.errors);return;}
+    .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.text();})
+    .then(function(text){
+      console.log("[Scout API] raw (primi 300 chars):",text.substring(0,300));
+      var d;try{d=JSON.parse(text);}catch(e){console.error("[Scout API] non e' JSON valido - probabilmente la Pages Function non e' deployata");return;}
+      console.log("[Scout API] parsed:",d);
+      if(!d.response||!d.response.length){console.warn("[Scout API] nessun giocatore. errors:",d.errors,d.message);return;}
       var all=d.response,total=(d.paging&&d.paging.total)||1;
       if(total>1){
         fetch("/api/players?team=496&season=2025&page=2")

@@ -1,0 +1,6 @@
+name = "icv-scout"
+pages_build_output_dir = "."
+compatibility_date = "2026-05-27"
+
+[vars]
+HOME_AUTO_INTERVAL_HOURS = "6"

@@ -3,8 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="description" content="Formazioni, analisi tattiche, statistiche e mercato della Juventus. L'analisi di chi vive davvero il calcio.">
 <title>ICV Scout - Il Calcio di Vince</title>
+
+<!-- Open Graph / WhatsApp / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ilcalciodivince.com">
+<meta property="og:title" content="ICV Scout - Il Calcio di Vince">
+<meta property="og:description" content="Formazioni, analisi tattiche, statistiche e mercato della Juventus. L'analisi di chi vive davvero il calcio.">
+<meta property="og:image" content="https://ilcalciodivince.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="it_IT">
+<meta property="og:site_name" content="Il Calcio di Vince">
+
+<!-- Twitter / X Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@VikBrancato">
+<meta name="twitter:title" content="ICV Scout - Il Calcio di Vince">
+<meta name="twitter:description" content="Formazioni, analisi tattiche, statistiche e mercato della Juventus.">
+<meta name="twitter:image" content="https://ilcalciodivince.com/og-image.png">
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#C4962A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ICV Scout">
+<link rel="apple-touch-icon" href="/icon-512.png">
+
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=Barlow:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
 <style>
 :root{--gold:#C4962A;--gold-l:#E8B84B;--gold-d:#8B6520;--black:#060606;--d2:#151515;--d3:#1c1c1c;--white:#f0f0f0;--t2:rgba(255,255,255,0.65);--t3:rgba(255,255,255,0.40);--bdr:rgba(196,150,42,0.15);--bdr2:rgba(255,255,255,0.06);}
@@ -45,9 +72,24 @@ main{padding-top:58px;position:relative;z-index:1;}
 .mb-info{text-align:left;border-left:1px solid rgba(196,150,42,0.15);padding-left:16px;}
 .mb-info span{display:block;font-family:"Barlow Condensed";font-size:12px;font-weight:600;letter-spacing:2px;color:rgba(255,255,255,0.52);text-transform:uppercase;}
 .mb-info strong{font-family:"Barlow Condensed";font-size:16px;font-weight:700;color:rgba(255,255,255,0.88);letter-spacing:1px;}
+.home-dash{max-width:1100px;margin:-28px auto 18px;padding:0 20px;position:relative;z-index:2;display:grid;grid-template-columns:1.25fr .85fr .85fr;gap:12px;}
+.home-panel{background:rgba(21,21,21,.92);border:1px solid var(--bdr);border-radius:10px;padding:15px;min-height:128px;}
+.home-panel h3{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:3px;color:var(--gold-l);text-transform:uppercase;margin-bottom:10px;}
+.home-main-title{font-family:"Barlow Condensed";font-size:20px;font-weight:800;color:var(--white);line-height:1.15;margin-bottom:6px;}
+.home-text{font-size:14px;color:var(--t2);line-height:1.45;}
+.home-list{display:flex;flex-direction:column;gap:8px;}
+.home-mini{border-top:1px solid var(--bdr2);padding-top:8px;}
+.home-mini:first-child{border-top:none;padding-top:0;}
+.home-mini strong{display:block;font-family:"Barlow Condensed";font-size:15px;color:var(--white);line-height:1.2;}
+.home-mini span{font-family:"Barlow Condensed";font-size:11px;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase;}
+.home-mini a{color:inherit;text-decoration:none;}
+.home-mini a:hover strong{color:var(--gold-l);}
+.home-auto{margin-top:10px;font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.6px;color:var(--t3);text-transform:uppercase;}
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.quick-actions button{border:1px solid rgba(196,150,42,.24);background:rgba(196,150,42,.06);color:var(--gold-l);border-radius:6px;padding:9px;font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;}
+.quick-actions button:hover{border-color:rgba(196,150,42,.48);background:rgba(196,150,42,.11);}
 .section{padding:44px 20px 52px;max-width:1100px;margin:0 auto;display:none;}
 .section.active{display:block;animation:fadeUp 0.3s ease both;}
-.scout-sec{padding:44px 20px 52px;max-width:1100px;margin:0 auto;}
 .sec-head{margin-bottom:28px;}
 .sec-tag{font-family:"Barlow Condensed";font-size:13px;font-weight:700;letter-spacing:4px;color:rgba(196,150,42,0.88);text-transform:uppercase;margin-bottom:6px;}
 .sec-title{font-family:"Bebas Neue";font-size:40px;letter-spacing:3px;background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.62) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
@@ -67,6 +109,22 @@ main{padding-top:58px;position:relative;z-index:1;}
 .lineup-card{background:var(--d2);border:1px solid var(--bdr);border-radius:10px;padding:14px;transition:all 0.3s;}
 .lineup-card:hover{border-color:rgba(196,150,42,0.22);}
 .lc-title{font-family:"Barlow Condensed";font-size:13px;font-weight:700;letter-spacing:3px;color:rgba(196,150,42,0.88);text-transform:uppercase;margin-bottom:10px;}
+.offseason-board{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;align-items:stretch;}
+.offseason-main,.offseason-side{background:var(--d2);border:1px solid var(--bdr);border-radius:12px;padding:18px;position:relative;overflow:hidden;}
+.offseason-main::after{content:"2026/27";position:absolute;right:16px;bottom:-12px;font-family:"Bebas Neue";font-size:82px;letter-spacing:3px;color:rgba(196,150,42,0.06);line-height:1;pointer-events:none;}
+.offseason-kicker{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:3px;color:var(--gold-l);text-transform:uppercase;margin-bottom:8px;}
+.offseason-title{font-family:"Bebas Neue";font-size:46px;letter-spacing:3px;line-height:0.95;color:var(--white);margin-bottom:10px;}
+.offseason-copy{font-size:15px;color:var(--t2);line-height:1.6;max-width:560px;position:relative;z-index:1;}
+.radar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px;position:relative;z-index:1;}
+.radar-card{border:1px solid var(--bdr2);border-radius:8px;padding:12px;background:rgba(196,150,42,0.035);}
+.radar-card strong{display:block;font-family:"Barlow Condensed";font-size:15px;font-weight:800;color:var(--white);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.radar-card span{font-size:13px;color:var(--t3);line-height:1.35;}
+.watch-list{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
+.watch-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bdr2);}
+.watch-item:last-child{border-bottom:none;}
+.watch-num{font-family:"Bebas Neue";font-size:22px;color:rgba(196,150,42,0.70);line-height:1;min-width:24px;}
+.watch-text strong{display:block;font-family:"Barlow Condensed";font-size:15px;font-weight:800;letter-spacing:1px;color:var(--white);text-transform:uppercase;}
+.watch-text span{display:block;font-size:13px;color:var(--t3);line-height:1.4;margin-top:2px;}
 .player-row{display:flex;align-items:center;gap:10px;padding:8px 6px;border-bottom:1px solid var(--bdr2);border-radius:4px;transition:all 0.2s;}
 .player-row:last-child{border-bottom:none;}
 .player-row:hover{background:rgba(196,150,42,0.05);}
@@ -125,15 +183,6 @@ main{padding-top:58px;position:relative;z-index:1;}
 .b-rum{background:rgba(196,150,42,0.10);color:var(--gold-l);border:1px solid rgba(196,150,42,0.20);}
 .b-tra{background:rgba(96,165,250,0.10);color:#60a5fa;border:1px solid rgba(96,165,250,0.20);}
 .b-out{background:rgba(248,113,113,0.10);color:#f87171;border:1px solid rgba(248,113,113,0.20);}
-.scout-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
-.scout-btn{font-family:"Barlow Condensed";font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:9px 16px;border-radius:5px;cursor:pointer;transition:all 0.25s;}
-.scout-btn.active{background:rgba(196,150,42,0.12);border:1px solid rgba(196,150,42,0.45);color:var(--gold-l);box-shadow:0 0 14px rgba(196,150,42,0.10);}
-.scout-btn.off{background:rgba(255,255,255,0.04);border:1px solid var(--bdr2);color:var(--t3);}
-.scout-btn.off:hover{background:rgba(255,255,255,0.07);color:var(--t2);}
-.scout-grid{display:grid;grid-template-columns:270px 1fr;gap:22px;align-items:start;}
-.scout-profile{background:rgba(196,150,42,0.04);border:1px solid rgba(196,150,42,0.16);border-radius:12px;padding:22px 18px;position:relative;overflow:hidden;transition:all 0.35s;}
-.scout-profile:hover{border-color:rgba(196,150,42,0.30);box-shadow:0 8px 28px rgba(0,0,0,0.3);}
-.scout-profile::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:glowbar 3s ease-in-out infinite;}
 .sp-ghost{position:absolute;right:8px;top:6px;font-family:"Bebas Neue";font-size:76px;color:rgba(196,150,42,0.07);line-height:1;pointer-events:none;letter-spacing:-2px;}
 .sp-name{font-family:"Bebas Neue";font-size:34px;letter-spacing:2px;color:var(--white);margin-bottom:3px;position:relative;}
 .sp-pos{font-family:"Barlow Condensed";font-size:12px;font-weight:700;letter-spacing:3px;color:rgba(196,150,42,0.85);text-transform:uppercase;margin-bottom:16px;position:relative;}
@@ -141,18 +190,11 @@ main{padding-top:58px;position:relative;z-index:1;}
 .sp-meta-row:last-child{border-bottom:none;}
 .sp-ml{font-family:"Barlow Condensed";font-size:12px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;}
 .sp-mv{font-family:"Barlow Condensed";font-size:14px;font-weight:700;color:var(--white);}
-.scout-attrs{display:flex;flex-direction:column;gap:11px;}
 .attr-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
 .attr-name{font-family:"Barlow Condensed";font-size:14px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.78);text-transform:uppercase;}
 .attr-score{font-family:"Bebas Neue";font-size:20px;letter-spacing:1px;}
 .attr-track{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;}
 .attr-fill{height:100%;border-radius:3px;width:0%;transition:width 1.2s cubic-bezier(0.4,0,0.2,1);}
-.s-elite{background:linear-gradient(90deg,#C4962A,#E8B84B);color:#E8B84B;}
-.s-high{background:linear-gradient(90deg,#B38425,#D4A640);color:rgba(232,184,75,0.85);}
-.s-mid{background:linear-gradient(90deg,#8B6319,#B38425);color:rgba(232,184,75,0.65);}
-.s-low{background:linear-gradient(90deg,#5C4010,#8B6319);color:rgba(232,184,75,0.45);}
-.scout-verdict{margin-top:18px;padding:14px;background:rgba(196,150,42,0.05);border:1px solid rgba(196,150,42,0.14);border-radius:8px;font-family:Barlow;font-size:15px;color:var(--t2);line-height:1.65;font-style:italic;}
-.scout-verdict strong{color:var(--white);font-style:normal;}
 footer{padding:20px;border-top:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:16px;}
 .fcopy{font-family:"Barlow Condensed";font-size:13px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;}
 .flinks{display:flex;gap:14px;}
@@ -173,12 +215,17 @@ body.light nav button:hover,body.light nav button.active{color:var(--gold);backg
 body.light .hlogo-sub{color:rgba(0,0,0,0.38);}
 body.light .manifesto{color:rgba(196,150,42,0.75);}
 body.light .match-banner{background:rgba(196,150,42,0.06);}
+body.light .home-panel{background:#e8e5dc;border-color:rgba(196,150,42,.18);}
+body.light .home-main-title,body.light .home-mini strong{color:#111;}
+body.light .home-text{color:rgba(0,0,0,.58);}
 body.light .mb-info span{color:rgba(0,0,0,0.42);}
 body.light .mb-info strong{color:rgba(0,0,0,0.80);}
 body.light .ctx-box{background:rgba(196,150,42,0.05);color:rgba(0,0,0,0.55);}
 body.light .field-card,body.light .lineup-card,body.light .stat-card,body.light .chart-box,body.light .result-item,body.light .market-card{background:#e8e5dc;border-color:rgba(196,150,42,0.18);}
-body.light .pr-name,body.light .res-name,body.light .res-score,body.light .t-name,body.light .sp-name,body.light .sp-mv{color:#111;}
+body.light .offseason-main,body.light .offseason-side{background:#e8e5dc;border-color:rgba(196,150,42,0.18);}
+body.light .pr-name,body.light .res-name,body.light .res-score,body.light .t-name,body.light .sp-name,body.light .sp-mv,body.light .offseason-title,body.light .radar-card strong,body.light .watch-text strong{color:#111;}
 body.light .pr-pos,body.light .res-comp,body.light .res-date,body.light .t-from,body.light .stat-lbl,body.light .stat-sub{color:rgba(0,0,0,0.42);}
+body.light .offseason-copy,body.light .radar-card span,body.light .watch-text span{color:rgba(0,0,0,0.55);}
 body.light .player-row,body.light .transfer-item,body.light .sp-meta-row{border-bottom-color:rgba(0,0,0,0.06);}
 body.light .bar-track,body.light .attr-track{background:rgba(0,0,0,0.06);}
 body.light .bar-label{color:rgba(0,0,0,0.55);}
@@ -187,10 +234,6 @@ body.light .fcopy{color:rgba(0,0,0,0.30);}
 body.light .mob-nav{background:rgba(244,242,236,0.97);}
 body.light .mob-btn{color:rgba(0,0,0,0.32);}
 body.light .mob-btn.active{color:var(--gold);}
-body.light .scout-profile{background:rgba(196,150,42,0.05);}
-body.light .scout-verdict{background:rgba(196,150,42,0.06);color:rgba(0,0,0,0.58);}
-body.light .scout-verdict strong{color:#111;}
-body.light .sp-ml{color:rgba(0,0,0,0.38);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes breathe{0%,100%{opacity:0.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.04)}}
 @keyframes scan{0%{top:0%;opacity:0}5%{opacity:1}95%{opacity:0.5}100%{top:100%;opacity:0}}
@@ -201,9 +244,16 @@ body.light .sp-ml{color:rgba(0,0,0,0.38);}
 header{padding:0 14px;height:54px;}main{padding-top:54px;padding-bottom:66px;}
 nav{display:none;}.mob-nav{display:flex;}
 .hero{min-height:360px;padding:58px 18px 42px;}.hero h1{font-size:clamp(58px,18vw,92px);}
+.home-dash{grid-template-columns:1fr;margin-top:0;padding:0 14px;}
+.home-panel{min-height:auto;}
+.quick-actions{grid-template-columns:1fr 1fr;}
 
 /* TACTIC MOBILE - campo full width, lista sotto */
 .tactic-wrap{grid-template-columns:1fr;gap:12px;}
+.offseason-board{grid-template-columns:1fr;gap:12px;}
+.offseason-main,.offseason-side{padding:14px;}
+.offseason-title{font-size:36px;}
+.radar-grid{grid-template-columns:1fr;}
 .field-card{padding:12px;}
 .field-label{font-size:12px;letter-spacing:2px;margin-bottom:8px;}
 .pitch-svg{width:100%;max-height:72vw;}
@@ -238,13 +288,6 @@ nav{display:none;}.mob-nav{display:flex;}
 .t-name{font-size:14px;}
 .t-from{font-size:11px;}
 
-/* SCOUT MOBILE */
-.scout-grid{grid-template-columns:1fr;}
-.sp-name{font-size:28px;}
-.attr-name{font-size:13px;}
-.attr-score{font-size:18px;}
-.scout-verdict{font-size:14px;}
-
 /* STANDINGS MOBILE */
 .standings-table th,.standings-table td{padding:6px 5px;font-size:12px;}
 .st-pos{font-size:13px;width:22px;}
@@ -256,7 +299,7 @@ nav{display:none;}.mob-nav{display:flex;}
 .match-banner{flex-direction:column;gap:10px;text-align:center;width:100%;}
 .mb-info{border-left:none;padding-left:0;border-top:1px solid rgba(196,150,42,0.15);padding-top:10px;text-align:center;}
 .hero-sil{opacity:0.08;right:-20px;}
-.section,.scout-sec{padding:24px 12px 40px;}
+.section{padding:24px 12px 40px;}
 }
 @media(max-width:400px){.stat-val{font-size:40px;}.hero h1{font-size:54px;}}
 
@@ -321,7 +364,6 @@ nav{display:none;}.mob-nav{display:flex;}
     <button onclick="showSection('statistiche',this)">Statistiche</button>
     <button onclick="showSection('mercato',this)">Mercato</button>
     <button onclick="showSection('news',this)">News</button>
-    <button onclick="showSection('scout',this)">Scout</button>
   </nav>
   <div class="hsocial">
     <a href="https://instagram.com/ilcalciodivince_" target="_blank" title="Instagram"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
@@ -343,79 +385,67 @@ nav{display:none;}.mob-nav{display:flex;}
     <div class="alert-banner"><div class="alert-dot"></div>JUVENTUS IN EUROPA LEAGUE &middot; 6&deg; POSTO FINALE SERIE A &middot; STAGIONE 2025/26 CONCLUSA</div>
     <br>
     <div class="match-banner">
-      <span class="mb-team">TORINO</span><span class="mb-vs">VS</span><span class="mb-team juve">JUVENTUS</span>
-      <div class="mb-info"><span>Derby della Mole &middot; Serie A 38&ordf;</span><strong>24 Mag 2026 &middot; 20:45</strong></div>
+      <span class="mb-team juve">JUVENTUS</span><span class="mb-vs">&middot;</span><span class="mb-team">2026/27</span>
+      <div class="mb-info"><span>Calendario in aggiornamento</span><strong>In attesa della prossima partita</strong></div>
     </div>
   </div>
 </div>
-<section class="section" id="scout">
-  <div class="sec-head"><div class="sec-tag">ICV &middot; Analisi Esclusiva</div><div class="sec-title">SCOUT REPORT</div><div class="gold-bar"></div><div id="scoutLiveTag" style="font-family:'Barlow Condensed';font-size:11px;letter-spacing:1.5px;color:rgba(196,150,42,0.45);text-transform:uppercase;margin-top:6px;min-height:14px;"></div></div>
-  <div class="scout-selector" id="scoutSelector"></div>
-  <div class="scout-grid">
-    <div class="scout-profile"><div class="sp-ghost" id="spGhost">10</div><div class="sp-name" id="spName">YILDIZ</div><div class="sp-pos" id="spPos">Ala Sinistra</div><div id="spMeta"></div></div>
-    <div><div class="scout-attrs" id="scoutAttrs"></div><div class="scout-verdict" id="scoutVerdict"></div></div>
+<section class="home-dash" id="homeDash">
+  <div class="home-panel">
+    <h3>Focus ICV</h3>
+    <div class="home-main-title" id="homeFocusTitle">ICV Scout in aggiornamento</div>
+    <div class="home-text" id="homeFocusText">Le notizie approvate e il Match Center appariranno qui dopo la revisione admin.</div>
+    <div class="home-auto" id="homeAutoStatus">Autopilot in attesa</div>
+  </div>
+  <div class="home-panel">
+    <h3>Match Center</h3>
+    <div class="home-main-title" id="homeMatchTitle">Calendario in attesa</div>
+    <div class="home-text" id="homeMatchText">Nessuna partita attiva nel Match Center.</div>
+  </div>
+  <div class="home-panel">
+    <h3>Scorciatoie</h3>
+    <div class="quick-actions">
+      <button onclick="showSection('news')">News</button>
+      <button onclick="showSection('mercato')">Mercato</button>
+      <button onclick="showSection('statistiche')">Stats</button>
+      <button onclick="showSection('tattica')">Tattica</button>
+    </div>
+  </div>
+  <div class="home-panel">
+    <h3>Ultime News</h3>
+    <div class="home-list" id="homeNewsList"><div class="home-text">Caricamento...</div></div>
+  </div>
+  <div class="home-panel">
+    <h3>Mercato Live</h3>
+    <div class="home-list" id="homeMarketList"><div class="home-text">Caricamento...</div></div>
+  </div>
+  <div class="home-panel">
+    <h3>Da Instagram</h3>
+    <div class="home-list" id="homeInstagramList"><div class="home-text">Caricamento...</div></div>
   </div>
 </section>
 <section class="section active" id="tattica">
-  <div class="sec-head"><div class="sec-tag">Schemi &amp; Formazioni</div><div class="sec-title">TATTICA</div><div class="gold-bar"></div></div>
-  <div class="ctx-box" id="tatticaCtx">La Juventus affronta il Derby della Mole all&#39;<strong>Olimpico Grande Torino</strong>. Spalletti sceglie il <strong>3-4-2-1</strong>. Perin in porta, David centravanti, Conceicao e Boga alle sue spalle. Juve <strong>6&#170; a 68 punti</strong>, deve vincere e sperare.</div>
-  <div class="tab-bar"><button class="tab-btn active" onclick="showTab('campo',this)">Campo</button><button class="tab-btn" onclick="showTab('analisi',this)">Analisi</button></div>
+  <div class="sec-head"><div class="sec-tag">Radar Estate</div><div class="sec-title">JUVE 2026/27</div><div class="gold-bar"></div></div>
+  <div class="ctx-box" id="tatticaCtx">Stagione <strong>2025/26</strong> conclusa. Finche non arriva una partita vera, la home monitora mercato, calendario, rosa e segnali da ritiro.</div>
+  <div class="tab-bar"><button class="tab-btn active" onclick="showTab('campo',this)">Radar</button><button class="tab-btn" onclick="showTab('analisi',this)">Priorit&agrave;</button></div>
   <div class="tab-content active" id="campo">
-    <div class="tactic-wrap">
-      <div class="field-card">
-        <div class="field-label">Probabile XI &middot; 3-4-2-1</div>
-        <svg id="pitch" viewBox="0 0 400 560" class="pitch-svg" xmlns="http://www.w3.org/2000/svg">
-          <defs><linearGradient id="fg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#091409"/><stop offset="100%" stop-color="#0c1c0c"/></linearGradient></defs>
-          <rect width="400" height="560" fill="url(#fg)" rx="6"/>
-          <rect x="0" y="0" width="400" height="56" fill="rgba(255,255,255,0.012)"/>
-          <rect x="0" y="112" width="400" height="56" fill="rgba(255,255,255,0.012)"/>
-          <rect x="0" y="224" width="400" height="56" fill="rgba(255,255,255,0.012)"/>
-          <rect x="0" y="336" width="400" height="56" fill="rgba(255,255,255,0.012)"/>
-          <rect x="0" y="448" width="400" height="56" fill="rgba(255,255,255,0.012)"/>
-          <rect x="18" y="18" width="364" height="524" fill="none" stroke="rgba(255,255,255,0.13)" stroke-width="1.4" rx="2"/>
-          <line x1="18" y1="280" x2="382" y2="280" stroke="rgba(255,255,255,0.13)" stroke-width="1.4"/>
-          <circle cx="200" cy="280" r="52" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.2"/>
-          <circle cx="200" cy="280" r="3" fill="rgba(255,255,255,0.26)"/>
-          <rect x="90" y="444" width="220" height="98" fill="none" stroke="rgba(255,255,255,0.13)" stroke-width="1.2"/>
-          <rect x="148" y="502" width="104" height="40" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
-          <rect x="90" y="18" width="220" height="98" fill="none" stroke="rgba(255,255,255,0.13)" stroke-width="1.2"/>
-          <rect x="148" y="18" width="104" height="40" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
-          <circle cx="200" cy="474" r="3" fill="rgba(255,255,255,0.20)"/>
-          <circle cx="200" cy="106" r="3" fill="rgba(255,255,255,0.20)"/>
-          <path d="M 112 444 A 88 88 0 0 1 288 444" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
-          <path d="M 112 116 A 88 88 0 0 0 288 116" fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>
-          <rect x="155" y="537" width="90" height="11" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1" rx="1"/>
-          <rect x="155" y="12" width="90" height="11" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1" rx="1"/>
-          <g id="players"></g>
-        </svg>
+    <div class="offseason-board">
+      <div class="offseason-main">
+        <div class="offseason-kicker" id="radarKicker">Centro di controllo</div>
+        <div class="offseason-title" id="radarTitle">Estate Juve</div>
+        <div class="offseason-copy" id="radarCopy">Quando non c'e una partita, la home deve diventare il punto dove si capisce cosa sta cambiando: chi arriva, chi parte, quali ruoli sono scoperti e quando riparte il calendario.</div>
+        <div class="radar-grid" id="radarCards"></div>
       </div>
-      <div class="lineup-panel">
-        <div class="lineup-card"><div class="lc-title">Probabile XI &middot; 3-4-2-1</div><div id="lineupList"></div></div>
-        <div class="lineup-card"><div class="lc-title">Panchina</div><div id="benchList"></div></div>
+      <div class="offseason-side">
+        <div class="offseason-kicker">Da seguire</div>
+        <div class="watch-list" id="radarWatch"></div>
       </div>
     </div>
   </div>
   <div class="tab-content" id="analisi">
-    <div class="chart-box">
-      <div class="chart-lbl">Principi di Gioco &mdash; 3-4-2-1</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
-        <div>
-          <div class="bar-row"><span class="bar-label">Pressing alto</span><div class="bar-track"><div class="bar-fill" style="width:72%"></div></div><span class="bar-val">7.2</span></div>
-          <div class="bar-row"><span class="bar-label">Possesso</span><div class="bar-track"><div class="bar-fill" style="width:57%"></div></div><span class="bar-val">57%</span></div>
-          <div class="bar-row"><span class="bar-label">Verticalit&agrave;</span><div class="bar-track"><div class="bar-fill" style="width:75%"></div></div><span class="bar-val">7.5</span></div>
-          <div class="bar-row"><span class="bar-label">Ampiezza</span><div class="bar-track"><div class="bar-fill" style="width:68%"></div></div><span class="bar-val">6.8</span></div>
-        </div>
-        <div>
-          <div class="bar-row"><span class="bar-label">Transizioni</span><div class="bar-track"><div class="bar-fill" style="width:80%"></div></div><span class="bar-val">8.0</span></div>
-          <div class="bar-row"><span class="bar-label">Difesa alta</span><div class="bar-track"><div class="bar-fill" style="width:65%"></div></div><span class="bar-val">6.5</span></div>
-          <div class="bar-row"><span class="bar-label">Cross</span><div class="bar-track"><div class="bar-fill" style="width:43%"></div></div><span class="bar-val">4.3</span></div>
-          <div class="bar-row"><span class="bar-label">Set piece</span><div class="bar-track"><div class="bar-fill" style="width:60%"></div></div><span class="bar-val">6.0</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="abox" style="background:rgba(196,150,42,0.04);border-left-color:rgba(196,150,42,0.4)"><div class="atitle" style="color:var(--gold-l)">FASE OFFENSIVA</div><div class="atext">Con Yildiz out, sulla fascia sinistra tocca a Boga. Vlahovic in dubbio per l&#39;adduttore. Se non dovesse farcela, David pronto titolare.</div></div>
-    <div class="abox" style="background:rgba(74,222,128,0.04);border-left-color:rgba(74,222,128,0.25)"><div class="atitle" style="color:#4ade80">FASE DIFENSIVA</div><div class="atext">Senza Bremer, Gatti e Kelly gestiscono la fisicita&#39; di Zapata e Simeone. Locatelli e Thuram (in dubbio) a protezione della linea.</div></div>
-    <div class="abox" style="background:rgba(248,113,113,0.04);border-left-color:rgba(248,113,113,0.25)"><div class="atitle" style="color:#f87171">ASSENZE PESANTI</div><div class="atext">Yildiz OUT. Bremer SQUALIFICATO. Vlahovic IN DUBBIO. Thuram IN DUBBIO. Quattro assenze chiave in una partita da dentro o fuori.</div></div>
+    <div class="abox" style="background:rgba(196,150,42,0.04);border-left-color:rgba(196,150,42,0.4)"><div class="atitle" style="color:var(--gold-l)">1. MERCATO CON FONTI</div><div class="atext">Prima entrano le fonti ufficiali e affidabili, poi le voci. La home deve far capire subito se una notizia e confermata o solo da monitorare.</div></div>
+    <div class="abox" style="background:rgba(74,222,128,0.04);border-left-color:rgba(74,222,128,0.25)"><div class="atitle" style="color:#4ade80">2. CALENDARIO E RITIRO</div><div class="atext">Appena escono amichevoli, raduno e prima gara ufficiale, il blocco torna automaticamente verso Match Center e analisi partita.</div></div>
+    <div class="abox" style="background:rgba(96,165,250,0.04);border-left-color:rgba(96,165,250,0.25)"><div class="atitle" style="color:#60a5fa">3. CONTENUTI SOCIAL</div><div class="atext">I post importati da Instagram restano una vetrina: ultimi tre contenuti, niente doppioni, link diretto al post originale.</div></div>
   </div>
 </section>
 <section class="section" id="statistiche">
@@ -520,7 +550,6 @@ nav{display:none;}.mob-nav{display:flex;}
   <button class="mob-btn" onclick="showSec('statistiche',this)"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Stats</button>
   <button class="mob-btn" onclick="showSec('mercato',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Mercato</button>
   <button class="mob-btn" onclick="showSec('news',this)"><svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><line x1="11" y1="6" x2="17" y2="6"/><line x1="11" y1="10" x2="17" y2="10"/><line x1="11" y1="14" x2="13" y2="14"/></svg>News</button>
-  <button class="mob-btn" onclick="showSec('scout',this)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Scout</button>
   <button class="mob-btn" onclick="toggleTheme()"><svg viewBox="0 0 24 24" id="mobIcon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Tema</button>
 </nav>
 <div class="tooltip" id="tooltip"><div class="tt-name" id="ttName"></div><div class="tt-pos" id="ttPos"></div></div>
@@ -566,25 +595,9 @@ var pos=[
   {x:260,y:210},  // TRQ - Boga
   {x:200,y:110}   // ATT - David
 ];
-var scouts=[
-  {id:"yildiz",num:10,name:"YILDIZ",pos:"Ala Sinistra",nat:"Turchia",age:20,apps:32,goals:13,status:"ok",statusLabel:"RINNOVATO",
-   attrs:[{n:"Creativita",v:93,c:"s-elite"},{n:"Dribbling",v:91,c:"s-elite"},{n:"Visione",v:88,c:"s-elite"},{n:"Finalizzazione",v:82,c:"s-high"},{n:"Velocita",v:84,c:"s-high"},{n:"Pressing",v:70,c:"s-mid"},{n:"Leadership",v:78,c:"s-mid"},{n:"Forza Fisica",v:62,c:"s-mid"}],
-   verdict:"Il talento piu puro del calcio italiano under 21. <strong>13 gol e 8 assist in 32 presenze</strong>. Rinnovo firmato: e' il presente e il futuro della Juventus."},
-  {id:"conceicao",num:7,name:"CONCEICAO",pos:"Ala Destra",nat:"Portogallo",age:22,apps:29,goals:8,status:"ok",statusLabel:"CONFERMATO",
-   attrs:[{n:"Velocita",v:94,c:"s-elite"},{n:"Dribbling",v:89,c:"s-elite"},{n:"Pressing",v:85,c:"s-high"},{n:"Creativita",v:82,c:"s-high"},{n:"Finalizzazione",v:78,c:"s-mid"},{n:"Visione",v:72,c:"s-mid"},{n:"Continuita",v:68,c:"s-mid"},{n:"Leadership",v:65,c:"s-mid"}],
-   verdict:"<strong>8 gol e 7 assist in 29 presenze</strong>. Tra i migliori della stagione nel girone di ritorno. Confermato per il 2026/27."},
-  {id:"vlahovic",num:9,name:"VLAHOVIC",pos:"Prima Punta",nat:"Serbia",age:25,apps:28,goals:10,status:"dubbio",statusLabel:"IN SCADENZA",
-   attrs:[{n:"Forza Fisica",v:91,c:"s-elite"},{n:"Gioco aereo",v:88,c:"s-elite"},{n:"Finalizzazione",v:84,c:"s-high"},{n:"Leadership",v:75,c:"s-mid"},{n:"Velocita",v:72,c:"s-mid"},{n:"Visione",v:68,c:"s-mid"},{n:"Pressing",v:61,c:"s-mid"},{n:"Creativita",v:55,c:"s-low"}],
-   verdict:"Fisicamente dominante, <strong>il migliore in Serie A nel gioco spalle alla porta</strong>. Contratto in scadenza: il futuro e' ancora da definire. Addio o rinnovo al ribasso."},
-  {id:"cambiaso",num:27,name:"CAMBIASO",pos:"Terzino Sinistro",nat:"Italia",age:25,apps:36,goals:3,status:"dubbio",statusLabel:"SEGUITO DAL BARCA",
-   attrs:[{n:"Resistenza",v:92,c:"s-elite"},{n:"Pressing",v:88,c:"s-elite"},{n:"Visione",v:85,c:"s-high"},{n:"Tecnica",v:84,c:"s-high"},{n:"Velocita",v:80,c:"s-high"},{n:"Leadership",v:72,c:"s-mid"},{n:"Creativita",v:76,c:"s-mid"},{n:"Finalizzazione",v:58,c:"s-low"}],
-   verdict:"Il piu' completo della rosa. <strong>36 presenze su 37</strong>. Il Barcellona lo segue con insistenza. Cedere lui sarebbe un errore storico."},
-  {id:"boga",num:13,name:"BOGA",pos:"Ala Sinistra",nat:"Costa d Avorio",age:27,apps:13,goals:4,status:"ok",statusLabel:"DA VALUTARE",
-   attrs:[{n:"Dribbling",v:88,c:"s-elite"},{n:"Velocita",v:86,c:"s-high"},{n:"Creativita",v:82,c:"s-high"},{n:"Finalizzazione",v:72,c:"s-mid"},{n:"Pressing",v:76,c:"s-mid"},{n:"Visione",v:68,c:"s-mid"},{n:"Continuita",v:60,c:"s-mid"},{n:"Leadership",v:55,c:"s-low"}],
-   verdict:"Arrivato a gennaio dal Nice, <strong>4 gol in 13 presenze</strong>. Numeri incoraggianti nel girone di ritorno. Da valutare in ritiro per il 2026/27."}
-];
 function renderField(){
   var ns="http://www.w3.org/2000/svg",g=document.getElementById("players");
+  if (!g) return;
   while(g.firstChild)g.removeChild(g.firstChild);
   for(var i=0;i<lineup.length;i++){
     var p=lineup[i],pt=pos[i],isO=p.out===true,isD=p.doubt===true;
@@ -612,6 +625,7 @@ function renderField(){
 }
 function renderLineup(){
   var el=document.getElementById("lineupList"),be=document.getElementById("benchList");
+  if (!el || !be) return;
   el.innerHTML="";be.innerHTML="";
   lineup.forEach(function(p){
     var r=document.createElement("div");r.className="player-row";
@@ -625,41 +639,6 @@ function renderLineup(){
     r.innerHTML="<span class='pr-num'>"+p.num+"</span><div class='pr-info'><div class='pr-name'>"+p.name+" "+b+"</div><div class='pr-pos'>"+p.pos+"</div></div>";
     be.appendChild(r);
   });
-}
-function renderScout(id){
-  var p=null;for(var i=0;i<scouts.length;i++){if(scouts[i].id===id){p=scouts[i];break;}}if(!p)return;
-  document.getElementById("spGhost").textContent=String(p.num);
-  document.getElementById("spName").textContent=p.name;
-  document.getElementById("spPos").textContent=p.pos;
-  var sc=p.status==="out"?"#f87171":p.status==="dubbio"?"#fbbf24":"#4ade80";
-  var sb=p.status==="out"?"rgba(248,113,113,0.10)":p.status==="dubbio"?"rgba(251,191,36,0.10)":"rgba(74,222,128,0.08)";
-  var sbr=p.status==="out"?"rgba(248,113,113,0.28)":p.status==="dubbio"?"rgba(251,191,36,0.28)":"rgba(74,222,128,0.22)";
-  var st=p.statusLabel||(p.status==="out"?"INFORTUNATO - OUT":p.status==="dubbio"?"IN DUBBIO":"DISPONIBILE");
-  document.getElementById("spMeta").innerHTML=
-    "<div style='display:inline-block;background:"+sb+";border:1px solid "+sbr+";color:"+sc+";font-family:Barlow Condensed;font-size:12px;font-weight:700;letter-spacing:2px;padding:4px 10px;border-radius:3px;margin-bottom:14px;text-transform:uppercase;'>"+st+"</div>"+
-    "<div class='sp-meta-row'><span class='sp-ml'>Nazionalita</span><span class='sp-mv'>"+p.nat+"</span></div>"+
-    "<div class='sp-meta-row'><span class='sp-ml'>Eta</span><span class='sp-mv'>"+p.age+" anni</span></div>"+
-    "<div class='sp-meta-row'><span class='sp-ml'>Presenze</span><span class='sp-mv'>"+p.apps+"</span></div>"+
-    "<div class='sp-meta-row'><span class='sp-ml'>Gol</span><span class='sp-mv'>"+p.goals+"</span></div>"+
-    (p.assists!=null?"<div class='sp-meta-row'><span class='sp-ml'>Assist</span><span class='sp-mv'>"+p.assists+"</span></div>":"")+
-    (p.rating?"<div class='sp-meta-row'><span class='sp-ml'>Rating</span><span class='sp-mv' style='color:var(--gold-l);font-weight:700;'>"+p.rating+"</span></div>":"");
-  var ae=document.getElementById("scoutAttrs");ae.innerHTML="";
-  p.attrs.forEach(function(a){
-    var d=document.createElement("div");d.className="attr";
-    d.innerHTML="<div class='attr-head'><span class='attr-name'>"+a.n+"</span><span class='attr-score "+a.c+"'>"+a.v+"</span></div><div class='attr-track'><div class='attr-fill "+a.c+"' style='width:0%' data-w='"+a.v+"%'></div></div>";
-    ae.appendChild(d);
-  });
-  setTimeout(function(){document.querySelectorAll(".attr-fill").forEach(function(el){el.style.width=el.getAttribute("data-w");});},60);
-  document.getElementById("scoutVerdict").innerHTML='"'+p.verdict+'"';
-  document.querySelectorAll(".scout-btn").forEach(function(b){b.className="scout-btn "+(b.getAttribute("data-id")===id?"active":"off");});
-}
-function initScout(){
-  var sel=document.getElementById("scoutSelector");sel.innerHTML="";
-  scouts.forEach(function(p){
-    var btn=document.createElement("button");btn.className="scout-btn off";btn.setAttribute("data-id",p.id);
-    btn.textContent="#"+p.num+" "+p.name;btn.onclick=function(){renderScout(p.id);};sel.appendChild(btn);
-  });
-  renderScout("yildiz");
 }
 function showSection(id,btn){
   document.querySelectorAll(".section").forEach(function(s){s.classList.remove("active");s.style.animation='';});
@@ -684,16 +663,14 @@ function showTab(id,btn){
 }
 function toggleTheme(){
   var l=document.body.classList.toggle("light");
-  document.getElementById("themeBtn").textContent=l?"&#9728;&#65039;":"&#127769;";
+  document.getElementById("themeBtn").textContent=l?"☀️":"🌙";
   var ic=document.getElementById("mobIcon");
   if(ic)ic.innerHTML=l?"<circle cx='12' cy='12' r='5'/><line x1='12' y1='1' x2='12' y2='3'/><line x1='12' y1='21' x2='12' y2='23'/><line x1='4.22' y1='4.22' x2='5.64' y2='5.64'/><line x1='18.36' y1='18.36' x2='19.78' y2='19.78'/><line x1='1' y1='12' x2='3' y2='12'/><line x1='21' y1='12' x2='23' y2='12'/><line x1='4.22' y1='19.78' x2='5.64' y2='18.36'/><line x1='18.36' y1='5.64' x2='19.78' y2='4.22'/>":"<path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/>";
   try{localStorage.setItem("icv-theme",l?"light":"dark");}catch(e){}
 }
 (function(){
-  renderField();renderLineup();initScout();
-  // Pre-fetch scout stats in background così sono pronte quando si apre la sezione
-  setTimeout(function(){loadScoutStats();},1500);
-  try{if(localStorage.getItem("icv-theme")==="light"){document.body.classList.add("light");document.getElementById("themeBtn").textContent="&#9728;&#65039;";}}catch(e){}
+  renderField();renderLineup();
+  try{if(localStorage.getItem("icv-theme")==="light"){document.body.classList.add("light");document.getElementById("themeBtn").textContent="☀️";}}catch(e){}
 })();
 
 // ============================
@@ -701,8 +678,7 @@ function toggleTheme(){
 // football-data.org — no CORS
 // Cache 60min browser
 // ============================
-var FD_KEY = "085df7cb2c564d60ab66c66b591c66f6";
-var FD_BASE = "https://api.football-data.org/v4";
+var FD_BASE = "/api/football-data";
 var JUVE_ID = 109; // Juventus ID in football-data.org
 var SERIE_A_ID = "SA"; // Serie A competition code
 var CACHE_TTL = 60 * 60 * 1000;
@@ -723,7 +699,6 @@ function cacheGet(key) {
 function fdFetch(endpoint, callback) {
   var xhr = new XMLHttpRequest();
   xhr.open("GET", FD_BASE + endpoint);
-  xhr.setRequestHeader("X-Auth-Token", FD_KEY);
   xhr.timeout = 8000;
   xhr.onload = function() {
     if (xhr.status === 200) {
@@ -770,7 +745,7 @@ function renderNoNextMatch() {
       "<div class='mb-info'><span>Stagione conclusa</span><strong>In attesa del calendario 26/27</strong></div>";
   }
   var ctx = document.getElementById("tatticaCtx");
-  if (ctx) ctx.innerHTML = "Stagione <strong>2025/26</strong> conclusa. In attesa del nuovo calendario <strong>2026/27</strong>.";
+  if (ctx) ctx.innerHTML = "Stagione <strong>2025/26</strong> conclusa. Finche non arriva una partita vera, la home monitora mercato, calendario, rosa e segnali da ritiro.";
 }
 
 function renderNextMatch(match) {
@@ -991,18 +966,131 @@ setTimeout(function() {
 })();
 
 
-// ── NEWS RENDER — Supabase ──
-var SB_URL = "https://sdmmbpvvlgednafcrwtx.supabase.co";
-var SB_KEY = "sb_publishable_VYxu6OFAg2Psdxkp5FWWGg_9O6qptu_";
+// ── NEWS RENDER — API server-side ──
+function icvEsc(value) {
+  return String(value == null ? "" : value).replace(/[&<>"']/g, function(c) {
+    return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
+  });
+}
+
+function loadHomeDashboard() {
+  fetch("/api/public/home")
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    data = data || {};
+    var news = Array.isArray(data.news) ? data.news : [];
+    var market = Array.isArray(data.market) ? data.market : [];
+    var matches = Array.isArray(data.matches) ? data.matches : [];
+    var social = Array.isArray(data.social) ? data.social : [];
+    renderAutoStatus(data.auto);
+    renderRadar(data.radar);
+    if (news[0]) {
+      document.getElementById("homeFocusTitle").textContent = news[0].title || "Focus ICV";
+      document.getElementById("homeFocusText").textContent = (news[0].body || "").slice(0, 180);
+    }
+    if (matches[0]) {
+      document.getElementById("homeMatchTitle").textContent = matches[0].title || matches[0].opponent || "Match Center";
+      document.getElementById("homeMatchText").textContent = matches[0].summary || matches[0].tactical_key || "Scheda match pronta.";
+    }
+    renderHomeList("homeNewsList", news, function(n) {
+      return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : "")};
+    });
+    renderHomeList("homeMarketList", market, function(m) {
+      return {title:m.player_name || m.note || "Mercato", meta:(m.status || "monitorato") + (m.source_name ? " · " + m.source_name : "")};
+    });
+    renderHomeLinks("homeInstagramList", uniqueSocialRows(social), function(s) {
+      return {title:s.hook || "Post Instagram", meta:(s.media_type || s.platform || "instagram") + (s.status ? " · " + s.status : ""), url:s.post_url || "https://www.instagram.com/ilcalciodivince_/"};
+    });
+  })
+  .catch(function() {
+    renderHomeList("homeNewsList", [], null);
+    renderHomeList("homeMarketList", [], null);
+    renderHomeLinks("homeInstagramList", [], null);
+  });
+}
+
+function renderAutoStatus(auto) {
+  var el = document.getElementById("homeAutoStatus");
+  if (!el) return;
+  if (!auto || !auto.last_run_at) {
+    el.textContent = "Autopilot attivo ogni 6 ore";
+    return;
+  }
+  var d = new Date(auto.last_run_at);
+  var h = auto.interval_hours || 6;
+  el.textContent = "Home aggiornata alle " + d.toLocaleTimeString("it-IT", {hour:"2-digit", minute:"2-digit"}) + " · ogni " + h + "h";
+}
+
+function renderRadar(radar) {
+  radar = radar || {};
+  var cards = Array.isArray(radar.cards) ? radar.cards : [];
+  var watch = Array.isArray(radar.watch) ? radar.watch : [];
+  var kicker = document.getElementById("radarKicker");
+  var title = document.getElementById("radarTitle");
+  var copy = document.getElementById("radarCopy");
+  var cardBox = document.getElementById("radarCards");
+  var watchBox = document.getElementById("radarWatch");
+  if (kicker && radar.kicker) kicker.textContent = radar.kicker;
+  if (title && radar.title) title.textContent = radar.title;
+  if (copy && radar.copy) copy.textContent = radar.copy;
+  if (cardBox && cards.length) {
+    cardBox.innerHTML = cards.slice(0, 4).map(function(item) {
+      return "<div class='radar-card'><strong>" + icvEsc(item.title) + "</strong><span>" + icvEsc(item.text) + "</span></div>";
+    }).join("");
+  }
+  if (watchBox && watch.length) {
+    watchBox.innerHTML = watch.slice(0, 4).map(function(item, i) {
+      return "<div class='watch-item'><div class='watch-num'>" + String(i + 1).padStart(2, "0") + "</div><div class='watch-text'><strong>" + icvEsc(item.title) + "</strong><span>" + icvEsc(item.text) + "</span></div></div>";
+    }).join("");
+  }
+}
+
+function uniqueSocialRows(rows) {
+  var seen = {};
+  rows = rows || [];
+  var realPosts = rows.filter(function(row) {
+    return /instagram\.com\/(p|reel)\//.test(String(row.post_url || ""));
+  });
+  return (realPosts.length ? realPosts : rows).filter(function(row) {
+    var url = String(row.post_url || "").replace(/\/$/, "");
+    if (!url || seen[url]) return false;
+    seen[url] = true;
+    return true;
+  }).slice(0, 3);
+}
+
+function renderHomeList(id, rows, map) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (!rows || !rows.length || !map) {
+    el.innerHTML = "<div class='home-text'>Nessun aggiornamento disponibile.</div>";
+    return;
+  }
+  el.innerHTML = rows.slice(0, 3).map(function(row) {
+    var item = map(row);
+    return "<div class='home-mini'><strong>" + icvEsc(item.title) + "</strong><span>" + icvEsc(item.meta) + "</span></div>";
+  }).join("");
+}
+
+function renderHomeLinks(id, rows, map) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (!rows || !rows.length || !map) {
+    el.innerHTML = "<div class='home-text'>Aggiungi post e Reel dall'admin.</div>";
+    return;
+  }
+  el.innerHTML = rows.slice(0, 3).map(function(row) {
+    var item = map(row);
+    return "<div class='home-mini'><a href='" + icvEsc(item.url) + "' target='_blank' rel='noopener'><strong>" + icvEsc(item.title) + "</strong><span>" + icvEsc(item.meta) + "</span></a></div>";
+  }).join("");
+}
 
 function loadAndRenderNews() {
   var grid = document.getElementById("newsGrid");
   if (!grid) return;
   grid.innerHTML = "<div class='news-empty-state' style='grid-column:1/-1'><div style='font-family:Barlow Condensed;font-size:13px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;'>Caricamento notizie...</div></div>";
 
-  fetch(SB_URL + "/rest/v1/news?visible=eq.true&order=created_at.desc&limit=10", {
-    headers: {"apikey": SB_KEY, "Authorization": "Bearer " + SB_KEY}
-  })
+  fetch("/api/public/news?limit=10")
   .then(function(r){ return r.json(); })
   .then(function(news) {
     if (!Array.isArray(news) || news.length === 0) {
@@ -1022,18 +1110,19 @@ function loadAndRenderNews() {
       else if (n.urgency === "rumor") urgBadge = "<span class='news-cat-badge nc-rumor'>Rumor</span> ";
       var d = new Date(n.created_at);
       var dateStr = d.toLocaleDateString("it-IT",{day:"2-digit",month:"short"}) + " " + d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
-      var meta = dateStr + (n.source ? " &middot; " + n.source : "");
+      var rel = n.editorial_status ? "<span class='news-cat-badge nc-juventus'>" + icvEsc(n.editorial_status) + "</span> " : "";
+      var meta = dateStr + (n.source ? " &middot; " + icvEsc(n.source) : "");
       if (isFeatured) {
         card.innerHTML =
-          "<div>" + urgBadge + "<span class='news-cat-badge " + catCls + "'>" + catLabel + "</span>" +
-          "<div class='news-card-title'>" + n.title + "</div>" +
+          "<div>" + urgBadge + rel + "<span class='news-cat-badge " + catCls + "'>" + catLabel + "</span>" +
+          "<div class='news-card-title'>" + icvEsc(n.title) + "</div>" +
           "<div class='news-card-meta'>" + meta + "</div></div>" +
-          "<div><div class='news-card-body'>" + n.body + "</div></div>";
+          "<div><div class='news-card-body'>" + icvEsc(n.body) + "</div></div>";
       } else {
         card.innerHTML =
-          urgBadge + "<span class='news-cat-badge " + catCls + "'>" + catLabel + "</span>" +
-          "<div class='news-card-title'>" + n.title + "</div>" +
-          "<div class='news-card-body'>" + n.body + "</div>" +
+          urgBadge + rel + "<span class='news-cat-badge " + catCls + "'>" + catLabel + "</span>" +
+          "<div class='news-card-title'>" + icvEsc(n.title) + "</div>" +
+          "<div class='news-card-body'>" + icvEsc(n.body) + "</div>" +
           "<div class='news-card-meta'>" + meta + "</div>";
       }
       grid.appendChild(card);
@@ -1064,8 +1153,8 @@ function loadMercatoNews() {
       var d = item.date ? new Date(item.date).toLocaleDateString("it-IT",{day:"2-digit",month:"short"}) : "";
       return "<div class='result-item'>" +
         "<div class='res-badge' style='background:rgba(96,165,250,0.13);color:#60a5fa;border:1px solid rgba(96,165,250,0.26);font-size:11px;font-family:\"Bebas Neue\"'>€</div>" +
-        "<div class='res-teams'><div class='res-name'>" + item.title + "</div>" +
-        "<div class='res-comp'>" + item.source + (d ? " &middot; " + d : "") + "</div></div></div>";
+        "<div class='res-teams'><div class='res-name'>" + icvEsc(item.title) + "</div>" +
+        "<div class='res-comp'>" + icvEsc(item.source) + (d ? " &middot; " + d : "") + "</div></div></div>";
     }).join("");
     el.dataset.loaded = "1";
   }
@@ -1093,143 +1182,26 @@ function loadMercatoNews() {
   });
 }
 
-// Carica sezioni all'apertura
-// --- Scout live stats da api-sports.io ---
-var SCOUT_STATS_KEY="icv_scout_stats", SCOUT_STATS_TTL=86400000;
-function translatePos(p){var l=(p||"").toLowerCase();if(l.includes("goalkeeper"))return"Portiere";if(l.includes("defender"))return"Difensore";if(l.includes("midfielder"))return"Centrocampista";if(l.includes("attacker"))return"Attaccante";return p||"Giocatore";}
-function buildAutoScout(item,stat){
-  var pl=item.player,g=stat.games||{},gl=stat.goals||{},pa=stat.passes||{};
-  var dr=stat.dribbles||{},ta=stat.tackles||{},du=stat.duels||{};
-  var rating=parseFloat(g.rating)||6.5;
-  var rB=Math.round(Math.min(91,Math.max(52,(rating-5.5)/3.0*40+52)));
-  var apps=g.appearences||0;
-  function cl(v){return Math.round(Math.min(93,Math.max(48,isNaN(v)?rB:v)));}
-  function tc(v){return v>=85?"s-elite":v>=74?"s-high":v>=61?"s-mid":"s-low";}
-  var pasV=pa.accuracy?cl(pa.accuracy):null;
-  var dribV=dr.attempts>3?cl((dr.success/dr.attempts)*100*0.5+40):null;
-  var tackV=ta.total>0?cl(ta.total/Math.max(1,apps)*9+rB-6):null;
-  var duelV=du.total>5?cl((du.won/du.total)*100*0.85+10):null;
-  var goalV=apps>0?cl(Math.min(93,(gl.total||0)/apps*55+rB-8)):null;
-  var assistV=apps>0?cl(Math.min(91,(gl.assists||0)/apps*45+rB-4)):null;
-  var pos=(g.position||"").toLowerCase();var attrs=[];
-  if(pos.includes("goalkeeper")){
-    attrs=[{n:"Riflessi",v:cl(rB+4),c:tc(cl(rB+4))},{n:"Posizionamento",v:cl(rB+1),c:tc(cl(rB+1))},{n:"Distribuzione",v:cl(pasV||rB-5),c:tc(cl(pasV||rB-5))},{n:"Comando area",v:cl(duelV||rB-3),c:tc(cl(duelV||rB-3))}];
-  }else if(pos.includes("defender")){
-    attrs=[{n:"Posizionamento",v:cl(rB+3),c:tc(cl(rB+3))},{n:"Contrasti",v:cl(tackV||rB),c:tc(cl(tackV||rB))},{n:"Forza Fisica",v:cl(duelV||rB-2),c:tc(cl(duelV||rB-2))},{n:"Velocita",v:cl(rB-3),c:tc(cl(rB-3))},{n:"Tecnica",v:cl(pasV||rB-5),c:tc(cl(pasV||rB-5))}];
-  }else if(pos.includes("midfielder")){
-    attrs=[{n:"Pressing",v:cl(tackV||rB),c:tc(cl(tackV||rB))},{n:"Visione",v:cl(assistV||rB),c:tc(cl(assistV||rB))},{n:"Tecnica",v:cl(pasV||rB+2),c:tc(cl(pasV||rB+2))},{n:"Resistenza",v:cl(rB+3),c:tc(cl(rB+3))},{n:"Leadership",v:cl(rB-4),c:tc(cl(rB-4))}];
-  }else{
-    attrs=[{n:"Finalizzazione",v:cl(goalV||rB),c:tc(cl(goalV||rB))},{n:"Velocita",v:cl(rB+1),c:tc(cl(rB+1))},{n:"Dribbling",v:cl(dribV||rB-2),c:tc(cl(dribV||rB-2))},{n:"Pressing",v:cl(tackV||rB-6),c:tc(cl(tackV||rB-6))},{n:"Creativita",v:cl(assistV||rB-3),c:tc(cl(assistV||rB-3))}];
-  }
-  var verdict=apps+" presenze"+(gl.total?", "+(gl.total)+" gol":"")+((gl.assists||0)?", "+(gl.assists)+" assist":"")+
-    (g.rating?". Rating medio stagionale: <strong>"+parseFloat(g.rating).toFixed(1)+"</strong>.":".");
-  var sl=rating>=7.0?"BUONA STAGIONE":rating>=6.5?"STAGIONE OK":"DA RIVEDERE";
-  var lastName=((pl.lastname)||(pl.name||"").split(" ").slice(-1)[0]||"").toUpperCase()||pl.name.toUpperCase();
-  return{id:"api_"+pl.id,num:g.number||0,name:lastName,pos:translatePos(g.position),
-    nat:pl.nationality||"",age:pl.age||0,apps:apps,goals:gl.total||0,assists:gl.assists||0,
-    rating:g.rating?parseFloat(g.rating).toFixed(1):null,status:rating>=6.5?"ok":"dubbio",
-    statusLabel:sl,attrs:attrs,verdict:verdict,isAuto:true};
-}
-function loadScoutStats(){
-  try{
-    var c=JSON.parse(localStorage.getItem(SCOUT_STATS_KEY)||"null");
-    if(c&&(Date.now()-c.ts)<SCOUT_STATS_TTL){applyScoutStats(c.data);setScoutLiveTag(new Date(c.ts));return;}
-  }catch(e){}
-  fetch("/api/players?team=496&season=2025&page=1")
-    .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.text();})
-    .then(function(text){
-      console.log("[Scout API] raw (primi 300 chars):",text.substring(0,300));
-      var d;try{d=JSON.parse(text);}catch(e){console.error("[Scout API] non e' JSON valido - probabilmente la Pages Function non e' deployata");return;}
-      console.log("[Scout API] parsed:",d);
-      if(!d.response||!d.response.length){console.warn("[Scout API] nessun giocatore. errors:",d.errors,d.message);return;}
-      var all=d.response,total=(d.paging&&d.paging.total)||1;
-      if(total>1){
-        fetch("/api/players?team=496&season=2025&page=2")
-          .then(function(r){return r.json();})
-          .then(function(d2){finalizeScoutStats(all.concat(d2.response||[]));})
-          .catch(function(){finalizeScoutStats(all);});
-      }else{finalizeScoutStats(all);}
-    })
-    .catch(function(e){console.warn("Scout stats non disponibili:",e);});
-}
-function finalizeScoutStats(players){
-  applyScoutStats(players);
-  try{localStorage.setItem(SCOUT_STATS_KEY,JSON.stringify({ts:Date.now(),data:players}));}catch(e){}
-  setScoutLiveTag(new Date());
-}
-function applyScoutStats(players){
-  // Rimuovi auto-generati precedenti, tieni solo i 5 editoriali
-  scouts=scouts.filter(function(s){return!s.isAuto;});
-  players.forEach(function(item){
-    if(!item.player||!item.statistics)return;
-    var fullName=(item.player.name||"").toLowerCase().replace(/[^a-z ]/g,"");
-    var stat=null;
-    item.statistics.forEach(function(st){if(st.league&&st.league.id===135)stat=st;});
-    if(!stat&&item.statistics.length)stat=item.statistics[0];
-    if(!stat)return;
-    var apps=(stat.games&&stat.games.appearences)||0;
-    // Aggiorna stats dei giocatori editoriali
-    var matched=false;
-    scouts.forEach(function(s){
-      var m=fullName.split(" ").some(function(w){
-        return w.length>2&&(w===s.id||w.indexOf(s.id)!==-1||s.id.indexOf(w)!==-1);
-      });
-      if(m){matched=true;
-        if(stat.games&&stat.games.appearences!=null)s.apps=stat.games.appearences;
-        if(stat.goals&&stat.goals.total!=null)s.goals=stat.goals.total;
-        if(stat.goals&&stat.goals.assists!=null)s.assists=stat.goals.assists;
-        if(stat.games&&stat.games.rating)s.rating=parseFloat(stat.games.rating).toFixed(1);
-      }
-    });
-    // Genera profilo automatico per tutti gli altri (min 3 presenze)
-    if(!matched&&apps>=3){
-      var auto=buildAutoScout(item,stat);
-      if(auto)scouts.push(auto);
-    }
-  });
-  // Ordina: editoriali prima, poi per presenze desc
-  var ed=scouts.filter(function(s){return!s.isAuto;});
-  var au=scouts.filter(function(s){return s.isAuto;}).sort(function(a,b){return(b.apps||0)-(a.apps||0);});
-  scouts=ed.concat(au);
-  // Ricostruisce il selettore
-  var sel=document.getElementById("scoutSelector");
-  if(!sel)return;
-  var curId=null;var ab=document.querySelector(".scout-btn.active");
-  if(ab)curId=ab.getAttribute("data-id");
-  sel.innerHTML="";
-  scouts.forEach(function(p){
-    var btn=document.createElement("button");
-    btn.className="scout-btn "+(p.id===curId?"active":"off");
-    btn.setAttribute("data-id",p.id);
-    btn.textContent=(p.num?"#"+p.num+" ":"")+p.name;
-    btn.onclick=function(){renderScout(p.id);};
-    sel.appendChild(btn);
-  });
-  if(curId)renderScout(curId);
-  else if(scouts.length)renderScout(scouts[0].id);
-}
-function setScoutLiveTag(date){
-  var el=document.getElementById("scoutLiveTag");
-  if(!el)return;
-  var d=date.getDate().toString().padStart(2,"0");
-  var m=(date.getMonth()+1).toString().padStart(2,"0");
-  el.textContent="⚡ Stats Serie A aggiornate al "+d+"/"+m+"/"+date.getFullYear();
-}
-
 var origShowSection = showSection;
 showSection = function(id, btn) {
   origShowSection(id, btn);
   if (id === "news") loadAndRenderNews();
   if (id === "mercato") loadMercatoNews();
-  if (id === "scout") loadScoutStats();
 };
 var origShowSec = showSec;
 showSec = function(id, btn) {
   origShowSec(id, btn);
   if (id === "news") loadAndRenderNews();
   if (id === "mercato") loadMercatoNews();
-  if (id === "scout") loadScoutStats();
 };
+loadHomeDashboard();
+
+// PWA — registra service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js').catch(function(){});
+  });
+}
 
 </script>
 </body>

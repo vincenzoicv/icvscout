@@ -687,6 +687,20 @@ function requireAdmin(request, env) {
 }
 
 async function readBody(request) {
+  const contentType = request.headers.get("Content-Type") || "";
+  if (contentType.includes("multipart/form-data")) {
+    const form = await request.formData();
+    const body = {};
+    for (const [key, value] of form.entries()) {
+      if (key === "image") {
+        body.image_file = value;
+        body.filename = value && value.name;
+      } else {
+        body[key] = value;
+      }
+    }
+    return body;
+  }
   try { return await request.json(); } catch { return {}; }
 }
 
@@ -815,6 +829,8 @@ function publicGraphicsRows(rows) {
 }
 
 async function uploadGraphicImage(env, body) {
+  if (body.image_file) return uploadGraphicFile(env, body.image_file, body.filename || body.image_file.name);
+
   const dataUrl = String(body.image_data || "");
   const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([a-zA-Z0-9+/=\s]+)$/);
   if (!match) throw new Error("Immagine non valida");
@@ -841,6 +857,35 @@ async function uploadGraphicImage(env, body) {
       "x-upsert": "true",
     },
     body: bytes,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error("Upload Supabase " + response.status + ": " + text);
+  }
+
+  return base + "/storage/v1/object/public/" + GRAPHICS_BUCKET + "/" + encodeURIComponent(objectName);
+}
+
+async function uploadGraphicFile(env, file, filename) {
+  const contentType = cleanText(file.type || "image/jpeg").toLowerCase();
+  if (!contentType.startsWith("image/")) throw new Error("File immagine richiesto");
+  if (file.size > MAX_GRAPHIC_UPLOAD_BYTES) throw new Error("Immagine troppo pesante");
+
+  await ensureStorageBucket(env, GRAPHICS_BUCKET);
+
+  const objectName = Date.now().toString(36) + "-" + safeStorageName(filename || file.name || "grafica", contentType);
+  const base = env.SUPABASE_URL.replace(/\/$/, "");
+  const key = env.SUPABASE_SERVICE_ROLE_KEY;
+  const response = await fetch(base + "/storage/v1/object/" + GRAPHICS_BUCKET + "/" + encodeURIComponent(objectName), {
+    method: "POST",
+    headers: {
+      "apikey": key,
+      "Authorization": "Bearer " + key,
+      "Content-Type": contentType,
+      "x-upsert": "true",
+    },
+    body: await file.arrayBuffer(),
   });
 
   if (!response.ok) {

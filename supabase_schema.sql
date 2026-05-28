@@ -1,6 +1,22 @@
 -- ICV Scout automation schema
 -- Esegui questo SQL nel pannello Supabase prima di usare il nuovo admin.
 
+create table if not exists public.news (
+  id bigserial primary key,
+  title text not null,
+  body text not null,
+  category text not null default 'juventus',
+  urgency text not null default 'normal',
+  source text,
+  source_url text,
+  visible boolean not null default true,
+  auto_fetched boolean not null default false,
+  reliability text not null default 'trusted',
+  editorial_status text not null default 'Confermato',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 alter table if exists public.news
   add column if not exists source_url text,
   add column if not exists reliability text default 'trusted',

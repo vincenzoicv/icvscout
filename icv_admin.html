@@ -289,16 +289,15 @@ function addGraphic(){
   var file = input && input.files && input.files[0];
   if(!file) return showToast("Scegli un'immagine");
   if(!/^image\//.test(file.type || "")) return showToast("File immagine richiesto");
-  if(file.size > 5 * 1024 * 1024) return showToast("Immagine troppo pesante");
   showToast("Caricamento grafica");
-  fileToDataUrl(file).then(function(imageData){
+  prepareGraphicUpload(file).then(function(upload){
     return api("/api/admin/news", {method:"POST", body:{
       type:"graphic_upload",
       title:val("graphicTitle") || "Grafica ICV",
       link_url:val("graphicLinkUrl"),
-      filename:file.name,
-      content_type:file.type,
-      image_data:imageData
+      filename:upload.filename,
+      content_type:upload.contentType,
+      image_data:upload.imageData
     }});
   }).then(function(){
     ["graphicTitle","graphicLinkUrl"].forEach(function(id){ document.getElementById(id).value = ""; });
@@ -426,6 +425,37 @@ function renderGraphics(){
 }
 function val(id){ return document.getElementById(id).value.trim(); }
 function setVal(id,value){ var el=document.getElementById(id); if(el) el.value=value == null ? "" : value; }
+function prepareGraphicUpload(file){
+  return compressImage(file).catch(function(){
+    return fileToDataUrl(file).then(function(imageData){
+      return { imageData:imageData, filename:file.name || "grafica", contentType:file.type || "image/jpeg" };
+    });
+  }).then(function(upload){
+    if(upload.imageData.length > 7 * 1024 * 1024) throw new Error("Immagine troppo pesante: prova a ridurla o salvarla in JPG");
+    return upload;
+  });
+}
+function compressImage(file){
+  return new Promise(function(resolve,reject){
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function(){
+      URL.revokeObjectURL(url);
+      var maxSide = 1800;
+      var ratio = Math.min(1, maxSide / Math.max(img.width, img.height));
+      var canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(img.width * ratio));
+      canvas.height = Math.max(1, Math.round(img.height * ratio));
+      var ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      var imageData = canvas.toDataURL("image/jpeg", 0.86);
+      var name = (file.name || "grafica").replace(/\.[^.]+$/, "") + ".jpg";
+      resolve({ imageData:imageData, filename:name, contentType:"image/jpeg" });
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("Impossibile ottimizzare l'immagine")); };
+    img.src = url;
+  });
+}
 function fileToDataUrl(file){
   return new Promise(function(resolve,reject){
     var reader = new FileReader();

@@ -58,7 +58,7 @@ const DEFAULT_RADAR = {
 
 const DEFAULT_GRAPHICS = [];
 const GRAPHICS_BUCKET = "graphics";
-const MAX_GRAPHIC_UPLOAD_BYTES = 5 * 1024 * 1024;
+const MAX_GRAPHIC_UPLOAD_BYTES = 8 * 1024 * 1024;
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -303,7 +303,12 @@ async function adminNews(request, env) {
     }
 
     if (body.type === "graphic_upload") {
-      const imageUrl = await uploadGraphicImage(env, body);
+      let imageUrl = "";
+      try {
+        imageUrl = await uploadGraphicImage(env, body);
+      } catch (err) {
+        return json({ error: err.message || "Errore caricamento grafica" }, 400);
+      }
       const current = await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS);
       const graphics = normalizeGraphics([
         {
@@ -871,8 +876,6 @@ async function ensureStorageBucket(env, bucket) {
       id: bucket,
       name: bucket,
       public: true,
-      file_size_limit: MAX_GRAPHIC_UPLOAD_BYTES,
-      allowed_mime_types: ["image/png", "image/jpeg", "image/webp", "image/gif"],
     }),
   });
 

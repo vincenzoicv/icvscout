@@ -57,6 +57,8 @@ const DEFAULT_RADAR = {
 };
 
 const DEFAULT_GRAPHICS = [];
+const GRAPHICS_BUCKET = "graphics";
+const MAX_GRAPHIC_UPLOAD_BYTES = 5 * 1024 * 1024;
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -298,6 +300,24 @@ async function adminNews(request, env) {
       const radar = normalizeRadar(body.radar);
       await setSiteSetting(env, "radar_home", radar);
       return json({ radar });
+    }
+
+    if (body.type === "graphic_upload") {
+      const imageUrl = await uploadGraphicImage(env, body);
+      const current = await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS);
+      const graphics = normalizeGraphics([
+        {
+          id: "g_" + Date.now().toString(36),
+          title: body.title,
+          image_url: imageUrl,
+          link_url: body.link_url,
+          visible: body.visible !== false,
+          created_at: new Date().toISOString(),
+        },
+        ...(Array.isArray(current) ? current : []),
+      ]);
+      await setSiteSetting(env, "graphics_gallery", graphics);
+      return json({ graphic: graphics[0], graphics });
     }
 
     if (body.type === "graphic") {
@@ -787,6 +807,102 @@ function publicGraphicsRows(rows) {
   return normalizeGraphics(rows)
     .filter(item => item.visible !== false && item.image_url)
     .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+}
+
+async function uploadGraphicImage(env, body) {
+  const dataUrl = String(body.image_data || "");
+  const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([a-zA-Z0-9+/=\s]+)$/);
+  if (!match) throw new Error("Immagine non valida");
+
+  const contentType = cleanText(body.content_type || match[1]).toLowerCase();
+  if (!contentType.startsWith("image/")) throw new Error("File immagine richiesto");
+
+  const base64 = match[2].replace(/\s/g, "");
+  const byteLength = Math.floor(base64.length * 3 / 4);
+  if (byteLength > MAX_GRAPHIC_UPLOAD_BYTES) throw new Error("Immagine troppo pesante");
+
+  await ensureStorageBucket(env, GRAPHICS_BUCKET);
+
+  const bytes = decodeBase64(base64);
+  const objectName = Date.now().toString(36) + "-" + safeStorageName(body.filename || "grafica", contentType);
+  const base = env.SUPABASE_URL.replace(/\/$/, "");
+  const key = env.SUPABASE_SERVICE_ROLE_KEY;
+  const response = await fetch(base + "/storage/v1/object/" + GRAPHICS_BUCKET + "/" + encodeURIComponent(objectName), {
+    method: "POST",
+    headers: {
+      "apikey": key,
+      "Authorization": "Bearer " + key,
+      "Content-Type": contentType,
+      "x-upsert": "true",
+    },
+    body: bytes,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error("Upload Supabase " + response.status + ": " + text);
+  }
+
+  return base + "/storage/v1/object/public/" + GRAPHICS_BUCKET + "/" + encodeURIComponent(objectName);
+}
+
+async function ensureStorageBucket(env, bucket) {
+  const base = env.SUPABASE_URL;
+  const key = env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!base || !key) throw new Error("Configura SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY nelle variabili ambiente");
+  const root = base.replace(/\/$/, "");
+  const headers = {
+    "Content-Type": "application/json",
+    "apikey": key,
+    "Authorization": "Bearer " + key,
+  };
+
+  const existing = await fetch(root + "/storage/v1/bucket/" + encodeURIComponent(bucket), { headers });
+  if (existing.ok) return;
+  if (existing.status !== 404) {
+    const text = await existing.text();
+    throw new Error("Storage Supabase " + existing.status + ": " + text);
+  }
+
+  const created = await fetch(root + "/storage/v1/bucket", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      id: bucket,
+      name: bucket,
+      public: true,
+      file_size_limit: MAX_GRAPHIC_UPLOAD_BYTES,
+      allowed_mime_types: ["image/png", "image/jpeg", "image/webp", "image/gif"],
+    }),
+  });
+
+  if (!created.ok && created.status !== 409) {
+    const text = await created.text();
+    throw new Error("Creazione bucket Supabase " + created.status + ": " + text);
+  }
+}
+
+function decodeBase64(base64) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+function safeStorageName(filename, contentType) {
+  const clean = cleanText(filename || "grafica").toLowerCase().replace(/[^a-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
+  const extension = extensionForImage(contentType, clean);
+  const base = clean.replace(/\.(png|jpe?g|webp|gif)$/i, "").slice(0, 70) || "grafica";
+  return base + extension;
+}
+
+function extensionForImage(contentType, filename) {
+  const existing = String(filename || "").match(/\.(png|jpe?g|webp|gif)$/i);
+  if (existing) return existing[0].toLowerCase().replace(".jpeg", ".jpg");
+  if (contentType === "image/png") return ".png";
+  if (contentType === "image/webp") return ".webp";
+  if (contentType === "image/gif") return ".gif";
+  return ".jpg";
 }
 
 function normalizeGraphics(input) {

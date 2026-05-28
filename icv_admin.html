@@ -166,7 +166,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <h2>Grafiche</h2>
           <div class="form" style="margin-bottom:12px">
             <div><label>Titolo</label><input id="graphicTitle" placeholder="Es. Pagellone finale"></div>
-            <div><label>URL immagine</label><input id="graphicImageUrl" placeholder="https://..."></div>
+            <div><label>Immagine</label><input id="graphicFile" type="file" accept="image/*"></div>
             <div><label>Link opzionale</label><input id="graphicLinkUrl" placeholder="Instagram, post o pagina collegata"></div>
             <button class="ghost" onclick="addGraphic()">Aggiungi Grafica</button>
           </div>
@@ -285,14 +285,24 @@ function addInstagramPick(){
   }).catch(function(err){ showToast(err.message); });
 }
 function addGraphic(){
-  if(!val("graphicImageUrl")) return showToast("URL immagine richiesto");
-  api("/api/admin/news", {method:"POST", body:{
-    type:"graphic",
-    title:val("graphicTitle") || "Grafica ICV",
-    image_url:val("graphicImageUrl"),
-    link_url:val("graphicLinkUrl")
-  }}).then(function(){
-    ["graphicTitle","graphicImageUrl","graphicLinkUrl"].forEach(function(id){ document.getElementById(id).value = ""; });
+  var input = document.getElementById("graphicFile");
+  var file = input && input.files && input.files[0];
+  if(!file) return showToast("Scegli un'immagine");
+  if(!/^image\//.test(file.type || "")) return showToast("File immagine richiesto");
+  if(file.size > 5 * 1024 * 1024) return showToast("Immagine troppo pesante");
+  showToast("Caricamento grafica");
+  fileToDataUrl(file).then(function(imageData){
+    return api("/api/admin/news", {method:"POST", body:{
+      type:"graphic_upload",
+      title:val("graphicTitle") || "Grafica ICV",
+      link_url:val("graphicLinkUrl"),
+      filename:file.name,
+      content_type:file.type,
+      image_data:imageData
+    }});
+  }).then(function(){
+    ["graphicTitle","graphicLinkUrl"].forEach(function(id){ document.getElementById(id).value = ""; });
+    if(input) input.value = "";
     showToast("Grafica aggiunta");
     load();
   }).catch(function(err){ showToast(err.message); });
@@ -416,6 +426,14 @@ function renderGraphics(){
 }
 function val(id){ return document.getElementById(id).value.trim(); }
 function setVal(id,value){ var el=document.getElementById(id); if(el) el.value=value == null ? "" : value; }
+function fileToDataUrl(file){
+  return new Promise(function(resolve,reject){
+    var reader = new FileReader();
+    reader.onload = function(){ resolve(reader.result); };
+    reader.onerror = function(){ reject(new Error("Impossibile leggere l'immagine")); };
+    reader.readAsDataURL(file);
+  });
+}
 function clearManual(){ ["manualTitle","manualBody","manualSource"].forEach(function(id){ document.getElementById(id).value = ""; }); }
 function esc(value){ return String(value == null ? "" : value).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
 function escAttr(value){ return esc(value).replace(/"/g,"&quot;"); }

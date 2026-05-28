@@ -164,6 +164,23 @@ async function publicNews(env, url) {
 async function adminNews(request, env) {
   requireAdmin(request, env);
 
+  if (!hasSupabase(env)) {
+    return json({
+      drafts: [],
+      news: [],
+      sources: DEFAULT_SOURCES,
+      social: [],
+      market: [],
+      matches: [],
+      runs: [],
+      radar: DEFAULT_RADAR,
+      setup: {
+        supabase: false,
+        message: "Configura SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY per salvare dati e automazioni.",
+      },
+    });
+  }
+
   if (request.method === "GET") {
     const [drafts, news, sources, social, market, matches, runs, radar] = await Promise.all([
       sb(env, "/news_drafts?order=created_at.desc&limit=80"),

@@ -56,6 +56,8 @@ const DEFAULT_RADAR = {
   ],
 };
 
+const DEFAULT_GRAPHICS = [];
+
 export async function onRequest(context) {
   const { request, env } = context;
   if (request.method === "OPTIONS") return new Response(null, { headers: JSON_HEADERS });
@@ -82,6 +84,7 @@ async function publicHome(env) {
       market: [],
       matches: [],
       social: [],
+      graphics: DEFAULT_GRAPHICS,
       radar: DEFAULT_RADAR,
       auto: {
         enabled: false,
@@ -93,7 +96,7 @@ async function publicHome(env) {
   }
 
   await runHomeAutopilot(env);
-  const [news, market, marketNews, matches, social, auto, radar] = await Promise.all([
+  const [news, market, marketNews, matches, social, auto, radar, graphics] = await Promise.all([
     sb(env, "/news?visible=eq.true&order=created_at.desc&limit=6"),
     sb(env, "/market_items?order=updated_at.desc&limit=12"),
     sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=6"),
@@ -101,12 +104,14 @@ async function publicHome(env) {
     sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&order=created_at.desc&limit=12"),
     latestAutomationRun(env, "home_autopilot"),
     getSiteSetting(env, "radar_home", DEFAULT_RADAR),
+    getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS),
   ]);
   return json({
     news,
     market: market && market.length ? market : publicMarketFromNews(marketNews),
     matches,
     social: publicSocialRows(social),
+    graphics: publicGraphicsRows(graphics),
     radar,
     auto: { enabled: true, interval_hours: Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1), last_run_at: auto && auto.created_at },
   });
@@ -184,6 +189,7 @@ async function adminNews(request, env) {
       news: [],
       sources: DEFAULT_SOURCES,
       social: [],
+      graphics: DEFAULT_GRAPHICS,
       market: [],
       matches: [],
       runs: [],
@@ -196,7 +202,7 @@ async function adminNews(request, env) {
   }
 
   if (request.method === "GET") {
-    const [drafts, news, sources, social, market, matches, runs, radar] = await Promise.all([
+    const [drafts, news, sources, social, market, matches, runs, radar, graphics] = await Promise.all([
       sb(env, "/news_drafts?order=created_at.desc&limit=80"),
       sb(env, "/news?order=created_at.desc&limit=80"),
       sb(env, "/sources?order=reliability.asc,name.asc"),
@@ -205,8 +211,9 @@ async function adminNews(request, env) {
       sb(env, "/match_reports?order=match_date.desc&limit=20"),
       sb(env, "/automation_runs?order=created_at.desc&limit=12"),
       getSiteSetting(env, "radar_home", DEFAULT_RADAR),
+      getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS),
     ]);
-    return json({ drafts, news, sources, social, market, matches, runs, radar });
+    return json({ drafts, news, sources, social, market, matches, runs, radar, graphics });
   }
 
   const body = await readBody(request);
@@ -292,6 +299,24 @@ async function adminNews(request, env) {
       await setSiteSetting(env, "radar_home", radar);
       return json({ radar });
     }
+
+    if (body.type === "graphic") {
+      if (!cleanText(body.image_url || "")) return json({ error: "URL immagine richiesto" }, 400);
+      const current = await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS);
+      const graphics = normalizeGraphics([
+        {
+          id: "g_" + Date.now().toString(36),
+          title: body.title,
+          image_url: body.image_url,
+          link_url: body.link_url,
+          visible: body.visible !== false,
+          created_at: new Date().toISOString(),
+        },
+        ...(Array.isArray(current) ? current : []),
+      ]);
+      await setSiteSetting(env, "graphics_gallery", graphics);
+      return json({ graphic: graphics[0], graphics });
+    }
   }
 
   if (request.method === "PATCH") {
@@ -328,6 +353,20 @@ async function adminNews(request, env) {
         prefer: "return=representation",
       });
       return json({ social: updated[0] });
+    }
+
+    if (body.type === "toggle_graphic") {
+      const current = normalizeGraphics(await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS));
+      const graphics = current.map(item => item.id === body.id ? { ...item, visible: body.visible !== false } : item);
+      await setSiteSetting(env, "graphics_gallery", graphics);
+      return json({ graphics });
+    }
+
+    if (body.type === "delete_graphic") {
+      const current = normalizeGraphics(await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS));
+      const graphics = current.filter(item => item.id !== body.id);
+      await setSiteSetting(env, "graphics_gallery", graphics);
+      return json({ graphics });
     }
   }
 
@@ -742,6 +781,31 @@ function publicSocialRows(rows) {
       return true;
     })
     .slice(0, 3);
+}
+
+function publicGraphicsRows(rows) {
+  return normalizeGraphics(rows)
+    .filter(item => item.visible !== false && item.image_url)
+    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+}
+
+function normalizeGraphics(input) {
+  const rows = Array.isArray(input) ? input : [];
+  return rows
+    .map((item, index) => {
+      const imageUrl = cleanText(item && item.image_url || "").slice(0, 700);
+      const title = cleanText(item && item.title || "Grafica ICV").slice(0, 90);
+      const linkUrl = cleanText(item && item.link_url || "").slice(0, 700);
+      return {
+        id: cleanText(item && item.id || "g_" + index).slice(0, 80),
+        title,
+        image_url: imageUrl,
+        link_url: linkUrl,
+        visible: item && item.visible === false ? false : true,
+        created_at: item && item.created_at || new Date().toISOString(),
+      };
+    })
+    .filter(item => item.image_url);
 }
 
 function normalizeRadar(input) {

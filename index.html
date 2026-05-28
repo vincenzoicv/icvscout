@@ -222,8 +222,9 @@ body.light .mb-info span{color:rgba(0,0,0,0.42);}
 body.light .mb-info strong{color:rgba(0,0,0,0.80);}
 body.light .ctx-box{background:rgba(196,150,42,0.05);color:rgba(0,0,0,0.55);}
 body.light .field-card,body.light .lineup-card,body.light .stat-card,body.light .chart-box,body.light .result-item,body.light .market-card{background:#e8e5dc;border-color:rgba(196,150,42,0.18);}
+body.light .graphic-card,body.light .graphic-empty{background:#e8e5dc;border-color:rgba(196,150,42,0.18);}
 body.light .offseason-main,body.light .offseason-side{background:#e8e5dc;border-color:rgba(196,150,42,0.18);}
-body.light .pr-name,body.light .res-name,body.light .res-score,body.light .t-name,body.light .sp-name,body.light .sp-mv,body.light .offseason-title,body.light .radar-card strong,body.light .watch-text strong{color:#111;}
+body.light .pr-name,body.light .res-name,body.light .res-score,body.light .t-name,body.light .sp-name,body.light .sp-mv,body.light .offseason-title,body.light .radar-card strong,body.light .watch-text strong,body.light .graphic-card h3{color:#111;}
 body.light .pr-pos,body.light .res-comp,body.light .res-date,body.light .t-from,body.light .stat-lbl,body.light .stat-sub{color:rgba(0,0,0,0.42);}
 body.light .offseason-copy,body.light .radar-card span,body.light .watch-text span{color:rgba(0,0,0,0.55);}
 body.light .player-row,body.light .transfer-item,body.light .sp-meta-row{border-bottom-color:rgba(0,0,0,0.06);}
@@ -342,9 +343,16 @@ nav{display:none;}.mob-nav{display:flex;}
 .news-card.featured .news-card-title{font-size:24px;}
 .news-card.featured .news-card-body{-webkit-line-clamp:4;}
 .news-empty-state{font-family:'Barlow Condensed';font-size:15px;color:var(--t3);letter-spacing:1px;text-align:center;padding:40px 20px;background:var(--d2);border:1px solid var(--bdr2);border-radius:10px;grid-column:1/-1;}
+.graphics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+.graphic-card{display:block;background:var(--d2);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;transition:all .25s ease;}
+.graphic-card:hover{border-color:rgba(196,150,42,.38);transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.28);}
+.graphic-card img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:#101010;}
+.graphic-card h3{font-family:'Barlow Condensed';font-size:20px;font-weight:800;line-height:1.1;color:var(--white);padding:12px 12px 14px;}
+.graphic-empty{font-family:'Barlow Condensed';font-size:15px;color:var(--t3);letter-spacing:1px;text-align:center;padding:40px 20px;background:var(--d2);border:1px solid var(--bdr2);border-radius:10px;grid-column:1/-1;}
 .breaking-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#f87171;margin-right:6px;animation:pulse 1.5s ease infinite;}
 @media(max-width:768px){
   .news-grid{grid-template-columns:1fr;}
+  .graphics-grid{grid-template-columns:1fr;}
   .news-card.featured{grid-template-columns:1fr;}
   .news-section{padding:24px 12px 40px;}
 }
@@ -363,6 +371,7 @@ nav{display:none;}.mob-nav{display:flex;}
     <button class="active" onclick="showSection('home',this)">Home</button>
     <button onclick="showSection('statistiche',this)">Statistiche</button>
     <button onclick="showSection('mercato',this)">Mercato</button>
+    <button onclick="showSection('grafiche',this)">Grafiche</button>
     <button onclick="showSection('news',this)">News</button>
   </nav>
   <div class="hsocial">
@@ -408,7 +417,7 @@ nav{display:none;}.mob-nav{display:flex;}
       <button onclick="showSection('news')">News</button>
       <button onclick="showSection('mercato')">Mercato</button>
       <button onclick="showSection('statistiche')">Stats</button>
-      <button onclick="showSection('home')">Home</button>
+      <button onclick="showSection('grafiche')">Grafiche</button>
     </div>
   </div>
   <div class="home-panel">
@@ -502,6 +511,12 @@ nav{display:none;}.mob-nav{display:flex;}
   <div class="sec-head" style="margin-top:28px;margin-bottom:14px;"><div class="sec-tag">Ultime dal Mercato</div></div>
   <div class="results-list" id="mercatoFeed"><div style="font-family:'Barlow Condensed';font-size:14px;color:var(--t3);letter-spacing:1px;padding:20px;text-align:center;background:var(--d2);border:1px solid var(--bdr2);border-radius:8px;">Caricamento...</div></div>
 </section>
+<section class="section" id="grafiche">
+  <div class="sec-head"><div class="sec-tag">Archivio ICV</div><div class="sec-title">GRAFICHE</div><div class="gold-bar"></div></div>
+  <div class="graphics-grid" id="graphicsGrid">
+    <div class="graphic-empty">Nessuna grafica pubblicata.</div>
+  </div>
+</section>
 <!-- NEWS -->
 <section class="section" id="news">
   <div class="sec-head"><div class="sec-tag">Ultime Notizie</div><div class="sec-title">NEWS</div><div class="gold-bar"></div></div>
@@ -522,6 +537,7 @@ nav{display:none;}.mob-nav{display:flex;}
   <button class="mob-btn active" onclick="showSec('home',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="12" y1="3" x2="12" y2="21"/></svg>Home</button>
   <button class="mob-btn" onclick="showSec('statistiche',this)"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Stats</button>
   <button class="mob-btn" onclick="showSec('mercato',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Mercato</button>
+  <button class="mob-btn" onclick="showSec('grafiche',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Grafiche</button>
   <button class="mob-btn" onclick="showSec('news',this)"><svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><line x1="11" y1="6" x2="17" y2="6"/><line x1="11" y1="10" x2="17" y2="10"/><line x1="11" y1="14" x2="13" y2="14"/></svg>News</button>
   <button class="mob-btn" onclick="toggleTheme()"><svg viewBox="0 0 24 24" id="mobIcon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Tema</button>
 </nav>
@@ -961,6 +977,7 @@ function loadHomeDashboard() {
     var market = Array.isArray(data.market) ? data.market : [];
     var matches = Array.isArray(data.matches) ? data.matches : [];
     var social = Array.isArray(data.social) ? data.social : [];
+    var graphics = Array.isArray(data.graphics) ? data.graphics : [];
     renderAutoStatus(data.auto);
     renderRadar(data.radar);
     if (news[0]) {
@@ -982,11 +999,13 @@ function loadHomeDashboard() {
     renderHomeLinks("homeInstagramList", uniqueSocialRows(social), function(s) {
       return {title:s.hook || "Post Instagram", meta:(s.media_type || s.platform || "instagram") + (s.status ? " · " + s.status : ""), url:s.post_url || "https://www.instagram.com/ilcalciodivince_/"};
     });
+    renderGraphics(graphics);
   })
   .catch(function() {
     renderHomeList("homeNewsList", [], null);
     renderHomeList("homeMarketList", [], null);
     renderHomeLinks("homeInstagramList", [], null);
+    renderGraphics([]);
   });
 }
 
@@ -1063,6 +1082,24 @@ function renderHomeLinks(id, rows, map) {
   el.innerHTML = rows.slice(0, 3).map(function(row) {
     var item = map(row);
     return "<div class='home-mini'><a href='" + icvEsc(item.url) + "' target='_blank' rel='noopener'><strong>" + icvEsc(item.title) + "</strong><span>" + icvEsc(item.meta) + "</span></a></div>";
+  }).join("");
+}
+
+function renderGraphics(rows) {
+  var grid = document.getElementById("graphicsGrid");
+  if (!grid) return;
+  rows = Array.isArray(rows) ? rows.filter(function(row){ return row && row.visible !== false && row.image_url; }) : [];
+  if (!rows.length) {
+    grid.innerHTML = "<div class='graphic-empty'>Nessuna grafica pubblicata.</div>";
+    return;
+  }
+  grid.innerHTML = rows.map(function(g) {
+    var tag = g.link_url ? "a" : "div";
+    var attrs = g.link_url ? " href='" + icvEsc(g.link_url) + "' target='_blank' rel='noopener'" : "";
+    return "<" + tag + " class='graphic-card'" + attrs + ">" +
+      "<img src='" + icvEsc(g.image_url) + "' alt='" + icvEsc(g.title || "Grafica ICV") + "' loading='lazy'>" +
+      "<h3>" + icvEsc(g.title || "Grafica ICV") + "</h3>" +
+      "</" + tag + ">";
   }).join("");
 }
 

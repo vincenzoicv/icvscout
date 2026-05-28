@@ -161,6 +161,17 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           </div>
           <div id="socialList"></div>
         </div>
+
+        <div class="card">
+          <h2>Grafiche</h2>
+          <div class="form" style="margin-bottom:12px">
+            <div><label>Titolo</label><input id="graphicTitle" placeholder="Es. Pagellone finale"></div>
+            <div><label>URL immagine</label><input id="graphicImageUrl" placeholder="https://..."></div>
+            <div><label>Link opzionale</label><input id="graphicLinkUrl" placeholder="Instagram, post o pagina collegata"></div>
+            <button class="ghost" onclick="addGraphic()">Aggiungi Grafica</button>
+          </div>
+          <div id="graphicsList"></div>
+        </div>
       </aside>
     </div>
   </section>
@@ -168,7 +179,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 <div class="toast" id="toast"></div>
 
 <script>
-var state = { drafts: [], news: [], sources: [], social: [], market: [], matches: [], runs: [], radar: null, filter: "all", radarFilled: false };
+var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], radar: null, filter: "all", radarFilled: false };
 
 function token(){ return sessionStorage.getItem("icv_admin_token") || ""; }
 function api(path, options){
@@ -197,6 +208,7 @@ function load(){
     state.news = data.news || [];
     state.sources = data.sources || [];
     state.social = data.social || [];
+    state.graphics = data.graphics || [];
     state.market = data.market || [];
     state.matches = data.matches || [];
     state.runs = data.runs || [];
@@ -272,6 +284,30 @@ function addInstagramPick(){
     load();
   }).catch(function(err){ showToast(err.message); });
 }
+function addGraphic(){
+  if(!val("graphicImageUrl")) return showToast("URL immagine richiesto");
+  api("/api/admin/news", {method:"POST", body:{
+    type:"graphic",
+    title:val("graphicTitle") || "Grafica ICV",
+    image_url:val("graphicImageUrl"),
+    link_url:val("graphicLinkUrl")
+  }}).then(function(){
+    ["graphicTitle","graphicImageUrl","graphicLinkUrl"].forEach(function(id){ document.getElementById(id).value = ""; });
+    showToast("Grafica aggiunta");
+    load();
+  }).catch(function(err){ showToast(err.message); });
+}
+function toggleGraphic(id, visible){
+  api("/api/admin/news", {method:"PATCH", body:{type:"toggle_graphic", id:id, visible:!visible}})
+    .then(function(){ showToast(visible ? "Grafica nascosta" : "Grafica visibile"); load(); })
+    .catch(function(err){ showToast(err.message); });
+}
+function deleteGraphic(id){
+  if(!confirm("Eliminare questa grafica?")) return;
+  api("/api/admin/news", {method:"PATCH", body:{type:"delete_graphic", id:id}})
+    .then(function(){ showToast("Grafica eliminata"); load(); })
+    .catch(function(err){ showToast(err.message); });
+}
 function saveRadar(){
   var radar = {
     kicker: val("radarKickerInput"),
@@ -290,7 +326,7 @@ function render(){
   document.getElementById("stNews").textContent = state.news.filter(function(n){ return n.visible; }).length;
   document.getElementById("stMarket").textContent = state.market.length;
   document.getElementById("stSocial").textContent = state.social.length;
-  renderAutomationStatus(); renderDrafts(); renderNews(); renderSources(); renderMarket(); renderRadarForm(); renderMatches(); renderSocial();
+  renderAutomationStatus(); renderDrafts(); renderNews(); renderSources(); renderMarket(); renderRadarForm(); renderMatches(); renderSocial(); renderGraphics();
 }
 function renderAutomationStatus(){
   var box = document.getElementById("automationStatus");
@@ -367,6 +403,15 @@ function renderSocial(){
   list.innerHTML = state.social.slice(0,8).map(function(s){
     var url = s.post_url ? " · <a href='"+escAttr(s.post_url)+"' target='_blank' style='color:var(--gold-l)'>apri</a>" : "";
     return "<div class='item'><div class='item-head'><div><h3>"+esc(s.hook || s.platform)+"</h3></div><div class='meta'>"+(s.visible === false ? "nascosto" : "visibile")+"</div></div><p>"+esc(s.caption || "")+"</p><div class='meta'>"+esc(s.platform)+" · "+esc(s.media_type || "post")+" · "+esc(s.status || "draft")+url+"</div><div class='item-actions' style='margin-top:10px'><button class='ghost small' onclick='toggleSocial("+s.id+","+!!s.visible+")'>"+(s.visible === false ? "Mostra" : "Nascondi")+"</button></div></div>";
+  }).join("");
+}
+function renderGraphics(){
+  var list = document.getElementById("graphicsList");
+  if(!list) return;
+  if(!state.graphics.length){ list.innerHTML = "<div class='empty'>Aggiungi le grafiche che vuoi mostrare sul sito.</div>"; return; }
+  list.innerHTML = state.graphics.map(function(g){
+    var link = g.link_url ? " · <a href='"+escAttr(g.link_url)+"' target='_blank' style='color:var(--gold-l)'>apri link</a>" : "";
+    return "<div class='item'><div class='item-head'><div><h3>"+esc(g.title || "Grafica ICV")+"</h3></div><div class='meta'>"+(g.visible === false ? "nascosta" : "visibile")+"</div></div><div class='meta'>immagine"+link+"</div><div class='item-actions' style='margin-top:10px'><button class='ghost small' onclick='toggleGraphic(\""+escAttr(g.id)+"\","+(g.visible !== false)+")'>"+(g.visible === false ? "Mostra" : "Nascondi")+"</button><button class='danger small' onclick='deleteGraphic(\""+escAttr(g.id)+"\")'>Elimina</button></div></div>";
   }).join("");
 }
 function val(id){ return document.getElementById(id).value.trim(); }

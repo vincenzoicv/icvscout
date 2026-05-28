@@ -93,9 +93,10 @@ async function publicHome(env) {
   }
 
   await runHomeAutopilot(env);
-  const [news, market, matches, social, auto, radar] = await Promise.all([
+  const [news, market, marketNews, matches, social, auto, radar] = await Promise.all([
     sb(env, "/news?visible=eq.true&order=created_at.desc&limit=6"),
     sb(env, "/market_items?order=updated_at.desc&limit=12"),
+    sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=6"),
     sb(env, "/match_reports?order=match_date.desc&limit=3"),
     sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&order=created_at.desc&limit=12"),
     latestAutomationRun(env, "home_autopilot"),
@@ -103,12 +104,25 @@ async function publicHome(env) {
   ]);
   return json({
     news,
-    market,
+    market: market && market.length ? market : publicMarketFromNews(marketNews),
     matches,
     social: publicSocialRows(social),
     radar,
     auto: { enabled: true, interval_hours: Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1), last_run_at: auto && auto.created_at },
   });
+}
+
+function publicMarketFromNews(rows) {
+  return (rows || []).slice(0, 3).map(row => ({
+    player_name: extractPlayer(row.title || "") || "Mercato Juve",
+    status: row.editorial_status || statusFromReliability(row.reliability),
+    category: "calciomercato",
+    source_name: row.source || "ICV",
+    source_url: row.source_url,
+    reliability: row.reliability || "trusted",
+    note: row.title,
+    updated_at: row.created_at,
+  }));
 }
 
 async function runHomeAutopilot(env) {

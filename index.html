@@ -996,7 +996,9 @@ function loadHomeDashboard() {
       return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : "")};
     });
     renderHomeList("homeMarketList", market, function(m) {
-      return {title:m.player_name || m.note || "Mercato", meta:(m.status || "monitorato") + (m.source_name ? " · " + m.source_name : "")};
+      var title = m.note || m.player_name || "Mercato Juve";
+      var player = m.note && m.player_name ? " · " + m.player_name : "";
+      return {title:title, meta:(m.status || "monitorato") + (m.source_name ? " · " + m.source_name : "") + player};
     });
     renderHomeLinks("homeInstagramList", uniqueSocialRows(social), function(s) {
       return {title:s.hook || "Post Instagram", meta:(s.media_type || s.platform || "instagram") + (s.status ? " · " + s.status : ""), url:s.post_url || "https://www.instagram.com/ilcalciodivince_/"};

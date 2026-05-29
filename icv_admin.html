@@ -15,7 +15,8 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 .panel{display:none}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}.title h1{font-family:"Bebas Neue";font-size:42px;letter-spacing:3px}.title p{font-family:"Barlow Condensed";font-size:13px;letter-spacing:2px;color:var(--t3);text-transform:uppercase}.actions{display:flex;gap:8px;flex-wrap:wrap}
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}.stat{background:var(--d2);border:1px solid var(--bdr);border-radius:8px;padding:14px}.stat strong{font-family:"Bebas Neue";font-size:34px;color:var(--gold-l);line-height:1}.stat span{display:block;font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:2px;color:var(--t3);text-transform:uppercase;margin-top:3px}
 .status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}.status-card{background:rgba(21,21,21,.92);border:1px solid var(--bdr);border-radius:8px;padding:13px}.status-card strong{display:block;font-family:"Barlow Condensed";font-size:15px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase}.status-card span{display:block;color:var(--t3);font-size:13px;margin-top:4px;line-height:1.35}.status-ok strong{color:var(--green)}.status-warn strong{color:var(--orange)}.status-idle strong{color:var(--gold-l)}
-.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}.card{background:var(--d2);border:1px solid var(--bdr);border-radius:10px;padding:16px;margin-bottom:14px}.card h2{font-family:"Bebas Neue";font-size:28px;letter-spacing:2px;margin-bottom:12px}.form{display:grid;gap:10px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:2px;color:var(--gold-l);text-transform:uppercase}input,textarea,select{width:100%;background:var(--d3);border:1px solid var(--bdr2);border-radius:7px;color:var(--white);padding:11px 12px;font-family:Barlow,sans-serif;font-size:14px;outline:none}textarea{min-height:96px;resize:vertical;line-height:1.55}
+.admin-nav{position:sticky;top:58px;z-index:8;display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px;padding:10px 0;background:linear-gradient(180deg,rgba(6,6,6,.96),rgba(6,6,6,.82));backdrop-filter:blur(14px)}.admin-nav button{border-radius:7px;border:1px solid var(--bdr2);background:rgba(255,255,255,.035);color:var(--t3);font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:10px 12px;cursor:pointer}.admin-nav button.active{color:var(--gold-l);border-color:rgba(196,150,42,.42);background:rgba(196,150,42,.1)}
+.grid{display:block}.grid>div,.grid>aside{display:contents}.card{background:var(--d2);border:1px solid var(--bdr);border-radius:10px;padding:16px;margin-bottom:14px}.card h2{font-family:"Bebas Neue";font-size:28px;letter-spacing:2px;margin-bottom:12px}.admin-panel{display:none}.admin-panel.active{display:block}.form{display:grid;gap:10px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:2px;color:var(--gold-l);text-transform:uppercase}input,textarea,select{width:100%;background:var(--d3);border:1px solid var(--bdr2);border-radius:7px;color:var(--white);padding:11px 12px;font-family:Barlow,sans-serif;font-size:14px;outline:none}textarea{min-height:96px;resize:vertical;line-height:1.55}
 .tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.tab{background:transparent;border:1px solid var(--bdr2);color:var(--t3);font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:8px 10px;border-radius:5px;cursor:pointer}.tab.active{color:var(--gold-l);border-color:rgba(196,150,42,.4);background:rgba(196,150,42,.08)}
 .item{border:1px solid var(--bdr2);border-radius:8px;padding:13px;margin-bottom:10px;background:rgba(255,255,255,.025)}.item-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}.item h3{font-family:"Barlow Condensed";font-size:18px;line-height:1.2}.item p{color:var(--t2);font-size:14px;line-height:1.55;margin:8px 0}.meta{font-family:"Barlow Condensed";font-size:11px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase}.pill{display:inline-block;border-radius:3px;padding:3px 7px;font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-right:5px}.official{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25)}.trusted{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.25)}.rumor{background:rgba(245,158,11,.1);color:var(--orange);border:1px solid rgba(245,158,11,.25)}.aggregator{background:rgba(248,113,113,.08);color:var(--red);border:1px solid rgba(248,113,113,.22)}
 .item-actions{display:flex;gap:6px;flex-wrap:wrap}.small{padding:7px 9px;font-size:11px}.empty{padding:24px;text-align:center;color:var(--t3);font-family:"Barlow Condensed";letter-spacing:1px;border:1px dashed var(--bdr2);border-radius:8px}.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);opacity:0;z-index:50;background:rgba(196,150,42,.96);color:#050505;border-radius:7px;padding:11px 18px;font-family:"Barlow Condensed";font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -62,9 +63,19 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 
     <div class="status-grid" id="automationStatus"></div>
 
+    <nav class="admin-nav" id="adminNav">
+      <button class="active" data-tab="drafts" onclick="setAdminTab('drafts',this)">Da approvare</button>
+      <button data-tab="published" onclick="setAdminTab('published',this)">Pubblicate</button>
+      <button data-tab="market" onclick="setAdminTab('market',this)">Mercato</button>
+      <button data-tab="social" onclick="setAdminTab('social',this)">Social</button>
+      <button data-tab="graphics" onclick="setAdminTab('graphics',this)">Grafiche</button>
+      <button data-tab="sources" onclick="setAdminTab('sources',this)">Fonti</button>
+      <button data-tab="advanced" onclick="setAdminTab('advanced',this)">Avanzate</button>
+    </nav>
+
     <div class="grid">
       <div>
-        <div class="card">
+        <div class="card admin-panel active" data-panel="drafts">
           <h2>Bozze Automatiche</h2>
           <div class="tabs">
             <button class="tab active" onclick="setFilter('all',this)">Tutte</button>
@@ -75,14 +86,14 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <div id="draftList"></div>
         </div>
 
-        <div class="card">
+        <div class="card admin-panel" data-panel="published">
           <h2>News Pubblicate</h2>
           <div id="newsList"></div>
         </div>
       </div>
 
       <aside>
-        <div class="card">
+        <div class="card admin-panel" data-panel="published">
           <h2>Nuova News Manuale</h2>
           <div class="form">
             <div class="row">
@@ -96,7 +107,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           </div>
         </div>
 
-        <div class="card">
+        <div class="card admin-panel" data-panel="sources">
           <h2>Fonti</h2>
           <div id="sourceList"></div>
           <div class="form" style="margin-top:12px">
@@ -110,13 +121,14 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           </div>
         </div>
 
-        <div class="card">
+        <div class="card admin-panel" data-panel="market">
           <h2>Mercato</h2>
           <div id="marketList"></div>
         </div>
 
-        <div class="card">
-          <h2>Radar Home</h2>
+        <div class="card admin-panel" data-panel="advanced">
+          <h2>Home avanzata</h2>
+          <div class="meta" style="margin-bottom:12px">Da usare solo quando vuoi cambiare manualmente il blocco estate della home.</div>
           <div class="form">
             <div class="row">
               <div><label>Kicker</label><input id="radarKickerInput" placeholder="Centro di controllo"></div>
@@ -143,12 +155,12 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           </div>
         </div>
 
-        <div class="card">
+        <div class="card admin-panel" data-panel="advanced">
           <h2>Match Center</h2>
           <div id="matchList"></div>
         </div>
 
-        <div class="card">
+        <div class="card admin-panel" data-panel="social">
           <h2>Instagram Picks</h2>
           <div class="form" style="margin-bottom:12px">
             <div class="row">
@@ -162,7 +174,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <div id="socialList"></div>
         </div>
 
-        <div class="card">
+        <div class="card admin-panel" data-panel="graphics">
           <h2>Grafiche</h2>
           <div class="form" style="margin-bottom:12px">
             <div><label>Titolo</label><input id="graphicTitle" placeholder="Es. Pagellone finale"></div>
@@ -179,7 +191,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 <div class="toast" id="toast"></div>
 
 <script>
-var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], radar: null, filter: "all", radarFilled: false };
+var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], radar: null, filter: "all", radarFilled: false, adminTab: "drafts" };
 
 function token(){ return sessionStorage.getItem("icv_admin_token") || ""; }
 function api(path, options){
@@ -235,6 +247,15 @@ function setFilter(filter, btn){
   document.querySelectorAll(".tab").forEach(function(el){ el.classList.remove("active"); });
   btn.classList.add("active");
   renderDrafts();
+}
+function setAdminTab(tab, btn){
+  state.adminTab = tab;
+  document.querySelectorAll("#adminNav button").forEach(function(el){ el.classList.remove("active"); });
+  if(btn) btn.classList.add("active");
+  document.querySelectorAll(".admin-panel").forEach(function(el){
+    el.classList.toggle("active", el.getAttribute("data-panel") === tab);
+  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 function publishManual(){
   var title = val("manualTitle"), body = val("manualBody");

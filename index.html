@@ -183,10 +183,6 @@ main{padding-top:58px;position:relative;z-index:1;}
 .b-rum{background:rgba(196,150,42,0.10);color:var(--gold-l);border:1px solid rgba(196,150,42,0.20);}
 .b-tra{background:rgba(96,165,250,0.10);color:#60a5fa;border:1px solid rgba(96,165,250,0.20);}
 .b-out{background:rgba(248,113,113,0.10);color:#f87171;border:1px solid rgba(248,113,113,0.20);}
-.market-auto-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;}
-.market-count{font-family:"Bebas Neue";font-size:34px;color:rgba(196,150,42,.78);line-height:.9;}
-.market-empty{font-family:"Barlow Condensed";font-size:13px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;padding:18px;text-align:center;border:1px dashed var(--bdr2);border-radius:8px;grid-column:1/-1;background:var(--d2);}
-.market-source{font-family:"Barlow Condensed";font-size:11px;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase;margin-top:3px;}
 .sp-ghost{position:absolute;right:8px;top:6px;font-family:"Bebas Neue";font-size:76px;color:rgba(196,150,42,0.07);line-height:1;pointer-events:none;letter-spacing:-2px;}
 .sp-name{font-family:"Bebas Neue";font-size:34px;letter-spacing:2px;color:var(--white);margin-bottom:3px;position:relative;}
 .sp-pos{font-family:"Barlow Condensed";font-size:12px;font-weight:700;letter-spacing:3px;color:rgba(196,150,42,0.85);text-transform:uppercase;margin-bottom:16px;position:relative;}
@@ -507,12 +503,15 @@ nav{display:none;}.mob-nav{display:flex;}
 </section>
 <section class="section" id="mercato">
   <div class="sec-head"><div class="sec-tag">Estate 2026</div><div class="sec-title">MERCATO</div><div class="gold-bar"></div></div>
-  <div class="ctx-box" id="marketContext">Radar automatico aggiornato dalle fonti pubblicate e dalle bozze mercato approvate in admin.</div>
-  <div class="market-grid" id="marketRadarGrid">
-    <div class="market-empty">Caricamento radar mercato...</div>
+  <div class="ctx-box">Stagione senza Champions. <strong>Meeting Spalletti-Elkann</strong> in settimana: futuro in bilico. Si riparte da Yildiz, pilastro del ciclo.</div>
+  <div class="market-grid">
+    <div class="market-card"><div class="mc-title tin">Possibili Arrivi</div><div class="transfer-item"><div class="t-avatar">PO</div><div class="t-info"><div class="t-name">Nuovo portiere</div><div class="t-from">Alisson e Vicario seguiti</div></div><span class="t-badge b-tra">Priorita'</span></div><div class="transfer-item"><div class="t-avatar">DC</div><div class="t-info"><div class="t-name">Difensore centrale</div><div class="t-from">Rinforzo necessario</div></div><span class="t-badge b-rum">Ricerca</span></div><div class="transfer-item"><div class="t-avatar">MC</div><div class="t-info"><div class="t-name">Centrocampista</div><div class="t-from">Parametro zero o giovane</div></div><span class="t-badge b-rum">Obiettivo</span></div></div>
+    <div class="market-card"><div class="mc-title tout">Possibili Uscite</div><div class="transfer-item"><div class="t-avatar">DV</div><div class="t-info"><div class="t-name">Vlahovic</div><div class="t-from">Scadenza 2026 - stallo</div></div><span class="t-badge b-out">Da decidere</span></div><div class="transfer-item"><div class="t-avatar">TK</div><div class="t-info"><div class="t-name">Koopmeiners</div><div class="t-from">Deludente - in uscita</div></div><span class="t-badge b-out">In uscita</span></div><div class="transfer-item"><div class="t-avatar">AC</div><div class="t-info"><div class="t-name">Cambiaso</div><div class="t-from">Barcellona interessato</div></div><span class="t-badge b-rum">Rumor</span></div></div>
+    <div class="market-card"><div class="mc-title trin">Rinnovi</div><div class="transfer-item"><div class="t-avatar">KY</div><div class="t-info"><div class="t-name">Yildiz</div><div class="t-from">Intoccabile - rinnovo in arrivo</div></div><span class="t-badge b-uff">Blindato</span></div><div class="transfer-item"><div class="t-avatar">WM</div><div class="t-info"><div class="t-name">McKennie</div><div class="t-from">Rinnovo gia' firmato</div></div><span class="t-badge b-uff">Rinnovato</span></div><div class="transfer-item"><div class="t-avatar">PK</div><div class="t-info"><div class="t-name">Kalulu</div><div class="t-from">Rinnovo fino al 2030</div></div><span class="t-badge b-tra">In chiusura</span></div></div>
+    <div class="market-card"><div class="mc-title trum">Radio Rumors</div><div class="transfer-item"><div class="t-avatar">ALL</div><div class="t-info"><div class="t-name">Panchina</div><div class="t-from">Spalletti-Elkann - imminente</div></div><span class="t-badge b-rum">Caldo</span></div><div class="transfer-item"><div class="t-avatar">DIR</div><div class="t-info"><div class="t-name">Dirigenza</div><div class="t-from">Comolli e Modesto in bilico</div></div><span class="t-badge b-rum">Rumors</span></div><div class="transfer-item"><div class="t-avatar">CL</div><div class="t-info"><div class="t-name">Ritorno Champions</div><div class="t-from">Obiettivo 2026/27</div></div><span class="t-badge b-tra">Priorita'</span></div></div>
   </div>
-  <div class="sec-head" style="margin-top:28px;margin-bottom:14px;"><div class="sec-tag">Flusso Automatico</div></div>
-  <div class="results-list" id="mercatoFeed"><div class="market-empty">Caricamento mercato...</div></div>
+  <div class="sec-head" style="margin-top:28px;margin-bottom:14px;"><div class="sec-tag">Ultime dal Mercato</div></div>
+  <div class="results-list" id="mercatoFeed"><div style="font-family:'Barlow Condensed';font-size:14px;color:var(--t3);letter-spacing:1px;padding:20px;text-align:center;background:var(--d2);border:1px solid var(--bdr2);border-radius:8px;">Caricamento...</div></div>
 </section>
 <section class="section" id="grafiche">
   <div class="sec-head"><div class="sec-tag">Archivio ICV</div><div class="sec-title">GRAFICHE</div><div class="gold-bar"></div></div>
@@ -970,10 +969,6 @@ function icvEsc(value) {
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
   });
 }
-function icvAttr(value) {
-  return icvEsc(value).replace(/"/g, "&quot;");
-}
-var icvMarketData = [];
 
 function loadHomeDashboard() {
   fetch("/api/public/home")
@@ -985,11 +980,8 @@ function loadHomeDashboard() {
     var matches = Array.isArray(data.matches) ? data.matches : [];
     var social = Array.isArray(data.social) ? data.social : [];
     var graphics = Array.isArray(data.graphics) ? data.graphics : [];
-    icvMarketData = market;
     renderAutoStatus(data.auto);
     renderRadar(data.radar);
-    renderMarketRadar(market);
-    renderMarketFeed(market);
     if (news[0]) {
       document.getElementById("homeFocusTitle").textContent = news[0].title || "Focus ICV";
       document.getElementById("homeFocusText").textContent = (news[0].body || "").slice(0, 180);
@@ -1015,8 +1007,6 @@ function loadHomeDashboard() {
     renderHomeList("homeNewsList", [], null);
     renderHomeList("homeMarketList", [], null);
     renderHomeLinks("homeInstagramList", [], null);
-    renderMarketRadar([]);
-    renderMarketFeed([]);
     renderGraphics([]);
   });
 }
@@ -1164,111 +1154,52 @@ function loadAndRenderNews() {
   });
 }
 
-// ── MERCATO AUTOMATICO ──
-function marketStatus(row) {
-  return String(row.status || row.editorial_status || "monitorato").toLowerCase();
-}
-function marketGroup(row) {
-  var text = [row.status, row.note, row.player_name].join(" ").toLowerCase();
-  if (/panchina|allenator|spalletti|comolli|dirigenza/.test(text)) return "tecnica";
-  if (/rinnov|contratt|scadenza/.test(text)) return "rinnovi";
-  if (/uscit|cess|addio|lascia|sacrific|via dalla juve/.test(text)) return "uscite";
-  if (/arriv|acquist|obiettivo|trattativa|prestito|offerta|interess|alternativ|sondaggio/.test(text)) return "arrivi";
-  return "monitorati";
-}
-function marketStatusLabel(row) {
-  var status = marketStatus(row);
-  var labels = {
-    ufficiale: "Ufficiale",
-    rinnovo: "Rinnovo",
-    uscita: "Uscita",
-    arrivo: "Arrivo",
-    panchina: "Area tecnica",
-    rumor: "Rumor",
-    monitorato: "Monitorato"
-  };
-  return labels[status] || status.replace(/_/g, " ");
-}
-function marketBadgeClass(row) {
-  var status = marketStatus(row);
-  if (/ufficial|rinnovo/.test(status)) return "b-uff";
-  if (/uscita/.test(status)) return "b-out";
-  if (/arrivo|monitor/.test(status)) return "b-tra";
-  return "b-rum";
-}
-function initials(name) {
-  return String(name || "MJ").split(/\s+/).filter(Boolean).slice(0, 2).map(function(part){ return part.charAt(0); }).join("").toUpperCase() || "MJ";
-}
-function renderMarketRadar(rows) {
-  var grid = document.getElementById("marketRadarGrid");
-  var ctx = document.getElementById("marketContext");
-  if (!grid) return;
-  var list = Array.isArray(rows) ? rows.filter(Boolean) : [];
-  if (ctx) {
-    ctx.innerHTML = list.length ? "Radar automatico con <strong>" + list.length + "</strong> segnali mercato ordinati per aggiornamento, fonte e stato." : "Radar automatico in attesa della prossima scansione mercato.";
-  }
-  if (!list.length) {
-    grid.innerHTML = "<div class='market-empty'>Nessun segnale mercato disponibile.</div>";
-    return;
-  }
-  var groups = {
-    monitorati: { title:"Da monitorare", cls:"trum", rows:[] },
-    arrivi: { title:"Possibili arrivi", cls:"tin", rows:[] },
-    uscite: { title:"Possibili uscite", cls:"tout", rows:[] },
-    rinnovi: { title:"Rinnovi e contratti", cls:"trin", rows:[] },
-    tecnica: { title:"Area tecnica", cls:"trum", rows:[] }
-  };
-  list.forEach(function(row){ groups[marketGroup(row)].rows.push(row); });
-  grid.innerHTML = Object.keys(groups).map(function(key){
-    var group = groups[key];
-    var rows = group.rows.slice(0, 4);
-    return "<div class='market-card'><div class='market-auto-head'><div class='mc-title " + group.cls + "'>" + group.title + "</div><div class='market-count'>" + group.rows.length + "</div></div>" +
-      (rows.length ? rows.map(renderMarketItem).join("") : "<div class='market-source'>Nessun segnale in questo gruppo</div>") +
-      "</div>";
-  }).join("");
-}
-function renderMarketItem(row) {
-  return "<div class='transfer-item'>" +
-    "<div class='t-avatar'>" + icvEsc(initials(row.player_name)) + "</div>" +
-    "<div class='t-info'><div class='t-name'>" + icvEsc(row.player_name || "Mercato Juve") + "</div>" +
-    "<div class='t-from'>" + icvEsc(row.note || "Aggiornamento mercato") + "</div>" +
-    "<div class='market-source'>" + icvEsc(row.source_name || "ICV") + "</div></div>" +
-    "<span class='t-badge " + marketBadgeClass(row) + "'>" + icvEsc(marketStatusLabel(row)) + "</span></div>";
-}
-function renderMarketFeed(rows) {
-  var el = document.getElementById("mercatoFeed");
-  if (!el) return;
-  var list = Array.isArray(rows) ? rows.filter(Boolean) : [];
-  if (!list.length) {
-    el.innerHTML = "<div class='market-empty'>Nessun aggiornamento mercato disponibile.</div>";
-    return;
-  }
-  el.innerHTML = list.slice(0, 10).map(function(item) {
-    var d = item.updated_at ? new Date(item.updated_at).toLocaleDateString("it-IT",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}) : "";
-    var link = item.source_url ? " data-url='" + icvAttr(item.source_url) + "' onclick='openMarketSource(this)'" : "";
-    return "<div class='result-item'" + link + " style='cursor:" + (item.source_url ? "pointer" : "default") + "'>" +
-      "<div class='res-badge' style='background:rgba(96,165,250,0.13);color:#60a5fa;border:1px solid rgba(96,165,250,0.26);font-size:11px;font-family:\"Bebas Neue\"'>M</div>" +
-      "<div class='res-teams'><div class='res-name'>" + icvEsc(item.note || item.player_name || "Mercato Juve") + "</div>" +
-      "<div class='res-comp'>" + icvEsc(marketStatusLabel(item)) + (item.source_name ? " &middot; " + icvEsc(item.source_name) : "") + (d ? " &middot; " + d : "") + "</div></div></div>";
-  }).join("");
-}
-function openMarketSource(el) {
-  var url = el && el.getAttribute("data-url");
-  if (url) window.open(url, "_blank", "noopener");
-}
+// ── MERCATO FEED ──
 function loadMercatoNews() {
-  if (icvMarketData.length) {
-    renderMarketRadar(icvMarketData);
-    renderMarketFeed(icvMarketData);
-    return;
+  var el = document.getElementById("mercatoFeed");
+  if (!el || el.dataset.loaded) return;
+  var RSS2JSON = "https://api.rss2json.com/v1/api.json?rss_url=";
+  var feeds = [
+    {url:"https://news.google.com/rss/search?q=Juventus+calciomercato&hl=it&gl=IT&ceid=IT:it", mode:"google"},
+    {url:"https://feeds.footballco.com/ilbianconero/feed/x2mb7fql9vce6t1p", mode:"xml", label:"Il Bianconero"}
+  ];
+  var results = [];
+  var done = 0;
+  function finish() {
+    if (!results.length) {
+      el.innerHTML = "<div style=\"font-family:'Barlow Condensed';font-size:14px;color:var(--t3);letter-spacing:1px;padding:20px;text-align:center;background:var(--d2);border:1px solid var(--bdr2);border-radius:8px;\">Nessuna notizia disponibile.</div>";
+      return;
+    }
+    el.innerHTML = results.slice(0, 6).map(function(item) {
+      var d = item.date ? new Date(item.date).toLocaleDateString("it-IT",{day:"2-digit",month:"short"}) : "";
+      return "<div class='result-item'>" +
+        "<div class='res-badge' style='background:rgba(96,165,250,0.13);color:#60a5fa;border:1px solid rgba(96,165,250,0.26);font-size:11px;font-family:\"Bebas Neue\"'>€</div>" +
+        "<div class='res-teams'><div class='res-name'>" + icvEsc(item.title) + "</div>" +
+        "<div class='res-comp'>" + icvEsc(item.source) + (d ? " &middot; " + d : "") + "</div></div></div>";
+    }).join("");
+    el.dataset.loaded = "1";
   }
-  fetch("/api/public/home").then(function(r){ return r.json(); }).then(function(data){
-    icvMarketData = Array.isArray(data.market) ? data.market : [];
-    renderMarketRadar(icvMarketData);
-    renderMarketFeed(icvMarketData);
-  }).catch(function(){
-    renderMarketRadar([]);
-    renderMarketFeed([]);
+  feeds.forEach(function(feed) {
+    var p;
+    if (feed.mode === "xml") {
+      p = fetch(feed.url).then(function(r){return r.text();}).then(function(xml){
+        var doc = new DOMParser().parseFromString(xml,"text/xml");
+        Array.prototype.slice.call(doc.querySelectorAll("item"),0,4).forEach(function(node){
+          var t = node.querySelector("title"), pd = node.querySelector("pubDate");
+          if (t && t.textContent.trim()) results.push({title:t.textContent.trim(), source:feed.label, date:pd?pd.textContent:""});
+        });
+      });
+    } else {
+      p = fetch(RSS2JSON + encodeURIComponent(feed.url)).then(function(r){return r.json();}).then(function(data){
+        if (data.status !== "ok") return;
+        (data.items||[]).slice(0,4).forEach(function(item){
+          var raw = (item.title||"").trim();
+          var parts = raw.match(/^(.+?)\s+-\s+([^-]{3,50})$/);
+          results.push({title:parts?parts[1].trim():raw, source:parts?parts[2].trim():"Google News", date:item.pubDate||""});
+        });
+      });
+    }
+    p.catch(function(){}).finally(function(){ done++; if (done===feeds.length) finish(); });
   });
 }
 

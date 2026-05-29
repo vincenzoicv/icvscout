@@ -59,6 +59,7 @@ const DEFAULT_RADAR = {
 const DEFAULT_GRAPHICS = [];
 const GRAPHICS_BUCKET = "graphics";
 const MAX_GRAPHIC_UPLOAD_BYTES = 8 * 1024 * 1024;
+const MAX_GRAPHIC_DATA_URL_LENGTH = 3 * 1024 * 1024;
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -307,7 +308,8 @@ async function adminNews(request, env) {
       try {
         imageUrl = await uploadGraphicImage(env, body);
       } catch (err) {
-        return json({ error: err.message || "Errore caricamento grafica" }, 400);
+        imageUrl = inlineGraphicImage(body);
+        if (!imageUrl) return json({ error: err.message || "Errore caricamento grafica" }, 400);
       }
       const current = await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS);
       const graphics = normalizeGraphics([
@@ -828,6 +830,13 @@ function publicGraphicsRows(rows) {
     .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
 }
 
+function inlineGraphicImage(body) {
+  const dataUrl = String(body.image_data || "").trim();
+  if (!/^data:image\/[a-zA-Z0-9.+-]+;base64,[a-zA-Z0-9+/=\s]+$/.test(dataUrl)) return "";
+  if (dataUrl.length > MAX_GRAPHIC_DATA_URL_LENGTH) throw new Error("Immagine troppo pesante: prova a ridurla o salvarla in JPG");
+  return dataUrl.replace(/\s/g, "");
+}
+
 async function uploadGraphicImage(env, body) {
   if (body.image_file) return uploadGraphicFile(env, body.image_file, body.filename || body.image_file.name);
 
@@ -957,7 +966,8 @@ function normalizeGraphics(input) {
   const rows = Array.isArray(input) ? input : [];
   return rows
     .map((item, index) => {
-      const imageUrl = cleanText(item && item.image_url || "").slice(0, 700);
+      const rawImageUrl = String(item && item.image_url || "").trim();
+      const imageUrl = rawImageUrl.startsWith("data:image/") ? rawImageUrl.slice(0, MAX_GRAPHIC_DATA_URL_LENGTH) : cleanText(rawImageUrl).slice(0, 700);
       const title = cleanText(item && item.title || "Grafica ICV").slice(0, 90);
       const linkUrl = cleanText(item && item.link_url || "").slice(0, 700);
       return {

@@ -303,6 +303,7 @@ function addGraphic(){
     form.append("title", val("graphicTitle") || "Grafica ICV");
     form.append("link_url", val("graphicLinkUrl"));
     form.append("image", upload.blob, upload.filename);
+    form.append("image_data", upload.imageData);
     return apiForm("/api/admin/news", form);
   }).then(function(){
     ["graphicTitle","graphicLinkUrl"].forEach(function(id){ document.getElementById(id).value = ""; });
@@ -432,9 +433,12 @@ function val(id){ return document.getElementById(id).value.trim(); }
 function setVal(id,value){ var el=document.getElementById(id); if(el) el.value=value == null ? "" : value; }
 function prepareGraphicUpload(file){
   return compressImage(file).catch(function(){
-    return { blob:file, filename:file.name || "grafica" };
+    return blobToDataUrl(file).then(function(imageData){
+      return { blob:file, filename:file.name || "grafica", imageData:imageData };
+    });
   }).then(function(upload){
     if(upload.blob.size > 7 * 1024 * 1024) throw new Error("Immagine troppo pesante: prova a ridurla o salvarla in JPG");
+    if(!upload.imageData) return blobToDataUrl(upload.blob).then(function(imageData){ upload.imageData = imageData; return upload; });
     return upload;
   });
 }
@@ -444,7 +448,7 @@ function compressImage(file){
     var url = URL.createObjectURL(file);
     img.onload = function(){
       URL.revokeObjectURL(url);
-      var maxSide = 1800;
+      var maxSide = 1400;
       var ratio = Math.min(1, maxSide / Math.max(img.width, img.height));
       var canvas = document.createElement("canvas");
       canvas.width = Math.max(1, Math.round(img.width * ratio));
@@ -454,11 +458,21 @@ function compressImage(file){
       var name = (file.name || "grafica").replace(/\.[^.]+$/, "") + ".jpg";
       canvas.toBlob(function(blob){
         if(!blob) return reject(new Error("Impossibile preparare l'immagine"));
-        resolve({ blob:blob, filename:name });
-      }, "image/jpeg", 0.86);
+        blobToDataUrl(blob).then(function(imageData){
+          resolve({ blob:blob, filename:name, imageData:imageData });
+        }).catch(reject);
+      }, "image/jpeg", 0.82);
     };
     img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("Impossibile ottimizzare l'immagine")); };
     img.src = url;
+  });
+}
+function blobToDataUrl(blob){
+  return new Promise(function(resolve,reject){
+    var reader = new FileReader();
+    reader.onload = function(){ resolve(reader.result); };
+    reader.onerror = function(){ reject(new Error("Impossibile leggere l'immagine")); };
+    reader.readAsDataURL(blob);
   });
 }
 function clearManual(){ ["manualTitle","manualBody","manualSource"].forEach(function(id){ document.getElementById(id).value = ""; }); }

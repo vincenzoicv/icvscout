@@ -98,11 +98,7 @@ async function publicHome(env) {
     });
   }
 
-  try {
-    await runHomeAutopilot(env);
-  } catch {
-    // La home pubblica deve restare leggibile anche se una scansione automatica fallisce.
-  }
+  await runHomeAutopilot(env);
   const [news, market, marketNews, matches, social, auto, radar, graphics] = await Promise.all([
     sb(env, "/news?visible=eq.true&order=created_at.desc&limit=6"),
     sb(env, "/market_items?order=updated_at.desc&limit=12"),
@@ -125,9 +121,9 @@ async function publicHome(env) {
 }
 
 function publicMarketFromNews(rows) {
-  return (rows || []).slice(0, 3).map(row => ({
+  return (rows || []).slice(0, 12).map(row => ({
     player_name: extractPlayer(row.title || "") || "Mercato Juve",
-    status: row.editorial_status || statusFromReliability(row.reliability),
+    status: inferMarketStatus(row.title || row.body || ""),
     category: "calciomercato",
     source_name: row.source || "ICV",
     source_url: row.source_url,
@@ -546,7 +542,7 @@ async function generateMarketDrafts(env, sources) {
     const existing = await sb(env, "/market_items?player_name=ilike." + encodeURIComponent(player) + "&select=id&limit=1");
     const payload = {
       player_name: player,
-      status: draft.editorial_status === "Rumor" ? "rumor" : "monitorato",
+      status: inferMarketStatus(draft.title || draft.body || ""),
       category: "calciomercato",
       source_name: draft.source_name,
       source_url: draft.source_url,
@@ -823,6 +819,17 @@ function statusFromReliability(reliability) {
 
 function inferCategory(title) {
   return /mercato|trattativa|rinnovo|prestito|acquisto|cessione|offerta/i.test(title) ? "calciomercato" : "juventus";
+}
+
+function inferMarketStatus(text) {
+  const value = cleanText(text).toLowerCase();
+  if (/ufficial|comunicat|fatta|firma|accordo raggiunto|chius[ao]/i.test(value)) return "ufficiale";
+  if (/rinnov|prolung|contratto|scadenza/i.test(value)) return "rinnovo";
+  if (/cess|addio|lascia|partenza|sacrific|via dalla juve|pu[o\u00f2] lasciare|in uscita/i.test(value)) return "uscita";
+  if (/arriv|acquist|obiettivo|sondaggio|contatt|trattativa|prestito|offerta|interess[ae]|alternativ/i.test(value)) return "arrivo";
+  if (/panchina|allenator|spalletti|comolli|dirigenza/i.test(value)) return "panchina";
+  if (/rumor|ipotesi|suggestione/i.test(value)) return "rumor";
+  return "monitorato";
 }
 
 function inferUrgency(title) {

@@ -298,13 +298,13 @@ function addGraphic(){
   if(!/^image\//.test(file.type || "")) return showToast("File immagine richiesto");
   showToast("Caricamento grafica");
   prepareGraphicUpload(file).then(function(upload){
-    var form = new FormData();
-    form.append("type", "graphic_upload");
-    form.append("title", val("graphicTitle") || "Grafica ICV");
-    form.append("link_url", val("graphicLinkUrl"));
-    form.append("image", upload.blob, upload.filename);
-    form.append("image_data", upload.imageData);
-    return apiForm("/api/admin/news", form);
+    return api("/api/admin/news", {method:"POST", body:{
+      type:"graphic_inline",
+      title:val("graphicTitle") || "Grafica ICV",
+      link_url:val("graphicLinkUrl"),
+      filename:upload.filename,
+      image_data:upload.imageData
+    }});
   }).then(function(){
     ["graphicTitle","graphicLinkUrl"].forEach(function(id){ document.getElementById(id).value = ""; });
     if(input) input.value = "";
@@ -432,13 +432,8 @@ function renderGraphics(){
 function val(id){ return document.getElementById(id).value.trim(); }
 function setVal(id,value){ var el=document.getElementById(id); if(el) el.value=value == null ? "" : value; }
 function prepareGraphicUpload(file){
-  return compressImage(file).catch(function(){
-    return blobToDataUrl(file).then(function(imageData){
-      return { blob:file, filename:file.name || "grafica", imageData:imageData };
-    });
-  }).then(function(upload){
-    if(upload.blob.size > 7 * 1024 * 1024) throw new Error("Immagine troppo pesante: prova a ridurla o salvarla in JPG");
-    if(!upload.imageData) return blobToDataUrl(upload.blob).then(function(imageData){ upload.imageData = imageData; return upload; });
+  return compressImage(file).then(function(upload){
+    if(upload.imageData.length > 950 * 1024) throw new Error("Immagine troppo pesante: prova a ridurla o salvarla in JPG");
     return upload;
   });
 }
@@ -448,31 +443,25 @@ function compressImage(file){
     var url = URL.createObjectURL(file);
     img.onload = function(){
       URL.revokeObjectURL(url);
-      var maxSide = 1400;
-      var ratio = Math.min(1, maxSide / Math.max(img.width, img.height));
       var canvas = document.createElement("canvas");
-      canvas.width = Math.max(1, Math.round(img.width * ratio));
-      canvas.height = Math.max(1, Math.round(img.height * ratio));
       var ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      var attempts = [[1100,.82],[1000,.76],[900,.72],[800,.68],[700,.64],[600,.6]];
       var name = (file.name || "grafica").replace(/\.[^.]+$/, "") + ".jpg";
-      canvas.toBlob(function(blob){
-        if(!blob) return reject(new Error("Impossibile preparare l'immagine"));
-        blobToDataUrl(blob).then(function(imageData){
-          resolve({ blob:blob, filename:name, imageData:imageData });
-        }).catch(reject);
-      }, "image/jpeg", 0.82);
+      var chosen = "";
+      attempts.some(function(attempt){
+        var maxSide = attempt[0];
+        var quality = attempt[1];
+        var ratio = Math.min(1, maxSide / Math.max(img.width, img.height));
+        canvas.width = Math.max(1, Math.round(img.width * ratio));
+        canvas.height = Math.max(1, Math.round(img.height * ratio));
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        chosen = canvas.toDataURL("image/jpeg", quality);
+        return chosen.length <= 900 * 1024;
+      });
+      resolve({ filename:name, imageData:chosen });
     };
     img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("Impossibile ottimizzare l'immagine")); };
     img.src = url;
-  });
-}
-function blobToDataUrl(blob){
-  return new Promise(function(resolve,reject){
-    var reader = new FileReader();
-    reader.onload = function(){ resolve(reader.result); };
-    reader.onerror = function(){ reject(new Error("Impossibile leggere l'immagine")); };
-    reader.readAsDataURL(blob);
   });
 }
 function clearManual(){ ["manualTitle","manualBody","manualSource"].forEach(function(id){ document.getElementById(id).value = ""; }); }

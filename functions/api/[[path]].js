@@ -59,7 +59,7 @@ const DEFAULT_RADAR = {
 const DEFAULT_GRAPHICS = [];
 const GRAPHICS_BUCKET = "graphics";
 const MAX_GRAPHIC_UPLOAD_BYTES = 8 * 1024 * 1024;
-const MAX_GRAPHIC_DATA_URL_LENGTH = 3 * 1024 * 1024;
+const MAX_GRAPHIC_DATA_URL_LENGTH = 1100 * 1024;
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -301,6 +301,30 @@ async function adminNews(request, env) {
       const radar = normalizeRadar(body.radar);
       await setSiteSetting(env, "radar_home", radar);
       return json({ radar });
+    }
+
+    if (body.type === "graphic_inline") {
+      let imageUrl = "";
+      try {
+        imageUrl = inlineGraphicImage(body);
+      } catch (err) {
+        return json({ error: err.message || "Errore caricamento grafica" }, 400);
+      }
+      if (!imageUrl) return json({ error: "Immagine non valida" }, 400);
+      const current = await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS);
+      const graphics = normalizeGraphics([
+        {
+          id: "g_" + Date.now().toString(36),
+          title: body.title,
+          image_url: imageUrl,
+          link_url: body.link_url,
+          visible: body.visible !== false,
+          created_at: new Date().toISOString(),
+        },
+        ...(Array.isArray(current) ? current : []),
+      ]);
+      await setSiteSetting(env, "graphics_gallery", graphics);
+      return json({ graphic: graphics[0], graphics });
     }
 
     if (body.type === "graphic_upload") {

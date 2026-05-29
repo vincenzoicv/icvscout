@@ -127,35 +127,6 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         </div>
 
         <div class="card admin-panel" data-panel="advanced">
-          <h2>Home avanzata</h2>
-          <div class="meta" style="margin-bottom:12px">Da usare solo quando vuoi cambiare manualmente il blocco estate della home.</div>
-          <div class="form">
-            <div class="row">
-              <div><label>Kicker</label><input id="radarKickerInput" placeholder="Centro di controllo"></div>
-              <div><label>Titolo</label><input id="radarTitleInput" placeholder="Estate Juve"></div>
-            </div>
-            <div><label>Testo principale</label><textarea id="radarCopyInput" placeholder="Descrizione del blocco Radar"></textarea></div>
-            <div class="row">
-              <div><label>Card 1</label><input id="radarCardTitle0"><textarea id="radarCardText0"></textarea></div>
-              <div><label>Card 2</label><input id="radarCardTitle1"><textarea id="radarCardText1"></textarea></div>
-            </div>
-            <div class="row">
-              <div><label>Card 3</label><input id="radarCardTitle2"><textarea id="radarCardText2"></textarea></div>
-              <div><label>Card 4</label><input id="radarCardTitle3"><textarea id="radarCardText3"></textarea></div>
-            </div>
-            <div class="row">
-              <div><label>Da seguire 1</label><input id="radarWatchTitle0"><textarea id="radarWatchText0"></textarea></div>
-              <div><label>Da seguire 2</label><input id="radarWatchTitle1"><textarea id="radarWatchText1"></textarea></div>
-            </div>
-            <div class="row">
-              <div><label>Da seguire 3</label><input id="radarWatchTitle2"><textarea id="radarWatchText2"></textarea></div>
-              <div><label>Da seguire 4</label><input id="radarWatchTitle3"><textarea id="radarWatchText3"></textarea></div>
-            </div>
-            <button class="primary" onclick="saveRadar()">Salva Radar</button>
-          </div>
-        </div>
-
-        <div class="card admin-panel" data-panel="advanced">
           <h2>Match Center</h2>
           <div id="matchList"></div>
         </div>
@@ -191,7 +162,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 <div class="toast" id="toast"></div>
 
 <script>
-var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], radar: null, filter: "all", radarFilled: false, adminTab: "drafts" };
+var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], filter: "all", adminTab: "drafts" };
 
 function token(){ return sessionStorage.getItem("icv_admin_token") || ""; }
 function api(path, options){
@@ -231,8 +202,6 @@ function load(){
     state.market = data.market || [];
     state.matches = data.matches || [];
     state.runs = data.runs || [];
-    state.radar = data.radar || null;
-    state.radarFilled = false;
     render();
   });
 }
@@ -344,25 +313,13 @@ function deleteGraphic(id){
     .then(function(){ showToast("Grafica eliminata"); load(); })
     .catch(function(err){ showToast(err.message); });
 }
-function saveRadar(){
-  var radar = {
-    kicker: val("radarKickerInput"),
-    title: val("radarTitleInput"),
-    copy: val("radarCopyInput"),
-    cards: [0,1,2,3].map(function(i){ return {title:val("radarCardTitle"+i), text:val("radarCardText"+i)}; }),
-    watch: [0,1,2,3].map(function(i){ return {title:val("radarWatchTitle"+i), text:val("radarWatchText"+i)}; })
-  };
-  api("/api/admin/news", {method:"POST", body:{type:"radar_settings", radar:radar}})
-    .then(function(){ showToast("Radar salvato"); load(); })
-    .catch(function(err){ showToast(err.message); });
-}
 function render(){
   document.getElementById("stDrafts").textContent = state.drafts.filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; }).length;
   document.getElementById("stReady").textContent = state.drafts.filter(function(d){ return d.review_status === "ready"; }).length;
   document.getElementById("stNews").textContent = state.news.filter(function(n){ return n.visible; }).length;
   document.getElementById("stMarket").textContent = state.market.length;
   document.getElementById("stSocial").textContent = state.social.length;
-  renderAutomationStatus(); renderDrafts(); renderNews(); renderSources(); renderMarket(); renderRadarForm(); renderMatches(); renderSocial(); renderGraphics();
+  renderAutomationStatus(); renderDrafts(); renderNews(); renderSources(); renderMarket(); renderMatches(); renderSocial(); renderGraphics();
 }
 function renderAutomationStatus(){
   var box = document.getElementById("automationStatus");
@@ -415,15 +372,6 @@ function renderMarket(){
   list.innerHTML = Object.keys(groups).filter(function(k){ return groups[k].length; }).map(function(k){
     return "<div class='meta' style='margin:12px 0 8px;color:var(--gold-l)'>"+labels[k]+"</div>" + groups[k].slice(0,5).map(function(m){ return "<div class='item'><span class='pill "+esc(m.reliability)+"'>"+labelRel(m.reliability)+"</span><h3>"+esc(m.player_name)+"</h3><p>"+esc(m.note || "")+"</p><div class='meta'>"+esc(m.status)+" · "+esc(m.source_name || "")+"</div></div>"; }).join("");
   }).join("");
-}
-function renderRadarForm(){
-  if(!state.radar || state.radarFilled) return;
-  state.radarFilled = true;
-  setVal("radarKickerInput", state.radar.kicker || "");
-  setVal("radarTitleInput", state.radar.title || "");
-  setVal("radarCopyInput", state.radar.copy || "");
-  (state.radar.cards || []).slice(0,4).forEach(function(item,i){ setVal("radarCardTitle"+i,item.title || ""); setVal("radarCardText"+i,item.text || ""); });
-  (state.radar.watch || []).slice(0,4).forEach(function(item,i){ setVal("radarWatchTitle"+i,item.title || ""); setVal("radarWatchText"+i,item.text || ""); });
 }
 function renderMatches(){
   var list = document.getElementById("matchList");

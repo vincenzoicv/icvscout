@@ -979,7 +979,6 @@ function loadHomeDashboard() {
     var market = Array.isArray(data.market) ? data.market : [];
     var matches = Array.isArray(data.matches) ? data.matches : [];
     var social = Array.isArray(data.social) ? data.social : [];
-    var graphics = Array.isArray(data.graphics) ? data.graphics : [];
     renderAutoStatus(data.auto);
     renderRadar(data.radar);
     if (news[0]) {
@@ -1001,14 +1000,19 @@ function loadHomeDashboard() {
     renderHomeLinks("homeInstagramList", uniqueSocialRows(social), function(s) {
       return {title:s.hook || "Post Instagram", meta:(s.media_type || s.platform || "instagram") + (s.status ? " · " + s.status : ""), url:s.post_url || "https://www.instagram.com/ilcalciodivince_/"};
     });
-    renderGraphics(graphics);
   })
   .catch(function() {
     renderHomeList("homeNewsList", [], null);
     renderHomeList("homeMarketList", [], null);
     renderHomeLinks("homeInstagramList", [], null);
-    renderGraphics([]);
   });
+}
+
+function loadHomeGraphics() {
+  fetch("/api/public/graphics")
+  .then(function(r){ return r.json(); })
+  .then(function(rows) { renderGraphics(rows); })
+  .catch(function() { renderGraphics([]); });
 }
 
 function renderAutoStatus(auto) {
@@ -1216,6 +1220,7 @@ showSec = function(id, btn) {
   if (id === "mercato") loadMercatoNews();
 };
 loadHomeDashboard();
+loadHomeGraphics();
 
 // PWA — registra service worker
 if ('serviceWorker' in navigator) {

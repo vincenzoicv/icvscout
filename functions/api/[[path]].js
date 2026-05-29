@@ -70,6 +70,7 @@ export async function onRequest(context) {
 
   try {
     if (path === "public/home") return publicHome(env);
+    if (path === "public/graphics") return publicGraphics(env);
     if (path === "public/news") return publicNews(env, url);
     if (path === "admin/news") return adminNews(request, env);
     if (path === "admin/automate") return adminAutomate(request, env);
@@ -98,7 +99,7 @@ async function publicHome(env) {
     });
   }
 
-  const [news, market, marketNews, matches, social, auto, radar, graphics] = await Promise.all([
+  const [news, market, marketNews, matches, social, auto, radar] = await Promise.all([
     sb(env, "/news?visible=eq.true&order=created_at.desc&limit=6"),
     sb(env, "/market_items?order=updated_at.desc&limit=12"),
     sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=6"),
@@ -106,17 +107,22 @@ async function publicHome(env) {
     sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&order=created_at.desc&limit=12"),
     latestAutomationRun(env, "home_autopilot"),
     getSiteSetting(env, "radar_home", DEFAULT_RADAR),
-    getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS),
   ]);
   return json({
     news,
     market: market && market.length ? market : publicMarketFromNews(marketNews),
     matches,
     social: publicSocialRows(social),
-    graphics: publicGraphicsRows(graphics),
+    graphics: [],
     radar,
     auto: { enabled: true, interval_hours: Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1), last_run_at: auto && auto.created_at },
   });
+}
+
+async function publicGraphics(env) {
+  if (!hasSupabase(env)) return json(DEFAULT_GRAPHICS);
+  const graphics = await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS);
+  return json(publicGraphicsRows(graphics));
 }
 
 function publicMarketFromNews(rows) {

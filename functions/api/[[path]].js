@@ -98,7 +98,6 @@ async function publicHome(env) {
     });
   }
 
-  await runHomeAutopilot(env);
   const [news, market, marketNews, matches, social, auto, radar, graphics] = await Promise.all([
     sb(env, "/news?visible=eq.true&order=created_at.desc&limit=6"),
     sb(env, "/market_items?order=updated_at.desc&limit=12"),

@@ -167,32 +167,26 @@ main{padding-top:58px;position:relative;z-index:1;}
 .res-comp{font-family:"Barlow Condensed";font-size:12px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase;}
 .res-score{font-family:"Bebas Neue";font-size:23px;letter-spacing:2px;flex-shrink:0;}
 .res-date{font-family:"Barlow Condensed";font-size:12px;color:var(--t3);min-width:56px;text-align:right;flex-shrink:0;}
-.market-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px;align-items:start;}
-.market-spotlight{background:linear-gradient(135deg,rgba(196,150,42,.14),rgba(20,20,20,.92));border:1px solid rgba(196,150,42,.28);border-radius:10px;padding:20px;min-height:180px;display:flex;flex-direction:column;justify-content:space-between;gap:18px;}
-.market-spot-kicker{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:3px;color:var(--gold-l);text-transform:uppercase;}
-.market-spot-title{font-family:"Bebas Neue";font-size:34px;letter-spacing:1.5px;line-height:.95;color:var(--white);max-width:620px;}
-.market-spot-note{font-family:"Barlow Condensed";font-size:16px;line-height:1.35;color:var(--t2);max-width:720px;}
-.market-spot-meta{font-family:"Barlow Condensed";font-size:12px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;}
-.market-lanes{display:grid;grid-template-columns:1fr;gap:10px;}
-.market-card{background:var(--d2);border:1px solid var(--bdr);border-radius:10px;padding:14px;transition:all 0.3s;}
+.market-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.market-card{background:var(--d2);border:1px solid var(--bdr);border-radius:10px;padding:16px;transition:all 0.3s;}
 .market-card:hover{border-color:rgba(196,150,42,0.25);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.25);}
-.mc-title{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;margin-bottom:0;}
+.mc-title{font-family:"Barlow Condensed";font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;padding-bottom:9px;border-bottom:1px solid var(--bdr2);}
 .mc-title.tin{color:#4ade80;}.mc-title.tout{color:#f87171;}.mc-title.trum{color:var(--gold-l);}.mc-title.trin{color:#60a5fa;}
-.transfer-item{display:grid;grid-template-columns:1fr auto;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr2);}
+.transfer-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr2);}
 .transfer-item:last-child{border-bottom:none;}
+.t-avatar{width:30px;height:30px;border-radius:50%;background:var(--d3);border:1px solid var(--bdr2);display:flex;align-items:center;justify-content:center;font-family:"Bebas Neue";font-size:11px;color:var(--t3);flex-shrink:0;}
 .t-info{flex:1;min-width:0;}
 .t-name{font-family:"Barlow Condensed";font-size:15px;font-weight:700;color:var(--white);}
-.t-from{font-family:"Barlow Condensed";font-size:12px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.t-from{font-family:"Barlow Condensed";font-size:12px;color:var(--t3);}
 .t-badge{font-family:"Barlow Condensed";font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 7px;border-radius:3px;flex-shrink:0;}
 .b-uff{background:rgba(74,222,128,0.10);color:#4ade80;border:1px solid rgba(74,222,128,0.20);}
 .b-rum{background:rgba(196,150,42,0.10);color:var(--gold-l);border:1px solid rgba(196,150,42,0.20);}
 .b-tra{background:rgba(96,165,250,0.10);color:#60a5fa;border:1px solid rgba(96,165,250,0.20);}
 .b-out{background:rgba(248,113,113,0.10);color:#f87171;border:1px solid rgba(248,113,113,0.20);}
-.market-auto-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bdr2);}
-.market-count{font-family:"Bebas Neue";font-size:24px;color:rgba(196,150,42,.78);line-height:.9;}
+.market-auto-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;}
+.market-count{font-family:"Bebas Neue";font-size:34px;color:rgba(196,150,42,.78);line-height:.9;}
 .market-empty{font-family:"Barlow Condensed";font-size:13px;color:var(--t3);letter-spacing:1.5px;text-transform:uppercase;padding:18px;text-align:center;border:1px dashed var(--bdr2);border-radius:8px;grid-column:1/-1;background:var(--d2);}
 .market-source{font-family:"Barlow Condensed";font-size:11px;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase;margin-top:3px;}
-.market-feed-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .sp-ghost{position:absolute;right:8px;top:6px;font-family:"Bebas Neue";font-size:76px;color:rgba(196,150,42,0.07);line-height:1;pointer-events:none;letter-spacing:-2px;}
 .sp-name{font-family:"Bebas Neue";font-size:34px;letter-spacing:2px;color:var(--white);margin-bottom:3px;position:relative;}
 .sp-pos{font-family:"Barlow Condensed";font-size:12px;font-weight:700;letter-spacing:3px;color:rgba(196,150,42,0.85);text-transform:uppercase;margin-bottom:16px;position:relative;}
@@ -296,8 +290,6 @@ nav{display:none;}.mob-nav{display:flex;}
 
 /* MARKET MOBILE */
 .market-grid{grid-template-columns:1fr;}
-.market-feed-grid{grid-template-columns:1fr;}
-.market-spot-title{font-size:28px;}
 .t-name{font-size:14px;}
 .t-from{font-size:11px;}
 
@@ -1197,18 +1189,6 @@ function marketStatusLabel(row) {
   };
   return labels[status] || status.replace(/_/g, " ");
 }
-function marketGroupLabel(row, groupKey) {
-  var status = marketStatus(row);
-  if (status !== "monitorato") return marketStatusLabel(row);
-  var labels = {
-    arrivi: "Arrivo",
-    uscite: "Uscita",
-    rinnovi: "Rinnovo",
-    tecnica: "Tecnica",
-    monitorati: "Da seguire"
-  };
-  return labels[groupKey] || "Da seguire";
-}
 function marketBadgeClass(row) {
   var status = marketStatus(row);
   if (/ufficial|rinnovo/.test(status)) return "b-uff";
@@ -1219,22 +1199,13 @@ function marketBadgeClass(row) {
 function initials(name) {
   return String(name || "MJ").split(/\s+/).filter(Boolean).slice(0, 2).map(function(part){ return part.charAt(0); }).join("").toUpperCase() || "MJ";
 }
-function marketTitle(row) {
-  return row.player_name || "Mercato Juve";
-}
-function marketNote(row) {
-  return row.note || row.player_name || "Aggiornamento mercato";
-}
-function marketMeta(row) {
-  return (row.source_name || "ICV") + (row.updated_at ? " · " + new Date(row.updated_at).toLocaleDateString("it-IT",{day:"2-digit",month:"short"}) : "");
-}
 function renderMarketRadar(rows) {
   var grid = document.getElementById("marketRadarGrid");
   var ctx = document.getElementById("marketContext");
   if (!grid) return;
   var list = Array.isArray(rows) ? rows.filter(Boolean) : [];
   if (ctx) {
-    ctx.innerHTML = list.length ? "Radar automatico: <strong>" + list.length + "</strong> segnali mercato dalle fonti ICV, aggiornati senza intervento manuale." : "Radar automatico in attesa della prossima scansione mercato.";
+    ctx.innerHTML = list.length ? "Radar automatico con <strong>" + list.length + "</strong> segnali mercato ordinati per aggiornamento, fonte e stato." : "Radar automatico in attesa della prossima scansione mercato.";
   }
   if (!list.length) {
     grid.innerHTML = "<div class='market-empty'>Nessun segnale mercato disponibile.</div>";
@@ -1248,45 +1219,36 @@ function renderMarketRadar(rows) {
     tecnica: { title:"Area tecnica", cls:"trum", rows:[] }
   };
   list.forEach(function(row){ groups[marketGroup(row)].rows.push(row); });
-  var spotlight = list[0];
-  var lanes = Object.keys(groups).filter(function(key){ return groups[key].rows.length; }).map(function(key){
+  grid.innerHTML = Object.keys(groups).map(function(key){
     var group = groups[key];
-    var rows = group.rows.slice(0, 3);
+    var rows = group.rows.slice(0, 4);
     return "<div class='market-card'><div class='market-auto-head'><div class='mc-title " + group.cls + "'>" + group.title + "</div><div class='market-count'>" + group.rows.length + "</div></div>" +
-      rows.map(function(row){ return renderMarketItem(row, key); }).join("") +
+      (rows.length ? rows.map(renderMarketItem).join("") : "<div class='market-source'>Nessun segnale in questo gruppo</div>") +
       "</div>";
   }).join("");
-  grid.innerHTML = "<div class='market-spotlight'>" +
-    "<div><div class='market-spot-kicker'>Segnale principale</div><div class='market-spot-title'>" + icvEsc(marketTitle(spotlight)) + "</div></div>" +
-    "<div class='market-spot-note'>" + icvEsc(marketNote(spotlight)) + "</div>" +
-    "<div class='market-spot-meta'>" + icvEsc(marketGroupLabel(spotlight, marketGroup(spotlight))) + " · " + icvEsc(marketMeta(spotlight)) + "</div>" +
-    "</div><div class='market-lanes'>" + lanes + "</div>";
 }
-function renderMarketItem(row, groupKey) {
-  var label = marketGroupLabel(row, groupKey);
-  var badgeClass = groupKey === "uscite" ? "b-out" : groupKey === "arrivi" ? "b-uff" : marketBadgeClass(row);
+function renderMarketItem(row) {
   return "<div class='transfer-item'>" +
-    "<div class='t-info'><div class='t-name'>" + icvEsc(marketTitle(row)) + "</div>" +
-    "<div class='t-from'>" + icvEsc(marketNote(row)) + "</div>" +
+    "<div class='t-avatar'>" + icvEsc(initials(row.player_name)) + "</div>" +
+    "<div class='t-info'><div class='t-name'>" + icvEsc(row.player_name || "Mercato Juve") + "</div>" +
+    "<div class='t-from'>" + icvEsc(row.note || "Aggiornamento mercato") + "</div>" +
     "<div class='market-source'>" + icvEsc(row.source_name || "ICV") + "</div></div>" +
-    "<span class='t-badge " + badgeClass + "'>" + icvEsc(label) + "</span></div>";
+    "<span class='t-badge " + marketBadgeClass(row) + "'>" + icvEsc(marketStatusLabel(row)) + "</span></div>";
 }
 function renderMarketFeed(rows) {
   var el = document.getElementById("mercatoFeed");
   if (!el) return;
   var list = Array.isArray(rows) ? rows.filter(Boolean) : [];
   if (!list.length) {
-    el.classList.remove("market-feed-grid");
     el.innerHTML = "<div class='market-empty'>Nessun aggiornamento mercato disponibile.</div>";
     return;
   }
-  el.classList.add("market-feed-grid");
-  el.innerHTML = list.slice(0, 8).map(function(item) {
+  el.innerHTML = list.slice(0, 10).map(function(item) {
     var d = item.updated_at ? new Date(item.updated_at).toLocaleDateString("it-IT",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}) : "";
     var link = item.source_url ? " data-url='" + icvAttr(item.source_url) + "' onclick='openMarketSource(this)'" : "";
     return "<div class='result-item'" + link + " style='cursor:" + (item.source_url ? "pointer" : "default") + "'>" +
       "<div class='res-badge' style='background:rgba(96,165,250,0.13);color:#60a5fa;border:1px solid rgba(96,165,250,0.26);font-size:11px;font-family:\"Bebas Neue\"'>M</div>" +
-      "<div class='res-teams'><div class='res-name'>" + icvEsc(marketNote(item)) + "</div>" +
+      "<div class='res-teams'><div class='res-name'>" + icvEsc(item.note || item.player_name || "Mercato Juve") + "</div>" +
       "<div class='res-comp'>" + icvEsc(marketStatusLabel(item)) + (item.source_name ? " &middot; " + icvEsc(item.source_name) : "") + (d ? " &middot; " + d : "") + "</div></div></div>";
   }).join("");
 }

@@ -413,6 +413,21 @@ async function adminNews(request, env) {
       return json({ graphics });
     }
 
+    if (body.type === "move_graphic") {
+      const current = normalizeGraphics(await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS));
+      const index = current.findIndex(item => item.id === body.id);
+      const target = index + (body.direction === "down" ? 1 : -1);
+      if (index >= 0 && target >= 0 && target < current.length) {
+        const graphics = current.slice();
+        const moving = graphics[index];
+        graphics[index] = graphics[target];
+        graphics[target] = moving;
+        await setSiteSetting(env, "graphics_gallery", graphics);
+        return json({ graphics });
+      }
+      return json({ graphics: current });
+    }
+
     if (body.type === "delete_graphic") {
       const current = normalizeGraphics(await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS));
       const graphics = current.filter(item => item.id !== body.id);
@@ -850,8 +865,7 @@ function publicSocialRows(rows) {
 
 function publicGraphicsRows(rows) {
   return normalizeGraphics(rows)
-    .filter(item => item.visible !== false && item.image_url)
-    .sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    .filter(item => item.visible !== false && item.image_url);
 }
 
 function inlineGraphicImage(body) {

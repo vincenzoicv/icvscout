@@ -20,7 +20,15 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 .tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.tab{background:transparent;border:1px solid var(--bdr2);color:var(--t3);font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:8px 10px;border-radius:5px;cursor:pointer}.tab.active{color:var(--gold-l);border-color:rgba(196,150,42,.4);background:rgba(196,150,42,.08)}
 .item{border:1px solid var(--bdr2);border-radius:8px;padding:13px;margin-bottom:10px;background:rgba(255,255,255,.025)}.item-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}.item h3{font-family:"Barlow Condensed";font-size:18px;line-height:1.2}.item p{color:var(--t2);font-size:14px;line-height:1.55;margin:8px 0}.meta{font-family:"Barlow Condensed";font-size:11px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase}.pill{display:inline-block;border-radius:3px;padding:3px 7px;font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-right:5px}.official{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25)}.trusted{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.25)}.rumor{background:rgba(245,158,11,.1);color:var(--orange);border:1px solid rgba(245,158,11,.25)}.aggregator{background:rgba(248,113,113,.08);color:var(--red);border:1px solid rgba(248,113,113,.22)}
 .item-actions{display:flex;gap:6px;flex-wrap:wrap}.small{padding:7px 9px;font-size:11px}.empty{padding:24px;text-align:center;color:var(--t3);font-family:"Barlow Condensed";letter-spacing:1px;border:1px dashed var(--bdr2);border-radius:8px}.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);opacity:0;z-index:50;background:rgba(196,150,42,.96);color:#050505;border-radius:7px;padding:11px 18px;font-family:"Barlow Condensed";font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.graphic-preview{min-height:190px;border:1px dashed var(--bdr);border-radius:9px;background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;color:var(--t3);font-family:"Barlow Condensed";font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;overflow:hidden}
+.graphic-preview img{display:block;width:100%;max-height:320px;object-fit:contain;background:#0b0b0b}
+.graphic-admin-card{display:grid;grid-template-columns:110px 1fr;gap:13px;align-items:center}
+.graphic-thumb{width:110px;aspect-ratio:4/5;object-fit:cover;border:1px solid var(--bdr);border-radius:8px;background:#080808}
+.visibility-btn{border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.08);color:var(--green)}
+.visibility-btn.visible{border-color:rgba(245,158,11,.38);background:rgba(245,158,11,.1);color:var(--orange)}
+.order-btn{min-width:36px;text-align:center}
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
+@media(max-width:620px){.graphic-admin-card{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}}
 </style>
 </head>
 <body>
@@ -150,6 +158,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <div class="form" style="margin-bottom:12px">
             <div><label>Titolo</label><input id="graphicTitle" placeholder="Es. Pagellone finale"></div>
             <div><label>Immagine</label><input id="graphicFile" type="file" accept="image/*"></div>
+            <div id="graphicPreview" class="graphic-preview">Anteprima immagine</div>
             <div><label>Link opzionale</label><input id="graphicLinkUrl" placeholder="Instagram, post o pagina collegata"></div>
             <button class="ghost" onclick="addGraphic()">Aggiungi Grafica</button>
           </div>
@@ -298,6 +307,8 @@ function addGraphic(){
   }).then(function(){
     ["graphicTitle","graphicLinkUrl"].forEach(function(id){ document.getElementById(id).value = ""; });
     if(input) input.value = "";
+    var preview = document.getElementById("graphicPreview");
+    if(preview) preview.innerHTML = "Anteprima immagine";
     showToast("Grafica aggiunta");
     load();
   }).catch(function(err){ showToast(err.message); });
@@ -311,6 +322,11 @@ function deleteGraphic(id){
   if(!confirm("Eliminare questa grafica?")) return;
   api("/api/admin/news", {method:"PATCH", body:{type:"delete_graphic", id:id}})
     .then(function(){ showToast("Grafica eliminata"); load(); })
+    .catch(function(err){ showToast(err.message); });
+}
+function moveGraphic(id, direction){
+  api("/api/admin/news", {method:"PATCH", body:{type:"move_graphic", id:id, direction:direction}})
+    .then(function(){ showToast("Ordine aggiornato"); load(); })
     .catch(function(err){ showToast(err.message); });
 }
 function render(){
@@ -393,13 +409,28 @@ function renderGraphics(){
   var list = document.getElementById("graphicsList");
   if(!list) return;
   if(!state.graphics.length){ list.innerHTML = "<div class='empty'>Aggiungi le grafiche che vuoi mostrare sul sito.</div>"; return; }
-  list.innerHTML = state.graphics.map(function(g){
+  list.innerHTML = state.graphics.map(function(g, index){
     var link = g.link_url ? " · <a href='"+escAttr(g.link_url)+"' target='_blank' style='color:var(--gold-l)'>apri link</a>" : "";
-    return "<div class='item'><div class='item-head'><div><h3>"+esc(g.title || "Grafica ICV")+"</h3></div><div class='meta'>"+(g.visible === false ? "nascosta" : "visibile")+"</div></div><div class='meta'>immagine"+link+"</div><div class='item-actions' style='margin-top:10px'><button class='ghost small' onclick='toggleGraphic(\""+escAttr(g.id)+"\","+(g.visible !== false)+")'>"+(g.visible === false ? "Mostra" : "Nascondi")+"</button><button class='danger small' onclick='deleteGraphic(\""+escAttr(g.id)+"\")'>Elimina</button></div></div>";
+    var img = g.image_url ? "<img class='graphic-thumb' src='"+escAttr(g.image_url)+"' alt='"+escAttr(g.title || "Grafica ICV")+"'>" : "<div class='graphic-thumb'></div>";
+    return "<div class='item graphic-admin-card'>" + img + "<div><div class='item-head'><div><h3>"+esc(g.title || "Grafica ICV")+"</h3><div class='meta'>"+(g.visible === false ? "nascosta" : "visibile")+link+"</div></div></div><div class='item-actions' style='margin-top:10px'><button class='ghost small order-btn' "+(index === 0 ? "disabled" : "")+" onclick='moveGraphic(\""+escAttr(g.id)+"\",\"up\")'>Su</button><button class='ghost small order-btn' "+(index === state.graphics.length - 1 ? "disabled" : "")+" onclick='moveGraphic(\""+escAttr(g.id)+"\",\"down\")'>Giu</button><button class='small visibility-btn "+(g.visible === false ? "" : "visible")+"' onclick='toggleGraphic(\""+escAttr(g.id)+"\","+(g.visible !== false)+")'>"+(g.visible === false ? "Mostra" : "Nascondi")+"</button><button class='danger small' onclick='deleteGraphic(\""+escAttr(g.id)+"\")'>Elimina</button></div></div></div>";
   }).join("");
 }
 function val(id){ return document.getElementById(id).value.trim(); }
 function setVal(id,value){ var el=document.getElementById(id); if(el) el.value=value == null ? "" : value; }
+function previewGraphicFile(){
+  var input = document.getElementById("graphicFile");
+  var box = document.getElementById("graphicPreview");
+  if(!input || !box) return;
+  var file = input.files && input.files[0];
+  if(!file){ box.innerHTML = "Anteprima immagine"; return; }
+  var url = URL.createObjectURL(file);
+  var img = new Image();
+  img.onload = function(){ URL.revokeObjectURL(url); };
+  img.alt = "Anteprima grafica";
+  img.src = url;
+  box.innerHTML = "";
+  box.appendChild(img);
+}
 function prepareGraphicUpload(file){
   return compressImage(file).then(function(upload){
     if(upload.imageData.length > 950 * 1024) throw new Error("Immagine troppo pesante: prova a ridurla o salvarla in JPG");
@@ -440,6 +471,8 @@ function date(value){ if(!value) return ""; return new Date(value).toLocaleDateS
 function labelRel(value){ return {official:"Ufficiale",trusted:"Affidabile",rumor:"Rumor",aggregator:"Da verificare"}[value] || value || "Affidabile"; }
 function showToast(msg){ var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(function(){t.classList.remove("show")},2600); }
 document.getElementById("tokenInput").addEventListener("keydown", function(e){ if(e.key==="Enter") login(); });
+var graphicFileInput = document.getElementById("graphicFile");
+if(graphicFileInput) graphicFileInput.addEventListener("change", previewGraphicFile);
 if(token()) login();
 </script>
 </body>

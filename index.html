@@ -349,6 +349,8 @@ nav{display:none;}.mob-nav{display:flex;}
 .graphic-card img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:#101010;}
 .graphic-card h3{font-family:'Barlow Condensed';font-size:20px;font-weight:800;line-height:1.1;color:var(--white);padding:12px 12px 14px;}
 .graphic-empty{font-family:'Barlow Condensed';font-size:15px;color:var(--t3);letter-spacing:1px;text-align:center;padding:40px 20px;background:var(--d2);border:1px solid var(--bdr2);border-radius:10px;grid-column:1/-1;}
+.graphics-more{grid-column:1/-1;display:flex;align-items:center;justify-content:center;min-height:54px;border:1px solid rgba(196,150,42,.28);border-radius:10px;background:rgba(196,150,42,.08);color:var(--gold-l);text-decoration:none;font-family:'Barlow Condensed';font-size:13px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;transition:all .25s ease;}
+.graphics-more:hover{border-color:rgba(196,150,42,.48);background:rgba(196,150,42,.14);transform:translateY(-1px);}
 .breaking-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#f87171;margin-right:6px;animation:pulse 1.5s ease infinite;}
 @media(max-width:768px){
   .news-grid{grid-template-columns:1fr;}
@@ -371,7 +373,7 @@ nav{display:none;}.mob-nav{display:flex;}
     <button class="active" onclick="showSection('home',this)">Home</button>
     <button onclick="showSection('statistiche',this)">Statistiche</button>
     <button onclick="showSection('mercato',this)">Mercato</button>
-    <button onclick="showSection('grafiche',this)">Grafiche</button>
+    <button onclick="location.href='grafiche.html'">Grafiche</button>
     <button onclick="showSection('news',this)">News</button>
   </nav>
   <div class="hsocial">
@@ -417,7 +419,7 @@ nav{display:none;}.mob-nav{display:flex;}
       <button onclick="showSection('news')">News</button>
       <button onclick="showSection('mercato')">Mercato</button>
       <button onclick="showSection('statistiche')">Stats</button>
-      <button onclick="showSection('grafiche')">Grafiche</button>
+      <button onclick="location.href='grafiche.html'">Grafiche</button>
     </div>
   </div>
   <div class="home-panel">
@@ -537,7 +539,7 @@ nav{display:none;}.mob-nav{display:flex;}
   <button class="mob-btn active" onclick="showSec('home',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="12" y1="3" x2="12" y2="21"/></svg>Home</button>
   <button class="mob-btn" onclick="showSec('statistiche',this)"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Stats</button>
   <button class="mob-btn" onclick="showSec('mercato',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Mercato</button>
-  <button class="mob-btn" onclick="showSec('grafiche',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Grafiche</button>
+  <button class="mob-btn" onclick="location.href='grafiche.html'"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>Grafiche</button>
   <button class="mob-btn" onclick="showSec('news',this)"><svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><line x1="11" y1="6" x2="17" y2="6"/><line x1="11" y1="10" x2="17" y2="10"/><line x1="11" y1="14" x2="13" y2="14"/></svg>News</button>
   <button class="mob-btn" onclick="toggleTheme()"><svg viewBox="0 0 24 24" id="mobIcon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>Tema</button>
 </nav>
@@ -1093,14 +1095,15 @@ function renderGraphics(rows) {
     grid.innerHTML = "<div class='graphic-empty'>Nessuna grafica pubblicata.</div>";
     return;
   }
-  grid.innerHTML = rows.map(function(g) {
+  var homeRows = rows.slice(0, 6);
+  grid.innerHTML = homeRows.map(function(g) {
     var tag = g.link_url ? "a" : "div";
     var attrs = g.link_url ? " href='" + icvEsc(g.link_url) + "' target='_blank' rel='noopener'" : "";
     return "<" + tag + " class='graphic-card'" + attrs + ">" +
       "<img src='" + icvEsc(g.image_url) + "' alt='" + icvEsc(g.title || "Grafica ICV") + "' loading='lazy'>" +
       "<h3>" + icvEsc(g.title || "Grafica ICV") + "</h3>" +
       "</" + tag + ">";
-  }).join("");
+  }).join("") + (rows.length > 6 ? "<a class='graphics-more' href='grafiche.html'>Archivio completo</a>" : "");
 }
 
 function loadAndRenderNews() {

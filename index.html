@@ -989,7 +989,7 @@ function loadHomeDashboard() {
       document.getElementById("homeMatchTitle").textContent = matches[0].title || matches[0].opponent || "Match Center";
       document.getElementById("homeMatchText").textContent = matches[0].summary || matches[0].tactical_key || "Scheda match pronta.";
     }
-    renderHomeList("homeNewsList", news, function(n) {
+    renderHomeList("homeNewsList", news[0] ? news.slice(1) : news, function(n) {
       return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : "")};
     });
     renderHomeList("homeMarketList", market, function(m) {

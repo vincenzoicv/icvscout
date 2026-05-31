@@ -255,6 +255,11 @@ body.light .standings-table td{color:#1b1710;border-bottom-color:rgba(0,0,0,0.07
 body.light .standings-table tr:hover td{background:rgba(196,150,42,0.08);}
 body.light .standings-table tr.juve-row td{color:#9a6c13;background:rgba(196,150,42,0.12);}
 body.light .standings-loading{color:rgba(0,0,0,0.48);}
+body.light .legend-ucl{color:#2563eb;}
+body.light .legend-uel{color:#c2410c;}
+body.light .legend-rel{color:#dc2626;}
+body.light .legend-out{color:rgba(0,0,0,0.54);}
+body.light .standings-source{color:rgba(0,0,0,0.50);}
 body.light .tooltip{background:#f8f5ed;border-color:rgba(196,150,42,0.24);box-shadow:0 8px 28px rgba(65,48,16,0.18);}
 body.light .tt-name{color:#111;}
 body.light footer{border-top-color:rgba(196,150,42,0.15);}
@@ -352,6 +357,13 @@ nav{display:none;}.mob-nav{display:flex;}
 .st-pts { font-family:"Bebas Neue"; font-size:20px; color:var(--gold-l); }
 .st-num { font-size:14px; color:var(--t2); }
 .standings-loading { font-family:"Barlow Condensed"; font-size:14px; letter-spacing:2px; color:var(--t3); text-align:center; padding:24px; text-transform:uppercase; }
+.standings-legend{margin-top:12px;display:flex;gap:16px;flex-wrap:wrap;}
+.standings-legend span,.standings-source{font-family:"Barlow Condensed";font-size:12px;letter-spacing:1px;font-weight:700;text-transform:uppercase;}
+.legend-ucl{color:#60a5fa;}
+.legend-uel{color:#f97316;}
+.legend-rel{color:#f87171;}
+.legend-out{color:var(--t3);}
+.standings-source{margin-top:8px;color:var(--t3);font-size:11px;}
 
 /* ── NEWS SECTION ── */
 .news-section{padding:44px 20px 52px;max-width:1100px;margin:0 auto;}
@@ -504,36 +516,7 @@ nav{display:none;}.mob-nav{display:flex;}
   </div>
   <div class="chart-box" style="padding:16px;">
     <div id="standingsTable">
-<table class='standings-table'>
-<tr><th class='left' colspan='2'>Squadra</th><th>G</th><th>V</th><th>P</th><th>S</th><th>Pts</th></tr>
-<tr><td class='st-pos ucl'>1</td><td class='left st-team'>Inter</td><td class='st-num'>37</td><td class='st-num'>27</td><td class='st-num'>5</td><td class='st-num'>5</td><td class='st-pts'>86</td></tr>
-<tr><td class='st-pos ucl'>2</td><td class='left st-team'>Napoli</td><td class='st-num'>37</td><td class='st-num'>22</td><td class='st-num'>7</td><td class='st-num'>8</td><td class='st-pts'>73</td></tr>
-<tr><td class='st-pos ucl'>3</td><td class='left st-team'>Milan</td><td class='st-num'>37</td><td class='st-num'>21</td><td class='st-num'>7</td><td class='st-num'>9</td><td class='st-pts'>70</td></tr>
-<tr><td class='st-pos ucl'>4</td><td class='left st-team'>Roma</td><td class='st-num'>37</td><td class='st-num'>21</td><td class='st-num'>7</td><td class='st-num'>9</td><td class='st-pts'>70</td></tr>
-<tr><td class='st-pos uel'>5</td><td class='left st-team'>Como</td><td class='st-num'>37</td><td class='st-num'>20</td><td class='st-num'>8</td><td class='st-num'>9</td><td class='st-pts'>68</td></tr>
-<tr class='juve-row'><td class='st-pos uel'>6</td><td class='left st-team'>Juventus &#9733;</td><td class='st-num'>37</td><td class='st-num'>20</td><td class='st-num'>8</td><td class='st-num'>9</td><td class='st-pts'>68</td></tr>
-<tr><td class='st-pos'>7</td><td class='left st-team'>Atalanta</td><td class='st-num'>37</td><td class='st-num'>16</td><td class='st-num'>10</td><td class='st-num'>11</td><td class='st-pts'>58</td></tr>
-<tr><td class='st-pos'>8</td><td class='left st-team'>Bologna</td><td class='st-num'>37</td><td class='st-num'>15</td><td class='st-num'>10</td><td class='st-num'>12</td><td class='st-pts'>55</td></tr>
-<tr><td class='st-pos'>9</td><td class='left st-team'>Lazio</td><td class='st-num'>37</td><td class='st-num'>14</td><td class='st-num'>9</td><td class='st-num'>14</td><td class='st-pts'>51</td></tr>
-<tr><td class='st-pos'>10</td><td class='left st-team'>Udinese</td><td class='st-num'>37</td><td class='st-num'>14</td><td class='st-num'>8</td><td class='st-num'>15</td><td class='st-pts'>50</td></tr>
-<tr><td class='st-pos'>11</td><td class='left st-team'>Sassuolo</td><td class='st-num'>37</td><td class='st-num'>14</td><td class='st-num'>7</td><td class='st-num'>16</td><td class='st-pts'>49</td></tr>
-<tr><td class='st-pos'>12</td><td class='left st-team'>Torino</td><td class='st-num'>37</td><td class='st-num'>12</td><td class='st-num'>8</td><td class='st-num'>17</td><td class='st-pts'>44</td></tr>
-<tr><td class='st-pos'>13</td><td class='left st-team'>Parma</td><td class='st-num'>37</td><td class='st-num'>11</td><td class='st-num'>9</td><td class='st-num'>17</td><td class='st-pts'>42</td></tr>
-<tr><td class='st-pos'>14</td><td class='left st-team'>Genoa</td><td class='st-num'>37</td><td class='st-num'>11</td><td class='st-num'>8</td><td class='st-num'>18</td><td class='st-pts'>41</td></tr>
-<tr><td class='st-pos'>15</td><td class='left st-team'>Fiorentina</td><td class='st-num'>37</td><td class='st-num'>11</td><td class='st-num'>8</td><td class='st-num'>18</td><td class='st-pts'>41</td></tr>
-<tr><td class='st-pos'>16</td><td class='left st-team'>Cagliari</td><td class='st-num'>37</td><td class='st-num'>11</td><td class='st-num'>7</td><td class='st-num'>19</td><td class='st-pts'>40</td></tr>
-<tr><td class='st-pos rel'>17</td><td class='left st-team'>Lecce</td><td class='st-num'>37</td><td class='st-num'>9</td><td class='st-num'>8</td><td class='st-num'>20</td><td class='st-pts'>35</td></tr>
-<tr><td class='st-pos rel'>18</td><td class='left st-team'>Cremonese</td><td class='st-num'>37</td><td class='st-num'>9</td><td class='st-num'>7</td><td class='st-num'>21</td><td class='st-pts'>34</td></tr>
-<tr><td class='st-pos rel'>19</td><td class='left st-team'>Verona *</td><td class='st-num'>37</td><td class='st-num'>4</td><td class='st-num'>9</td><td class='st-num'>24</td><td class='st-pts'>21</td></tr>
-<tr><td class='st-pos rel'>20</td><td class='left st-team'>Pisa *</td><td class='st-num'>37</td><td class='st-num'>3</td><td class='st-num'>9</td><td class='st-num'>25</td><td class='st-pts'>18</td></tr>
-</table>
-<div style='margin-top:12px;display:flex;gap:16px;flex-wrap:wrap;'>
-<span style='font-family:Barlow Condensed;font-size:12px;color:#60a5fa;letter-spacing:1px;'>&#9632; Champions League</span>
-<span style='font-family:Barlow Condensed;font-size:12px;color:#f97316;letter-spacing:1px;'>&#9632; Europa / Conference</span>
-<span style='font-family:Barlow Condensed;font-size:12px;color:#f87171;letter-spacing:1px;'>&#9632; Retrocessione</span>
-<span style='font-family:Barlow Condensed;font-size:12px;color:var(--t3);letter-spacing:1px;'>* Retrocesse</span>
-</div>
-<div style='margin-top:8px;font-family:Barlow Condensed;font-size:11px;color:var(--t3);letter-spacing:1px;'>Aggiornata alla 37&#170; giornata &middot; Si aggiorna automaticamente dopo la 38&#170;</div>
+      <div class="standings-loading">Caricamento classifica finale...</div>
 </div>
   </div>
 
@@ -724,18 +707,54 @@ var FD_BASE = "/api/football-data";
 var JUVE_ID = 109; // Juventus ID in football-data.org
 var SERIE_A_ID = "SA"; // Serie A competition code
 var CACHE_TTL = 60 * 60 * 1000;
+var CACHE_VERSION = "2026-05-31-final";
+var STANDINGS_FINAL_MATCHDAY = 38;
+var STANDINGS_FINAL_SOURCE = "Classifica finale Serie A 2025/26 · fonte Lega Serie A / Sports Mole";
+var ICV_STANDINGS_FALLBACK = [
+  {position:1, team:{id:0, name:"Inter"}, playedGames:38, won:27, draw:6, lost:5, goalsFor:89, goalsAgainst:35, goalDifference:54, points:87},
+  {position:2, team:{id:0, name:"Napoli"}, playedGames:38, won:23, draw:7, lost:8, goalsFor:58, goalsAgainst:36, goalDifference:22, points:76},
+  {position:3, team:{id:0, name:"Roma"}, playedGames:38, won:23, draw:4, lost:11, goalsFor:59, goalsAgainst:31, goalDifference:28, points:73},
+  {position:4, team:{id:0, name:"Como"}, playedGames:38, won:20, draw:11, lost:7, goalsFor:65, goalsAgainst:29, goalDifference:36, points:71},
+  {position:5, team:{id:0, name:"Milan"}, playedGames:38, won:20, draw:10, lost:8, goalsFor:53, goalsAgainst:35, goalDifference:18, points:70},
+  {position:6, team:{id:JUVE_ID, name:"Juventus"}, playedGames:38, won:19, draw:12, lost:7, goalsFor:61, goalsAgainst:34, goalDifference:27, points:69},
+  {position:7, team:{id:0, name:"Atalanta"}, playedGames:38, won:15, draw:14, lost:9, goalsFor:51, goalsAgainst:36, goalDifference:15, points:59},
+  {position:8, team:{id:0, name:"Bologna"}, playedGames:38, won:16, draw:8, lost:14, goalsFor:49, goalsAgainst:46, goalDifference:3, points:56},
+  {position:9, team:{id:0, name:"Lazio"}, playedGames:38, won:14, draw:12, lost:12, goalsFor:41, goalsAgainst:40, goalDifference:1, points:54},
+  {position:10, team:{id:0, name:"Udinese"}, playedGames:38, won:14, draw:8, lost:16, goalsFor:45, goalsAgainst:48, goalDifference:-3, points:50},
+  {position:11, team:{id:0, name:"Sassuolo"}, playedGames:38, won:14, draw:7, lost:17, goalsFor:46, goalsAgainst:50, goalDifference:-4, points:49},
+  {position:12, team:{id:0, name:"Torino"}, playedGames:38, won:12, draw:9, lost:17, goalsFor:44, goalsAgainst:63, goalDifference:-19, points:45},
+  {position:13, team:{id:0, name:"Parma"}, playedGames:38, won:11, draw:12, lost:15, goalsFor:28, goalsAgainst:46, goalDifference:-18, points:45},
+  {position:14, team:{id:0, name:"Cagliari"}, playedGames:38, won:11, draw:10, lost:17, goalsFor:40, goalsAgainst:53, goalDifference:-13, points:43},
+  {position:15, team:{id:0, name:"Fiorentina"}, playedGames:38, won:9, draw:15, lost:14, goalsFor:41, goalsAgainst:50, goalDifference:-9, points:42},
+  {position:16, team:{id:0, name:"Genoa"}, playedGames:38, won:10, draw:11, lost:17, goalsFor:41, goalsAgainst:51, goalDifference:-10, points:41},
+  {position:17, team:{id:0, name:"Lecce"}, playedGames:38, won:10, draw:8, lost:20, goalsFor:28, goalsAgainst:50, goalDifference:-22, points:38},
+  {position:18, team:{id:0, name:"Cremonese"}, playedGames:38, won:8, draw:10, lost:20, goalsFor:32, goalsAgainst:57, goalDifference:-25, points:34},
+  {position:19, team:{id:0, name:"Verona *"}, playedGames:38, won:3, draw:12, lost:23, goalsFor:25, goalsAgainst:61, goalDifference:-36, points:21},
+  {position:20, team:{id:0, name:"Pisa *"}, playedGames:38, won:2, draw:12, lost:24, goalsFor:26, goalsAgainst:71, goalDifference:-45, points:18}
+];
 
 function cacheSet(key, data) {
-  try { localStorage.setItem("icv_" + key, JSON.stringify({ts: Date.now(), data: data})); } catch(e) {}
+  try { localStorage.setItem("icv_" + CACHE_VERSION + "_" + key, JSON.stringify({ts: Date.now(), data: data})); } catch(e) {}
 }
 function cacheGet(key) {
   try {
-    var raw = localStorage.getItem("icv_" + key);
+    var raw = localStorage.getItem("icv_" + CACHE_VERSION + "_" + key);
     if (!raw) return null;
     var parsed = JSON.parse(raw);
     if (Date.now() - parsed.ts > CACHE_TTL) return null;
     return parsed.data;
   } catch(e) { return null; }
+}
+
+function isFreshStandings(table) {
+  if (!table || !table.length) return false;
+  for (var i = 0; i < table.length; i++) {
+    var row = table[i];
+    if (row.team && row.team.id === JUVE_ID) {
+      return Number(row.playedGames) >= STANDINGS_FINAL_MATCHDAY && Number(row.points) >= 69;
+    }
+  }
+  return false;
 }
 
 function fdFetch(endpoint, callback) {
@@ -874,16 +893,22 @@ function renderResults(matches) {
 // ── CLASSIFICA ──
 function loadStandings() {
   var cached = cacheGet("standings");
-  if (cached) { renderStandings(cached); return; }
+  if (isFreshStandings(cached)) {
+    renderStandings(cached, "Dati live da football-data.org");
+    return;
+  }
   fdFetch("/competitions/" + SERIE_A_ID + "/standings", function(err, data) {
-    if (err || !data || !data.standings || !data.standings.length) return;
-    var table = data.standings[0].table;
-    cacheSet("standings", table);
-    renderStandings(table);
+    var table = data && data.standings && data.standings[0] && data.standings[0].table;
+    if (!err && isFreshStandings(table)) {
+      cacheSet("standings", table);
+      renderStandings(table, "Dati live da football-data.org");
+      return;
+    }
+    renderStandings(ICV_STANDINGS_FALLBACK, STANDINGS_FINAL_SOURCE);
   });
 }
 
-function renderStandings(table) {
+function renderStandings(table, sourceLabel) {
   // Update stat cards with Juve data
   var juve = null;
   for (var i = 0; i < table.length; i++) {
@@ -966,12 +991,13 @@ function renderStandings(table) {
     html += "</tr>";
   });
   html += "</table>";
-  html += "<div style='margin-top:12px;display:flex;gap:16px;flex-wrap:wrap;'>";
-  html += "<span style='font-family:Barlow Condensed;font-size:12px;color:#60a5fa;letter-spacing:1px;'>&#9632; Champions League</span>";
-  html += "<span style='font-family:Barlow Condensed;font-size:12px;color:#f97316;letter-spacing:1px;'>&#9632; Europa / Conference</span>";
-  html += "<span style='font-family:Barlow Condensed;font-size:12px;color:#f87171;letter-spacing:1px;'>&#9632; Retrocessione</span>";
+  html += "<div class='standings-legend'>";
+  html += "<span class='legend-ucl'>&#9632; Champions League</span>";
+  html += "<span class='legend-uel'>&#9632; Europa / Conference</span>";
+  html += "<span class='legend-rel'>&#9632; Retrocessione</span>";
+  html += "<span class='legend-out'>* Retrocesse</span>";
   html += "</div>";
-  html += "<div style='margin-top:8px;font-family:Barlow Condensed;font-size:11px;color:var(--t3);letter-spacing:1px;'>Dati live da football-data.org</div>";
+  html += "<div class='standings-source'>" + (sourceLabel || "Dati live da football-data.org") + "</div>";
   container.innerHTML = html;
 }
 

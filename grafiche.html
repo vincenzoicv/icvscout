@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Grafiche ICV - Il Calcio di Vince</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#C4962A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ICV Scout">
+<link rel="apple-touch-icon" href="/icon-512.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{--gold:#C4962A;--gold-l:#E8B84B;--black:#050505;--d1:#0b0b0b;--d2:#151515;--white:#f4f1ea;--t2:rgba(255,255,255,.68);--t3:rgba(255,255,255,.42);--bdr:rgba(196,150,42,.18);--bdr2:rgba(255,255,255,.08)}
@@ -63,6 +69,11 @@ function renderGraphics(rows){
   }).join("");
 }
 fetch("/api/public/graphics").then(function(response){return response.json();}).then(function(data){renderGraphics(data || []);}).catch(function(){document.getElementById("graphicsArchive").innerHTML = "<div class='empty'>Grafiche non disponibili</div>";});
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("/sw.js").catch(function(){});
+  });
+}
 </script>
 </body>
 </html>

@@ -50,7 +50,13 @@ nav button:hover,nav button.active{color:var(--gold-l);background:rgba(196,150,4
 .hsocial{display:flex;align-items:center;gap:6px;}
 .hsocial a{display:flex;align-items:center;justify-content:center;width:34px;height:34px;color:rgba(196,150,42,0.78);text-decoration:none;border:1px solid rgba(196,150,42,0.25);border-radius:4px;transition:all 0.2s;}
 .hsocial a:hover{color:var(--gold-l);border-color:rgba(196,150,42,0.55);background:rgba(196,150,42,0.07);}
-.theme-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(196,150,42,0.25);background:rgba(196,150,42,0.05);color:var(--gold-l);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
+.theme-toggle{height:34px;min-width:98px;border:1px solid rgba(196,150,42,0.28);border-radius:999px;background:#202020;color:rgba(255,255,255,0.82);cursor:pointer;display:flex;align-items:center;gap:8px;padding:3px 11px 3px 3px;font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;transition:all 0.22s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,0.07),0 6px 18px rgba(0,0,0,0.18);}
+.theme-toggle:hover{border-color:rgba(196,150,42,0.55);transform:translateY(-1px);}
+.theme-toggle-knob{width:28px;height:28px;border-radius:50%;background:#f5f2e9;color:#111;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,0.28);transition:background 0.24s ease,color 0.24s ease;}
+.theme-icon{position:absolute;width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:opacity 0.18s ease,transform 0.18s ease;}
+.sun-icon{opacity:0;transform:scale(0.65) rotate(-30deg);}
+.moon-icon{opacity:1;transform:scale(1) rotate(0deg);}
+.theme-toggle-label{white-space:nowrap;}
 main{padding-top:58px;position:relative;z-index:1;}
 .hero{position:relative;min-height:460px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:68px 24px 52px;text-align:center;}
 .hero-glow{position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:700px;height:500px;border-radius:50%;background:radial-gradient(ellipse at center,rgba(196,150,42,0.10) 0%,transparent 65%);pointer-events:none;z-index:0;animation:breathe 5s ease-in-out infinite;}
@@ -213,6 +219,10 @@ body.light header{background:rgba(244,242,236,0.95);}
 body.light nav button{color:rgba(0,0,0,0.48);}
 body.light nav button:hover,body.light nav button.active{color:var(--gold);background:rgba(196,150,42,0.10);}
 body.light .hlogo-sub{color:rgba(0,0,0,0.38);}
+body.light .theme-toggle{background:#e8e5dc;color:#25211a;border-color:rgba(0,0,0,0.10);padding:3px 3px 3px 11px;flex-direction:row-reverse;}
+body.light .theme-toggle-knob{background:#fff;color:#111;}
+body.light .sun-icon{opacity:1;transform:scale(1) rotate(0deg);}
+body.light .moon-icon{opacity:0;transform:scale(0.65) rotate(30deg);}
 body.light .manifesto{color:rgba(196,150,42,0.75);}
 body.light .match-banner{background:rgba(196,150,42,0.06);}
 body.light .home-panel{background:#e8e5dc;border-color:rgba(196,150,42,.18);}
@@ -244,6 +254,9 @@ body.light .mob-btn.active{color:var(--gold);}
 @media(max-width:768px){
 header{padding:0 14px;height:54px;}main{padding-top:54px;padding-bottom:66px;}
 nav{display:none;}.mob-nav{display:flex;}
+.theme-toggle{min-width:78px;height:32px;padding-right:9px;}
+.theme-toggle-label{font-size:10px;letter-spacing:1px;}
+.theme-toggle-knob{width:26px;height:26px;}
 .hero{min-height:360px;padding:58px 18px 42px;}.hero h1{font-size:clamp(58px,18vw,92px);}
 .home-dash{grid-template-columns:1fr;margin-top:0;padding:0 14px;}
 .home-panel{min-height:auto;}
@@ -303,6 +316,7 @@ nav{display:none;}.mob-nav{display:flex;}
 .section{padding:24px 12px 40px;}
 }
 @media(max-width:400px){.stat-val{font-size:40px;}.hero h1{font-size:54px;}}
+@media(max-width:520px){.hsocial a{display:none;}.theme-toggle{min-width:72px;}}
 
 .standings-table { width:100%; border-collapse:collapse; margin-top:4px; }
 .standings-table th { font-family:"Barlow Condensed"; font-size:11px; font-weight:700; letter-spacing:2px; color:var(--t3); text-transform:uppercase; padding:8px 10px; text-align:center; border-bottom:1px solid var(--bdr2); }
@@ -380,7 +394,13 @@ nav{display:none;}.mob-nav{display:flex;}
     <a href="https://instagram.com/ilcalciodivince_" target="_blank" title="Instagram"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
     <a href="https://www.tiktok.com/@ilcalciodivince" target="_blank" title="TikTok"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.77 1.52V6.76a4.84 4.84 0 0 1-1-.07z"/></svg></a>
     <a href="https://x.com/VikBrancato" target="_blank" title="X"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">&#127769;</button>
+    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" type="button" aria-label="Cambia tema" aria-pressed="false">
+      <span class="theme-toggle-knob" aria-hidden="true">
+        <svg class="theme-icon moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="theme-icon sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </span>
+      <span class="theme-toggle-label" id="themeLabel">Night</span>
+    </button>
   </div>
 </header>
 <main>
@@ -658,16 +678,24 @@ function showTab(id,btn){
   document.querySelectorAll(".tab-btn").forEach(function(b){b.classList.remove("active");});
   document.getElementById(id).classList.add("active");if(btn)btn.classList.add("active");
 }
+function syncThemeControl(){
+  var isLight=document.body.classList.contains("light");
+  var btn=document.getElementById("themeBtn");
+  var label=document.getElementById("themeLabel");
+  if(btn)btn.setAttribute("aria-pressed",isLight?"true":"false");
+  if(label)label.textContent=isLight?"Day":"Night";
+  var ic=document.getElementById("mobIcon");
+  if(ic)ic.innerHTML=isLight?"<circle cx='12' cy='12' r='5'/><line x1='12' y1='1' x2='12' y2='3'/><line x1='12' y1='21' x2='12' y2='23'/><line x1='4.22' y1='4.22' x2='5.64' y2='5.64'/><line x1='18.36' y1='18.36' x2='19.78' y2='19.78'/><line x1='1' y1='12' x2='3' y2='12'/><line x1='21' y1='12' x2='23' y2='12'/><line x1='4.22' y1='19.78' x2='5.64' y2='18.36'/><line x1='18.36' y1='5.64' x2='19.78' y2='4.22'/>":"<path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/>";
+}
 function toggleTheme(){
   var l=document.body.classList.toggle("light");
-  document.getElementById("themeBtn").textContent=l?"☀️":"🌙";
-  var ic=document.getElementById("mobIcon");
-  if(ic)ic.innerHTML=l?"<circle cx='12' cy='12' r='5'/><line x1='12' y1='1' x2='12' y2='3'/><line x1='12' y1='21' x2='12' y2='23'/><line x1='4.22' y1='4.22' x2='5.64' y2='5.64'/><line x1='18.36' y1='18.36' x2='19.78' y2='19.78'/><line x1='1' y1='12' x2='3' y2='12'/><line x1='21' y1='12' x2='23' y2='12'/><line x1='4.22' y1='19.78' x2='5.64' y2='18.36'/><line x1='18.36' y1='5.64' x2='19.78' y2='4.22'/>":"<path d='M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z'/>";
+  syncThemeControl();
   try{localStorage.setItem("icv-theme",l?"light":"dark");}catch(e){}
 }
 (function(){
   renderField();renderLineup();
-  try{if(localStorage.getItem("icv-theme")==="light"){document.body.classList.add("light");document.getElementById("themeBtn").textContent="☀️";}}catch(e){}
+  try{if(localStorage.getItem("icv-theme")==="light"){document.body.classList.add("light");}}catch(e){}
+  syncThemeControl();
 })();
 
 // ============================

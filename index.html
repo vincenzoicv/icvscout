@@ -214,32 +214,49 @@ footer{padding:20px;border-top:1px solid var(--bdr);display:flex;align-items:cen
 .tooltip.show{opacity:1;}
 .tt-name{font-family:"Barlow Condensed";font-size:15px;font-weight:800;color:#fff;letter-spacing:1px;margin-bottom:2px;}
 .tt-pos{font-family:"Barlow Condensed";font-size:11px;font-weight:700;letter-spacing:2.5px;color:rgba(196,150,42,0.9);text-transform:uppercase;}
-body.light{background:#f4f2ec;color:#111;}
+body.light{background:#f4f2ec;color:#111;--black:#f4f2ec;--d2:#e8e5dc;--d3:#ddd7cc;--white:#111;--t2:rgba(0,0,0,0.68);--t3:rgba(0,0,0,0.46);--bdr:rgba(196,150,42,0.22);--bdr2:rgba(0,0,0,0.08);}
 body.light header{background:rgba(244,242,236,0.95);}
 body.light nav button{color:rgba(0,0,0,0.48);}
 body.light nav button:hover,body.light nav button.active{color:var(--gold);background:rgba(196,150,42,0.10);}
 body.light .hlogo-sub{color:rgba(0,0,0,0.38);}
+body.light .hsocial a{color:rgba(154,108,19,0.86);border-color:rgba(196,150,42,0.26);background:rgba(255,255,255,0.25);}
+body.light .hsocial a:hover{color:#8B6520;border-color:rgba(196,150,42,0.48);background:rgba(196,150,42,0.10);}
 body.light .theme-toggle{background:#e8e5dc;color:#25211a;border-color:rgba(0,0,0,0.10);padding:3px 3px 3px 11px;flex-direction:row-reverse;}
 body.light .theme-toggle-knob{background:#fff;color:#111;}
 body.light .sun-icon{opacity:1;transform:scale(1) rotate(0deg);}
 body.light .moon-icon{opacity:0;transform:scale(0.65) rotate(30deg);}
+body.light .hero h1{background:linear-gradient(135deg,#111 0%,#2b2418 35%,#C4962A 72%,#8B6520 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+body.light .hero-desc{color:rgba(0,0,0,0.62);}
+body.light .sec-title{background:linear-gradient(135deg,#111 0%,rgba(0,0,0,0.68) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 body.light .manifesto{color:rgba(196,150,42,0.75);}
 body.light .match-banner{background:rgba(196,150,42,0.06);}
 body.light .home-panel{background:#e8e5dc;border-color:rgba(196,150,42,.18);}
 body.light .home-main-title,body.light .home-mini strong{color:#111;}
 body.light .home-text{color:rgba(0,0,0,.58);}
+body.light .home-auto{color:rgba(0,0,0,0.44);}
 body.light .mb-info span{color:rgba(0,0,0,0.42);}
 body.light .mb-info strong{color:rgba(0,0,0,0.80);}
 body.light .ctx-box{background:rgba(196,150,42,0.05);color:rgba(0,0,0,0.55);}
-body.light .field-card,body.light .lineup-card,body.light .stat-card,body.light .chart-box,body.light .result-item,body.light .market-card{background:#e8e5dc;border-color:rgba(196,150,42,0.18);}
-body.light .graphic-card,body.light .graphic-empty{background:#e8e5dc;border-color:rgba(196,150,42,0.18);}
+body.light .field-card,body.light .lineup-card,body.light .stat-card,body.light .chart-box,body.light .result-item,body.light .market-card,body.light .news-card{background:#e8e5dc;border-color:rgba(196,150,42,0.18);}
+body.light .graphic-card,body.light .graphic-empty,body.light .news-empty-state{background:#e8e5dc;border-color:rgba(196,150,42,0.18);}
 body.light .offseason-main,body.light .offseason-side{background:#e8e5dc;border-color:rgba(196,150,42,0.18);}
-body.light .pr-name,body.light .res-name,body.light .res-score,body.light .t-name,body.light .sp-name,body.light .sp-mv,body.light .offseason-title,body.light .radar-card strong,body.light .watch-text strong,body.light .graphic-card h3{color:#111;}
-body.light .pr-pos,body.light .res-comp,body.light .res-date,body.light .t-from,body.light .stat-lbl,body.light .stat-sub{color:rgba(0,0,0,0.42);}
+body.light .pr-name,body.light .res-name,body.light .res-score,body.light .t-name,body.light .sp-name,body.light .sp-mv,body.light .offseason-title,body.light .radar-card strong,body.light .watch-text strong,body.light .graphic-card h3,body.light .news-card-title{color:#111;}
+body.light .pr-pos,body.light .res-comp,body.light .res-date,body.light .t-from,body.light .stat-lbl,body.light .stat-sub,body.light .news-card-meta,body.light .attr-name{color:rgba(0,0,0,0.48);}
 body.light .offseason-copy,body.light .radar-card span,body.light .watch-text span{color:rgba(0,0,0,0.55);}
+body.light .news-card-body{color:rgba(0,0,0,0.66);}
 body.light .player-row,body.light .transfer-item,body.light .sp-meta-row{border-bottom-color:rgba(0,0,0,0.06);}
 body.light .bar-track,body.light .attr-track{background:rgba(0,0,0,0.06);}
 body.light .bar-label{color:rgba(0,0,0,0.55);}
+body.light .tab-btn{color:rgba(0,0,0,0.44);}
+body.light .tab-btn:hover{color:rgba(0,0,0,0.68);}
+body.light .tab-btn.active{color:#9a6c13;border-bottom-color:var(--gold);}
+body.light .standings-table th{color:rgba(0,0,0,0.48);border-bottom-color:rgba(0,0,0,0.08);}
+body.light .standings-table td{color:#1b1710;border-bottom-color:rgba(0,0,0,0.07);}
+body.light .standings-table tr:hover td{background:rgba(196,150,42,0.08);}
+body.light .standings-table tr.juve-row td{color:#9a6c13;background:rgba(196,150,42,0.12);}
+body.light .standings-loading{color:rgba(0,0,0,0.48);}
+body.light .tooltip{background:#f8f5ed;border-color:rgba(196,150,42,0.24);box-shadow:0 8px 28px rgba(65,48,16,0.18);}
+body.light .tt-name{color:#111;}
 body.light footer{border-top-color:rgba(196,150,42,0.15);}
 body.light .fcopy{color:rgba(0,0,0,0.30);}
 body.light .mob-nav{background:rgba(244,242,236,0.97);}

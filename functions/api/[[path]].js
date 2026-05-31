@@ -469,7 +469,12 @@ async function adminAutomate(request, env) {
 
   if (action === "market") {
     const sources = (await getSources(env)).filter(s => s.category === "calciomercato");
-    const result = await generateMarketDrafts(env, sources.length ? sources : DEFAULT_SOURCES);
+    let result;
+    try {
+      result = await generateMarketDrafts(env, sources.length ? sources : DEFAULT_SOURCES);
+    } catch (err) {
+      result = { ok: false, error: err.message || "Errore mercato", scanned: 0, inserted: 0, market_items: 0 };
+    }
     await logRun(env, "market", result);
     return json(result);
   }
@@ -540,30 +545,35 @@ async function generateMarketDrafts(env, sources) {
   const result = await fetchNewsDrafts(env, sources);
   const drafts = await sb(env, "/news_drafts?category=eq.calciomercato&review_status=in.(needs_review,ready)&order=created_at.desc&limit=20");
   let inserted = 0;
+  const errors = Array.isArray(result.errors) ? result.errors.slice() : [];
 
   for (const draft of drafts) {
-    const player = extractPlayer(draft.title);
+    const player = cleanText(extractPlayer(draft.title)).slice(0, 80);
     if (!player) continue;
-    const existing = await sb(env, "/market_items?player_name=ilike." + encodeURIComponent(player) + "&select=id&limit=1");
-    const payload = {
-      player_name: player,
-      status: draft.editorial_status === "Rumor" ? "rumor" : "monitorato",
-      category: "calciomercato",
-      source_name: draft.source_name,
-      source_url: draft.source_url,
-      reliability: draft.reliability,
-      note: draft.title,
-      updated_at: new Date().toISOString(),
-    };
-    if (existing.length) {
-      await sb(env, "/market_items?id=eq." + existing[0].id, { method: "PATCH", body: payload });
-    } else {
-      await sb(env, "/market_items", { method: "POST", body: [payload] });
-      inserted++;
+    try {
+      const existing = await sb(env, "/market_items?player_name=eq." + encodeURIComponent(player) + "&select=id&limit=1");
+      const payload = {
+        player_name: player,
+        status: draft.editorial_status === "Rumor" ? "rumor" : "monitorato",
+        category: "calciomercato",
+        source_name: cleanText(draft.source_name || "").slice(0, 120),
+        source_url: draft.source_url,
+        reliability: draft.reliability || "rumor",
+        note: cleanText(draft.title || "").slice(0, 500),
+        updated_at: new Date().toISOString(),
+      };
+      if (existing.length) {
+        await sb(env, "/market_items?id=eq." + existing[0].id, { method: "PATCH", body: payload });
+      } else {
+        await sb(env, "/market_items", { method: "POST", body: [payload] });
+        inserted++;
+      }
+    } catch (err) {
+      errors.push({ draft: draft.id, title: draft.title, error: err.message || "Errore market item" });
     }
   }
 
-  return { ...result, market_items: inserted };
+  return { ...result, errors, market_items: inserted };
 }
 
 async function generateMatchCenter(env) {

@@ -252,9 +252,20 @@ body.light .tab-btn:hover{color:rgba(0,0,0,0.68);}
 body.light .tab-btn.active{color:#9a6c13;border-bottom-color:var(--gold);}
 body.light .standings-table th{color:rgba(0,0,0,0.48);border-bottom-color:rgba(0,0,0,0.08);}
 body.light .standings-table td{color:#1b1710;border-bottom-color:rgba(0,0,0,0.07);}
+body.light .standings-table tr.zone-ucl td{background:rgba(37,99,235,0.055);}
+body.light .standings-table tr.zone-uel td{background:rgba(194,65,12,0.065);}
+body.light .standings-table tr.zone-rel td{background:rgba(220,38,38,0.060);}
 body.light .standings-table tr:hover td{background:rgba(196,150,42,0.08);}
 body.light .standings-table tr.juve-row td{color:#9a6c13;background:rgba(196,150,42,0.12);}
+body.light .standings-table tr.zone-ucl:hover td{background:rgba(37,99,235,0.085);}
+body.light .standings-table tr.zone-uel:hover td{background:rgba(194,65,12,0.095);}
+body.light .standings-table tr.zone-rel:hover td{background:rgba(220,38,38,0.090);}
+body.light .standings-table tr.zone-uel.juve-row td{background:linear-gradient(90deg,rgba(194,65,12,0.16),rgba(196,150,42,0.12));}
+body.light .standings-table tr.zone-uel.juve-row .st-pos.uel{color:#c2410c;}
 body.light .standings-loading{color:rgba(0,0,0,0.48);}
+body.light .st-pos.ucl{color:#2563eb;}
+body.light .st-pos.uel{color:#c2410c;}
+body.light .st-pos.rel{color:#dc2626;}
 body.light .legend-ucl{color:#2563eb;}
 body.light .legend-uel{color:#c2410c;}
 body.light .legend-rel{color:#dc2626;}
@@ -347,6 +358,9 @@ nav{display:none;}.mob-nav{display:flex;}
 .standings-table td.left { text-align:left; }
 .standings-table tr:last-child td { border-bottom:none; }
 .standings-table tr:hover td { background:rgba(196,150,42,0.04); }
+.standings-table tr.zone-ucl td:first-child{box-shadow:inset 3px 0 0 #60a5fa;}
+.standings-table tr.zone-uel td:first-child{box-shadow:inset 3px 0 0 #f97316;}
+.standings-table tr.zone-rel td:first-child{box-shadow:inset 3px 0 0 #f87171;}
 .standings-table tr.juve-row td { color:var(--gold-l); background:rgba(196,150,42,0.06); }
 .standings-table tr.juve-row:hover td { background:rgba(196,150,42,0.10); }
 .st-pos { font-family:"Bebas Neue"; font-size:16px; color:var(--t3); width:28px; }
@@ -972,12 +986,15 @@ function renderStandings(table, sourceLabel) {
   table.forEach(function(row) {
     var pos = row.position;
     var posClass = "st-pos";
+    var rowClasses = [];
     if (pos <= 4) posClass += " ucl";
-    else if (pos === 5 || pos === 6) posClass += " uel";
-    else if (pos >= 18) posClass += " rel";
+    if (pos <= 4) rowClasses.push("zone-ucl");
+    else if (pos === 5 || pos === 6) { posClass += " uel"; rowClasses.push("zone-uel"); }
+    else if (pos >= 18) { posClass += " rel"; rowClasses.push("zone-rel"); }
     var isJuve = row.team.id === JUVE_ID;
+    if (isJuve) rowClasses.push("juve-row");
     var dr = row.goalDifference > 0 ? "+" + row.goalDifference : String(row.goalDifference);
-    html += "<tr class='" + (isJuve ? "juve-row" : "") + "'>";
+    html += "<tr class='" + rowClasses.join(" ") + "'>";
     html += "<td class='" + posClass + "'>" + pos + "</td>";
     html += "<td class='left st-team'>" + row.team.name + (isJuve ? " &#9733;" : "") + "</td>";
     html += "<td class='st-num'>" + row.playedGames + "</td>";

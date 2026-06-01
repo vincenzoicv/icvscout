@@ -27,8 +27,8 @@ nav a:hover,nav a.active,button.mode:hover{color:var(--gold-l);border-color:rgba
 body.light nav a,body.light button.mode{background:rgba(255,255,255,.52);color:rgba(0,0,0,.56)}
 body.light nav a:hover,body.light nav a.active,body.light button.mode:hover{color:#8B6520;background:rgba(255,255,255,.78)}
 main{max-width:1180px;margin:0 auto;padding:58px 20px 80px}
-.hero{margin-bottom:26px}.eyebrow{font-family:"Barlow Condensed";font-size:13px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--gold-l);margin-bottom:10px}.hero h1{font-family:"Bebas Neue";font-size:clamp(72px,12vw,150px);letter-spacing:4px;line-height:.82}.hero p{max-width:680px;margin-top:16px;color:var(--t2);font-size:16px;line-height:1.65}.bar{width:54px;height:2px;background:var(--gold-l);margin-top:22px}
-.summary{display:grid;grid-template-columns:1.2fr repeat(3,.55fr);gap:12px;margin:26px 0}
+.hero{margin-bottom:26px}.eyebrow{font-family:"Barlow Condensed";font-size:13px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--gold-l);margin-bottom:10px}.hero h1{font-family:"Bebas Neue";font-size:clamp(72px,12vw,150px);letter-spacing:4px;line-height:.82}.bar{width:54px;height:2px;background:var(--gold-l);margin-top:22px}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:26px 0}
 .summary-card{background:var(--d2);border:1px solid var(--bdr);border-radius:14px;padding:16px;min-height:92px}.summary-card strong{display:block;font-family:"Bebas Neue";font-size:42px;color:var(--gold-l);line-height:1}.summary-card span{display:block;font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-top:5px}.summary-card p{color:var(--t2);line-height:1.55;font-size:15px}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 22px}.tab{border:1px solid var(--bdr2);background:rgba(255,255,255,.04);color:var(--t2);font-family:"Barlow Condensed";font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;border-radius:999px;padding:10px 14px;cursor:pointer}.tab.active{color:var(--gold-l);border-color:rgba(196,150,42,.42);background:rgba(196,150,42,.13)}
 body.light .tab{background:rgba(255,255,255,.50);color:rgba(0,0,0,.52)}body.light .tab.active{color:#8B6520;background:rgba(255,255,255,.78)}
@@ -37,7 +37,7 @@ body.light .tab{background:rgba(255,255,255,.50);color:rgba(0,0,0,.52)}body.ligh
 .item{display:grid;grid-template-columns:36px 1fr auto;gap:11px;align-items:center;padding:12px 0;border-bottom:1px solid var(--bdr2)}.item:last-child{border-bottom:none}.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--d3);border:1px solid var(--bdr2);font-family:"Bebas Neue";font-size:13px;color:var(--t2)}.item h3{font-family:"Barlow Condensed";font-size:18px;font-weight:900;line-height:1.05;color:var(--white);margin-bottom:3px}.item p{font-size:13px;line-height:1.35;color:var(--t2);max-width:560px}.meta{font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-top:4px}.badge{font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;border:1px solid rgba(96,165,250,.28);background:rgba(96,165,250,.11);color:var(--blue);border-radius:5px;padding:4px 7px;white-space:nowrap}.badge.hot{border-color:rgba(248,113,113,.28);background:rgba(248,113,113,.10);color:var(--red)}.badge.good{border-color:rgba(74,222,128,.28);background:rgba(74,222,128,.10);color:var(--green)}
 .timeline{margin-top:18px;background:var(--d2);border:1px solid var(--bdr);border-radius:14px;padding:16px}.timeline h2{font-family:"Barlow Condensed";font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gold-l);margin-bottom:8px}.empty{border:1px dashed var(--bdr2);border-radius:12px;background:rgba(255,255,255,.025);padding:34px 20px;text-align:center;color:var(--t3);font-family:"Barlow Condensed";font-size:15px;letter-spacing:2px;text-transform:uppercase}
 footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-family:"Barlow Condensed";font-size:11px;letter-spacing:2px;text-transform:uppercase;display:flex;justify-content:space-between;gap:12px}
-@media(max-width:840px){header{height:auto;min-height:62px;padding:12px 14px;gap:12px;align-items:flex-start}nav{flex-wrap:wrap;justify-content:flex-end}.summary{grid-template-columns:1fr 1fr}.summary-card:first-child{grid-column:1/-1}.grid{grid-template-columns:1fr}main{padding:36px 14px 64px}.item{grid-template-columns:34px 1fr}.badge{grid-column:2;justify-self:start}.hero h1{font-size:76px}footer{flex-direction:column}}
+@media(max-width:840px){header{height:auto;min-height:62px;padding:12px 14px;gap:12px;align-items:flex-start}nav{flex-wrap:wrap;justify-content:flex-end}.summary{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}main{padding:36px 14px 64px}.item{grid-template-columns:34px 1fr}.badge{grid-column:2;justify-self:start}.hero h1{font-size:76px}footer{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -55,12 +55,10 @@ footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-fa
   <section class="hero">
     <div class="eyebrow">Estate 2026</div>
     <h1>Mercato</h1>
-    <p>Radar automatico sulle voci Juventus: non una lista confusa di rumor, ma segnali raggruppati per tema, fonte e urgenza editoriale.</p>
     <div class="bar"></div>
   </section>
 
   <section class="summary">
-    <div class="summary-card"><p id="marketIntro">Caricamento segnali mercato...</p></div>
     <div class="summary-card"><strong id="totalCount">0</strong><span>Segnali</span></div>
     <div class="summary-card"><strong id="sourceCount">0</strong><span>Fonti</span></div>
     <div class="summary-card"><strong id="hotCount">0</strong><span>Caldi</span></div>
@@ -144,9 +142,6 @@ function renderSummary(rows){
   document.getElementById("totalCount").textContent = rows.length;
   document.getElementById("sourceCount").textContent = Object.keys(sources).length;
   document.getElementById("hotCount").textContent = rows.filter(hotFor).length;
-  document.getElementById("marketIntro").innerHTML = rows.length
-    ? "Radar automatico con <strong>"+rows.length+"</strong> segnali ordinati per aggiornamento, fonte e tema. Le voci simili vengono lette come blocchi editoriali, non come notizie isolate."
-    : "Radar automatico in attesa della prossima scansione mercato.";
 }
 var allRows = [];
 function loadMarket(){

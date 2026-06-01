@@ -156,10 +156,15 @@ async function runHomeAutopilot(env) {
 
   try {
     const sources = await getSources(env);
+    const newsResult = await fetchNewsDrafts(env, sources);
+    result.tasks.push({ type: "news", result: newsResult });
+    await logRun(env, "news", newsResult);
+
     const marketSources = sources.filter(s => s.category === "calciomercato");
     result.tasks.push({ type: "market", result: await generateMarketDrafts(env, marketSources.length ? marketSources : DEFAULT_SOURCES) });
   } catch (err) {
-    result.tasks.push({ type: "market", error: err.message || "Errore mercato" });
+    result.ok = false;
+    result.tasks.push({ type: "news_market", error: err.message || "Errore news/mercato" });
   }
 
   if (env.FOOTBALL_DATA_KEY) {

@@ -25,5 +25,21 @@
     }
   ],
   "categories": ["sports", "news"],
+  "shortcuts": [
+    {
+      "name": "Mercato",
+      "short_name": "Mercato",
+      "description": "Apri il radar mercato ICV",
+      "url": "/mercato.html",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Grafiche",
+      "short_name": "Grafiche",
+      "description": "Apri l'archivio grafiche ICV",
+      "url": "/grafiche.html",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "lang": "it"
 }

@@ -90,10 +90,15 @@ function esc(value){return String(value == null ? "" : value).replace(/[&<>"']/g
 function textOf(item){return [item.player_name,item.note,item.source_name,item.status].join(" ").toLowerCase();}
 function initials(name){return String(name || "M").trim().split(/\s+/).slice(0,2).map(function(p){return p.charAt(0);}).join("").toUpperCase() || "M";}
 function categoryFor(item){
+  var name = String(item.player_name || "").toLowerCase();
   var t = textOf(item);
-  if (/vlahovic|bremer|cambiaso|douglas|cessione|uscita|addio|sacrific|lascia|parte|premier|bayern|barcellona/.test(t)) return "uscite";
-  if (/alisson|mamardashvili|de gea|icardi|brahim|kim|emerson|robertson|arrivo|sostituto|obiettivo|acquisto|trattativa/.test(t)) return "arrivi";
-  if (/spalletti|comolli|rinnovo|contratto|management|allenatore|dirigenza|proprieta|staff/.test(t)) return "rinnovi";
+  if (/^perch/.test(name) && /alisson/.test(t)) return "arrivi";
+  if (/spalletti|comolli|management|dirigenza|staff/.test(name)) return "rinnovi";
+  if (/icardi|alisson|mamardashvili|de gea|robertson|brahim|kim|emerson/.test(name)) return "arrivi";
+  if (/vlahovic|bremer|cambiaso|douglas|nico gonzalez/.test(name)) return "uscite";
+  if (/rinnovo|contratto|management|allenatore|dirigenza|proprieta|staff/.test(t)) return "rinnovi";
+  if (/sostituto|obiettivo|acquisto|arrivo|trattativa in salita/.test(t)) return "arrivi";
+  if (/cessione|uscita|addio|sacrific|lascia|puo lasciare|può lasciare|parte|premier|bayern|barcellona/.test(t)) return "uscite";
   return "monitorare";
 }
 function hotFor(item){
@@ -106,7 +111,7 @@ function groupRows(rows){
   return map;
 }
 function itemHtml(item){
-  var title = item.player_name || "Mercato Juve";
+  var title = displayTitle(item);
   var note = item.note || title;
   var source = item.source_name || "ICV";
   var status = item.status || "monitorato";
@@ -114,6 +119,13 @@ function itemHtml(item){
   var trusted = /gianluca|sky|bianconero|ufficiale/i.test(source);
   var badge = trusted ? "good" : (hot ? "hot" : "");
   return "<article class='item'><div class='avatar'>"+esc(initials(title))+"</div><div><h3>"+esc(title)+"</h3><p>"+esc(note)+"</p><div class='meta'>"+esc(source)+"</div></div><span class='badge "+badge+"'>"+esc(status)+"</span></article>";
+}
+function displayTitle(item){
+  var raw = String(item.player_name || "").trim();
+  var note = String(item.note || "");
+  if (/^perch/i.test(raw) && /alisson/i.test(note)) return "Alisson";
+  if (/^marzio$/i.test(raw) && /mercato juve/i.test(note)) return "Punto mercato";
+  return raw || "Mercato Juve";
 }
 function renderGroups(rows, filter){
   var groups = groupRows(rows);

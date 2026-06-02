@@ -1104,15 +1104,14 @@ function loadHomeDashboard() {
     var social = Array.isArray(data.social) ? data.social : [];
     renderAutoStatus(data.auto);
     renderRadar(data.radar);
-    if (news[0]) {
-      document.getElementById("homeFocusTitle").textContent = news[0].title || "Focus ICV";
-      document.getElementById("homeFocusText").textContent = (news[0].body || "").slice(0, 180);
-    }
+    var focus = buildEditorialFocus(market, news);
+    document.getElementById("homeFocusTitle").textContent = focus.title;
+    document.getElementById("homeFocusText").textContent = focus.text;
     if (matches[0]) {
       document.getElementById("homeMatchTitle").textContent = matches[0].title || matches[0].opponent || "Match Center";
       document.getElementById("homeMatchText").textContent = matches[0].summary || matches[0].tactical_key || "Scheda match pronta.";
     }
-    renderHomeList("homeNewsList", news[0] ? news.slice(1) : news, function(n) {
+    renderHomeList("homeNewsList", focus.skipNewsId ? news.filter(function(n){ return n.id !== focus.skipNewsId; }) : news, function(n) {
       return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : "")};
     });
     renderHomeList("homeMarketList", market, function(m) {
@@ -1129,6 +1128,75 @@ function loadHomeDashboard() {
     renderHomeList("homeMarketList", [], null);
     renderHomeLinks("homeInstagramList", [], null);
   });
+}
+
+function buildEditorialFocus(market, news) {
+  market = Array.isArray(market) ? market : [];
+  news = Array.isArray(news) ? news : [];
+  var exits = market.filter(function(m){ return marketHas(m, /vlahovic|bremer|cambiaso|douglas|nico gonzalez|uscita|cessione|addio/i); });
+  var arrivals = market.filter(function(m){ return marketHas(m, /alisson|icardi|robertson|mamardashvili|de gea|arrivo|attaccante|portiere/i); });
+  var staff = market.filter(function(m){ return marketHas(m, /spalletti|comolli|staff|rinnovo|dirigenza|continassa/i); });
+  var declarations = market.filter(function(m){ return marketHas(m, /locatelli|conceicao|conceição|dichiarazioni|tifosi|dolore|delusione/i); });
+
+  if (exits.some(function(m){ return marketHas(m, /vlahovic/i); }) && arrivals.length) {
+    return {
+      title: "Vlahovic, spazio salariale e nuovo attacco",
+      text: "La giornata ruota intorno al futuro di Vlahovic: tra cessioni necessarie e ricerca del nuovo attaccante, la Juve prova a liberare spazio salariale."
+    };
+  }
+  if (arrivals.some(function(m){ return marketHas(m, /alisson/i); })) {
+    var alisson = arrivals.find(function(m){ return marketHas(m, /alisson/i); });
+    var sources = Number(alisson && alisson.source_count || 0);
+    return {
+      title: "Alisson-Juve, pista da verificare",
+      text: (sources > 1 ? sources + " fonti tengono vivo" : "Resta vivo") + " il tema Alisson-Juve: prima di parlare di trattativa, ICV lo legge come segnale da incrociare con uscite e margini economici."
+    };
+  }
+  if (exits.length && staff.length) {
+    return {
+      title: "La priorità è fare ordine",
+      text: "Le voci sulle possibili uscite si intrecciano con le scelte di staff e dirigenza: prima dei nomi, la Juve deve chiarire budget, gerarchie e direzione tecnica."
+    };
+  }
+  if (exits.length || arrivals.length) {
+    return {
+      title: "Mercato Juve, segnali da leggere insieme",
+      text: "Il mercato bianconero si muove per blocchi: possibili entrate, uscite e rinnovi vanno letti insieme, perché ogni scelta apre o chiude spazio alla successiva."
+    };
+  }
+  if (declarations.length) {
+    return {
+      title: "Parole da pesare, non solo da rilanciare",
+      text: "Le dichiarazioni dei protagonisti raccontano l'umore del gruppo: per ICV sono segnali editoriali, utili a capire che clima accompagna la ripartenza."
+    };
+  }
+  if (news[0]) {
+    return {
+      title: "Il tema del giorno",
+      text: editorializeNews(news[0]),
+      skipNewsId: news[0].id
+    };
+  }
+  return {
+    title: "ICV Scout in aggiornamento",
+    text: "Le notizie approvate e il Match Center appariranno qui dopo la revisione admin."
+  };
+}
+
+function marketHas(item, pattern) {
+  return pattern.test([item.player_name, item.note, item.source_name, item.status].join(" "));
+}
+
+function editorializeNews(item) {
+  var title = String(item.title || "Aggiornamento Juventus").replace(/\s+/g, " ").trim();
+  var body = String(item.body || "").replace(/\s+/g, " ").trim();
+  if (/calendario|stagione|date/i.test(title + " " + body)) {
+    return "Il calendario diventa il primo riferimento della ripartenza: date, competizioni e incastri aiutano a capire quando la Juve tornerà davvero al centro della scena.";
+  }
+  if (/europa league|coppa|sorteggio/i.test(title + " " + body)) {
+    return "L'Europa League cambia il peso della stagione: calendario, rotazioni e mercato dovranno essere letti dentro un percorso più lungo e meno scontato.";
+  }
+  return body ? body.slice(0, 190) : title;
 }
 
 function loadHomeGraphics() {

@@ -3,14 +3,21 @@
   "short_name": "ICV Scout",
   "description": "Formazioni, analisi tattiche, statistiche e mercato della Juventus.",
   "id": "/",
-  "start_url": "/",
+  "start_url": "/index.html?source=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],
   "orientation": "portrait-primary",
-  "background_color": "#060606",
-  "theme_color": "#C4962A",
+  "background_color": "#050505",
+  "theme_color": "#050505",
+  "prefer_related_applications": false,
   "icons": [
+    {
+      "src": "/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
@@ -22,10 +29,23 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "categories": ["sports", "news"],
   "shortcuts": [
+    {
+      "name": "Home",
+      "short_name": "Home",
+      "description": "Apri la home di ICV Scout",
+      "url": "/index.html",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
     {
       "name": "Mercato",
       "short_name": "Mercato",
@@ -38,6 +58,13 @@
       "short_name": "Grafiche",
       "description": "Apri l'archivio grafiche ICV",
       "url": "/grafiche.html",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "News",
+      "short_name": "News",
+      "description": "Vai alle ultime news ICV",
+      "url": "/index.html#news",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ],

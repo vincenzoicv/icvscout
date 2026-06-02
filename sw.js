@@ -1,14 +1,22 @@
 // ICV Scout — Service Worker
 // Strategia: cache-first per risorse statiche, network-only per API/Supabase
-const CACHE = 'icv-v5';
+const CACHE = 'icv-v6';
 const STATIC = [
   '/',
   '/index.html',
   '/mercato.html',
   '/grafiche.html',
   '/manifest.json',
+  '/icon-180.png',
   '/icon-192.png',
   '/icon-512.png',
+  '/icon-maskable-512.png',
+  '/splash-750x1334.png',
+  '/splash-1125x2436.png',
+  '/splash-1170x2532.png',
+  '/splash-1179x2556.png',
+  '/splash-1290x2796.png',
+  '/splash-2048x2732.png',
   '/og-image.png'
 ];
 
@@ -43,7 +51,11 @@ self.addEventListener('fetch', e => {
   ) return;
 
   if (e.request.mode === 'navigate' || reqUrl.pathname.endsWith('.html')) {
-    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    e.respondWith(
+      fetch(e.request).catch(() =>
+        caches.match(e.request).then(cached => cached || caches.match('/index.html'))
+      )
+    );
     return;
   }
 

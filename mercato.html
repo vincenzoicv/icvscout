@@ -33,7 +33,7 @@ main{max-width:1180px;margin:0 auto;padding:58px 20px 80px}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 22px}.tab{border:1px solid var(--bdr2);background:rgba(255,255,255,.04);color:var(--t2);font-family:"Barlow Condensed";font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;border-radius:999px;padding:10px 14px;cursor:pointer}.tab.active{color:var(--gold-l);border-color:rgba(196,150,42,.42);background:rgba(196,150,42,.13)}
 body.light .tab{background:rgba(255,255,255,.50);color:rgba(0,0,0,.52)}body.light .tab.active{color:#8B6520;background:rgba(255,255,255,.78)}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
-.group{background:var(--d2);border:1px solid var(--bdr);border-radius:14px;padding:16px;min-height:180px}.group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid var(--bdr2);padding-bottom:12px;margin-bottom:8px}.group-title{font-family:"Barlow Condensed";font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase}.group-title.arrivi{color:var(--green)}.group-title.uscite{color:var(--red)}.group-title.rinnovi{color:var(--blue)}.group-title.monitorare{color:var(--gold-l)}.group-count{font-family:"Bebas Neue";font-size:34px;color:var(--gold-l);line-height:1}
+.group{background:var(--d2);border:1px solid var(--bdr);border-radius:14px;padding:16px;min-height:180px}.group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid var(--bdr2);padding-bottom:12px;margin-bottom:8px}.group-title{font-family:"Barlow Condensed";font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase}.group-title.arrivi{color:var(--green)}.group-title.uscite{color:var(--red)}.group-title.rinnovi{color:var(--blue)}.group-title.dichiarazioni{color:#c084fc}.group-title.monitorare{color:var(--gold-l)}.group-count{font-family:"Bebas Neue";font-size:34px;color:var(--gold-l);line-height:1}
 .item{display:grid;grid-template-columns:36px 1fr auto;gap:11px;align-items:center;padding:12px 0;border-bottom:1px solid var(--bdr2)}.item:last-child{border-bottom:none}.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--d3);border:1px solid var(--bdr2);font-family:"Bebas Neue";font-size:13px;color:var(--t2)}.item h3{font-family:"Barlow Condensed";font-size:18px;font-weight:900;line-height:1.05;color:var(--white);margin-bottom:3px}.item p{font-size:13px;line-height:1.35;color:var(--t2);max-width:560px}.meta{font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-top:4px}.badge{font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;border:1px solid rgba(96,165,250,.28);background:rgba(96,165,250,.11);color:var(--blue);border-radius:5px;padding:4px 7px;white-space:nowrap}.badge.hot{border-color:rgba(248,113,113,.28);background:rgba(248,113,113,.10);color:var(--red)}.badge.good{border-color:rgba(74,222,128,.28);background:rgba(74,222,128,.10);color:var(--green)}
 .timeline{margin-top:18px;background:var(--d2);border:1px solid var(--bdr);border-radius:14px;padding:16px}.timeline h2{font-family:"Barlow Condensed";font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gold-l);margin-bottom:8px}.empty{border:1px dashed var(--bdr2);border-radius:12px;background:rgba(255,255,255,.025);padding:34px 20px;text-align:center;color:var(--t3);font-family:"Barlow Condensed";font-size:15px;letter-spacing:2px;text-transform:uppercase}
 footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-family:"Barlow Condensed";font-size:11px;letter-spacing:2px;text-transform:uppercase;display:flex;justify-content:space-between;gap:12px}
@@ -69,6 +69,7 @@ footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-fa
     <button class="tab" data-filter="arrivi">Arrivi</button>
     <button class="tab" data-filter="uscite">Uscite</button>
     <button class="tab" data-filter="rinnovi">Rinnovi / Staff</button>
+    <button class="tab" data-filter="dichiarazioni">Dichiarazioni</button>
     <button class="tab" data-filter="monitorare">Da monitorare</button>
   </div>
 
@@ -96,7 +97,9 @@ function categoryFor(item){
   if (/spalletti|comolli|management|dirigenza|staff/.test(name)) return "rinnovi";
   if (/icardi|alisson|mamardashvili|de gea|robertson|brahim|kim|emerson/.test(name)) return "arrivi";
   if (/vlahovic|bremer|cambiaso|douglas|nico gonzalez/.test(name)) return "uscite";
+  if (/locatelli|conceicao|conceição/.test(name)) return "dichiarazioni";
   if (/rinnovo|contratto|management|allenatore|dirigenza|proprieta|staff/.test(t)) return "rinnovi";
+  if (/intervista|dichiaraz|ha detto|parole|tifosi|dolore|delusione|sportweek|["“”]/.test(t)) return "dichiarazioni";
   if (/sostituto|obiettivo|acquisto|arrivo|trattativa in salita/.test(t)) return "arrivi";
   if (/cessione|uscita|addio|sacrific|lascia|puo lasciare|può lasciare|parte|premier|bayern|barcellona/.test(t)) return "uscite";
   return "monitorare";
@@ -106,7 +109,7 @@ function hotFor(item){
   return /accordo|chiusura|video|cruciale|salita|frena|riunione|incontro|ritorno|addio|cessione/.test(t);
 }
 function groupRows(rows){
-  var map = {arrivi:[], uscite:[], rinnovi:[], monitorare:[]};
+  var map = {arrivi:[], uscite:[], rinnovi:[], dichiarazioni:[], monitorare:[]};
   rows.forEach(function(item){map[categoryFor(item)].push(item);});
   return map;
 }
@@ -133,9 +136,10 @@ function renderGroups(rows, filter){
     arrivi:["Possibili arrivi","arrivi"],
     uscite:["Possibili uscite","uscite"],
     rinnovi:["Rinnovi / staff","rinnovi"],
+    dichiarazioni:["Dichiarazioni","dichiarazioni"],
     monitorare:["Da monitorare","monitorare"]
   };
-  var keys = filter && filter !== "all" ? [filter] : ["arrivi","uscite","rinnovi","monitorare"];
+  var keys = filter && filter !== "all" ? [filter] : ["arrivi","uscite","rinnovi","dichiarazioni","monitorare"];
   var html = keys.map(function(key){
     var items = groups[key] || [];
     var body = items.length ? items.slice(0,6).map(itemHtml).join("") : "<div class='empty'>Nessun segnale in questo gruppo</div>";

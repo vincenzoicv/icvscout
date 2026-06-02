@@ -117,11 +117,12 @@ function itemHtml(item){
   var title = displayTitle(item);
   var note = item.note || title;
   var source = item.source_name || "ICV";
+  var sourceLabel = Number(item.source_count || 0) > 1 ? item.source_count + " fonti: " + source : source;
   var status = item.status || "monitorato";
   var hot = hotFor(item);
   var trusted = /gianluca|sky|bianconero|ufficiale/i.test(source);
   var badge = trusted ? "good" : (hot ? "hot" : "");
-  return "<article class='item'><div class='avatar'>"+esc(initials(title))+"</div><div><h3>"+esc(title)+"</h3><p>"+esc(note)+"</p><div class='meta'>"+esc(source)+"</div></div><span class='badge "+badge+"'>"+esc(status)+"</span></article>";
+  return "<article class='item'><div class='avatar'>"+esc(initials(title))+"</div><div><h3>"+esc(title)+"</h3><p>"+esc(note)+"</p><div class='meta'>"+esc(sourceLabel)+"</div></div><span class='badge "+badge+"'>"+esc(status)+"</span></article>";
 }
 function displayTitle(item){
   var raw = String(item.player_name || "").trim();
@@ -154,7 +155,9 @@ function renderTimeline(rows){
 }
 function renderSummary(rows){
   var sources = {};
-  rows.forEach(function(item){if(item.source_name)sources[item.source_name]=true;});
+  rows.forEach(function(item){
+    String(item.source_name || "").split(/\s*,\s*/).forEach(function(source){if(source)sources[source]=true;});
+  });
   document.getElementById("totalCount").textContent = rows.length;
   document.getElementById("sourceCount").textContent = Object.keys(sources).length;
   document.getElementById("hotCount").textContent = rows.filter(hotFor).length;

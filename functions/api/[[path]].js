@@ -110,7 +110,7 @@ async function publicHome(env) {
   ]);
   return json({
     news,
-    market: market && market.length ? market : publicMarketFromNews(marketNews),
+    market: aggregateMarketItems(market && market.length ? market : publicMarketFromNews(marketNews)),
     matches,
     social: publicSocialRows(social),
     graphics: [],
@@ -126,7 +126,7 @@ async function publicGraphics(env) {
 }
 
 function publicMarketFromNews(rows) {
-  return (rows || []).slice(0, 3).map(row => ({
+  return (rows || []).slice(0, 8).map(row => ({
     player_name: extractPlayer(row.title || "") || "Mercato Juve",
     status: row.editorial_status || statusFromReliability(row.reliability),
     category: "calciomercato",
@@ -553,21 +553,27 @@ async function generateMarketDrafts(env, sources) {
   const errors = Array.isArray(result.errors) ? result.errors.slice() : [];
 
   for (const draft of drafts) {
-    const player = cleanText(extractPlayer(draft.title)).slice(0, 80);
-    if (!player) continue;
+    const player = marketTopicName({ player_name: extractPlayer(draft.title), note: draft.title }).slice(0, 80);
+    if (!player || player === "Mercato Juve") continue;
     try {
-      const existing = await sb(env, "/market_items?player_name=eq." + encodeURIComponent(player) + "&select=id&limit=1");
+      const existing = await sb(env, "/market_items?player_name=eq." + encodeURIComponent(player) + "&select=id,source_name,source_url,reliability,status,note&limit=1");
+      const sourceName = cleanText(draft.source_name || "").slice(0, 120);
+      const sourceUrl = draft.source_url;
       const payload = {
         player_name: player,
-        status: draft.editorial_status === "Rumor" ? "rumor" : "monitorato",
+        status: draft.editorial_status === "Rumor" ? "da verificare" : "monitorato",
         category: "calciomercato",
-        source_name: cleanText(draft.source_name || "").slice(0, 120),
-        source_url: draft.source_url,
+        source_name: sourceName,
+        source_url: sourceUrl,
         reliability: draft.reliability || "rumor",
         note: cleanText(draft.title || "").slice(0, 500),
         updated_at: new Date().toISOString(),
       };
       if (existing.length) {
+        payload.source_name = mergeSourceNames(existing[0].source_name, sourceName);
+        payload.source_url = existing[0].source_url || sourceUrl;
+        payload.reliability = bestReliability(existing[0].reliability, payload.reliability);
+        payload.status = mergedMarketStatus(existing[0].status, payload.status, payload.reliability);
         await sb(env, "/market_items?id=eq." + existing[0].id, { method: "PATCH", body: payload });
       } else {
         await sb(env, "/market_items", { method: "POST", body: [payload] });
@@ -835,6 +841,105 @@ function statusFromReliability(reliability) {
   if (reliability === "trusted") return "Confermato";
   if (reliability === "aggregator") return "Da verificare";
   return "Rumor";
+}
+
+function aggregateMarketItems(rows) {
+  const byTopic = new Map();
+  for (const row of rows || []) {
+    const topic = marketTopicName(row);
+    const key = normalizeTopicKey(topic);
+    if (!key) continue;
+    const existing = byTopic.get(key);
+    const sourceName = cleanText(row.source_name || "");
+    if (!existing) {
+      byTopic.set(key, {
+        ...row,
+        player_name: topic,
+        source_name: sourceName,
+        source_count: splitSourceNames(sourceName).length,
+        related_count: 1,
+      });
+      continue;
+    }
+    const mergedSources = mergeSourceNames(existing.source_name, sourceName);
+    existing.source_name = mergedSources;
+    existing.source_count = splitSourceNames(mergedSources).length;
+    existing.related_count = Number(existing.related_count || 1) + 1;
+    existing.reliability = bestReliability(existing.reliability, row.reliability);
+    existing.status = mergedMarketStatus(existing.status, row.status, existing.reliability);
+    existing.source_url = existing.source_url || row.source_url;
+    if (new Date(row.updated_at || 0) > new Date(existing.updated_at || 0)) {
+      existing.note = row.note || existing.note;
+      existing.updated_at = row.updated_at;
+    }
+  }
+  return Array.from(byTopic.values()).sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+}
+
+function marketTopicName(row) {
+  const name = cleanText(row && row.player_name);
+  const text = cleanText([name, row && row.note].join(" "));
+  const direct = [
+    ["Alisson-Juve", /\balisson\b/i],
+    ["Icardi", /\bicardi\b/i],
+    ["Robertson", /\brobertson\b/i],
+    ["Vlahovic", /\bvlahovic\b/i],
+    ["Bremer", /\bbremer\b/i],
+    ["Cambiaso", /\bcambiaso\b/i],
+    ["Douglas Luiz", /douglas\s+luiz/i],
+    ["Nico Gonzalez", /nico\s+gonzalez/i],
+    ["Comolli", /\bcomolli\b/i],
+    ["Spalletti", /\bspalletti\b/i],
+    ["Locatelli", /\blocatelli\b/i],
+    ["Conceicao", /concei[cç]ao/i],
+  ];
+  for (const [topic, pattern] of direct) {
+    if (pattern.test(name)) return topic;
+  }
+  for (const [topic, pattern] of direct) {
+    if (pattern.test(text)) return topic;
+  }
+  if (/mercato\s+juve|chi\s+resta|chi\s+parte|punto\s+mercato/i.test(text)) return "Punto mercato";
+  return name || extractPlayer(text) || "Mercato Juve";
+}
+
+function normalizeTopicKey(value) {
+  return cleanText(value)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function splitSourceNames(value) {
+  const seen = new Set();
+  return cleanText(value)
+    .split(/\s*,\s*/)
+    .map(source => source.trim())
+    .filter(Boolean)
+    .filter(source => {
+      const key = source.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+function mergeSourceNames(...values) {
+  return splitSourceNames(values.filter(Boolean).join(", ")).slice(0, 5).join(", ");
+}
+
+function bestReliability(...values) {
+  const rank = { official: 4, trusted: 3, aggregator: 2, rumor: 1 };
+  return values.filter(Boolean).sort((a, b) => (rank[b] || 0) - (rank[a] || 0))[0] || "rumor";
+}
+
+function mergedMarketStatus(oldStatus, nextStatus, reliability) {
+  const text = [oldStatus, nextStatus].join(" ").toLowerCase();
+  if (/ufficial/.test(text) || reliability === "official") return "ufficiale";
+  if (/rumor|verificare/.test(text) || reliability === "aggregator" || reliability === "rumor") return "da verificare";
+  return "monitorato";
 }
 
 function inferCategory(title) {

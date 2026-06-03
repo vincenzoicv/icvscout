@@ -189,8 +189,13 @@ async function latestAutomationRun(env, type) {
 
 async function publicNews(env, url) {
   const limit = Math.min(Number(url.searchParams.get("limit") || 12), 30);
-  const rows = await sb(env, "/news?visible=eq.true&order=created_at.desc&limit=" + limit);
-  return json(rows);
+  if (!hasSupabase(env)) return json([]);
+  try {
+    const rows = await sb(env, "/news?visible=eq.true&order=created_at.desc&limit=" + limit);
+    return json(rows);
+  } catch {
+    return json([]);
+  }
 }
 
 async function adminNews(request, env) {

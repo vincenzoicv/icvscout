@@ -35,6 +35,8 @@ SUPABASE_SERVICE_ROLE_KEY
 ADMIN_TOKEN
 IG_ACCESS_TOKEN
 TRANSCRIPT_API_KEY
+YOUTUBE_SCOUT_CHANNELS=@RomeoAgresti,@GianniBalzariniofficial,@LucaToselli
+YOUTUBE_SCOUT_MAX_PER_CHANNEL=1
 HOME_AUTO_INTERVAL_HOURS=6
 ```
 
@@ -46,6 +48,8 @@ Impostazione consigliata:
 - `HOME_AUTO_INTERVAL_HOURS`: `6`
 - `IG_ACCESS_TOKEN`: token Instagram rigenerato e non condiviso in chat
 - `TRANSCRIPT_API_KEY`: chiave TranscriptAPI per trascrivere i video YouTube
+- `YOUTUBE_SCOUT_CHANNELS`: canali monitorati da YouTube Scout, separati da virgola
+- `YOUTUBE_SCOUT_MAX_PER_CHANNEL`: quanti video recenti trascrivere per canale a ogni giro, consigliato `1`
 
 Se Supabase non e' ancora configurato, la home resta visibile ma senza dati automatici reali.
 

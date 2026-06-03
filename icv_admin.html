@@ -57,6 +57,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         <button class="ghost" onclick="runAutomation('market')">Mercato</button>
         <button class="ghost" onclick="runAutomation('match_center')">Match Center</button>
         <button class="ghost" onclick="runAutomation('social')">Social</button>
+        <button class="ghost" onclick="runAutomation('youtube_scout')">YouTube Scout</button>
         <button class="ghost" onclick="runAutomation('instagram_import')">Importa Instagram</button>
         <button class="danger" onclick="logout()">Esci</button>
       </div>
@@ -347,6 +348,7 @@ function renderAutomationStatus(){
   var items = [
     {key:"home_autopilot", label:"Home autopilot", fallback:"Attivo ogni 6 ore"},
     {key:"news", label:"Bozze news", fallback:"In attesa fetch"},
+    {key:"youtube_scout", label:"YouTube Scout", fallback:"In attesa trascrizioni"},
     {key:"instagram_import", label:"Instagram", fallback:"Pronto dal token"},
     {key:"market", label:"Mercato", fallback:"In attesa scansione"},
     {key:"match_center", label:"Match Center", fallback:"In attesa calendario"}

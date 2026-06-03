@@ -38,6 +38,12 @@ const DEFAULT_SOURCES = [
   },
 ];
 
+const DEFAULT_YOUTUBE_CHANNELS = [
+  { name: "Romeo Agresti", channel: "@RomeoAgresti" },
+  { name: "Gianni Balzarini", channel: "@GianniBalzariniofficial" },
+  { name: "Luca Toselli", channel: "@LucaToselli" },
+];
+
 const DEFAULT_RADAR = {
   kicker: "Centro di controllo",
   title: "Estate Juve",
@@ -501,6 +507,17 @@ async function adminAutomate(request, env) {
     return json(result);
   }
 
+  if (action === "youtube_scout") {
+    let result;
+    try {
+      result = await generateYoutubeScoutDrafts(env);
+    } catch (err) {
+      result = { ok: false, error: err.message || "Errore YouTube Scout", scanned: 0, inserted: 0 };
+    }
+    await logRun(env, "youtube_scout", result);
+    return json(result);
+  }
+
   return json({ error: "Automazione non supportata" }, 400);
 }
 
@@ -648,6 +665,71 @@ async function generateSocialDrafts(env) {
   return { ok: true, inserted };
 }
 
+async function generateYoutubeScoutDrafts(env) {
+  if (!hasSupabase(env)) throw new Error("Configura Supabase per salvare le bozze YouTube Scout");
+  if (!env.TRANSCRIPT_API_KEY) throw new Error("Configura TRANSCRIPT_API_KEY per YouTube Scout");
+
+  const channels = youtubeScoutChannels(env);
+  const maxPerChannel = Math.max(1, Math.min(Number(env.YOUTUBE_SCOUT_MAX_PER_CHANNEL || 1), 3));
+  let scanned = 0;
+  let inserted = 0;
+  const errors = [];
+
+  for (const channel of channels) {
+    try {
+      const videos = (await fetchYoutubeLatestVideos(env, channel.channel)).slice(0, 15);
+      const relevant = videos.filter(isRelevantYoutubeVideo).slice(0, maxPerChannel);
+      scanned += relevant.length;
+
+      for (const video of relevant) {
+        const videoId = youtubeVideoId(video);
+        if (!videoId) continue;
+        const hash = await digest("youtube-scout|" + videoId);
+        const existing = await sb(env, "/news_drafts?content_hash=eq." + encodeURIComponent(hash) + "&select=id&limit=1");
+        if (existing.length) continue;
+
+        const transcript = await fetchYoutubeTranscript(env, videoId);
+        const transcriptText = normalizeTranscriptText(transcript);
+        if (!hasUsableYoutubeTranscript(transcriptText)) {
+          errors.push({ channel: channel.name, video: videoTitle(video), error: "Trascrizione non utile o non Juventus-related" });
+          continue;
+        }
+
+        const title = youtubeDraftTitle(video, transcriptText);
+        const body = youtubeDraftBody(video, transcriptText);
+        await sb(env, "/news_drafts", {
+          method: "POST",
+          body: [{
+            title,
+            body,
+            category: inferCategory(title + " " + body),
+            urgency: inferUrgency(title + " " + body),
+            source_name: "YouTube · " + channel.name,
+            source_url: youtubeVideoUrl(videoId),
+            reliability: "trusted",
+            editorial_status: "Da verificare",
+            review_status: "needs_review",
+            editorial_note: "Bozza generata da YouTube Scout usando trascrizione. Verificare sempre prima di approvare.",
+            content_hash: hash,
+            raw_payload: {
+              channel: channel.name,
+              video_id: videoId,
+              video_title: videoTitle(video),
+              published_at: video.published_at || video.published || video.publishedAt || null,
+              transcript_excerpt: transcriptText.slice(0, 1200),
+            },
+          }],
+        });
+        inserted++;
+      }
+    } catch (err) {
+      errors.push({ channel: channel.name, error: err.message || "Errore canale YouTube" });
+    }
+  }
+
+  return { ok: true, scanned, inserted, errors };
+}
+
 async function importInstagramMedia(env) {
   if (!env.IG_ACCESS_TOKEN) throw new Error("Configura IG_ACCESS_TOKEN per importare Instagram");
   const fields = "id,caption,media_type,media_url,permalink,timestamp,thumbnail_url";
@@ -790,6 +872,144 @@ async function fetchJson(url, headers) {
   const response = await fetch(url, { headers });
   if (!response.ok) throw new Error("HTTP " + response.status);
   return response.json();
+}
+
+function transcriptApiBase(env) {
+  return String(env.TRANSCRIPT_API_BASE || "https://transcriptapi.com").replace(/\/$/, "");
+}
+
+function transcriptApiHeaders(env) {
+  return { "Authorization": "Bearer " + env.TRANSCRIPT_API_KEY, "Accept": "application/json" };
+}
+
+async function fetchYoutubeLatestVideos(env, channel) {
+  const base = transcriptApiBase(env);
+  const param = encodeURIComponent(channel);
+  const urls = [
+    base + "/channel/latest?channel=" + param,
+    base + "/api/channel/latest?channel=" + param,
+    base + "/youtube/channel/latest?channel=" + param,
+    base + "/api/youtube/channel/latest?channel=" + param,
+  ];
+  let lastError;
+  for (const url of urls) {
+    try {
+      const data = await fetchJson(url, transcriptApiHeaders(env));
+      const rows = normalizeYoutubeVideos(data);
+      if (rows.length) return rows;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error("Nessun video trovato per " + channel);
+}
+
+async function fetchYoutubeTranscript(env, videoId) {
+  const base = transcriptApiBase(env);
+  const param = encodeURIComponent(videoId);
+  const urls = [
+    base + "/youtube/transcript?video_id=" + param,
+    base + "/youtube/transcript?video=" + param,
+    base + "/api/youtube/transcript?video_id=" + param,
+    base + "/api/youtube/transcript?video=" + param,
+  ];
+  let lastError;
+  for (const url of urls) {
+    try {
+      return await fetchJson(url, transcriptApiHeaders(env));
+    } catch (err) {
+      lastError = err;
+    }
+  }
+  throw lastError || new Error("Trascrizione non trovata");
+}
+
+function normalizeYoutubeVideos(data) {
+  const rows = Array.isArray(data) ? data : (data && (data.videos || data.items || data.data || data.results)) || [];
+  return Array.isArray(rows) ? rows : [];
+}
+
+function youtubeScoutChannels(env) {
+  const raw = String(env.YOUTUBE_SCOUT_CHANNELS || "").trim();
+  if (!raw) return DEFAULT_YOUTUBE_CHANNELS;
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length) {
+      return parsed.map((item, index) => ({
+        name: cleanText(item.name || item.channel || item.handle || "YouTube " + (index + 1)),
+        channel: cleanText(item.channel || item.handle || item.url || item.name),
+      })).filter(item => item.channel);
+    }
+  } catch {}
+  return raw.split(",").map(value => cleanText(value)).filter(Boolean).map(value => ({ name: value.replace(/^@/, ""), channel: value }));
+}
+
+function isRelevantYoutubeVideo(video) {
+  const text = [videoTitle(video), video.description, video.summary].join(" ");
+  return /juve|juventus|bianconer|serie a|champions|europa league|mercato|calciomercato|spalletti|comolli|vlahovic/i.test(text);
+}
+
+function youtubeVideoId(video) {
+  const raw = video.video_id || video.videoId || video.id || video.youtube_id || "";
+  if (/^[A-Za-z0-9_-]{8,20}$/.test(String(raw))) return String(raw);
+  const url = String(video.url || video.link || video.watch_url || "");
+  const match = url.match(/[?&]v=([A-Za-z0-9_-]{8,20})|youtu\.be\/([A-Za-z0-9_-]{8,20})|\/shorts\/([A-Za-z0-9_-]{8,20})/);
+  return match ? (match[1] || match[2] || match[3]) : "";
+}
+
+function youtubeVideoUrl(videoId) {
+  return "https://www.youtube.com/watch?v=" + encodeURIComponent(videoId);
+}
+
+function videoTitle(video) {
+  return cleanText(video.title || video.name || video.video_title || "Video YouTube");
+}
+
+function normalizeTranscriptText(data) {
+  const transcript = data && (data.transcript || data.text || data.content || data.data || data.segments || data.items);
+  if (typeof transcript === "string") return cleanText(transcript);
+  if (Array.isArray(transcript)) {
+    return cleanText(transcript.map(item => typeof item === "string" ? item : (item.text || item.content || item.caption || "")).join(" "));
+  }
+  if (transcript && typeof transcript === "object") return normalizeTranscriptText(transcript);
+  return cleanText(JSON.stringify(data || ""));
+}
+
+function hasUsableYoutubeTranscript(text) {
+  return text.length > 280 && /juve|juventus|bianconer|spalletti|comolli|vlahovic|mercato|calciomercato/i.test(text);
+}
+
+function youtubeDraftTitle(video, transcriptText) {
+  const title = videoTitle(video).replace(/\s+/g, " ").trim();
+  const topic = extractPlayer(title + " " + transcriptText.slice(0, 500));
+  if (topic && topic !== "Mercato Juve") return ("YouTube Scout: " + topic + ", tema da verificare").slice(0, 140);
+  return ("YouTube Scout: " + title).slice(0, 140);
+}
+
+function youtubeDraftBody(video, transcriptText) {
+  const title = videoTitle(video);
+  const sentences = transcriptText
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .map(cleanText)
+    .filter(Boolean);
+  const ranked = sentences.map(sentence => ({ sentence, score: youtubeSentenceScore(sentence) }))
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(item => item.sentence);
+  const core = ranked.length ? ranked.join(" ") : transcriptText.slice(0, 420);
+  return cleanText("Dal video emerge questo tema da verificare: " + core + " Fonte video: " + title).slice(0, 700);
+}
+
+function youtubeSentenceScore(sentence) {
+  let score = 0;
+  if (/juve|juventus|bianconer/i.test(sentence)) score += 3;
+  if (/mercato|calciomercato|cessione|rinnovo|trattativa|accordo|offerta|ingaggio/i.test(sentence)) score += 3;
+  if (/spalletti|comolli|vlahovic|alisson|icardi|bremer|kolo muani|douglas luiz|conceicao|locatelli/i.test(sentence)) score += 2;
+  if (/secondo|notizia|conferma|situazione|scenario|futuro|rottura/i.test(sentence)) score += 1;
+  if (sentence.length < 45 || sentence.length > 320) score -= 2;
+  return score;
 }
 
 function parseRss(xml) {

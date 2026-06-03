@@ -300,6 +300,21 @@ async function mockApi(req, res, url) {
         created_at: new Date().toISOString(),
       });
     }
+    if (body.action === "youtube_scout") {
+      demoState.drafts.unshift({
+        id: Date.now(),
+        title: "YouTube Scout: tema Juve da verificare",
+        body: "Dal video emerge questo tema da verificare: la Juve deve chiarire le priorita di mercato prima di accelerare sulle entrate. Bozza demo generata da YouTube Scout.",
+        category: "calciomercato",
+        urgency: "normal",
+        source_name: "YouTube · Demo",
+        source_url: "https://www.youtube.com/",
+        reliability: "trusted",
+        editorial_status: "Da verificare",
+        review_status: "needs_review",
+        created_at: new Date().toISOString(),
+      });
+    }
     const run = { id: Date.now(), type: body.action, status: "ok", payload: { demo: true }, created_at: new Date().toISOString() };
     demoState.runs.unshift(run);
     demoState.runs = demoState.runs.slice(0, 12);

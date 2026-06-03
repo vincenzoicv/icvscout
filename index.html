@@ -1158,6 +1158,15 @@ function loadHomeDashboard() {
 function buildEditorialFocus(market, news) {
   market = Array.isArray(market) ? market : [];
   news = Array.isArray(news) ? news : [];
+  var focusNews = pickFocusNews(news);
+  if (focusNews) {
+    return {
+      title: focusNews.title || "Il tema del giorno",
+      text: editorializeNews(focusNews),
+      skipNewsId: focusNews.id
+    };
+  }
+
   var exits = market.filter(function(m){ return marketHas(m, /vlahovic|bremer|cambiaso|douglas|nico gonzalez|uscita|cessione|addio/i); });
   var arrivals = market.filter(function(m){ return marketHas(m, /alisson|icardi|robertson|mamardashvili|de gea|arrivo|attaccante|portiere/i); });
   var staff = market.filter(function(m){ return marketHas(m, /spalletti|comolli|staff|rinnovo|dirigenza|continassa/i); });
@@ -1195,17 +1204,30 @@ function buildEditorialFocus(market, news) {
       text: "Le dichiarazioni dei protagonisti raccontano l'umore del gruppo: per ICV sono segnali editoriali, utili a capire che clima accompagna la ripartenza."
     };
   }
-  if (news[0]) {
-    return {
-      title: "Il tema del giorno",
-      text: editorializeNews(news[0]),
-      skipNewsId: news[0].id
-    };
-  }
   return {
     title: "ICV Scout in aggiornamento",
     text: "Le notizie approvate e il Match Center appariranno qui dopo la revisione admin."
   };
+}
+
+function pickFocusNews(news) {
+  return news.slice().sort(function(a, b) {
+    var aScore = focusNewsScore(a);
+    var bScore = focusNewsScore(b);
+    if (aScore !== bScore) return bScore - aScore;
+    return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+  })[0] || null;
+}
+
+function focusNewsScore(item) {
+  var text = [item.title, item.body, item.category, item.editorial_status, item.reliability].join(" ");
+  var score = new Date(item.created_at || 0).getTime() / 1000000000000;
+  if (/breaking|urgente/i.test(item.urgency || "")) score += 8;
+  if (/ufficiale|confermato|official/i.test(text)) score += 5;
+  if (/affidabile|trusted/i.test(text)) score += 3;
+  if (/mercato|calciomercato|vlahovic|spalletti|comolli|juventus/i.test(text)) score += 2;
+  if (/da verificare|rumor|aggregator/i.test(text)) score -= 2;
+  return score;
 }
 
 function marketHas(item, pattern) {

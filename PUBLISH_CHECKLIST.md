@@ -34,16 +34,18 @@ SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY
 ADMIN_TOKEN
 IG_ACCESS_TOKEN
+TRANSCRIPT_API_KEY
 HOME_AUTO_INTERVAL_HOURS=6
 ```
 
-`SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_TOKEN` e `IG_ACCESS_TOKEN` devono stare solo nelle variabili Cloudflare, mai in HTML o JavaScript pubblico.
+`SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_TOKEN`, `IG_ACCESS_TOKEN` e `TRANSCRIPT_API_KEY` devono stare solo nelle variabili Cloudflare, mai in HTML o JavaScript pubblico.
 
 Impostazione consigliata:
 
 - `ADMIN_TOKEN`: password lunga scelta da te per entrare in `icv_admin.html`
 - `HOME_AUTO_INTERVAL_HOURS`: `6`
 - `IG_ACCESS_TOKEN`: token Instagram rigenerato e non condiviso in chat
+- `TRANSCRIPT_API_KEY`: chiave TranscriptAPI per trascrivere i video YouTube
 
 Se Supabase non e' ancora configurato, la home resta visibile ma senza dati automatici reali.
 

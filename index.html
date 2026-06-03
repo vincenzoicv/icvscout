@@ -1163,10 +1163,10 @@ function buildEditorialFocus(market, news) {
   var staff = market.filter(function(m){ return marketHas(m, /spalletti|comolli|staff|rinnovo|dirigenza|continassa/i); });
   var declarations = market.filter(function(m){ return marketHas(m, /locatelli|conceicao|conceição|dichiarazioni|tifosi|dolore|delusione/i); });
 
-  if (exits.some(function(m){ return marketHas(m, /vlahovic/i); }) && arrivals.length) {
+  if (exits.some(function(m){ return marketHas(m, /vlahovic/i); })) {
     return {
-      title: "Vlahovic, spazio salariale e nuovo attacco",
-      text: "La giornata ruota intorno al futuro di Vlahovic: tra cessioni necessarie e ricerca del nuovo attaccante, la Juve prova a liberare spazio salariale."
+      title: "Vlahovic-Juve, rottura economica e tecnica",
+      text: "Il caso Vlahovic non e solo una questione di ingaggio: il rapporto con la Juve sembra consumato anche sul piano tecnico e gestionale, con la cessione che diventa il nodo da cui puo partire il nuovo attacco."
     };
   }
   if (arrivals.some(function(m){ return marketHas(m, /alisson/i); })) {

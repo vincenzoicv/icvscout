@@ -220,7 +220,7 @@ function load(){
 function runAutomation(action){
   showToast("Automazione in corso");
   return api("/api/admin/automate", {method:"POST", body:{action:action}})
-    .then(function(res){ showToast(action + " completata"); return load(); })
+    .then(function(res){ showToast(automationResultMessage(action, res)); return load(); })
     .catch(function(err){ showToast(err.message); });
 }
 function setFilter(filter, btn){
@@ -356,7 +356,7 @@ function renderAutomationStatus(){
   box.innerHTML = items.map(function(item){
     var run = lookup[item.key];
     var cls = run ? (run.status === "error" ? "status-warn" : "status-ok") : "status-idle";
-    var detail = run ? "Ultimo giro: " + date(run.created_at) : item.fallback;
+    var detail = automationStatusDetail(item, run);
     return "<div class='status-card "+cls+"'><strong>"+esc(item.label)+"</strong><span>"+esc(detail)+"</span></div>";
   }).join("");
 }
@@ -366,6 +366,7 @@ function renderAdminAlerts(){
   var openDrafts = state.drafts.filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; }).length;
   var visibleToday = state.news.filter(function(n){ return n.visible !== false && isToday(n.created_at); }).length;
   var marketRun = latestRun("market");
+  var youtubeRun = latestRun("youtube_scout");
   var instagramRun = latestRun("instagram_import");
   var alerts = [];
 
@@ -392,6 +393,8 @@ function renderAdminAlerts(){
     title: marketRun && marketRun.status === "error" ? "Ultimo mercato in errore" : "Mercato non aggiornato oggi",
     text: marketRun ? "Ultimo giro: " + date(marketRun.created_at) + "." : "Nessuna scansione mercato registrata."
   });
+
+  alerts.push(youtubeScoutAlert(youtubeRun));
 
   alerts.push(!instagramRun ? {
     tone:"warn",
@@ -534,6 +537,89 @@ function compressImage(file){
     img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("Impossibile ottimizzare l'immagine")); };
     img.src = url;
   });
+}
+function runPayload(run){
+  if(!run || !run.payload) return {};
+  if(typeof run.payload === "string"){
+    try { return JSON.parse(run.payload); } catch(e){ return {}; }
+  }
+  return run.payload || {};
+}
+function youtubeScoutNumbers(runOrPayload){
+  var payload = runOrPayload && runOrPayload.payload !== undefined ? runPayload(runOrPayload) : (runOrPayload || {});
+  var errors = Array.isArray(payload.errors) ? payload.errors.length : Number(payload.errors || 0);
+  return {
+    scanned: Number(payload.scanned || 0),
+    inserted: Number(payload.inserted || 0),
+    skipped: Number(payload.skipped || 0),
+    errors: isNaN(errors) ? 0 : errors,
+    error: payload.error || ""
+  };
+}
+function youtubeScoutSummary(run){
+  if(!run) return "In attesa trascrizioni";
+  var n = youtubeScoutNumbers(run);
+  if(n.error) return "Errore: " + n.error;
+  var parts = ["Ultimo giro: " + date(run.created_at), countLabel(n.scanned, "video", "video"), countLabel(n.inserted, "bozza", "bozze")];
+  if(n.skipped) parts.push(countLabel(n.skipped, "saltato", "saltati"));
+  if(n.errors) parts.push(countLabel(n.errors, "scartato", "scartati"));
+  return parts.join(" · ");
+}
+function automationStatusDetail(item, run){
+  if(!run) return item.fallback;
+  if(item.key === "youtube_scout") return youtubeScoutSummary(run);
+  return "Ultimo giro: " + date(run.created_at);
+}
+function automationResultMessage(action, res){
+  if(action === "youtube_scout"){
+    var n = youtubeScoutNumbers(res || {});
+    if(n.error) return "YouTube Scout: " + n.error;
+    return "YouTube Scout: " + countLabel(n.scanned, "video", "video") + ", " + countLabel(n.inserted, "bozza", "bozze") + (n.errors ? ", " + countLabel(n.errors, "scartato", "scartati") : "");
+  }
+  var labels = {
+    news:"Fetch news",
+    market:"Mercato",
+    match_center:"Match Center",
+    social:"Social",
+    instagram_import:"Instagram"
+  };
+  return (labels[action] || action) + " completata";
+}
+function youtubeScoutAlert(run){
+  if(!run){
+    return {
+      tone:"info",
+      kicker:"YouTube",
+      title:"YouTube Scout in attesa",
+      text:"Esegui il controllo per trasformare i video recenti in bozze da verificare."
+    };
+  }
+  var n = youtubeScoutNumbers(run);
+  if(run.status === "error" || n.error){
+    return {
+      tone:"danger",
+      kicker:"YouTube",
+      title:"YouTube Scout in errore",
+      text:n.error || ("Ultimo giro: " + date(run.created_at) + ".")
+    };
+  }
+  if(n.inserted > 0){
+    return {
+      tone:"ok",
+      kicker:"YouTube",
+      title:"YouTube Scout ha creato " + countLabel(n.inserted, "bozza", "bozze"),
+      text:countLabel(n.scanned, "video controllato", "video controllati") + ". Trovi le bozze nella coda da approvare."
+    };
+  }
+  return {
+    tone:n.errors ? "warn" : "info",
+    kicker:"YouTube",
+    title:"YouTube Scout: nessuna bozza creata",
+    text:countLabel(n.scanned, "video controllato", "video controllati") + ", " + countLabel(n.skipped, "saltato", "saltati") + " e " + countLabel(n.errors, "scartato", "scartati") + " o senza trascrizione utile."
+  };
+}
+function countLabel(count, singular, plural){
+  return count + " " + (count === 1 ? singular : plural);
 }
 function clearManual(){ ["manualTitle","manualBody","manualSource"].forEach(function(id){ document.getElementById(id).value = ""; }); }
 function esc(value){ return String(value == null ? "" : value).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }

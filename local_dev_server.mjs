@@ -285,6 +285,7 @@ async function mockApi(req, res, url) {
         });
       }
     }
+    let automationPayload = { ok: true, action: body.action, demo: true };
     if (body.action === "fetch_news") {
       demoState.drafts.unshift({
         id: Date.now(),
@@ -314,11 +315,12 @@ async function mockApi(req, res, url) {
         review_status: "needs_review",
         created_at: new Date().toISOString(),
       });
+      automationPayload = { ok: true, action: body.action, demo: true, scanned: 1, inserted: 1, skipped: 0, errors: [] };
     }
-    const run = { id: Date.now(), type: body.action, status: "ok", payload: { demo: true }, created_at: new Date().toISOString() };
+    const run = { id: Date.now(), type: body.action, status: "ok", payload: automationPayload, created_at: new Date().toISOString() };
     demoState.runs.unshift(run);
     demoState.runs = demoState.runs.slice(0, 12);
-    return sendJson(res, { ok: true, action: body.action, demo: true });
+    return sendJson(res, automationPayload);
   }
   sendJson(res, { error: "API demo non trovata" }, 404);
 }

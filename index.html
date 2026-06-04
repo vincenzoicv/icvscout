@@ -151,8 +151,7 @@ main{padding-top:58px;position:relative;z-index:1;}
 .radar-card strong{display:block;font-family:"Barlow Condensed";font-size:15px;font-weight:800;color:var(--white);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
 .radar-card span{font-size:13px;color:var(--t3);line-height:1.35;}
 .watch-list{display:flex;flex-direction:column;gap:10px;margin-top:10px;}
-.watch-item{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bdr2);}
-.watch-item:last-child{border-bottom:none;}
+.watch-item{display:flex;gap:10px;align-items:flex-start;padding:11px 12px;border:1px solid var(--bdr2);border-radius:8px;background:rgba(255,255,255,0.025);}
 .watch-num{font-family:"Bebas Neue";font-size:22px;color:rgba(196,150,42,0.70);line-height:1;min-width:24px;}
 .watch-text strong{display:block;font-family:"Barlow Condensed";font-size:15px;font-weight:800;letter-spacing:1px;color:var(--white);text-transform:uppercase;}
 .watch-text span{display:block;font-size:13px;color:var(--t3);line-height:1.4;margin-top:2px;}
@@ -542,19 +541,37 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
   </div>
   <div class="home-panel">
     <h3>Ultime News</h3>
-    <div class="home-list" id="homeNewsList"><div class="home-text">Caricamento...</div></div>
+    <div class="home-list" id="homeNewsList"><div class="home-text">Nessuna news approvata al momento.</div></div>
   </div>
   <div class="home-panel">
     <h3>Mercato Live</h3>
-    <div class="home-list" id="homeMarketList"><div class="home-text">Caricamento...</div></div>
+    <div class="home-list" id="homeMarketList"><div class="home-text">Nessun tema mercato pubblicato al momento.</div></div>
   </div>
   <div class="home-panel">
     <h3>Da Instagram</h3>
-    <div class="home-list" id="homeInstagramList"><div class="home-text">Caricamento...</div></div>
+    <div class="home-list" id="homeInstagramList"><div class="home-text">Nessun post importato al momento.</div></div>
   </div>
 </section>
 <section class="section" id="statistiche">
   <div class="sec-head"><div class="sec-tag" id="statsSecTag">Stagione 2025/26 &middot; Serie A</div><div class="sec-title">STATISTICHE</div><div class="gold-bar"></div></div>
+  <div class="offseason-board" style="margin-bottom:18px;">
+    <div class="offseason-main">
+      <div class="offseason-kicker" id="radarKicker">Radar ICV</div>
+      <div class="offseason-title" id="radarTitle">Ripartenza 2026/27</div>
+      <div class="offseason-copy" id="radarCopy">In attesa dei dati automatici, il radar resta orientato sui temi centrali: rosa, calendario e identita tecnica.</div>
+      <div class="radar-grid" id="radarCards">
+        <div class="radar-card"><strong>Rosa</strong><span>Valutare uscite e rinnovi prima dei nuovi innesti.</span></div>
+        <div class="radar-card"><strong>Calendario</strong><span>La prossima stagione si costruisce appena arrivano date e avversarie.</span></div>
+      </div>
+    </div>
+    <div class="offseason-side">
+      <div class="offseason-kicker">Da osservare</div>
+      <div class="watch-list" id="radarWatch">
+        <div class="watch-item"><div class="watch-num">01</div><div class="watch-text"><strong>Mercato</strong><span>Capire quali temi diventano trattative reali.</span></div></div>
+        <div class="watch-item"><div class="watch-num">02</div><div class="watch-text"><strong>Campo</strong><span>Monitorare segnali tattici e scelte di preparazione.</span></div></div>
+      </div>
+    </div>
+  </div>
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-val">68</div><div class="stat-lbl">Punti (37 gare)</div><div class="stat-sub">6&#176; posto &middot; a -2 da Milan e Roma</div></div>
     <div class="stat-card"><div class="stat-val">1.4</div><div class="stat-lbl">Gol / partita</div><div class="stat-sub">7&#176; in Serie A per gol segnati</div></div>
@@ -594,7 +611,7 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
   <div class="sec-head"><div class="sec-tag">Estate 2026</div><div class="sec-title">MERCATO</div><div class="gold-bar"></div></div>
   <div class="ctx-box">Radar editoriale sulle fonti Juventus: meno etichette automatiche, piu' temi da leggere e verificare con calma.</div>
   <div class="sec-head" style="margin-top:28px;margin-bottom:14px;"><div class="sec-tag">Temi mercato</div></div>
-  <div class="results-list" id="mercatoFeed"><div style="font-family:'Barlow Condensed';font-size:14px;color:var(--t3);letter-spacing:1px;padding:20px;text-align:center;background:var(--d2);border:1px solid var(--bdr2);border-radius:8px;">Caricamento...</div></div>
+  <div class="results-list" id="mercatoFeed"><div class="news-empty-state">Nessun tema mercato disponibile al momento.</div></div>
 </section>
 <section class="section" id="grafiche">
   <div class="sec-head"><div class="sec-tag">Archivio ICV</div><div class="sec-title">GRAFICHE</div><div class="gold-bar"></div></div>
@@ -1127,20 +1144,20 @@ function loadHomeDashboard() {
     }
     renderHomeList("homeNewsList", focus.skipNewsId ? news.filter(function(n){ return n.id !== focus.skipNewsId; }) : news, function(n) {
       return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : "")};
-    });
+    }, "Nessuna news approvata al momento.");
     renderHomeList("homeMarketList", market, function(m) {
       var title = m.note || m.player_name || "Mercato Juve";
       var player = m.note && m.player_name ? " · " + m.player_name : "";
       return {title:title, meta:(m.source_name || "ICV") + player};
-    });
+    }, "Nessun tema mercato pubblicato al momento.");
     renderHomeLinks("homeInstagramList", uniqueSocialRows(social), function(s) {
       return {title:s.hook || "Post Instagram", meta:(s.media_type || s.platform || "instagram") + (s.status ? " · " + s.status : ""), url:s.post_url || "https://www.instagram.com/ilcalciodivince_/"};
-    });
+    }, "Nessun post importato al momento.");
   })
   .catch(function() {
-    renderHomeList("homeNewsList", [], null);
-    renderHomeList("homeMarketList", [], null);
-    renderHomeLinks("homeInstagramList", [], null);
+    renderHomeList("homeNewsList", [], null, "News non disponibili in questo momento.");
+    renderHomeList("homeMarketList", [], null, "Mercato non disponibile in questo momento.");
+    renderHomeLinks("homeInstagramList", [], null, "Instagram non disponibile in questo momento.");
   });
 }
 
@@ -1292,11 +1309,11 @@ function uniqueSocialRows(rows) {
   }).slice(0, 3);
 }
 
-function renderHomeList(id, rows, map) {
+function renderHomeList(id, rows, map, emptyText) {
   var el = document.getElementById(id);
   if (!el) return;
   if (!rows || !rows.length || !map) {
-    el.innerHTML = "<div class='home-text'>Nessun aggiornamento disponibile.</div>";
+    el.innerHTML = "<div class='home-text'>" + icvEsc(emptyText || "Nessun aggiornamento disponibile.") + "</div>";
     return;
   }
   el.innerHTML = rows.slice(0, 3).map(function(row) {
@@ -1305,11 +1322,11 @@ function renderHomeList(id, rows, map) {
   }).join("");
 }
 
-function renderHomeLinks(id, rows, map) {
+function renderHomeLinks(id, rows, map, emptyText) {
   var el = document.getElementById(id);
   if (!el) return;
   if (!rows || !rows.length || !map) {
-    el.innerHTML = "<div class='home-text'>Aggiungi post e Reel dall'admin.</div>";
+    el.innerHTML = "<div class='home-text'>" + icvEsc(emptyText || "Aggiungi post e Reel dall'admin.") + "</div>";
     return;
   }
   el.innerHTML = rows.slice(0, 3).map(function(row) {
@@ -1391,7 +1408,7 @@ function loadMercatoNews() {
   var done = 0;
   function finish() {
     if (!results.length) {
-      el.innerHTML = "<div style=\"font-family:'Barlow Condensed';font-size:14px;color:var(--t3);letter-spacing:1px;padding:20px;text-align:center;background:var(--d2);border:1px solid var(--bdr2);border-radius:8px;\">Nessuna notizia disponibile.</div>";
+      el.innerHTML = "<div class='news-empty-state'>Nessun tema mercato disponibile al momento.</div>";
       return;
     }
     el.innerHTML = results.slice(0, 6).map(function(item) {

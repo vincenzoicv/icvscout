@@ -100,21 +100,28 @@ footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-fa
 function esc(value){return String(value == null ? "" : value).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];});}
 function textOf(item){return [item.player_name,item.note,item.source_name,item.status].join(" ").toLowerCase();}
 function initials(name){return String(name || "M").trim().split(/\s+/).slice(0,2).map(function(p){return p.charAt(0);}).join("").toUpperCase() || "M";}
-function categoryFor(item){
+function isNoiseItem(item){
   var name = String(item.player_name || "").toLowerCase();
   var t = textOf(item);
-  if (/youtube scout|^scout$/.test(name) && /sorloth|sorlot|attacco|post vlahovic|dopo vlahovic/.test(t)) return "monitorare";
-  if (/^marzio$|di marzio/.test(name)) return "monitorare";
+  if (/^pap$|^papa$|^marzio$|^di marzio$|luca toselli|romeo agresti|gianni balzarini/.test(name)) return true;
+  if (/youtube scout:/.test(t)) return true;
+  if (/maradona|ferlaino|salas|cristiano ronaldo alla juventus sfumo/.test(t)) return true;
+  return false;
+}
+function categoryFor(item){
+  if (isNoiseItem(item)) return "";
+  var name = String(item.player_name || "").toLowerCase();
+  var t = textOf(item);
   if (/^perch/.test(name) && /alisson/.test(t)) return "arrivi";
   if (/spalletti|comolli|management|dirigenza|staff/.test(name)) return "rinnovi";
-  if (/sorloth|sorlot|kolo muani|openda|icardi|alisson|mamardashvili|de gea|robertson|brahim|kim|emerson/.test(name)) return "arrivi";
-  if (/vlahovic|bremer|cambiaso|douglas|nico gonzalez/.test(name)) return "uscite";
+  if (/openda|vlahovic|bremer|cambiaso|douglas|nico gonzalez/.test(name)) return "uscite";
+  if (/sorloth|sorlot|kolo muani|icardi|alisson|mamardashvili|de gea|robertson|brahim|kim|emerson/.test(name)) return "arrivi";
   if (/locatelli|conceicao|conceição/.test(name) && /intervista|dichiaraz|ha detto|parole|tifosi|dolore|delusione|sportweek|["“”]/.test(t)) return "dichiarazioni";
   if (/rinnovo|contratto|management|allenatore|dirigenza|proprieta|staff/.test(t)) return "rinnovi";
   if (/^(chiellini|locatelli|conceicao|spalletti|comolli)$/i.test(name) && /intervista|dichiaraz|ha detto|parole|tifosi|dolore|delusione|sportweek|["“”]/.test(t)) return "dichiarazioni";
   if (/sostituto|obiettivo|acquisto|arrivo|trattativa in salita/.test(t)) return "arrivi";
   if (/cessione|uscita|addio|sacrific|lascia|puo lasciare|può lasciare|parte|premier|bayern|barcellona/.test(t)) return "uscite";
-  return "monitorare";
+  return "";
 }
 function hotFor(item){
   var t = textOf(item);
@@ -122,7 +129,10 @@ function hotFor(item){
 }
 function groupRows(rows){
   var map = {arrivi:[], uscite:[], rinnovi:[], dichiarazioni:[], monitorare:[]};
-  rows.forEach(function(item){map[categoryFor(item)].push(item);});
+  rows.forEach(function(item){
+    var category = categoryFor(item);
+    if (category && map[category]) map[category].push(item);
+  });
   return map;
 }
 function itemHtml(item){
@@ -180,7 +190,7 @@ function renderSummary(rows){
 var allRows = [];
 function loadMarket(){
   fetch("/api/public/home").then(function(r){return r.json();}).then(function(data){
-    allRows = Array.isArray(data.market) ? data.market : [];
+    allRows = (Array.isArray(data.market) ? data.market : []).filter(function(item){return !isNoiseItem(item) && categoryFor(item);});
     renderSummary(allRows);
     renderGroups(allRows, "all");
     renderTimeline(allRows);

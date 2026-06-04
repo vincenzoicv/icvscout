@@ -1161,6 +1161,7 @@ function statusFromReliability(reliability) {
 function aggregateMarketItems(rows) {
   const byTopic = new Map();
   for (const row of rows || []) {
+    if (isIgnoredMarketSignal(row)) continue;
     const topic = marketTopicName(row);
     const key = normalizeTopicKey(topic);
     if (!key) continue;
@@ -1224,8 +1225,17 @@ function marketTopicName(row) {
   return isBadMarketTopic(name) ? (extracted || "Mercato Juve") : (name || extracted || "Mercato Juve");
 }
 
+function isIgnoredMarketSignal(row) {
+  const name = cleanText(row && row.player_name);
+  const text = cleanText([name, row && row.note, row && row.source_name].join(" ")).toLowerCase();
+  if (/^(pap|papa|marzio|di marzio|luca toselli|romeo agresti|gianni balzarini)$/i.test(name)) return true;
+  if (/youtube scout:/.test(text)) return true;
+  if (/maradona|ferlaino|salas|cristiano ronaldo alla juventus sfumo|cristiano ronaldo alla juventus sfumò/.test(text)) return true;
+  return false;
+}
+
 function isBadMarketTopic(value) {
-  return /^(youtube\s+)?scout$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^buongiorno$|^perch$/i.test(cleanText(value));
+  return /^(youtube\s+)?scout$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^buongiorno$|^perch$|^pap$|^papa$|^luca\s+toselli$|^romeo\s+agresti$|^gianni\s+balzarini$/i.test(cleanText(value));
 }
 
 function normalizeTopicKey(value) {
@@ -1276,7 +1286,7 @@ function inferUrgency(title) {
 }
 
 function extractPlayer(title) {
-  const ignored = new Set(["Juventus", "Juve", "Mercato", "Calciomercato", "Serie", "Sky", "Sport", "Scout", "YouTube", "Marzio", "Sicilia", "Buongiorno", "Fonte"]);
+  const ignored = new Set(["Juventus", "Juve", "Mercato", "Calciomercato", "Serie", "Sky", "Sport", "Scout", "YouTube", "Marzio", "Sicilia", "Buongiorno", "Fonte", "Pap", "Papa", "Luca Toselli", "Romeo Agresti", "Gianni Balzarini"]);
   const names = title.match(/\b[A-ZÀ-Ý][a-zà-ÿ']{2,}(?:\s+[A-ZÀ-Ý][a-zà-ÿ']{2,})?\b/g) || [];
   return names.find(name => {
     const parts = name.split(" ");

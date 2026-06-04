@@ -597,14 +597,8 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 </section>
 <section class="section" id="mercato">
   <div class="sec-head"><div class="sec-tag">Estate 2026</div><div class="sec-title">MERCATO</div><div class="gold-bar"></div></div>
-  <div class="ctx-box">Stagione senza Champions. <strong>Meeting Spalletti-Elkann</strong> in settimana: futuro in bilico. Si riparte da Yildiz, pilastro del ciclo.</div>
-  <div class="market-grid">
-    <div class="market-card"><div class="mc-title tin">Possibili Arrivi</div><div class="transfer-item"><div class="t-avatar">PO</div><div class="t-info"><div class="t-name">Nuovo portiere</div><div class="t-from">Alisson e Vicario seguiti</div></div><span class="t-badge b-tra">Priorita'</span></div><div class="transfer-item"><div class="t-avatar">DC</div><div class="t-info"><div class="t-name">Difensore centrale</div><div class="t-from">Rinforzo necessario</div></div><span class="t-badge b-rum">Ricerca</span></div><div class="transfer-item"><div class="t-avatar">MC</div><div class="t-info"><div class="t-name">Centrocampista</div><div class="t-from">Parametro zero o giovane</div></div><span class="t-badge b-rum">Obiettivo</span></div></div>
-    <div class="market-card"><div class="mc-title tout">Possibili Uscite</div><div class="transfer-item"><div class="t-avatar">DV</div><div class="t-info"><div class="t-name">Vlahovic</div><div class="t-from">Scadenza 2026 - stallo</div></div><span class="t-badge b-out">Da decidere</span></div><div class="transfer-item"><div class="t-avatar">TK</div><div class="t-info"><div class="t-name">Koopmeiners</div><div class="t-from">Deludente - in uscita</div></div><span class="t-badge b-out">In uscita</span></div><div class="transfer-item"><div class="t-avatar">AC</div><div class="t-info"><div class="t-name">Cambiaso</div><div class="t-from">Barcellona interessato</div></div><span class="t-badge b-rum">Rumor</span></div></div>
-    <div class="market-card"><div class="mc-title trin">Rinnovi</div><div class="transfer-item"><div class="t-avatar">KY</div><div class="t-info"><div class="t-name">Yildiz</div><div class="t-from">Intoccabile - rinnovo in arrivo</div></div><span class="t-badge b-uff">Blindato</span></div><div class="transfer-item"><div class="t-avatar">WM</div><div class="t-info"><div class="t-name">McKennie</div><div class="t-from">Rinnovo gia' firmato</div></div><span class="t-badge b-uff">Rinnovato</span></div><div class="transfer-item"><div class="t-avatar">PK</div><div class="t-info"><div class="t-name">Kalulu</div><div class="t-from">Rinnovo fino al 2030</div></div><span class="t-badge b-tra">In chiusura</span></div></div>
-    <div class="market-card"><div class="mc-title trum">Radio Rumors</div><div class="transfer-item"><div class="t-avatar">ALL</div><div class="t-info"><div class="t-name">Panchina</div><div class="t-from">Spalletti-Elkann - imminente</div></div><span class="t-badge b-rum">Caldo</span></div><div class="transfer-item"><div class="t-avatar">DIR</div><div class="t-info"><div class="t-name">Dirigenza</div><div class="t-from">Comolli e Modesto in bilico</div></div><span class="t-badge b-rum">Rumors</span></div><div class="transfer-item"><div class="t-avatar">CL</div><div class="t-info"><div class="t-name">Ritorno Champions</div><div class="t-from">Obiettivo 2026/27</div></div><span class="t-badge b-tra">Priorita'</span></div></div>
-  </div>
-  <div class="sec-head" style="margin-top:28px;margin-bottom:14px;"><div class="sec-tag">Ultime dal Mercato</div></div>
+  <div class="ctx-box">Radar editoriale sulle fonti Juventus: meno etichette automatiche, piu' temi da leggere e verificare con calma.</div>
+  <div class="sec-head" style="margin-top:28px;margin-bottom:14px;"><div class="sec-tag">Temi mercato</div></div>
   <div class="results-list" id="mercatoFeed"><div style="font-family:'Barlow Condensed';font-size:14px;color:var(--t3);letter-spacing:1px;padding:20px;text-align:center;background:var(--d2);border:1px solid var(--bdr2);border-radius:8px;">Caricamento...</div></div>
 </section>
 <section class="section" id="grafiche">
@@ -1142,7 +1136,7 @@ function loadHomeDashboard() {
     renderHomeList("homeMarketList", market, function(m) {
       var title = m.note || m.player_name || "Mercato Juve";
       var player = m.note && m.player_name ? " · " + m.player_name : "";
-      return {title:title, meta:(m.status || "monitorato") + (m.source_name ? " · " + m.source_name : "") + player};
+      return {title:title, meta:(m.source_name || "ICV") + player};
     });
     renderHomeLinks("homeInstagramList", uniqueSocialRows(social), function(s) {
       return {title:s.hook || "Post Instagram", meta:(s.media_type || s.platform || "instagram") + (s.status ? " · " + s.status : ""), url:s.post_url || "https://www.instagram.com/ilcalciodivince_/"};
@@ -1231,7 +1225,7 @@ function focusNewsScore(item) {
 }
 
 function marketHas(item, pattern) {
-  return pattern.test([item.player_name, item.note, item.source_name, item.status].join(" "));
+  return pattern.test([item.player_name, item.note, item.source_name].join(" "));
 }
 
 function editorializeNews(item) {

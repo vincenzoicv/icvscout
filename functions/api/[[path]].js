@@ -1118,13 +1118,14 @@ function decodeXml(value) {
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
+    .replace(/&nbsp;|&#160;|\u00a0/gi, " ")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .trim();
 }
 
 function cleanText(value) {
-  return decodeXml(String(value || "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " "));
+  return decodeXml(String(value || "").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
 }
 
 function normalizeGoogleTitle(title) {

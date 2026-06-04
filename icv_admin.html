@@ -556,6 +556,31 @@ function youtubeScoutNumbers(runOrPayload){
     error: payload.error || ""
   };
 }
+function youtubeScoutChannelDetails(runOrPayload){
+  var payload = runOrPayload && runOrPayload.payload !== undefined ? runPayload(runOrPayload) : (runOrPayload || {});
+  if(Array.isArray(payload.channels) && payload.channels.length){
+    return payload.channels.slice(0, 4).map(function(item){
+      var name = item.channel || item.handle || "Canale";
+      var bits = [];
+      if(Number(item.videos || 0)) bits.push(countLabel(Number(item.videos || 0), "video trovato", "video trovati"));
+      if(Number(item.relevant || 0)) bits.push(countLabel(Number(item.relevant || 0), "utile", "utili"));
+      if(Number(item.inserted || 0)) bits.push(countLabel(Number(item.inserted || 0), "bozza", "bozze"));
+      if(Number(item.skipped || 0)) bits.push(countLabel(Number(item.skipped || 0), "gia presente", "gia presenti"));
+      if(Array.isArray(item.errors) && item.errors.length){
+        var first = item.errors[0] || {};
+        bits.push(first.video ? first.video + ": " + (first.error || "scartato") : (first.error || "scartato"));
+      }
+      if(!bits.length) bits.push("nessun video utile trovato");
+      return name + ": " + bits.join(", ");
+    }).join(" · ");
+  }
+  if(Array.isArray(payload.errors) && payload.errors.length){
+    return payload.errors.slice(0, 4).map(function(item){
+      return (item.channel || "Canale") + ": " + (item.video ? item.video + " - " : "") + (item.error || "scartato");
+    }).join(" · ");
+  }
+  return "";
+}
 function youtubeScoutSummary(run){
   if(!run) return "In attesa trascrizioni";
   var n = youtubeScoutNumbers(run);
@@ -574,7 +599,8 @@ function automationResultMessage(action, res){
   if(action === "youtube_scout"){
     var n = youtubeScoutNumbers(res || {});
     if(n.error) return "YouTube Scout: " + n.error;
-    return "YouTube Scout: " + countLabel(n.scanned, "video", "video") + ", " + countLabel(n.inserted, "bozza", "bozze") + (n.errors ? ", " + countLabel(n.errors, "scartato", "scartati") : "");
+    var details = youtubeScoutChannelDetails(res || {});
+    return "YouTube Scout: " + countLabel(n.scanned, "video", "video") + ", " + countLabel(n.inserted, "bozza", "bozze") + (n.errors ? ", " + countLabel(n.errors, "scartato", "scartati") : "") + (details ? " · " + details : "");
   }
   var labels = {
     news:"Fetch news",
@@ -608,14 +634,15 @@ function youtubeScoutAlert(run){
       tone:"ok",
       kicker:"YouTube",
       title:"YouTube Scout ha creato " + countLabel(n.inserted, "bozza", "bozze"),
-      text:countLabel(n.scanned, "video controllato", "video controllati") + ". Trovi le bozze nella coda da approvare."
+      text:countLabel(n.scanned, "video controllato", "video controllati") + ". Trovi le bozze nella coda da approvare." + (youtubeScoutChannelDetails(run) ? " " + youtubeScoutChannelDetails(run) : "")
     };
   }
+  var details = youtubeScoutChannelDetails(run);
   return {
     tone:n.errors ? "warn" : "info",
     kicker:"YouTube",
     title:"YouTube Scout: nessuna bozza creata",
-    text:countLabel(n.scanned, "video controllato", "video controllati") + ", " + countLabel(n.skipped, "saltato", "saltati") + " e " + countLabel(n.errors, "scartato", "scartati") + " o senza trascrizione utile."
+    text:countLabel(n.scanned, "video controllato", "video controllati") + ", " + countLabel(n.skipped, "saltato", "saltati") + " e " + countLabel(n.errors, "scartato", "scartati") + " o senza trascrizione utile." + (details ? " " + details : "")
   };
 }
 function countLabel(count, singular, plural){

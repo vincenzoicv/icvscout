@@ -315,7 +315,18 @@ async function mockApi(req, res, url) {
         review_status: "needs_review",
         created_at: new Date().toISOString(),
       });
-      automationPayload = { ok: true, action: body.action, demo: true, scanned: 1, inserted: 1, skipped: 0, errors: [] };
+      automationPayload = {
+        ok: true,
+        action: body.action,
+        demo: true,
+        scanned: 1,
+        inserted: 1,
+        skipped: 0,
+        errors: [],
+        channels: [
+          { channel: "Demo YouTube", handle: "@demo", videos: 2, relevant: 1, scanned: 1, inserted: 1, skipped: 0, errors: [] },
+        ],
+      };
     }
     const run = { id: Date.now(), type: body.action, status: "ok", payload: automationPayload, created_at: new Date().toISOString() };
     demoState.runs.unshift(run);

@@ -674,24 +674,48 @@ async function generateYoutubeScoutDrafts(env) {
   let scanned = 0;
   let inserted = 0;
   const errors = [];
+  const channelReports = [];
 
   for (const channel of channels) {
+    const report = {
+      channel: channel.name,
+      handle: channel.channel,
+      videos: 0,
+      relevant: 0,
+      scanned: 0,
+      inserted: 0,
+      skipped: 0,
+      errors: [],
+    };
     try {
       const videos = (await fetchYoutubeLatestVideos(env, channel.channel)).slice(0, 15);
+      report.videos = videos.length;
       const relevant = videos.filter(isRelevantYoutubeVideo).slice(0, maxPerChannel);
+      report.relevant = relevant.length;
       scanned += relevant.length;
+      report.scanned = relevant.length;
 
       for (const video of relevant) {
         const videoId = youtubeVideoId(video);
-        if (!videoId) continue;
+        if (!videoId) {
+          const detail = { channel: channel.name, video: videoTitle(video), error: "Video senza ID riconoscibile" };
+          errors.push(detail);
+          report.errors.push(detail);
+          continue;
+        }
         const hash = await digest("youtube-scout|" + videoId);
         const existing = await sb(env, "/news_drafts?content_hash=eq." + encodeURIComponent(hash) + "&select=id&limit=1");
-        if (existing.length) continue;
+        if (existing.length) {
+          report.skipped++;
+          continue;
+        }
 
         const transcript = await fetchYoutubeTranscript(env, videoId);
         const transcriptText = normalizeTranscriptText(transcript);
         if (!hasUsableYoutubeTranscript(transcriptText)) {
-          errors.push({ channel: channel.name, video: videoTitle(video), error: "Trascrizione non utile o non Juventus-related" });
+          const detail = { channel: channel.name, video: videoTitle(video), error: "Trascrizione non utile o non Juventus-related" };
+          errors.push(detail);
+          report.errors.push(detail);
           continue;
         }
 
@@ -721,13 +745,17 @@ async function generateYoutubeScoutDrafts(env) {
           }],
         });
         inserted++;
+        report.inserted++;
       }
     } catch (err) {
-      errors.push({ channel: channel.name, error: err.message || "Errore canale YouTube" });
+      const detail = { channel: channel.name, error: err.message || "Errore canale YouTube" };
+      errors.push(detail);
+      report.errors.push(detail);
     }
+    channelReports.push(report);
   }
 
-  return { ok: true, scanned, inserted, errors };
+  return { ok: true, scanned, inserted, skipped: channelReports.reduce((sum, item) => sum + item.skipped, 0), errors, channels: channelReports };
 }
 
 async function importInstagramMedia(env) {

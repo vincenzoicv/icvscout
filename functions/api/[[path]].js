@@ -667,7 +667,7 @@ async function generateSocialDrafts(env) {
 
 async function generateYoutubeScoutDrafts(env) {
   if (!hasSupabase(env)) throw new Error("Configura Supabase per salvare le bozze YouTube Scout");
-  if (!env.TRANSCRIPT_API_KEY) throw new Error("Configura TRANSCRIPT_API_KEY per YouTube Scout");
+  if (!transcriptApiKey(env)) throw new Error("Configura TRANSCRIPT_API_KEY su Cloudflare per YouTube Scout");
 
   const channels = youtubeScoutChannels(env);
   const maxPerChannel = Math.max(1, Math.min(Number(env.YOUTUBE_SCOUT_MAX_PER_CHANNEL || 1), 3));
@@ -878,8 +878,12 @@ function transcriptApiBase(env) {
   return String(env.TRANSCRIPT_API_BASE || "https://transcriptapi.com").replace(/\/$/, "");
 }
 
+function transcriptApiKey(env) {
+  return env.TRANSCRIPT_API_KEY || env.TRANSCRIPTAPI_KEY || env.TRANSCRIPTAPI_API_KEY || "";
+}
+
 function transcriptApiHeaders(env) {
-  return { "Authorization": "Bearer " + env.TRANSCRIPT_API_KEY, "Accept": "application/json" };
+  return { "Authorization": "Bearer " + transcriptApiKey(env), "Accept": "application/json" };
 }
 
 async function fetchYoutubeLatestVideos(env, channel) {

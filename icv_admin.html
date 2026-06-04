@@ -64,7 +64,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
     </div>
 
     <div class="stats">
-      <div class="stat"><strong id="stDrafts">0</strong><span>Da verificare</span></div>
+      <div class="stat"><strong id="stDrafts">0</strong><span>Da approvare</span></div>
       <div class="stat"><strong id="stReady">0</strong><span>Pronte</span></div>
       <div class="stat"><strong id="stNews">0</strong><span>Pubblicate</span></div>
       <div class="stat"><strong id="stMarket">0</strong><span>Mercato</span></div>
@@ -90,9 +90,9 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <h2>Bozze Automatiche</h2>
           <div class="tabs">
             <button class="tab active" onclick="setFilter('all',this)">Tutte</button>
-            <button class="tab" onclick="setFilter('official',this)">Ufficiali</button>
-            <button class="tab" onclick="setFilter('trusted',this)">Affidabili</button>
-            <button class="tab" onclick="setFilter('aggregator',this)">Da verificare</button>
+            <button class="tab" onclick="setFilter('official',this)">Fonti ufficiali</button>
+            <button class="tab" onclick="setFilter('trusted',this)">Fonti affidabili</button>
+            <button class="tab" onclick="setFilter('aggregator',this)">Aggregatori</button>
           </div>
           <div id="draftList"></div>
         </div>
@@ -107,10 +107,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         <div class="card admin-panel" data-panel="published">
           <h2>Nuova News Manuale</h2>
           <div class="form">
-            <div class="row">
-              <div><label>Categoria</label><select id="manualCategory"><option value="juventus">Juventus</option><option value="calciomercato">Calciomercato</option><option value="tattica">Tattica</option><option value="infortuni">Infortuni</option></select></div>
-              <div><label>Stato</label><select id="manualStatus"><option>Confermato</option><option>Ufficiale</option><option>Rumor</option><option>Da verificare</option></select></div>
-            </div>
+            <div><label>Categoria</label><select id="manualCategory"><option value="juventus">Juventus</option><option value="calciomercato">Calciomercato</option><option value="tattica">Tattica</option><option value="infortuni">Infortuni</option></select></div>
             <div><label>Titolo</label><input id="manualTitle" placeholder="Titolo"></div>
             <div><label>Testo</label><textarea id="manualBody" placeholder="Sintesi ICV"></textarea></div>
             <div><label>Fonte</label><input id="manualSource" placeholder="ICV / Juventus / Sky..."></div>
@@ -125,7 +122,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
             <input id="sourceName" placeholder="Nome fonte">
             <input id="sourceUrl" placeholder="URL RSS">
             <div class="row">
-              <select id="sourceReliability"><option value="official">Official</option><option value="trusted">Trusted</option><option value="rumor">Rumor</option><option value="aggregator">Aggregator</option></select>
+              <select id="sourceReliability"><option value="official">Fonte ufficiale</option><option value="trusted">Fonte affidabile</option><option value="rumor">Voce</option><option value="aggregator">Aggregatore</option></select>
               <select id="sourceCategory"><option value="juventus">Juventus</option><option value="calciomercato">Calciomercato</option></select>
             </div>
             <button class="ghost" onclick="addSource()">Aggiungi Fonte</button>
@@ -243,8 +240,8 @@ function publishManual(){
   if(!title || !body) return showToast("Titolo e testo richiesti");
   api("/api/admin/news", {method:"POST", body:{
     type:"manual_news", title:title, body:body, category:val("manualCategory"),
-    editorial_status:val("manualStatus"), source:val("manualSource") || "ICV",
-    reliability: val("manualStatus") === "Ufficiale" ? "official" : "trusted"
+    editorial_status:"News", source:val("manualSource") || "ICV",
+    reliability:"trusted"
   }}).then(function(){ clearManual(); showToast("News pubblicata"); load(); }).catch(function(err){ showToast(err.message); });
 }
 function approveDraft(id){
@@ -435,7 +432,7 @@ function renderDrafts(){
   if(state.filter !== "all") drafts = drafts.filter(function(d){ return d.reliability === state.filter; });
   if(!drafts.length){ list.innerHTML = "<div class='empty'>Nessuna bozza in questa vista.</div>"; return; }
   list.innerHTML = drafts.map(function(d){
-    return "<div class='item'><div class='item-head'><div><span class='pill "+esc(d.reliability)+"'>"+labelRel(d.reliability)+"</span><span class='pill "+esc(d.urgency)+"'>"+esc(d.editorial_status || "")+"</span><h3>"+esc(d.title)+"</h3></div><div class='meta'>"+date(d.created_at)+"</div></div><p>"+esc(d.body)+"</p><div class='meta'>"+esc(d.source_name || "")+(d.source_url?" · <a href='"+escAttr(d.source_url)+"' target='_blank' style='color:var(--gold-l)'>fonte</a>":"")+"</div><div class='item-actions' style='margin-top:10px'><button class='primary small' onclick='approveDraft("+d.id+")'>Approva</button><button class='danger small' onclick='discardDraft("+d.id+")'>Scarta</button></div></div>";
+    return "<div class='item'><div class='item-head'><div><span class='pill "+esc(d.reliability)+"'>"+labelRel(d.reliability)+"</span><h3>"+esc(d.title)+"</h3></div><div class='meta'>"+date(d.created_at)+"</div></div><p>"+esc(d.body)+"</p><div class='meta'>"+esc(d.source_name || "")+(d.source_url?" · <a href='"+escAttr(d.source_url)+"' target='_blank' style='color:var(--gold-l)'>fonte</a>":"")+"</div><div class='item-actions' style='margin-top:10px'><button class='primary small' onclick='approveDraft("+d.id+")'>Approva</button><button class='danger small' onclick='discardDraft("+d.id+")'>Scarta</button></div></div>";
   }).join("");
 }
 function renderNews(){
@@ -453,14 +450,9 @@ function renderSources(){
 function renderMarket(){
   var list = document.getElementById("marketList");
   if(!state.market.length){ list.innerHTML = "<div class='empty'>Esegui automazione mercato.</div>"; return; }
-  var groups = { ufficiale:[], monitorato:[], rumor:[], uscita:[], rinnovo:[], altro:[] };
-  state.market.forEach(function(m){
-    var key = /ufficial/i.test(m.status || "") ? "ufficiale" : /rumor/i.test(m.status || "") ? "rumor" : /usc|cess/i.test(m.status || "") ? "uscita" : /rinnov/i.test(m.status || "") ? "rinnovo" : /monitor/i.test(m.status || "") ? "monitorato" : "altro";
-    groups[key].push(m);
-  });
-  var labels = {ufficiale:"Ufficiali",monitorato:"Da monitorare",rumor:"Rumor",uscita:"Uscite",rinnovo:"Rinnovi",altro:"Altro"};
-  list.innerHTML = Object.keys(groups).filter(function(k){ return groups[k].length; }).map(function(k){
-    return "<div class='meta' style='margin:12px 0 8px;color:var(--gold-l)'>"+labels[k]+"</div>" + groups[k].slice(0,5).map(function(m){ return "<div class='item'><span class='pill "+esc(m.reliability)+"'>"+labelRel(m.reliability)+"</span><h3>"+esc(m.player_name)+"</h3><p>"+esc(m.note || "")+"</p><div class='meta'>"+esc(m.status)+" · "+esc(m.source_name || "")+"</div></div>"; }).join("");
+  list.innerHTML = state.market.slice(0,30).map(function(m){
+    var sources = Number(m.source_count || 0) > 1 ? m.source_count + " fonti: " + (m.source_name || "ICV") : (m.source_name || "ICV");
+    return "<div class='item'><h3>"+esc(m.player_name || "Tema mercato")+"</h3><p>"+esc(m.note || "")+"</p><div class='meta'>"+esc(sources)+"</div></div>";
   }).join("");
 }
 function renderMatches(){
@@ -664,7 +656,7 @@ function hoursSince(value){
   if(!value) return Infinity;
   return (Date.now() - new Date(value).getTime()) / 3600000;
 }
-function labelRel(value){ return {official:"Ufficiale",trusted:"Affidabile",rumor:"Rumor",aggregator:"Da verificare"}[value] || value || "Affidabile"; }
+function labelRel(value){ return {official:"Fonte ufficiale",trusted:"Fonte affidabile",rumor:"Voce",aggregator:"Aggregatore"}[value] || value || "Fonte affidabile"; }
 function showToast(msg){ var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(function(){t.classList.remove("show")},2600); }
 document.getElementById("tokenInput").addEventListener("keydown", function(e){ if(e.key==="Enter") login(); });
 var graphicFileInput = document.getElementById("graphicFile");

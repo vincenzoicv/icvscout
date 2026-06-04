@@ -720,7 +720,7 @@ async function generateYoutubeScoutDrafts(env) {
         }
 
         const title = youtubeDraftTitle(video, transcriptText);
-        const body = youtubeDraftBody(video, transcriptText);
+        const body = youtubeDraftBody(video, transcriptText, channel.name);
         await sb(env, "/news_drafts", {
           method: "POST",
           body: [{
@@ -1010,26 +1010,82 @@ function hasUsableYoutubeTranscript(text) {
 }
 
 function youtubeDraftTitle(video, transcriptText) {
-  const title = videoTitle(video).replace(/\s+/g, " ").trim();
-  const topic = extractPlayer(title + " " + transcriptText.slice(0, 500));
-  if (topic && topic !== "Mercato Juve") return ("YouTube Scout: " + topic + ", tema da verificare").slice(0, 140);
-  return ("YouTube Scout: " + title).slice(0, 140);
+  return youtubeEditorialAngle(video, transcriptText).title;
 }
 
-function youtubeDraftBody(video, transcriptText) {
+function youtubeDraftBody(video, transcriptText, channelName) {
   const title = videoTitle(video);
-  const sentences = transcriptText
+  const angle = youtubeEditorialAngle(video, transcriptText);
+  const evidence = youtubeEditorialEvidence(transcriptText).slice(0, 2);
+  const source = channelName ? " da " + channelName : "";
+  const body = [
+    "Secondo quanto emerge dal video" + source + ", " + angle.lead,
+    evidence.length ? "Il passaggio chiave: " + evidence.join(" ") : "",
+    "La bozza resta da verificare prima della pubblicazione. Fonte video: " + title,
+  ].filter(Boolean).join(" ");
+  return cleanText(body).slice(0, 760);
+}
+
+function youtubeEditorialAngle(video, transcriptText) {
+  const text = normalizeTopicKey([videoTitle(video), transcriptText.slice(0, 1800)].join(" "));
+  const hasVlahovic = /vlahovic|vlawic|blaovic|duan|dusan/.test(text);
+  const hasPostVlahovic = /post vlahovic|dopo vlahovic|senza vlahovic|sostituto/.test(text);
+  const hasSorloth = /sorloth|sorlot|solot/.test(text);
+  const hasKolo = /kolo muani|colomin|muani/.test(text);
+  const hasOpenda = /openda/.test(text);
+  const hasComolli = /comolli/.test(text);
+  const hasSpalletti = /spalletti/.test(text);
+  const hasEuropaLeague = /europa league/.test(text);
+  const hasBudget = /ingaggio|stipendio|cifra|disponibilita|sacrifici|accordo|rinnovo/.test(text);
+
+  if (hasVlahovic && (hasSorloth || hasKolo || hasOpenda || hasPostVlahovic)) {
+    const names = [hasSorloth ? "Sorloth" : "", hasKolo ? "Kolo Muani" : "", hasOpenda ? "Openda" : ""].filter(Boolean).slice(0, 2).join(" e ");
+    return {
+      title: names ? "Juve, dopo Vlahovic prende quota il dossier " + names : "Juve, dopo Vlahovic si apre il dossier attacco",
+      lead: names ? "la Juventus sta ragionando sul dopo Vlahovic e il nome di " + names + " resta tra i profili da monitorare." : "la Juventus sta ragionando sul dopo Vlahovic, con il reparto offensivo al centro delle valutazioni di mercato.",
+    };
+  }
+  if (hasVlahovic && hasBudget) {
+    return {
+      title: "Juve-Vlahovic, il nodo economico spinge verso l'addio",
+      lead: "il futuro di Vlahovic resta legato soprattutto al nodo economico, tra rinnovo complicato, ingaggio e possibile separazione.",
+    };
+  }
+  if (hasVlahovic) {
+    return {
+      title: "Juve-Vlahovic, futuro sempre piu lontano",
+      lead: "il futuro di Vlahovic continua a essere uno dei temi centrali della giornata bianconera.",
+    };
+  }
+  if (hasComolli || hasSpalletti) {
+    return {
+      title: "Juve, il confronto tecnico guida le mosse di mercato",
+      lead: "la linea tecnica e dirigenziale della Juventus resta al centro delle prossime mosse, con mercato e progetto sportivo da riallineare.",
+    };
+  }
+  if (hasEuropaLeague || hasBudget) {
+    return {
+      title: "Juve, mercato condizionato da budget ed Europa League",
+      lead: "la prossima sessione bianconera potrebbe essere condizionata da budget, appeal europeo e necessita di fare scelte mirate.",
+    };
+  }
+  const topic = extractPlayer(videoTitle(video) + " " + transcriptText.slice(0, 500));
+  return {
+    title: topic ? "Juve, focus su " + topic + ": tema da verificare" : "Juve, tema di giornata da verificare",
+    lead: "emerge un tema Juventus da trattare come spunto editoriale, da verificare con altre fonti prima della pubblicazione.",
+  };
+}
+
+function youtubeEditorialEvidence(transcriptText) {
+  return transcriptText
     .replace(/\s+/g, " ")
     .split(/(?<=[.!?])\s+/)
     .map(cleanText)
-    .filter(Boolean);
-  const ranked = sentences.map(sentence => ({ sentence, score: youtubeSentenceScore(sentence) }))
+    .filter(sentence => sentence.length >= 55 && sentence.length <= 260)
+    .map(sentence => ({ sentence, score: youtubeSentenceScore(sentence) }))
     .filter(item => item.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
     .map(item => item.sentence);
-  const core = ranked.length ? ranked.join(" ") : transcriptText.slice(0, 420);
-  return cleanText("Dal video emerge questo tema da verificare: " + core + " Fonte video: " + title).slice(0, 700);
 }
 
 function youtubeSentenceScore(sentence) {

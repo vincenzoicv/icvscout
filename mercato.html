@@ -103,13 +103,15 @@ function initials(name){return String(name || "M").trim().split(/\s+/).slice(0,2
 function categoryFor(item){
   var name = String(item.player_name || "").toLowerCase();
   var t = textOf(item);
+  if (/youtube scout|^scout$/.test(name) && /sorloth|sorlot|attacco|post vlahovic|dopo vlahovic/.test(t)) return "monitorare";
+  if (/^marzio$|di marzio/.test(name)) return "monitorare";
   if (/^perch/.test(name) && /alisson/.test(t)) return "arrivi";
   if (/spalletti|comolli|management|dirigenza|staff/.test(name)) return "rinnovi";
-  if (/icardi|alisson|mamardashvili|de gea|robertson|brahim|kim|emerson/.test(name)) return "arrivi";
+  if (/sorloth|sorlot|kolo muani|openda|icardi|alisson|mamardashvili|de gea|robertson|brahim|kim|emerson/.test(name)) return "arrivi";
   if (/vlahovic|bremer|cambiaso|douglas|nico gonzalez/.test(name)) return "uscite";
-  if (/locatelli|conceicao|conceição/.test(name)) return "dichiarazioni";
+  if (/locatelli|conceicao|conceição/.test(name) && /intervista|dichiaraz|ha detto|parole|tifosi|dolore|delusione|sportweek|["“”]/.test(t)) return "dichiarazioni";
   if (/rinnovo|contratto|management|allenatore|dirigenza|proprieta|staff/.test(t)) return "rinnovi";
-  if (/intervista|dichiaraz|ha detto|parole|tifosi|dolore|delusione|sportweek|["“”]/.test(t)) return "dichiarazioni";
+  if (/^(chiellini|locatelli|conceicao|spalletti|comolli)$/i.test(name) && /intervista|dichiaraz|ha detto|parole|tifosi|dolore|delusione|sportweek|["“”]/.test(t)) return "dichiarazioni";
   if (/sostituto|obiettivo|acquisto|arrivo|trattativa in salita/.test(t)) return "arrivi";
   if (/cessione|uscita|addio|sacrific|lascia|puo lasciare|può lasciare|parte|premier|bayern|barcellona/.test(t)) return "uscite";
   return "monitorare";
@@ -137,8 +139,11 @@ function itemHtml(item){
 function displayTitle(item){
   var raw = String(item.player_name || "").trim();
   var note = String(item.note || "");
+  var text = [raw,note,item.source_name || ""].join(" ");
+  if (/youtube scout|^scout$/i.test(raw) && /sorloth|sorlot/i.test(text)) return "Sorloth";
+  if (/youtube scout|^scout$/i.test(raw) && /vlahovic/i.test(text)) return "Vlahovic";
   if (/^perch/i.test(raw) && /alisson/i.test(note)) return "Alisson";
-  if (/^marzio$/i.test(raw) && /mercato juve/i.test(note)) return "Punto mercato";
+  if (/^marzio$|^di marzio$/i.test(raw)) return "Punto mercato";
   return raw || "Mercato Juve";
 }
 function renderGroups(rows, filter){

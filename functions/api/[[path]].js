@@ -1189,12 +1189,16 @@ function aggregateMarketItems(rows) {
 
 function marketTopicName(row) {
   const name = cleanText(row && row.player_name);
-  const text = cleanText([name, row && row.note].join(" "));
+  const text = cleanText([name, row && row.note, row && row.source_name].join(" "));
   const direct = [
+    ["Sorloth", /s[øo]rloth|sorlot|solot/i],
+    ["Kolo Muani", /kolo\s+muani|muani/i],
+    ["Openda", /\bopenda\b/i],
+    ["Goretzka", /\bgoretzka\b/i],
     ["Alisson-Juve", /\balisson\b/i],
     ["Icardi", /\bicardi\b/i],
     ["Robertson", /\brobertson\b/i],
-    ["Vlahovic", /\bvlahovic\b/i],
+    ["Vlahovic", /\bvlahovic\b|vlawic|blaovic|du[sc]an/i],
     ["Bremer", /\bbremer\b/i],
     ["Cambiaso", /\bcambiaso\b/i],
     ["Douglas Luiz", /douglas\s+luiz/i],
@@ -1210,8 +1214,14 @@ function marketTopicName(row) {
   for (const [topic, pattern] of direct) {
     if (pattern.test(text)) return topic;
   }
+  if (/youtube\s+scout/i.test(name) && /post\s+vlahovic|dopo\s+vlahovic|attacco|s[øo]rloth|sorlot|solot/i.test(text)) return "Sorloth";
   if (/mercato\s+juve|chi\s+resta|chi\s+parte|punto\s+mercato/i.test(text)) return "Punto mercato";
-  return name || extractPlayer(text) || "Mercato Juve";
+  const extracted = extractPlayer(text);
+  return isBadMarketTopic(name) ? (extracted || "Mercato Juve") : (name || extracted || "Mercato Juve");
+}
+
+function isBadMarketTopic(value) {
+  return /^(youtube\s+)?scout$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^buongiorno$|^perch$/i.test(cleanText(value));
 }
 
 function normalizeTopicKey(value) {
@@ -1262,9 +1272,12 @@ function inferUrgency(title) {
 }
 
 function extractPlayer(title) {
-  const ignored = new Set(["Juventus", "Juve", "Mercato", "Calciomercato", "Serie", "Sky", "Sport"]);
+  const ignored = new Set(["Juventus", "Juve", "Mercato", "Calciomercato", "Serie", "Sky", "Sport", "Scout", "YouTube", "Marzio", "Sicilia", "Buongiorno", "Fonte"]);
   const names = title.match(/\b[A-ZÀ-Ý][a-zà-ÿ']{2,}(?:\s+[A-ZÀ-Ý][a-zà-ÿ']{2,})?\b/g) || [];
-  return names.find(name => !ignored.has(name.split(" ")[0])) || "";
+  return names.find(name => {
+    const parts = name.split(" ");
+    return !ignored.has(parts[0]) && !ignored.has(name) && !isBadMarketTopic(name);
+  }) || "";
 }
 
 function hookFromTitle(title) {

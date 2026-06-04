@@ -434,11 +434,6 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .news-card:hover::before{opacity:1;}
 .news-card.breaking{border-color:rgba(248,113,113,0.2);}
 .news-card.breaking::before{background:linear-gradient(90deg,transparent,#f87171,transparent);opacity:1;}
-.news-cat-badge{font-family:'Barlow Condensed';font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;padding:3px 8px;border-radius:3px;display:inline-block;margin-bottom:10px;}
-.nc-juventus{background:rgba(196,150,42,0.12);color:var(--gold-l);border:1px solid rgba(196,150,42,0.25);}
-.nc-calciomercato{background:rgba(96,165,250,0.10);color:#60a5fa;border:1px solid rgba(96,165,250,0.25);}
-.nc-breaking{background:rgba(248,113,113,0.10);color:#f87171;border:1px solid rgba(248,113,113,0.25);}
-.nc-rumor{background:rgba(251,191,36,0.10);color:#fbbf24;border:1px solid rgba(251,191,36,0.25);}
 .news-card-title{font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:var(--white);letter-spacing:0.5px;margin-bottom:8px;line-height:1.3;}
 .news-card-body{font-family:'Barlow';font-size:14px;color:var(--t2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .news-card-meta{font-family:'Barlow Condensed';font-size:11px;color:var(--t3);letter-spacing:1px;margin-top:10px;}
@@ -1360,24 +1355,17 @@ function loadAndRenderNews() {
       var isFeatured = i === 0 && news.length > 1;
       var isBreaking = n.urgency === "breaking";
       card.className = "news-card" + (isFeatured ? " featured" : "") + (isBreaking ? " breaking" : "");
-      var catCls = n.category === "juventus" ? "nc-juventus" : "nc-calciomercato";
-      var catLabel = n.category === "juventus" ? "Juventus" : "Calciomercato";
-      var urgBadge = "";
-      if (n.urgency === "breaking") urgBadge = "<span class='news-cat-badge nc-breaking'><span class='breaking-dot'></span>Breaking</span> ";
-      else if (n.urgency === "rumor") urgBadge = "<span class='news-cat-badge nc-rumor'>Rumor</span> ";
       var d = new Date(n.created_at);
       var dateStr = d.toLocaleDateString("it-IT",{day:"2-digit",month:"short"}) + " " + d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
-      var rel = n.editorial_status ? "<span class='news-cat-badge nc-juventus'>" + icvEsc(n.editorial_status) + "</span> " : "";
       var meta = dateStr + (n.source ? " &middot; " + icvEsc(n.source) : "");
       if (isFeatured) {
         card.innerHTML =
-          "<div>" + urgBadge + rel + "<span class='news-cat-badge " + catCls + "'>" + catLabel + "</span>" +
+          "<div>" +
           "<div class='news-card-title'>" + icvEsc(n.title) + "</div>" +
           "<div class='news-card-meta'>" + meta + "</div></div>" +
           "<div><div class='news-card-body'>" + icvEsc(n.body) + "</div></div>";
       } else {
         card.innerHTML =
-          urgBadge + rel + "<span class='news-cat-badge " + catCls + "'>" + catLabel + "</span>" +
           "<div class='news-card-title'>" + icvEsc(n.title) + "</div>" +
           "<div class='news-card-body'>" + icvEsc(n.body) + "</div>" +
           "<div class='news-card-meta'>" + meta + "</div>";

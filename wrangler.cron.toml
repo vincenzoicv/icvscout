@@ -1,0 +1,9 @@
+name = "icv-scout-cron"
+main = "workers/icv-cron.js"
+compatibility_date = "2026-05-27"
+
+[triggers]
+crons = ["0 */6 * * *", "15 6 * * *"]
+
+[vars]
+ICV_ORIGIN = "https://ilcalciodivince.com"

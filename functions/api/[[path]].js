@@ -2,7 +2,7 @@ const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-ICV-Admin-Token",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-ICV-Admin-Token, X-ICV-Cron-Token",
 };
 
 const DEFAULT_SOURCES = [
@@ -80,11 +80,66 @@ export async function onRequest(context) {
     if (path === "public/news") return publicNews(env, url);
     if (path === "admin/news") return adminNews(request, env);
     if (path === "admin/automate") return adminAutomate(request, env);
+    if (path === "cron/autopilot") return cronAutopilot(request, env);
     if (path.startsWith("football-data/")) return footballDataProxy(path, url, env);
     return apiSportsProxy(path, url, env);
   } catch (err) {
     return json({ error: err.message || "Errore API" }, 500);
   }
+}
+
+export async function onScheduled(context) {
+  return runScheduledAutomations({
+    env: context.env,
+    cron: context.cron || "",
+    scheduledTime: context.scheduledTime || Date.now(),
+  });
+}
+
+export async function scheduled(controller, env, ctx) {
+  const promise = runScheduledAutomations({
+    env,
+    cron: controller && controller.cron || "",
+    scheduledTime: controller && controller.scheduledTime || Date.now(),
+  });
+  if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(promise);
+  return promise;
+}
+
+async function cronAutopilot(request, env) {
+  const url = new URL(request.url);
+  const expected = env.CRON_SECRET || env.ADMIN_TOKEN;
+  const token = request.headers.get("X-ICV-Cron-Token") || url.searchParams.get("token") || "";
+  if (!expected || token !== expected) return json({ error: "Token cron non valido" }, 401);
+
+  const job = url.searchParams.get("job") || "all";
+  return json(await runScheduledAutomations({ env, cron: "manual:" + job, scheduledTime: Date.now(), job }));
+}
+
+async function runScheduledAutomations({ env, cron = "", scheduledTime = Date.now(), job = "" }) {
+  const tasks = [];
+  const normalizedJob = cleanText(job || "").toLowerCase();
+  const shouldRunYoutube = normalizedJob === "all" || normalizedJob === "youtube" || cron === "15 6 * * *";
+  const shouldRunHome = normalizedJob
+    ? normalizedJob === "all" || normalizedJob === "home"
+    : cron !== "15 6 * * *";
+
+  if (shouldRunHome) {
+    tasks.push({ type: "home_autopilot", result: await runHomeAutopilot(env) });
+  }
+
+  if (shouldRunYoutube) {
+    tasks.push({ type: "youtube_scout", result: await runYoutubeScoutAutomation(env) });
+  }
+
+  const result = {
+    ok: tasks.every(task => task.result && task.result.ok !== false),
+    cron,
+    scheduled_at: new Date(scheduledTime).toISOString(),
+    tasks,
+  };
+  await logRun(env, "scheduled_autopilot", result);
+  return result;
 }
 
 async function publicHome(env) {
@@ -147,10 +202,13 @@ function publicMarketFromNews(rows) {
   }));
 }
 
-async function runHomeAutopilot(env) {
+async function runHomeAutopilot(env, options = {}) {
+  if (!hasSupabase(env)) return { ok: false, error: "Configura Supabase per Home Autopilot" };
   const intervalHours = Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1);
   const latest = await latestAutomationRun(env, "home_autopilot");
-  if (latest && Date.now() - new Date(latest.created_at).getTime() < intervalHours * 3600000) return;
+  if (!options.force && latest && Date.now() - new Date(latest.created_at).getTime() < intervalHours * 3600000) {
+    return { ok: true, skipped: true, reason: "interval_not_elapsed", interval_hours: intervalHours, last_run_at: latest.created_at };
+  }
 
   const result = { ok: true, interval_hours: intervalHours, tasks: [] };
 
@@ -185,6 +243,7 @@ async function runHomeAutopilot(env) {
   }
 
   await logRun(env, "home_autopilot", result);
+  return result;
 }
 
 async function latestAutomationRun(env, type) {
@@ -511,17 +570,27 @@ async function adminAutomate(request, env) {
   }
 
   if (action === "youtube_scout") {
-    let result;
-    try {
-      result = await generateYoutubeScoutDrafts(env);
-    } catch (err) {
-      result = { ok: false, error: err.message || "Errore YouTube Scout", scanned: 0, inserted: 0 };
-    }
-    await logRun(env, "youtube_scout", result);
+    const result = await runYoutubeScoutAutomation(env);
+    return json(result);
+  }
+
+  if (action === "home_autopilot") {
+    const result = await runHomeAutopilot(env, { force: true });
     return json(result);
   }
 
   return json({ error: "Automazione non supportata" }, 400);
+}
+
+async function runYoutubeScoutAutomation(env) {
+  let result;
+  try {
+    result = await generateYoutubeScoutDrafts(env);
+  } catch (err) {
+    result = { ok: false, error: err.message || "Errore YouTube Scout", scanned: 0, inserted: 0 };
+  }
+  await logRun(env, "youtube_scout", result);
+  return result;
 }
 
 async function fetchNewsDrafts(env, sources) {

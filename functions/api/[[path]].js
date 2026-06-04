@@ -903,7 +903,8 @@ async function fetchJson(url, headers) {
 }
 
 function transcriptApiBase(env) {
-  return String(env.TRANSCRIPT_API_BASE || "https://transcriptapi.com").replace(/\/$/, "");
+  const raw = String(env.TRANSCRIPT_API_BASE || "https://transcriptapi.com/api/v2").replace(/\/$/, "");
+  return raw.endsWith("/api/v2") ? raw : raw + "/api/v2";
 }
 
 function transcriptApiKey(env) {
@@ -918,10 +919,8 @@ async function fetchYoutubeLatestVideos(env, channel) {
   const base = transcriptApiBase(env);
   const param = encodeURIComponent(channel);
   const urls = [
-    base + "/channel/latest?channel=" + param,
-    base + "/api/channel/latest?channel=" + param,
     base + "/youtube/channel/latest?channel=" + param,
-    base + "/api/youtube/channel/latest?channel=" + param,
+    base + "/youtube/channel/videos?channel=" + param,
   ];
   let lastError;
   for (const url of urls) {
@@ -938,12 +937,11 @@ async function fetchYoutubeLatestVideos(env, channel) {
 
 async function fetchYoutubeTranscript(env, videoId) {
   const base = transcriptApiBase(env);
-  const param = encodeURIComponent(videoId);
+  const videoUrl = encodeURIComponent(youtubeVideoUrl(videoId));
+  const videoParam = encodeURIComponent(videoId);
   const urls = [
-    base + "/youtube/transcript?video_id=" + param,
-    base + "/youtube/transcript?video=" + param,
-    base + "/api/youtube/transcript?video_id=" + param,
-    base + "/api/youtube/transcript?video=" + param,
+    base + "/youtube/transcript?video_url=" + videoUrl,
+    base + "/youtube/transcript?video_url=" + videoParam,
   ];
   let lastError;
   for (const url of urls) {
@@ -957,7 +955,7 @@ async function fetchYoutubeTranscript(env, videoId) {
 }
 
 function normalizeYoutubeVideos(data) {
-  const rows = Array.isArray(data) ? data : (data && (data.videos || data.items || data.data || data.results)) || [];
+  const rows = Array.isArray(data) ? data : (data && (data.results || data.videos || data.items || data.data)) || [];
   return Array.isArray(rows) ? rows : [];
 }
 

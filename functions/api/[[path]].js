@@ -114,9 +114,12 @@ async function publicHome(env) {
     latestAutomationRun(env, "home_autopilot"),
     getSiteSetting(env, "radar_home", DEFAULT_RADAR),
   ]);
+  const cleanNews = publicNewsRows(news);
+  const cleanMarketNews = publicNewsRows(marketNews);
+  const cleanMarket = publicMarketRows(market && market.length ? market : publicMarketFromNews(cleanMarketNews));
   return json({
-    news,
-    market: aggregateMarketItems(market && market.length ? market : publicMarketFromNews(marketNews)),
+    news: cleanNews,
+    market: aggregateMarketItems(cleanMarket),
     matches,
     social: publicSocialRows(social),
     graphics: [],
@@ -133,13 +136,13 @@ async function publicGraphics(env) {
 
 function publicMarketFromNews(rows) {
   return (rows || []).slice(0, 8).map(row => ({
-    player_name: extractPlayer(row.title || "") || "Mercato Juve",
-    status: row.editorial_status || statusFromReliability(row.reliability),
+    player_name: extractPlayer(cleanText(row.title || "")) || "Mercato Juve",
+    status: cleanText(row.editorial_status || statusFromReliability(row.reliability)),
     category: "calciomercato",
-    source_name: row.source || "ICV",
+    source_name: cleanText(row.source || "ICV"),
     source_url: row.source_url,
     reliability: row.reliability || "trusted",
-    note: row.title,
+    note: cleanText(row.title),
     updated_at: row.created_at,
   }));
 }
@@ -198,7 +201,7 @@ async function publicNews(env, url) {
   if (!hasSupabase(env)) return json([]);
   try {
     const rows = await sb(env, "/news?visible=eq.true&order=created_at.desc&limit=" + limit);
-    return json(rows);
+    return json(publicNewsRows(rows));
   } catch {
     return json([]);
   }
@@ -1295,6 +1298,30 @@ function labelInstagramMedia(type) {
   if (t === "VIDEO" || t === "REELS" || t === "REEL") return "Nuovo Reel Instagram";
   if (t === "CAROUSEL_ALBUM") return "Nuovo carosello Instagram";
   return "Nuovo post Instagram";
+}
+
+function publicNewsRows(rows) {
+  return (rows || []).map(row => ({
+    ...row,
+    title: cleanText(row.title),
+    body: cleanText(row.body),
+    category: cleanText(row.category),
+    urgency: cleanText(row.urgency),
+    source: cleanText(row.source),
+    editorial_status: cleanText(row.editorial_status),
+  }));
+}
+
+function publicMarketRows(rows) {
+  return (rows || []).map(row => ({
+    ...row,
+    player_name: cleanText(row.player_name),
+    status: cleanText(row.status),
+    category: cleanText(row.category),
+    source_name: cleanText(row.source_name),
+    reliability: cleanText(row.reliability),
+    note: cleanText(row.note),
+  }));
 }
 
 function publicSocialRows(rows) {

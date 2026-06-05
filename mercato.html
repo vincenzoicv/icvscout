@@ -40,7 +40,7 @@ main{max-width:1180px;margin:0 auto;padding:58px 20px 80px}
 .hero{margin-bottom:26px}.eyebrow{font-family:"Barlow Condensed";font-size:13px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--gold-l);margin-bottom:10px}.hero h1{font-family:"Bebas Neue";font-size:clamp(72px,12vw,150px);letter-spacing:4px;line-height:.82}.bar{width:54px;height:2px;background:var(--gold-l);margin-top:22px}
 .grid{display:grid;grid-template-columns:1fr;gap:14px}
 .group{background:var(--d2);border:1px solid var(--bdr);border-radius:14px;padding:16px;min-height:180px}.group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid var(--bdr2);padding-bottom:12px;margin-bottom:8px}.group-title{font-family:"Barlow Condensed";font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gold-l)}.group-count{font-family:"Bebas Neue";font-size:34px;color:var(--gold-l);line-height:1}
-.item{display:grid;grid-template-columns:36px 1fr;gap:11px;align-items:start;padding:14px 0;border-bottom:1px solid var(--bdr2)}.item:last-child{border-bottom:none}.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--d3);border:1px solid var(--bdr2);font-family:"Bebas Neue";font-size:13px;color:var(--t2)}.item h3{font-family:"Barlow Condensed";font-size:20px;font-weight:900;line-height:1.05;color:var(--white);margin-bottom:4px}.item p{font-size:14px;line-height:1.42;color:var(--t2);max-width:760px}.meta{font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-top:6px}.econ-context{display:inline-flex;gap:6px;align-items:center;margin-top:8px;border:1px solid rgba(196,150,42,.24);border-radius:999px;background:rgba(196,150,42,.08);padding:5px 8px;font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold-l)}
+.item{display:grid;grid-template-columns:36px 1fr;gap:11px;align-items:start;padding:14px 0;border-bottom:1px solid var(--bdr2)}.item:last-child{border-bottom:none}.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--d3);border:1px solid var(--bdr2);font-family:"Bebas Neue";font-size:13px;color:var(--t2)}.item h3{font-family:"Barlow Condensed";font-size:20px;font-weight:900;line-height:1.05;color:var(--white);margin-bottom:4px}.item p{font-size:14px;line-height:1.42;color:var(--t2);max-width:760px}.meta{font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-top:6px}.econ-context{display:inline-flex;gap:6px;align-items:center;margin-top:8px;border:1px solid rgba(196,150,42,.24);border-radius:999px;background:rgba(196,150,42,.08);padding:5px 8px;font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold-l);text-decoration:none}
 .empty{border:1px dashed var(--bdr2);border-radius:12px;background:rgba(255,255,255,.025);padding:34px 20px;text-align:center;color:var(--t3);font-family:"Barlow Condensed";font-size:15px;letter-spacing:2px;text-transform:uppercase}
 footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-family:"Barlow Condensed";font-size:11px;letter-spacing:2px;text-transform:uppercase;display:flex;justify-content:space-between;gap:12px}
 @media(max-width:840px){header{height:auto;min-height:62px;padding:12px 14px;gap:12px;align-items:flex-start}nav{flex-wrap:wrap;justify-content:flex-end}.grid{grid-template-columns:1fr}main{padding:36px 14px 64px}.item{grid-template-columns:34px 1fr}.hero h1{font-size:76px}footer{flex-direction:column}}
@@ -84,29 +84,34 @@ function isNoiseItem(item){
   if (/maradona|ferlaino|salas|cristiano ronaldo alla juventus sfumo/.test(t)) return true;
   return false;
 }
-function economicContext(title){
+function capologyContext(title){
   var key = String(title || "").toLowerCase();
   var rows = [
     {re:/vlahovic|dusan|dušan/,label:"Impatto ingaggio alto"},
     {re:/kolo\s*muani|muani/,label:"Impatto ingaggio alto"},
+    {re:/alisson/,label:"Impatto ingaggio alto"},
     {re:/goretzka/,label:"Impatto ingaggio alto"},
     {re:/openda/,label:"Impatto ingaggio medio-alto"},
+    {re:/icardi|osimhen|douglas\s+luiz|nico\s+gonzalez|robertson|bremer|mamardashvili|de\s+gea|nubel|nübel/,label:"Verifica scheda giocatore"},
     {re:/sorloth|sorlot/,label:"Impatto ingaggio medio"},
-    {re:/cambiaso/,label:"Impatto ingaggio medio"}
+    {re:/cambiaso|locatelli|conceicao|conceição|milik|cabal|pisilli|dodo|dodò/,label:"Verifica scheda giocatore"}
   ];
   for(var i=0;i<rows.length;i++){
-    if(rows[i].re.test(key)) return rows[i].label;
+    if(rows[i].re.test(key)) return {label:rows[i].label,url:"https://www.capology.com/it/"};
   }
-  return "";
+  return null;
+}
+function capologyHtml(title){
+  var ctx = capologyContext(title);
+  if(!ctx) return "";
+  return "<a class='econ-context' href='"+esc(ctx.url)+"' target='_blank' rel='noopener'>Capology · "+esc(ctx.label)+" · dato stimato</a>";
 }
 function itemHtml(item){
   var title = displayTitle(item);
   var note = item.note || title;
   var source = item.source_name || "ICV";
   var sourceLabel = Number(item.source_count || 0) > 1 ? item.source_count + " fonti: " + source : source;
-  var econ = economicContext(title);
-  var econHtml = econ ? "<div class='econ-context'>Capology · "+esc(econ)+" · dato stimato</div>" : "";
-  return "<article class='item'><div class='avatar'>"+esc(initials(title))+"</div><div><h3>"+esc(title)+"</h3><p>"+esc(note)+"</p><div class='meta'>"+esc(sourceLabel)+"</div>"+econHtml+"</div></article>";
+  return "<article class='item'><div class='avatar'>"+esc(initials(title))+"</div><div><h3>"+esc(title)+"</h3><p>"+esc(note)+"</p><div class='meta'>"+esc(sourceLabel)+"</div>"+capologyHtml(title)+"</div></article>";
 }
 function displayTitle(item){
   var raw = String(item.player_name || "").trim();

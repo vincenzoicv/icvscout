@@ -172,6 +172,13 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 
 <script>
 var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], filter: "all", adminTab: "drafts" };
+var OFFICIAL_SERIE_A_CALENDAR = {
+  season: "Serie A 2026/27",
+  title: "Calendario Juventus 2026/27 ufficiale",
+  summary: "Calendario pubblicato dalle fonti ufficiali. Inseriremo le giornate partita-per-partita solo dopo verifica completa.",
+  juventusUrl: "https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27",
+  legaUrl: "https://www.legaseriea.it/serie-a/calendario-risultati"
+};
 
 function token(){ return sessionStorage.getItem("icv_admin_token") || ""; }
 function api(path, options){
@@ -491,8 +498,9 @@ function renderMarket(){
 function renderMatches(){
   var list = document.getElementById("matchList");
   if(!list) return;
-  if(!state.matches.length){ list.innerHTML = "<div class='empty'>Esegui automazione match center.</div>"; return; }
-  list.innerHTML = state.matches.slice(0,6).map(function(m){
+  var official = "<div class='item'><span class='pill official'>Fonte ufficiale</span><h3>"+esc(OFFICIAL_SERIE_A_CALENDAR.title)+"</h3><p>"+esc(OFFICIAL_SERIE_A_CALENDAR.summary)+"</p><div class='meta'><a href='"+escAttr(OFFICIAL_SERIE_A_CALENDAR.juventusUrl)+"' target='_blank' style='color:var(--gold-l)'>Juventus.com</a> · <a href='"+escAttr(OFFICIAL_SERIE_A_CALENDAR.legaUrl)+"' target='_blank' style='color:var(--gold-l)'>Lega Serie A</a></div></div>";
+  if(!state.matches.length){ list.innerHTML = official + "<div class='empty'>Prossima partita non ancora attiva nel Match Center.</div>"; return; }
+  list.innerHTML = official + state.matches.slice(0,6).map(function(m){
     return "<div class='item'><span class='pill trusted'>"+esc(m.status || "pre_match")+"</span><h3>"+esc(m.title || m.opponent || "Match")+"</h3><p>"+esc(m.summary || "")+"</p><div class='meta'>"+esc(m.competition || "")+(m.match_date ? " · "+date(m.match_date) : "")+"</div></div>";
   }).join("");
 }

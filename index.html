@@ -1134,6 +1134,14 @@ function icvEsc(value) {
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
   });
 }
+var OFFICIAL_SERIE_A_CALENDAR = {
+  title: "Calendario Serie A 2026/27 ufficiale",
+  text: "La Juventus ha pubblicato il calendario ufficiale della nuova stagione. Fonti: <a href='https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27' target='_blank' rel='noopener' style='color:var(--gold-l)'>Juventus.com</a> · <a href='https://www.legaseriea.it/serie-a/calendario-risultati' target='_blank' rel='noopener' style='color:var(--gold-l)'>Lega Serie A</a>."
+};
+function renderOfficialCalendarFallback() {
+  document.getElementById("homeMatchTitle").textContent = OFFICIAL_SERIE_A_CALENDAR.title;
+  document.getElementById("homeMatchText").innerHTML = OFFICIAL_SERIE_A_CALENDAR.text;
+}
 
 function loadHomeDashboard() {
   fetch("/api/public/home")
@@ -1152,6 +1160,8 @@ function loadHomeDashboard() {
     if (matches[0]) {
       document.getElementById("homeMatchTitle").textContent = matches[0].title || matches[0].opponent || "Match Center";
       document.getElementById("homeMatchText").textContent = matches[0].summary || matches[0].tactical_key || "Scheda match pronta.";
+    } else {
+      renderOfficialCalendarFallback();
     }
     renderHomeList("homeNewsList", focus.skipNewsId ? news.filter(function(n){ return n.id !== focus.skipNewsId; }) : news, function(n) {
       return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : "")};

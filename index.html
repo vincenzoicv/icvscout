@@ -524,8 +524,8 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
     <div class="alert-banner"><div class="alert-dot"></div>CALENDARIO SERIE A 2026/27 UFFICIALE &middot; JUVENTUS IN EUROPA LEAGUE &middot; MATCH CENTER IN AGGIORNAMENTO</div>
     <br>
     <div class="match-banner">
-      <span class="mb-team juve">SERIE A</span><span class="mb-vs">&middot;</span><span class="mb-team">2026/27</span>
-      <div class="mb-info"><span>Calendario ufficiale pubblicato</span><strong>Prossima partita da inserire</strong></div>
+      <span class="mb-team juve">1ª GIORNATA</span><span class="mb-vs">&middot;</span><span class="mb-team">SERIE A 2026/27</span>
+      <div class="mb-info"><span>Data e ora da comunicare</span><strong>Frosinone-Juventus</strong></div>
     </div>
   </div>
 </div>
@@ -891,13 +891,13 @@ function renderNoNextMatch() {
   var banner = document.querySelector(".match-banner");
   if (banner) {
     banner.innerHTML =
-      "<div class='mb-team juve'>SERIE A</div>" +
+      "<div class='mb-team juve'>1ª GIORNATA</div>" +
       "<div class='mb-vs'>·</div>" +
-      "<div class='mb-team'>2026/27</div>" +
-      "<div class='mb-info'><span>Calendario ufficiale pubblicato</span><strong>Prossima partita da inserire</strong></div>";
+      "<div class='mb-team'>SERIE A 2026/27</div>" +
+      "<div class='mb-info'><span>Data e ora da comunicare</span><strong>Frosinone-Juventus</strong></div>";
   }
   var ctx = document.getElementById("tatticaCtx");
-  if (ctx) ctx.innerHTML = "Calendario <strong>Serie A 2026/27</strong> ufficiale pubblicato. Il Match Center resta in aggiornamento fino all'inserimento della prossima partita.";
+  if (ctx) ctx.innerHTML = "Calendario <strong>Serie A 2026/27</strong> ufficiale pubblicato: la Juventus parte in trasferta contro il Frosinone nella 1ª giornata.";
 }
 
 function renderNextMatch(match) {

@@ -622,6 +622,7 @@ async function fetchNewsDrafts(env, sources) {
         const normalized = normalizeGoogleTitle(item.title);
         const title = normalized.title;
         const sourceName = normalized.source || source.name;
+        if (!isRelevantNewsItem(title, item.description, source)) continue;
         const url = item.link || source.url;
         const hash = await digest(title + "|" + sourceName);
         const existing = await sb(env, "/news_drafts?content_hash=eq." + encodeURIComponent(hash) + "&select=id&limit=1");
@@ -1096,6 +1097,13 @@ function hasUsableYoutubeTranscript(text) {
   return text.length > 280 && /juve|juventus|bianconer|spalletti|comolli|vlahovic|mercato|calciomercato/i.test(text);
 }
 
+function isRelevantNewsItem(title, description, source) {
+  const text = normalizeTopicKey([title, description, source && source.name].join(" "));
+  if (/juve|juventus|bianconer|spalletti|comolli|vlahovic|dusan|bremer|cambiaso|sorloth|sorlot|kolo muani|openda|locatelli|conceicao|douglas luiz|kenan|yildiz/.test(text)) return true;
+  if ((source && source.category) === "calciomercato" && /mercato|calciomercato|rinnovo|cessione|trattativa|prestito|offerta/.test(text)) return true;
+  return false;
+}
+
 function youtubeDraftTitle(video, transcriptText) {
   return youtubeEditorialAngle(video, transcriptText).title;
 }
@@ -1120,10 +1128,14 @@ function youtubeEditorialAngle(video, transcriptText) {
   const hasSorloth = /sorloth|sorlot|solot/.test(text);
   const hasKolo = /kolo muani|colomin|muani/.test(text);
   const hasOpenda = /openda/.test(text);
+  const hasPerin = /perin|vice portiere|secondo portiere/.test(text);
+  const hasDodo = /\bdodo\b|fiorentina/.test(text);
   const hasComolli = /comolli/.test(text);
   const hasSpalletti = /spalletti/.test(text);
   const hasEuropaLeague = /europa league/.test(text);
   const hasBudget = /ingaggio|stipendio|cifra|disponibilita|sacrifici|accordo|rinnovo/.test(text);
+  const hasDelay = /ritardo|anticipare|subire|garanzie|programmazione|sesto posto/.test(text);
+  const hasSales = /fare soldi|incassare|cessione|uscita|vendere|liberarsi|sacrifici/.test(text);
 
   if (hasVlahovic && (hasSorloth || hasKolo || hasOpenda || hasPostVlahovic)) {
     const names = [hasSorloth ? "Sorloth" : "", hasKolo ? "Kolo Muani" : "", hasOpenda ? "Openda" : ""].filter(Boolean).slice(0, 2).join(" e ");
@@ -1144,6 +1156,24 @@ function youtubeEditorialAngle(video, transcriptText) {
       lead: "il futuro di Vlahovic continua a essere uno dei temi centrali della giornata bianconera.",
     };
   }
+  if (hasPerin) {
+    return {
+      title: "Juve, nodo Perin: possibile intervento sul vice",
+      lead: "la situazione di Perin puo incidere sulle mosse bianconere tra porta, gerarchie interne e possibili interventi sul mercato.",
+    };
+  }
+  if (hasDodo && hasSales) {
+    return {
+      title: "Juve, cessioni e incassi restano centrali nel mercato",
+      lead: "la necessita di fare cassa resta un tema sensibile per la Juventus, con uscite e opportunita da monitorare.",
+    };
+  }
+  if (hasDelay) {
+    return {
+      title: "Juve, mercato gia sotto pressione: serve accelerare",
+      lead: "la programmazione bianconera viene indicata come un punto da seguire con attenzione, tra ritardi, garanzie tecniche e necessita di anticipare le mosse.",
+    };
+  }
   if (hasComolli || hasSpalletti) {
     return {
       title: "Juve, il confronto tecnico guida le mosse di mercato",
@@ -1156,10 +1186,10 @@ function youtubeEditorialAngle(video, transcriptText) {
       lead: "la prossima sessione bianconera potrebbe essere condizionata da budget, appeal europeo e necessita di fare scelte mirate.",
     };
   }
-  const topic = extractPlayer(videoTitle(video) + " " + transcriptText.slice(0, 500));
+  const topic = cleanYoutubeTopic(extractPlayer(videoTitle(video) + " " + transcriptText.slice(0, 500)));
   return {
-    title: topic ? "Juve, focus su " + topic + ": tema da verificare" : "Juve, tema di giornata da verificare",
-    lead: "emerge un tema Juventus da trattare come spunto editoriale, da verificare con altre fonti prima della pubblicazione.",
+    title: topic ? "Juve, focus su " + topic : "Juve, spunto mercato da verificare",
+    lead: "emerge uno spunto Juventus da trattare con cautela editoriale e da verificare con altre fonti prima della pubblicazione.",
   };
 }
 
@@ -1177,12 +1207,24 @@ function youtubeEditorialEvidence(transcriptText) {
 
 function youtubeSentenceScore(sentence) {
   let score = 0;
+  if (/buonasera|stavo dicendo|sto guardando|allenamento|rigori|riccione|ci si porta avanti/i.test(sentence)) score -= 5;
   if (/juve|juventus|bianconer/i.test(sentence)) score += 3;
   if (/mercato|calciomercato|cessione|rinnovo|trattativa|accordo|offerta|ingaggio/i.test(sentence)) score += 3;
-  if (/spalletti|comolli|vlahovic|alisson|icardi|bremer|kolo muani|douglas luiz|conceicao|locatelli/i.test(sentence)) score += 2;
+  if (/spalletti|comolli|vlahovic|alisson|icardi|bremer|kolo muani|douglas luiz|conceicao|locatelli|perin|openda|cambiaso|sorloth|dodo/i.test(sentence)) score += 2;
+  if (/ritardo|anticipare|subire|garanzie|fare soldi|incassare|uscita|vendere|sacrifici|vice/i.test(sentence)) score += 2;
   if (/secondo|notizia|conferma|situazione|scenario|futuro|rottura/i.test(sentence)) score += 1;
   if (sentence.length < 45 || sentence.length > 320) score -= 2;
   return score;
+}
+
+function cleanYoutubeTopic(topic) {
+  const value = cleanText(topic);
+  if (!value || isBadYoutubeTopic(value)) return "";
+  return value;
+}
+
+function isBadYoutubeTopic(value) {
+  return /^(siamo|buonasera|buongiorno|adesso|oggi|ieri|domani|juve|juventus|mercato|calciomercato|fonte|video|tema|focus|luca|romeo|gianni|toselli|agresti|balzarini)$/i.test(cleanText(value));
 }
 
 function parseRss(xml) {
@@ -1370,11 +1412,11 @@ function inferUrgency(title) {
 }
 
 function extractPlayer(title) {
-  const ignored = new Set(["Juventus", "Juve", "Mercato", "Calciomercato", "Serie", "Sky", "Sport", "Scout", "YouTube", "Marzio", "Sicilia", "Buongiorno", "Fonte", "Pap", "Papa", "Luca Toselli", "Romeo Agresti", "Gianni Balzarini"]);
+  const ignored = new Set(["Juventus", "Juve", "Mercato", "Calciomercato", "Serie", "Sky", "Sport", "Scout", "YouTube", "Marzio", "Sicilia", "Buongiorno", "Buonasera", "Siamo", "Adesso", "Fonte", "Pap", "Papa", "Luca Toselli", "Romeo Agresti", "Gianni Balzarini"]);
   const names = title.match(/\b[A-ZÀ-Ý][a-zà-ÿ']{2,}(?:\s+[A-ZÀ-Ý][a-zà-ÿ']{2,})?\b/g) || [];
   return names.find(name => {
     const parts = name.split(" ");
-    return !ignored.has(parts[0]) && !ignored.has(name) && !isBadMarketTopic(name);
+    return !ignored.has(parts[0]) && !ignored.has(name) && !isBadMarketTopic(name) && !isBadYoutubeTopic(name);
   }) || "";
 }
 

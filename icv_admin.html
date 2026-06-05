@@ -447,6 +447,15 @@ function renderSources(){
   if(!state.sources.length){ list.innerHTML = "<div class='empty'>Usando fonti fallback della funzione.</div>"; return; }
   list.innerHTML = state.sources.map(function(s){ return "<div class='item'><span class='pill "+esc(s.reliability)+"'>"+labelRel(s.reliability)+"</span><h3>"+esc(s.name)+"</h3><div class='meta'>"+esc(s.category)+"</div></div>"; }).join("");
 }
+function marketTextOf(item){return [item.player_name,item.note,item.source_name].join(" ").toLowerCase();}
+function isNoiseMarketItem(item){
+  var name = String(item.player_name || "").toLowerCase();
+  var t = marketTextOf(item);
+  if (/^pap$|^papa$|^marzio$|^di marzio$|^scout$|^chivu$|^maradona$|^buonasera$|^siamo$|^adesso$|luca toselli|romeo agresti|gianni balzarini/.test(name)) return true;
+  if (/youtube scout:/.test(t)) return true;
+  if (/maradona|ferlaino|salas|cristiano ronaldo alla juventus sfumo/.test(t)) return true;
+  return false;
+}
 function economicContext(title){
   var key = String(title || "").toLowerCase();
   var rows = [
@@ -464,8 +473,9 @@ function economicContext(title){
 }
 function renderMarket(){
   var list = document.getElementById("marketList");
-  if(!state.market.length){ list.innerHTML = "<div class='empty'>Esegui automazione mercato.</div>"; return; }
-  list.innerHTML = state.market.slice(0,30).map(function(m){
+  var rows = state.market.filter(function(m){return !isNoiseMarketItem(m);});
+  if(!rows.length){ list.innerHTML = "<div class='empty'>Esegui automazione mercato.</div>"; return; }
+  list.innerHTML = rows.slice(0,30).map(function(m){
     var title = m.player_name || "Tema mercato";
     var sources = Number(m.source_count || 0) > 1 ? m.source_count + " fonti: " + (m.source_name || "ICV") : (m.source_name || "ICV");
     var econ = economicContext(title);

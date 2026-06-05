@@ -120,12 +120,17 @@ async function runScheduledAutomations({ env, cron = "", scheduledTime = Date.no
   const tasks = [];
   const normalizedJob = cleanText(job || "").toLowerCase();
   const shouldRunYoutube = normalizedJob === "all" || normalizedJob === "youtube" || cron === "15 6 * * *";
+  const shouldRunMarket = normalizedJob === "all" || normalizedJob === "market";
   const shouldRunHome = normalizedJob
     ? normalizedJob === "all" || normalizedJob === "home"
     : cron !== "15 6 * * *";
 
   if (shouldRunHome) {
-    tasks.push({ type: "home_autopilot", result: await runHomeAutopilot(env) });
+    tasks.push({ type: "home_autopilot", result: await runHomeAutopilot(env, { includeMarket: false }) });
+  }
+
+  if (shouldRunMarket) {
+    tasks.push({ type: "market", result: await runMarketAutomation(env, { sourceLimit: 2, draftLimit: 6 }) });
   }
 
   if (shouldRunYoutube) {
@@ -204,6 +209,7 @@ function publicMarketFromNews(rows) {
 
 async function runHomeAutopilot(env, options = {}) {
   if (!hasSupabase(env)) return { ok: false, error: "Configura Supabase per Home Autopilot" };
+  const includeMarket = options.includeMarket !== false;
   const intervalHours = Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1);
   const latest = await latestAutomationRun(env, "home_autopilot");
   if (!options.force && latest && Date.now() - new Date(latest.created_at).getTime() < intervalHours * 3600000) {
@@ -227,8 +233,9 @@ async function runHomeAutopilot(env, options = {}) {
     result.tasks.push({ type: "news", result: newsResult });
     await logRun(env, "news", newsResult);
 
-    const marketSources = sources.filter(s => s.category === "calciomercato");
-    result.tasks.push({ type: "market", result: await generateMarketDrafts(env, marketSources.length ? marketSources : DEFAULT_SOURCES) });
+    if (includeMarket) {
+      result.tasks.push({ type: "market", result: await runMarketAutomation(env, { sources }) });
+    }
   } catch (err) {
     result.ok = false;
     result.tasks.push({ type: "news_market", error: err.message || "Errore news/mercato" });
@@ -546,13 +553,7 @@ async function adminAutomate(request, env) {
   }
 
   if (action === "market") {
-    const sources = (await getSources(env)).filter(s => s.category === "calciomercato");
-    let result;
-    try {
-      result = await generateMarketDrafts(env, sources.length ? sources : DEFAULT_SOURCES);
-    } catch (err) {
-      result = { ok: false, error: err.message || "Errore mercato", scanned: 0, inserted: 0, market_items: 0 };
-    }
+    const result = await runMarketAutomation(env);
     await logRun(env, "market", result);
     return json(result);
   }
@@ -580,6 +581,19 @@ async function adminAutomate(request, env) {
   }
 
   return json({ error: "Automazione non supportata" }, 400);
+}
+
+async function runMarketAutomation(env, options = {}) {
+  try {
+    const rawSources = options.sources || await getSources(env);
+    const marketSources = rawSources.filter(s => s.category === "calciomercato");
+    const sources = (marketSources.length ? marketSources : DEFAULT_SOURCES)
+      .filter(s => s.category === "calciomercato" || !marketSources.length)
+      .slice(0, Math.max(1, Number(options.sourceLimit || 3)));
+    return await generateMarketDrafts(env, sources, { draftLimit: options.draftLimit || 8 });
+  } catch (err) {
+    return { ok: false, error: err.message || "Errore mercato", scanned: 0, inserted: 0, market_items: 0 };
+  }
 }
 
 async function runYoutubeScoutAutomation(env) {
@@ -640,9 +654,10 @@ async function fetchNewsDrafts(env, sources) {
   return { ok: true, scanned, inserted, errors };
 }
 
-async function generateMarketDrafts(env, sources) {
+async function generateMarketDrafts(env, sources, options = {}) {
   const result = await fetchNewsDrafts(env, sources);
-  const drafts = await sb(env, "/news_drafts?category=eq.calciomercato&review_status=in.(needs_review,ready)&order=created_at.desc&limit=20");
+  const draftLimit = Math.max(1, Math.min(Number(options.draftLimit || 8), 12));
+  const drafts = await sb(env, "/news_drafts?category=eq.calciomercato&review_status=in.(needs_review,ready)&order=created_at.desc&limit=" + draftLimit);
   let inserted = 0;
   const errors = Array.isArray(result.errors) ? result.errors.slice() : [];
 

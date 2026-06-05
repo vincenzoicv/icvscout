@@ -1355,13 +1355,14 @@ function isIgnoredMarketSignal(row) {
   const name = cleanText(row && row.player_name);
   const text = cleanText([name, row && row.note, row && row.source_name].join(" ")).toLowerCase();
   if (/^(pap|papa|marzio|di marzio|luca toselli|romeo agresti|gianni balzarini)$/i.test(name)) return true;
+  if (/youtube/.test(text) && isBadMarketTopic(name)) return true;
   if (/youtube scout:/.test(text)) return true;
   if (/maradona|ferlaino|salas|cristiano ronaldo alla juventus sfumo|cristiano ronaldo alla juventus sfumò/.test(text)) return true;
   return false;
 }
 
 function isBadMarketTopic(value) {
-  return /^(youtube\s+)?scout$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^buongiorno$|^perch$|^pap$|^papa$|^luca\s+toselli$|^romeo\s+agresti$|^gianni\s+balzarini$/i.test(cleanText(value));
+  return /^(youtube\s+)?scout$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^siamo$|^buonasera$|^buongiorno$|^adesso$|^oggi$|^perch$|^pap$|^papa$|^luca\s+toselli$|^romeo\s+agresti$|^gianni\s+balzarini$/i.test(cleanText(value));
 }
 
 function normalizeTopicKey(value) {

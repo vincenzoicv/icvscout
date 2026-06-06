@@ -57,7 +57,6 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         <button class="ghost" onclick="runAutomation('market')">Mercato</button>
         <button class="ghost" onclick="runAutomation('match_center')">Match Center</button>
         <button class="ghost" onclick="runAutomation('social')">Social</button>
-        <button class="ghost" onclick="runAutomation('youtube_scout')">YouTube Scout</button>
         <button class="ghost" onclick="runAutomation('instagram_import')">Importa Instagram</button>
         <button class="danger" onclick="logout()">Esci</button>
       </div>
@@ -337,8 +336,8 @@ function moveGraphic(id, direction){
     .catch(function(err){ showToast(err.message); });
 }
 function render(){
-  document.getElementById("stDrafts").textContent = state.drafts.filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; }).length;
-  document.getElementById("stReady").textContent = state.drafts.filter(function(d){ return d.review_status === "ready"; }).length;
+  document.getElementById("stDrafts").textContent = visibleDrafts().filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; }).length;
+  document.getElementById("stReady").textContent = visibleDrafts().filter(function(d){ return d.review_status === "ready"; }).length;
   document.getElementById("stNews").textContent = state.news.filter(function(n){ return n.visible; }).length;
   document.getElementById("stMarket").textContent = state.market.length;
   document.getElementById("stSocial").textContent = state.social.length;
@@ -352,7 +351,6 @@ function renderAutomationStatus(){
   var items = [
     {key:"home_autopilot", label:"Home autopilot", fallback:"Attivo ogni 6 ore"},
     {key:"news", label:"Bozze news", fallback:"In attesa fetch"},
-    {key:"youtube_scout", label:"YouTube Scout", fallback:"In attesa trascrizioni"},
     {key:"instagram_import", label:"Instagram", fallback:"Pronto dal token"},
     {key:"market", label:"Mercato", fallback:"In attesa scansione"},
     {key:"match_center", label:"Match Center", fallback:"In attesa calendario"}
@@ -367,10 +365,9 @@ function renderAutomationStatus(){
 function renderAdminAlerts(){
   var box = document.getElementById("adminAlerts");
   if(!box) return;
-  var openDrafts = state.drafts.filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; }).length;
+  var openDrafts = visibleDrafts().filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; }).length;
   var visibleToday = state.news.filter(function(n){ return n.visible !== false && isToday(n.created_at); }).length;
   var marketRun = latestRun("market");
-  var youtubeRun = latestRun("youtube_scout");
   var instagramRun = latestRun("instagram_import");
   var alerts = [];
 
@@ -397,8 +394,6 @@ function renderAdminAlerts(){
     title: marketRun && marketRun.status === "error" ? "Ultimo mercato in errore" : "Mercato non aggiornato oggi",
     text: marketRun ? "Ultimo giro: " + date(marketRun.created_at) + "." : "Nessuna scansione mercato registrata."
   });
-
-  alerts.push(youtubeScoutAlert(youtubeRun));
 
   alerts.push(!instagramRun ? {
     tone:"warn",
@@ -435,12 +430,21 @@ function renderAdminAlerts(){
 }
 function renderDrafts(){
   var list = document.getElementById("draftList");
-  var drafts = state.drafts.filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; });
+  var drafts = visibleDrafts().filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; });
   if(state.filter !== "all") drafts = drafts.filter(function(d){ return d.reliability === state.filter; });
   if(!drafts.length){ list.innerHTML = "<div class='empty'>Nessuna bozza in questa vista.</div>"; return; }
   list.innerHTML = drafts.map(function(d){
     return "<div class='item'><div class='item-head'><div><span class='pill "+esc(d.reliability)+"'>"+labelRel(d.reliability)+"</span><h3>"+esc(d.title)+"</h3></div><div class='meta'>"+date(d.created_at)+"</div></div><p>"+esc(d.body)+"</p><div class='meta'>"+esc(d.source_name || "")+(d.source_url?" · <a href='"+escAttr(d.source_url)+"' target='_blank' style='color:var(--gold-l)'>fonte</a>":"")+"</div><div class='item-actions' style='margin-top:10px'><button class='primary small' onclick='approveDraft("+d.id+")'>Approva</button><button class='danger small' onclick='discardDraft("+d.id+")'>Scarta</button></div></div>";
   }).join("");
+}
+function visibleDrafts(){
+  return state.drafts.filter(function(d){ return !isYoutubeDraft(d); });
+}
+function isYoutubeDraft(d){
+  var source = String(d.source_name || "").toLowerCase();
+  var note = String(d.editorial_note || "").toLowerCase();
+  var payload = d.raw_payload || {};
+  return source.indexOf("youtube") !== -1 || note.indexOf("youtube scout") !== -1 || !!payload.video_id;
 }
 function renderNews(){
   var list = document.getElementById("newsList");

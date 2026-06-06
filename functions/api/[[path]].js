@@ -119,7 +119,7 @@ async function cronAutopilot(request, env) {
 async function runScheduledAutomations({ env, cron = "", scheduledTime = Date.now(), job = "" }) {
   const tasks = [];
   const normalizedJob = cleanText(job || "").toLowerCase();
-  const shouldRunYoutube = normalizedJob === "all" || normalizedJob === "youtube" || cron === "15 6 * * *";
+  const shouldRunYoutube = youtubeScoutEnabled(env) && (normalizedJob === "all" || normalizedJob === "youtube" || cron === "15 6 * * *");
   const shouldRunMarket = normalizedJob === "all" || normalizedJob === "market";
   const shouldRunHome = normalizedJob
     ? normalizedJob === "all" || normalizedJob === "home"
@@ -571,6 +571,7 @@ async function adminAutomate(request, env) {
   }
 
   if (action === "youtube_scout") {
+    if (!youtubeScoutEnabled(env)) return json(youtubeScoutDisabledResult());
     const result = await runYoutubeScoutAutomation(env);
     return json(result);
   }
@@ -597,6 +598,7 @@ async function runMarketAutomation(env, options = {}) {
 }
 
 async function runYoutubeScoutAutomation(env) {
+  if (!youtubeScoutEnabled(env)) return youtubeScoutDisabledResult();
   let result;
   try {
     result = await generateYoutubeScoutDrafts(env);
@@ -605,6 +607,22 @@ async function runYoutubeScoutAutomation(env) {
   }
   await logRun(env, "youtube_scout", result);
   return result;
+}
+
+function youtubeScoutEnabled(env) {
+  return String(env.YOUTUBE_SCOUT_ENABLED || "").trim().toLowerCase() === "true";
+}
+
+function youtubeScoutDisabledResult() {
+  return {
+    ok: true,
+    disabled: true,
+    scanned: 0,
+    inserted: 0,
+    skipped: 0,
+    errors: [],
+    message: "YouTube Scout disattivato: non crea bozze automatiche.",
+  };
 }
 
 async function fetchNewsDrafts(env, sources) {

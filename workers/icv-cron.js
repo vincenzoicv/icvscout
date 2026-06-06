@@ -1,5 +1,4 @@
 const DEFAULT_ORIGIN = "https://ilcalciodivince.com";
-const YOUTUBE_CRON = "15 6 * * *";
 const MARKET_CRON = "30 */6 * * *";
 
 export default {
@@ -12,7 +11,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const job = url.searchParams.get("job") || "home";
-    if (!["home", "market", "youtube", "all"].includes(job)) {
+    if (!["home", "market", "all"].includes(job)) {
       return json({ error: "Job cron non supportato" }, 400);
     }
     return json(await runCronJob(env, job, "manual:" + job));
@@ -21,7 +20,7 @@ export default {
 
 function jobFromCron(cron) {
   if (cron === MARKET_CRON) return "market";
-  return cron === YOUTUBE_CRON ? "youtube" : "home";
+  return "home";
 }
 
 async function runCronJob(env, job, cron) {

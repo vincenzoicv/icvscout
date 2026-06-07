@@ -536,7 +536,6 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
     <h3>Focus ICV</h3>
     <div class="home-main-title" id="homeFocusTitle">ICV Scout in aggiornamento</div>
     <div class="home-text" id="homeFocusText">Le notizie approvate e il Match Center appariranno qui dopo la revisione admin.</div>
-    <div class="home-auto" id="homeAutoStatus">Autopilot in attesa</div>
   </div>
   <div class="home-panel">
     <h3>Match Center</h3>
@@ -1274,7 +1273,27 @@ function editorializeNews(item) {
   if (/europa league|coppa|sorteggio/i.test(title + " " + body)) {
     return "L'Europa League cambia il peso della stagione: calendario, rotazioni e mercato dovranno essere letti dentro un percorso più lungo e meno scontato.";
   }
-  return body ? body.slice(0, 190) : title;
+  var cleanBody = cleanFocusText(body, title, item.source);
+  return cleanBody ? cleanBody.slice(0, 190) : "Aggiornamento da seguire dentro il quadro bianconero: conta il fatto, non il rumore intorno alla notizia.";
+}
+
+function cleanFocusText(body, title, source) {
+  var text = String(body || "").replace(/\s+/g, " ").trim();
+  var cleanTitle = String(title || "").replace(/\s+/g, " ").trim();
+  var cleanSource = String(source || "").replace(/\s+/g, " ").trim();
+  if (cleanTitle && text.toLowerCase().indexOf(cleanTitle.toLowerCase()) === 0) {
+    text = text.slice(cleanTitle.length).replace(/^[\s:·–—-]+/, "").trim();
+  }
+  if (cleanSource) {
+    text = text.replace(new RegExp("\\s*(?:-|·|–|—)?\\s*" + escapeRegExp(cleanSource) + "\\s*$", "i"), "").trim();
+  }
+  text = text.replace(/\s*(?:-|·|–|—)?\s*(Gianluca Di Marzio|Di Marzio|Juventus\\.com|Lega Serie A|Il Bianconero|Tuttosport|Sky Sport)\s*$/i, "").trim();
+  if (cleanTitle && text.toLowerCase() === cleanTitle.toLowerCase()) return "";
+  return text;
+}
+
+function escapeRegExp(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function loadHomeGraphics() {

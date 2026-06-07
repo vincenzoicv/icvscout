@@ -44,6 +44,24 @@ const DEFAULT_YOUTUBE_CHANNELS = [
   { name: "Luca Toselli", channel: "@LucaToselli" },
 ];
 
+const OFFICIAL_SOURCE_PATTERNS = [
+  "juventus.com",
+  "legaseriea.it",
+  "uefa.com",
+  "fifa.com",
+];
+
+const TRUSTED_SOURCE_PATTERNS = [
+  "sky",
+  "di marzio",
+  "gianlucadimarzio",
+  "romano",
+  "fabrizio romano",
+  "agresti",
+  "romeo agresti",
+  "gazzetta",
+];
+
 const DEFAULT_RADAR = {
   kicker: "Centro di controllo",
   title: "Estate Juve",
@@ -628,10 +646,19 @@ function youtubeScoutDisabledResult() {
 async function fetchNewsDrafts(env, sources) {
   let scanned = 0;
   let inserted = 0;
+  let published = 0;
+  let updated = 0;
+  let skippedDuplicates = 0;
+  let skippedBlacklisted = 0;
   const errors = [];
 
   for (const source of sources.filter(s => s.active !== false)) {
     try {
+      if (isBlacklistedSource(env, source)) {
+        skippedBlacklisted++;
+        continue;
+      }
+
       const xml = await fetchText(source.url);
       const items = parseRss(xml).slice(0, 6);
       scanned += items.length;
@@ -642,35 +669,82 @@ async function fetchNewsDrafts(env, sources) {
         const sourceName = normalized.source || source.name;
         if (!isRelevantNewsItem(title, item.description, source)) continue;
         const url = item.link || source.url;
-        const hash = await digest(title + "|" + sourceName);
-        const existing = await sb(env, "/news_drafts?content_hash=eq." + encodeURIComponent(hash) + "&select=id&limit=1");
-        if (existing.length) continue;
+        const body = cleanText(item.description || title).slice(0, 500);
+        const category = source.category || inferCategory(title);
+        const urgency = inferUrgency(title);
+        const reliability = reliabilityForSourceTier(sourceTier(env, source, sourceName, url));
+        if (reliability === "blacklist") {
+          skippedBlacklisted++;
+          continue;
+        }
+        const editorialStatus = statusFromReliability(reliability);
+        const hash = await digest(dedupeKey(title, sourceName, url));
+        const candidate = { title, body, category, urgency, sourceName, sourceUrl: url, reliability, editorialStatus };
 
-        const reliability = source.reliability || reliabilityForSource(sourceName, url);
-        await sb(env, "/news_drafts", {
+        const existingNews = await findExistingNews(env, candidate);
+        if (existingNews) {
+          if (await updateExistingNewsFromCandidate(env, existingNews, candidate)) updated++;
+          skippedDuplicates++;
+          continue;
+        }
+
+        const existingDraft = await findExistingDraft(env, candidate, hash);
+        if (existingDraft) {
+          const promotedDraft = await promoteExistingDraftFromCandidate(env, existingDraft, candidate);
+          if (candidate.reliability === "official" && isOfficialSource(source, sourceName, url)) {
+            const news = await publishDraftAsNews(env, promotedDraft);
+            if (news) {
+              await markDraftApproved(env, existingDraft.id);
+              published++;
+            }
+          } else if (promotedDraft.review_status === "ready" && existingDraft.review_status !== "ready") {
+            updated++;
+          }
+          skippedDuplicates++;
+          continue;
+        }
+
+        const trustedConfirmation = reliability === "trusted" ? await findTrustedConfirmation(env, candidate) : null;
+        const reviewStatus = reviewStatusForReliability(reliability, trustedConfirmation);
+        const shouldPublish = reliability === "official" && isOfficialSource(source, sourceName, url);
+        const draftRows = await sb(env, "/news_drafts", {
           method: "POST",
           body: [{
             title,
-            body: cleanText(item.description || title).slice(0, 500),
-            category: source.category || inferCategory(title),
-            urgency: inferUrgency(title),
+            body,
+            category,
+            urgency,
             source_name: sourceName,
             source_url: url,
             reliability,
-            editorial_status: statusFromReliability(reliability),
-            review_status: reliability === "official" ? "ready" : "needs_review",
+            editorial_status: editorialStatus,
+            review_status: reviewStatus,
             content_hash: hash,
-            raw_payload: item,
+            raw_payload: {
+              ...item,
+              source_policy: {
+                tier: reliability,
+                trusted_confirmation: trustedConfirmation,
+              },
+            },
           }],
+          prefer: "return=representation",
         });
         inserted++;
+        if (shouldPublish) {
+          const news = await publishDraftAsNews(env, draftRows[0]);
+          if (news) {
+            await markDraftApproved(env, draftRows[0].id);
+            published++;
+          }
+        }
       }
     } catch (err) {
       errors.push({ source: source.name, error: err.message });
     }
   }
 
-  return { ok: true, scanned, inserted, errors };
+  return { ok: true, scanned, inserted, published, updated, skipped_duplicates: skippedDuplicates, skipped_blacklisted: skippedBlacklisted, errors };
 }
 
 async function generateMarketDrafts(env, sources, options = {}) {
@@ -1299,6 +1373,7 @@ function statusFromReliability(reliability) {
   if (reliability === "official") return "Ufficiale";
   if (reliability === "trusted") return "Confermato";
   if (reliability === "aggregator") return "Da verificare";
+  if (reliability === "blacklist") return "Ignorata";
   return "Rumor";
 }
 
@@ -1411,7 +1486,7 @@ function mergeSourceNames(...values) {
 }
 
 function bestReliability(...values) {
-  const rank = { official: 4, trusted: 3, aggregator: 2, rumor: 1 };
+  const rank = { official: 4, trusted: 3, aggregator: 2, rumor: 1, blacklist: -1 };
   return values.filter(Boolean).sort((a, b) => (rank[b] || 0) - (rank[a] || 0))[0] || "rumor";
 }
 
@@ -1420,6 +1495,298 @@ function mergedMarketStatus(oldStatus, nextStatus, reliability) {
   if (/ufficial/.test(text) || reliability === "official") return "ufficiale";
   if (/rumor|verificare/.test(text) || reliability === "aggregator" || reliability === "rumor") return "da verificare";
   return "monitorato";
+}
+
+function isOfficialSource(source, sourceName = "", url = "") {
+  return matchesAnySourcePattern(sourceText(source, sourceName, url), OFFICIAL_SOURCE_PATTERNS);
+}
+
+function isTrustedSource(source, sourceName = "", url = "") {
+  return matchesAnySourcePattern(sourceText(source, sourceName, url), TRUSTED_SOURCE_PATTERNS);
+}
+
+function sourceTier(env, source, sourceName = "", url = "") {
+  const explicit = String(source && source.reliability || "").toLowerCase();
+  if (isBlacklistedSource(env, source, sourceName, url)) return "blacklist";
+  if (explicit === "official" && isOfficialSource(source, sourceName, url)) return "official";
+  if (isOfficialSource(source, sourceName, url)) return "official";
+  if (explicit === "trusted" || isTrustedSource(source, sourceName, url)) return "trusted";
+  if (explicit === "aggregator") return "aggregator";
+  if (explicit === "rumor") return "rumor";
+  return reliabilityForSource(sourceName || source && source.name, url || source && source.url);
+}
+
+function reliabilityForSourceTier(tier) {
+  if (tier === "blacklist") return "blacklist";
+  if (tier === "official") return "official";
+  if (tier === "trusted") return "trusted";
+  if (tier === "aggregator") return "aggregator";
+  return "rumor";
+}
+
+function reviewStatusForReliability(reliability, trustedConfirmation) {
+  if (reliability === "official") return "ready";
+  if (reliability === "trusted" && trustedConfirmation) return "ready";
+  return "needs_review";
+}
+
+function isBlacklistedSource(env, source, sourceName = "", url = "") {
+  if (String(source && source.reliability || "").toLowerCase() === "blacklist") return true;
+  const patterns = String(env && env.NEWS_BLACKLIST || "")
+    .split(",")
+    .map(item => item.trim().toLowerCase())
+    .filter(Boolean);
+  return patterns.length ? matchesAnySourcePattern(sourceText(source, sourceName, url), patterns) : false;
+}
+
+function sourceText(source, sourceName = "", url = "") {
+  return safeDecodeURIComponent([source && source.name, source && source.url, sourceName, url].filter(Boolean).join(" ")).toLowerCase();
+}
+
+function matchesAnySourcePattern(text, patterns) {
+  return patterns.some(pattern => text.includes(pattern));
+}
+
+function safeDecodeURIComponent(value) {
+  try {
+    return decodeURIComponent(String(value || ""));
+  } catch {
+    return String(value || "");
+  }
+}
+
+async function findTrustedConfirmation(env, candidate) {
+  const rows = await sb(env, "/news_drafts?order=created_at.desc&select=id,title,source_name,source_url,reliability,review_status,created_at&limit=80");
+  const similar = findSimilarRow(
+    rows.filter(row =>
+      row.reliability &&
+      row.reliability !== "blacklist" &&
+      row.reliability !== "aggregator" &&
+      row.source_name !== candidate.sourceName
+    ),
+    candidate,
+    { urlField: "source_url" }
+  );
+  if (!similar) return null;
+  return {
+    draft_id: similar.id,
+    source_name: similar.source_name,
+    reliability: similar.reliability,
+  };
+}
+
+async function findExistingNews(env, candidate) {
+  const exact = await findExactNews(env, candidate);
+  if (exact) return exact;
+
+  const recent = await sb(env, "/news?order=created_at.desc&select=id,title,body,source,source_url,reliability,editorial_status,urgency,updated_at&limit=80");
+  return findSimilarRow(recent, candidate, { urlField: "source_url" });
+}
+
+async function findExactNews(env, candidate) {
+  const canonicalUrl = canonicalNewsUrl(candidate.sourceUrl);
+  if (candidate.sourceUrl) {
+    const rows = await sb(env, "/news?source_url=eq." + encodeURIComponent(candidate.sourceUrl) + "&select=id,title,body,source,source_url,reliability,editorial_status,urgency,updated_at&limit=1");
+    if (rows.length) return rows[0];
+  }
+
+  if (canonicalUrl) {
+    const recentByUrl = await sb(env, "/news?order=created_at.desc&select=id,title,body,source,source_url,reliability,editorial_status,urgency,updated_at&limit=80");
+    const byCanonicalUrl = recentByUrl.find(row => canonicalNewsUrl(row.source_url) === canonicalUrl);
+    if (byCanonicalUrl) return byCanonicalUrl;
+  }
+
+  const sameTitleSource = await sb(
+    env,
+    "/news?title=eq." + encodeURIComponent(candidate.title) +
+    "&source=eq." + encodeURIComponent(candidate.sourceName || "") +
+    "&select=id,title,body,source,source_url,reliability,editorial_status,urgency,updated_at&limit=1"
+  );
+  return sameTitleSource[0] || null;
+}
+
+async function findExistingDraft(env, candidate, hash) {
+  const byHash = await sb(env, "/news_drafts?content_hash=eq." + encodeURIComponent(hash) + "&select=id,title,body,category,urgency,source_name,source_url,reliability,editorial_status,review_status&limit=1");
+  if (byHash.length) return byHash[0];
+
+  const recent = await sb(env, "/news_drafts?order=created_at.desc&select=id,title,body,category,urgency,source_name,source_url,reliability,editorial_status,review_status&limit=80");
+  return findSimilarRow(recent, candidate, { urlField: "source_url" });
+}
+
+function findSimilarRow(rows, candidate, fields) {
+  const candidateTitle = canonicalNewsTitle(candidate.title);
+  const candidateUrl = canonicalNewsUrl(candidate.sourceUrl);
+  const candidateTokens = titleTokens(candidateTitle);
+
+  for (const row of rows || []) {
+    if (candidateUrl && canonicalNewsUrl(row[fields.urlField]) === candidateUrl) return row;
+
+    const rowTitle = canonicalNewsTitle(row.title);
+    if (rowTitle && rowTitle === candidateTitle) return row;
+
+    const rowTokens = titleTokens(rowTitle);
+    if (titleSimilarity(candidateTokens, rowTokens) >= 0.72) return row;
+  }
+
+  return null;
+}
+
+async function updateExistingNewsFromCandidate(env, existing, candidate) {
+  if (!existing || !existing.id) return false;
+  const patch = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (candidate.sourceUrl && !existing.source_url) patch.source_url = candidate.sourceUrl;
+  if (candidate.body && candidate.body.length > String(existing.body || "").length) patch.body = candidate.body;
+  if (priorityForUrgency(candidate.urgency) > priorityForUrgency(existing.urgency)) patch.urgency = candidate.urgency;
+  if (priorityForReliability(candidate.reliability) > priorityForReliability(existing.reliability)) {
+    patch.reliability = candidate.reliability;
+    patch.editorial_status = candidate.editorialStatus;
+    patch.source = candidate.sourceName;
+  }
+
+  if (Object.keys(patch).length === 1) return false;
+  await sb(env, "/news?id=eq." + encodeURIComponent(existing.id), {
+    method: "PATCH",
+    body: patch,
+  });
+  return true;
+}
+
+async function promoteExistingDraftFromCandidate(env, existing, candidate) {
+  if (!existing || !existing.id) return existing;
+
+  const confirmation = candidate.reliability === "trusted" ? await findTrustedConfirmation(env, candidate) : null;
+  const patch = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (candidate.body && candidate.body.length > String(existing.body || "").length) patch.body = candidate.body;
+  if (priorityForUrgency(candidate.urgency) > priorityForUrgency(existing.urgency)) patch.urgency = candidate.urgency;
+
+  if (priorityForReliability(candidate.reliability) > priorityForReliability(existing.reliability)) {
+    patch.source_name = candidate.sourceName;
+    patch.source_url = candidate.sourceUrl;
+    patch.reliability = candidate.reliability;
+    patch.editorial_status = candidate.editorialStatus;
+  }
+
+  if (candidate.reliability === "official") {
+    patch.review_status = "ready";
+  } else if (candidate.reliability === "trusted" && confirmation && existing.review_status !== "ready") {
+    patch.review_status = "ready";
+    patch.editorial_note = "Confermata da almeno due fonti affidabili: " + confirmation.source_name + " e " + candidate.sourceName;
+  }
+
+  if (Object.keys(patch).length === 1) return existing;
+  const rows = await sb(env, "/news_drafts?id=eq." + encodeURIComponent(existing.id), {
+    method: "PATCH",
+    body: patch,
+    prefer: "return=representation",
+  });
+  return rows[0] || { ...existing, ...patch };
+}
+
+function dedupeKey(title, sourceName, sourceUrl) {
+  return [canonicalNewsTitle(title), canonicalSourceName(sourceName), canonicalNewsUrl(sourceUrl)].filter(Boolean).join("|");
+}
+
+function canonicalNewsUrl(value) {
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "fbclid", "gclid", "ref"].forEach(key => url.searchParams.delete(key));
+    url.hash = "";
+    const path = url.pathname.replace(/\/+$/, "");
+    return (url.hostname.replace(/^www\./, "").toLowerCase() + path + (url.search ? url.search : "")).toLowerCase();
+  } catch {
+    return cleanText(value).toLowerCase().replace(/\/+$/, "");
+  }
+}
+
+function canonicalSourceName(value) {
+  return cleanText(value)
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\b(www\.)?juventus(\.com)?\b/g, "juve")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function canonicalNewsTitle(value) {
+  return cleanText(value)
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\bjuventus\b/g, "juve")
+    .replace(/\bfc\b/g, "")
+    .replace(/\b(ufficiale|official|comunicato|comunica|annuncia|annuncio|news|live)\b/g, " ")
+    .replace(/\b(calcio|sport|tuttosport|gazzetta|sky|di marzio)\b/g, " ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function titleTokens(title) {
+  const ignored = new Set([
+    "la", "il", "lo", "le", "gli", "i", "un", "una", "di", "da", "del", "della", "dei", "a", "al", "alla", "con", "per", "e", "in", "su", "tra", "fra", "juve",
+    "arriva", "arrivo", "nuovo", "nuova", "firma", "firmato", "accordo", "contratto", "giocatore", "giocatrice", "bianconero", "bianconera",
+  ]);
+  return new Set(String(title || "").split(/\s+/).filter(token => token.length > 2 && !ignored.has(token)));
+}
+
+function titleSimilarity(left, right) {
+  if (!left.size || !right.size) return 0;
+  let shared = 0;
+  for (const token of left) if (right.has(token)) shared++;
+  return shared / Math.max(left.size, right.size);
+}
+
+function priorityForReliability(value) {
+  if (value === "official") return 4;
+  if (value === "trusted") return 3;
+  if (value === "aggregator") return 2;
+  if (value === "rumor") return 1;
+  if (value === "blacklist") return -1;
+  return 0;
+}
+
+function priorityForUrgency(value) {
+  if (value === "breaking") return 3;
+  if (value === "rumor") return 2;
+  if (value === "normal") return 1;
+  return 0;
+}
+
+async function publishDraftAsNews(env, draft) {
+  if (!draft) return null;
+  const existing = await findExistingNews(env, { title: draft.title, sourceName: draft.source_name, sourceUrl: draft.source_url });
+  if (existing) return null;
+
+  const inserted = await sb(env, "/news", {
+    method: "POST",
+    body: [{
+      title: draft.title,
+      body: draft.body,
+      category: draft.category,
+      urgency: draft.urgency || "normal",
+      source: draft.source_name,
+      source_url: draft.source_url,
+      visible: true,
+      auto_fetched: true,
+      reliability: draft.reliability,
+      editorial_status: draft.editorial_status || statusFromReliability(draft.reliability),
+    }],
+    prefer: "return=representation",
+  });
+  return inserted[0] || null;
+}
+
+async function markDraftApproved(env, id) {
+  await sb(env, "/news_drafts?id=eq." + encodeURIComponent(id), {
+    method: "PATCH",
+    body: { review_status: "approved", updated_at: new Date().toISOString() },
+  });
 }
 
 function inferCategory(title) {

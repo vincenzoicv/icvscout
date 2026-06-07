@@ -119,9 +119,16 @@ Il token non va mai copiato in `index.html` o `icv_admin.html`.
 
 ## 6. Regola Editoriale
 
-- `official`: fonti ufficiali o dominio Juventus/Lega/UEFA.
-- `trusted`: Sky, Di Marzio, Romano, Agresti, Gazzetta, fonti editoriali solide.
-- `rumor`: notizie non confermate ma tracciabili.
-- `aggregator`: aggregatori o Google News, sempre da verificare.
+- `official`: fonti ufficiali o domini Juventus, Lega Serie A, UEFA/FIFA. Vanno in bozza `ready` e vengono pubblicate subito dal flusso automatico.
+- `trusted`: Sky, Di Marzio, Romano, Agresti, Gazzetta e fonti editoriali solide. Restano in bozza, ma passano a `ready` quando una seconda fonte affidabile/ufficiale conferma la stessa notizia.
+- `rumor`: notizie non confermate ma tracciabili. Solo bozza admin.
+- `aggregator`: aggregatori o Google News generico. Solo bozza admin e sempre da verificare.
+- `blacklist`: fonti da ignorare. Non creano bozze e non pubblicano nulla.
+
+Puoi impostare `blacklist` dal pannello admin quando aggiungi una fonte. In alternativa puoi bloccare pattern di dominio o nome fonte con una variabile Cloudflare:
+
+```env
+NEWS_BLACKLIST=tuttomercatoweb.com,fonte-da-ignorare
+```
 
 Il sito pubblico mostra solo record pubblicati in `news` con `visible = true`.

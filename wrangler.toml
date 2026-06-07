@@ -4,3 +4,4 @@ compatibility_date = "2026-05-27"
 
 [vars]
 HOME_AUTO_INTERVAL_HOURS = "6"
+NEWS_BLACKLIST = ""

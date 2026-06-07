@@ -1274,7 +1274,27 @@ function editorializeNews(item) {
     return "L'Europa League cambia il peso della stagione: calendario, rotazioni e mercato dovranno essere letti dentro un percorso più lungo e meno scontato.";
   }
   var cleanBody = cleanFocusText(body, title, item.source);
-  return cleanBody ? cleanBody.slice(0, 190) : "Aggiornamento da seguire dentro il quadro bianconero: conta il fatto, non il rumore intorno alla notizia.";
+  return cleanBody ? cleanBody.slice(0, 190) : focusFallbackFromTitle(title);
+}
+
+function focusFallbackFromTitle(title) {
+  var text = String(title || "").replace(/\s+/g, " ").trim();
+  if (/archiviat|procedimento|bilancio|inchiesta|tribunale/i.test(text)) {
+    return "La vicenda si chiude con un passaggio significativo sul piano societario: per la Juve conta soprattutto lasciarsi alle spalle il tema e tornare al campo.";
+  }
+  if (/partnership|sponsor|accordo commerciale|wwe/i.test(text)) {
+    return "La notizia riguarda il lato business del club: meno campo, più identità e crescita del marchio Juventus fuori dalla partita.";
+  }
+  if (/portier|porta|martinez|vicario|dibu/i.test(text)) {
+    return "Il tema portiere resta uno snodo tecnico da monitorare: prima delle scelte di mercato, conta capire priorità e margini reali della Juve.";
+  }
+  if (/del piero|dichiar|intervista|parole/i.test(text)) {
+    return "Le parole dei protagonisti vanno lette come segnale di clima: raccontano percezioni, aspettative e pressione intorno al mondo Juve.";
+  }
+  if (/mercato|calciomercato|trattativa|rinnovo|cessione|acquisto/i.test(text)) {
+    return "Il mercato va letto per incastri: ogni nome pesa davvero solo se torna con budget, ruolo scoperto e priorità tecniche.";
+  }
+  return "Tema da seguire con attenzione nel quadro bianconero, separando il fatto centrale dal rumore che lo circonda.";
 }
 
 function cleanFocusText(body, title, source) {

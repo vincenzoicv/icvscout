@@ -131,4 +131,14 @@ Puoi impostare `blacklist` dal pannello admin quando aggiungi una fonte. In alte
 NEWS_BLACKLIST=tuttomercatoweb.com,fonte-da-ignorare
 ```
 
+Ogni news riceve anche una priorita editoriale nel campo `urgency`:
+
+- `breaking`: ufficialita, comunicati, allenatore, infortuni, operazioni, acquisti o cessioni ufficiali.
+- `important`: convocati, calendario, conferenze, rinnovi, ritiri, sorteggi, competizioni e arbitri.
+- `normal`: aggiornamenti ordinari.
+- `low`: sponsor, store, academy, ticketing, partnership ed eventi minori.
+- `rumor`: voci non ufficiali da fonti non ufficiali.
+
+La home e `/api/public/news` ordinano le news combinando priorita, affidabilita e freschezza, quindi una notizia importante puo restare sopra una news piu recente ma secondaria.
+
 Il sito pubblico mostra solo record pubblicati in `news` con `visible = true`.

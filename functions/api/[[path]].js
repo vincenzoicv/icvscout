@@ -184,7 +184,7 @@ async function publicHome(env) {
   }
 
   const [news, market, marketNews, matches, social, auto, radar] = await Promise.all([
-    sb(env, "/news?visible=eq.true&order=created_at.desc&limit=6"),
+    sb(env, "/news?visible=eq.true&order=created_at.desc&limit=24"),
     sb(env, "/market_items?order=updated_at.desc&limit=12"),
     sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=6"),
     sb(env, "/match_reports?order=match_date.desc&limit=3"),
@@ -192,7 +192,7 @@ async function publicHome(env) {
     latestAutomationRun(env, "home_autopilot"),
     getSiteSetting(env, "radar_home", DEFAULT_RADAR),
   ]);
-  const cleanNews = publicNewsRows(news);
+  const cleanNews = publicNewsRows(news).slice(0, 6);
   const cleanMarketNews = publicNewsRows(marketNews);
   const cleanMarket = publicMarketRows(market && market.length ? market : publicMarketFromNews(cleanMarketNews));
   return json({
@@ -284,8 +284,8 @@ async function publicNews(env, url) {
   const limit = Math.min(Number(url.searchParams.get("limit") || 12), 30);
   if (!hasSupabase(env)) return json([]);
   try {
-    const rows = await sb(env, "/news?visible=eq.true&order=created_at.desc&limit=" + limit);
-    return json(publicNewsRows(rows));
+    const rows = await sb(env, "/news?visible=eq.true&order=created_at.desc&limit=" + Math.max(limit, 30));
+    return json(publicNewsRows(rows).slice(0, limit));
   } catch {
     return json([]);
   }
@@ -671,12 +671,12 @@ async function fetchNewsDrafts(env, sources) {
         const url = item.link || source.url;
         const body = cleanText(item.description || title).slice(0, 500);
         const category = source.category || inferCategory(title);
-        const urgency = inferUrgency(title);
         const reliability = reliabilityForSourceTier(sourceTier(env, source, sourceName, url));
         if (reliability === "blacklist") {
           skippedBlacklisted++;
           continue;
         }
+        const urgency = inferUrgency(title, body, category, reliability);
         const editorialStatus = statusFromReliability(reliability);
         const hash = await digest(dedupeKey(title, sourceName, url));
         const candidate = { title, body, category, urgency, sourceName, sourceUrl: url, reliability, editorialStatus };
@@ -1753,8 +1753,10 @@ function priorityForReliability(value) {
 
 function priorityForUrgency(value) {
   if (value === "breaking") return 3;
-  if (value === "rumor") return 2;
+  if (value === "important") return 2;
   if (value === "normal") return 1;
+  if (value === "low") return 0;
+  if (value === "rumor") return -1;
   return 0;
 }
 
@@ -1793,8 +1795,26 @@ function inferCategory(title) {
   return /mercato|trattativa|rinnovo|prestito|acquisto|cessione|offerta/i.test(title) ? "calciomercato" : "juventus";
 }
 
-function inferUrgency(title) {
-  return /ufficiale|comunicato|breaking/i.test(title) ? "breaking" : (/rumor|interesse|offerta/i.test(title) ? "rumor" : "normal");
+function inferUrgency(title, body = "", category = "", reliability = "") {
+  const text = cleanText([title, body, category, reliability].join(" ")).toLowerCase();
+
+  if (/rumor|indiscrezione|sondaggio|interesse|contatti|offerta|trattativa|osserva|piace|nel mirino/.test(text) && reliability !== "official") {
+    return "rumor";
+  }
+
+  if (/breaking|ufficiale|comunicato|esonero|dimissioni|nuovo allenatore|allenatore|infortunio|lesione|operazione|intervento|acquisto ufficiale|cessione ufficiale|depositato|firma|ha firmato/.test(text)) {
+    return "breaking";
+  }
+
+  if (/convocati|convocate|calendario|conferenza stampa|rinnovo|ritiro|amichevole|presentazione|accordo|lista champions|lista uefa|sorteggio|coppa|europa league|serie a|designazione arbitrale|arbitro/.test(text)) {
+    return "important";
+  }
+
+  if (/sponsor|store|maglia|academy|under 23|under23|women|charity|museum|membership|ticketing|biglietti|partnership|evento/.test(text)) {
+    return "low";
+  }
+
+  return "normal";
 }
 
 function extractPlayer(title) {
@@ -1823,15 +1843,46 @@ function labelInstagramMedia(type) {
 }
 
 function publicNewsRows(rows) {
-  return (rows || []).map(row => ({
-    ...row,
-    title: cleanText(row.title),
-    body: cleanText(row.body),
-    category: cleanText(row.category),
-    urgency: cleanText(row.urgency),
-    source: cleanText(row.source),
-    editorial_status: cleanText(row.editorial_status),
-  }));
+  return (rows || [])
+    .map(row => ({
+      ...row,
+      title: cleanText(row.title),
+      body: cleanText(row.body),
+      category: cleanText(row.category),
+      urgency: normalizeUrgency(row.urgency),
+      source: cleanText(row.source),
+      editorial_status: cleanText(row.editorial_status),
+    }))
+    .sort((a, b) => {
+      const scoreDiff = newsPriorityScore(b) - newsPriorityScore(a);
+      if (scoreDiff) return scoreDiff;
+      return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    });
+}
+
+function normalizeUrgency(value) {
+  const clean = cleanText(value).toLowerCase();
+  if (clean === "breaking" || clean === "important" || clean === "normal" || clean === "low" || clean === "rumor") return clean;
+  return "normal";
+}
+
+function newsPriorityScore(row) {
+  const urgencyScore = {
+    breaking: 50,
+    important: 35,
+    normal: 20,
+    low: 8,
+    rumor: 0,
+  }[normalizeUrgency(row && row.urgency)] || 20;
+  const reliabilityScore = {
+    official: 8,
+    trusted: 5,
+    aggregator: -2,
+    rumor: -4,
+  }[cleanText(row && row.reliability).toLowerCase()] || 0;
+  const ageHours = Math.max(0, (Date.now() - new Date(row && row.created_at || 0).getTime()) / 3600000);
+  const recencyScore = Math.max(0, 12 - ageHours);
+  return urgencyScore + reliabilityScore + recencyScore;
 }
 
 function publicMarketRows(rows) {

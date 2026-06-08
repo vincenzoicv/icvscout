@@ -1746,10 +1746,11 @@ async function updateExistingNewsFromCandidate(env, existing, candidate) {
   if (candidate.sourceUrl && !existing.source_url) patch.source_url = candidate.sourceUrl;
   if (candidate.body && candidate.body.length > String(existing.body || "").length) patch.body = candidate.body;
   if (priorityForUrgency(candidate.urgency) > priorityForUrgency(existing.urgency)) patch.urgency = candidate.urgency;
+  const mergedSource = mergeSourceNames(existing.source, candidate.sourceName);
+  if (mergedSource !== cleanText(existing.source || "")) patch.source = mergedSource;
   if (priorityForReliability(candidate.reliability) > priorityForReliability(existing.reliability)) {
     patch.reliability = candidate.reliability;
     patch.editorial_status = candidate.editorialStatus;
-    patch.source = candidate.sourceName;
   }
 
   if (Object.keys(patch).length === 1) return false;
@@ -1758,6 +1759,18 @@ async function updateExistingNewsFromCandidate(env, existing, candidate) {
     body: patch,
   });
   return true;
+}
+
+function mergeSourceNames(existingSource, newSource) {
+  const existing = cleanText(existingSource || "");
+  const incoming = cleanText(newSource || "");
+  if (!incoming) return existing;
+  if (!existing) return incoming;
+
+  const names = existing.split(/\s*,\s*/).map(cleanText).filter(Boolean);
+  const seen = new Set(names.map(canonicalSourceName));
+  if (!seen.has(canonicalSourceName(incoming))) names.push(incoming);
+  return names.join(", ");
 }
 
 async function promoteExistingDraftFromCandidate(env, existing, candidate) {

@@ -120,7 +120,8 @@ Il token non va mai copiato in `index.html` o `icv_admin.html`.
 ## 6. Regola Editoriale
 
 - `official`: fonti ufficiali o domini Juventus, Lega Serie A, UEFA/FIFA. Vanno in bozza `ready` e vengono pubblicate subito dal flusso automatico.
-- `trusted`: Sky, Di Marzio, Romano, Agresti, Gazzetta e fonti editoriali solide. Restano in bozza, ma passano a `ready` quando una seconda fonte affidabile/ufficiale conferma la stessa notizia.
+- `trusted`: Sky, Di Marzio, Agresti, Gazzetta e fonti editoriali solide. Restano in bozza, ma passano a `ready` quando una seconda fonte affidabile/ufficiale conferma la stessa notizia.
+- `trusted autopublish`: Fabrizio Romano e gli altri trusted esplicitamente autorizzati. Vanno in bozza `ready` e vengono pubblicati subito.
 - `rumor`: notizie non confermate ma tracciabili. Solo bozza admin.
 - `aggregator`: aggregatori o Google News generico. Solo bozza admin e sempre da verificare.
 - `blacklist`: fonti da ignorare. Non creano bozze e non pubblicano nulla.
@@ -129,6 +130,14 @@ Puoi impostare `blacklist` dal pannello admin quando aggiungi una fonte. In alte
 
 ```env
 NEWS_BLACKLIST=tuttomercatoweb.com,fonte-da-ignorare
+```
+
+Fabrizio Romano e gia autorizzato nel codice come `trusted autopublish` e viene letto dal canale Telegram pubblico diretto `https://t.me/s/fabrizioromanotg`, non da Google News. Il backend filtra comunque solo i post rilevanti per Juventus/mercato.
+
+Per aggiungere altri trusted automatici senza cambiare codice:
+
+```env
+NEWS_TRUSTED_AUTOPUBLISH=fabrizio romano,altra-fonte
 ```
 
 Ogni news riceve anche una priorita editoriale nel campo `urgency`:

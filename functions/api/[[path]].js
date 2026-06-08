@@ -25,6 +25,12 @@ const DEFAULT_SOURCES = [
     reliability: "trusted",
   },
   {
+    name: "Fabrizio Romano Juventus",
+    url: "https://t.me/s/fabrizioromanotg",
+    category: "calciomercato",
+    reliability: "trusted",
+  },
+  {
     name: "Il Bianconero",
     url: "https://feeds.footballco.com/ilbianconero/feed/x2mb7fql9vce6t1p",
     category: "juventus",
@@ -60,6 +66,10 @@ const TRUSTED_SOURCE_PATTERNS = [
   "agresti",
   "romeo agresti",
   "gazzetta",
+];
+
+const AUTO_PUBLISH_TRUSTED_SOURCE_PATTERNS = [
+  "fabrizio romano",
 ];
 
 const DEFAULT_RADAR = {
@@ -659,8 +669,7 @@ async function fetchNewsDrafts(env, sources) {
         continue;
       }
 
-      const xml = await fetchText(source.url);
-      const items = parseRss(xml).slice(0, 6);
+      const items = (await fetchSourceItems(source)).slice(0, 6);
       scanned += items.length;
 
       for (const item of items) {
@@ -691,7 +700,7 @@ async function fetchNewsDrafts(env, sources) {
         const existingDraft = await findExistingDraft(env, candidate, hash);
         if (existingDraft) {
           const promotedDraft = await promoteExistingDraftFromCandidate(env, existingDraft, candidate);
-          if (candidate.reliability === "official" && isOfficialSource(source, sourceName, url)) {
+          if (shouldAutoPublishCandidate(env, source, candidate)) {
             const news = await publishDraftAsNews(env, promotedDraft);
             if (news) {
               await markDraftApproved(env, existingDraft.id);
@@ -705,8 +714,8 @@ async function fetchNewsDrafts(env, sources) {
         }
 
         const trustedConfirmation = reliability === "trusted" ? await findTrustedConfirmation(env, candidate) : null;
-        const reviewStatus = reviewStatusForReliability(reliability, trustedConfirmation);
-        const shouldPublish = reliability === "official" && isOfficialSource(source, sourceName, url);
+        const shouldPublish = shouldAutoPublishCandidate(env, source, candidate);
+        const reviewStatus = shouldPublish ? "ready" : reviewStatusForReliability(reliability, trustedConfirmation);
         const draftRows = await sb(env, "/news_drafts", {
           method: "POST",
           body: [{
@@ -724,6 +733,7 @@ async function fetchNewsDrafts(env, sources) {
               ...item,
               source_policy: {
                 tier: reliability,
+                auto_publish: shouldPublish,
                 trusted_confirmation: trustedConfirmation,
               },
             },
@@ -1000,10 +1010,27 @@ async function apiSportsProxy(path, url, env) {
 async function getSources(env) {
   try {
     const sources = await sb(env, "/sources?active=eq.true&order=reliability.asc,name.asc");
-    return sources.length ? sources : DEFAULT_SOURCES;
+    return mergeDefaultSources(sources);
   } catch {
     return DEFAULT_SOURCES;
   }
+}
+
+function mergeDefaultSources(sources) {
+  const rows = Array.isArray(sources) ? sources.slice() : [];
+  const seen = new Set(rows.map(sourceKey));
+  for (const source of DEFAULT_SOURCES) {
+    const key = sourceKey(source);
+    if (!seen.has(key)) {
+      rows.push(source);
+      seen.add(key);
+    }
+  }
+  return rows.length ? rows : DEFAULT_SOURCES;
+}
+
+function sourceKey(source) {
+  return canonicalNewsUrl(source && source.url) || canonicalSourceName(source && source.name);
 }
 
 async function sb(env, path, options = {}) {
@@ -1319,6 +1346,66 @@ function isBadYoutubeTopic(value) {
   return /^(siamo|buonasera|buongiorno|adesso|oggi|ieri|domani|juve|juventus|mercato|calciomercato|fonte|video|tema|focus|luca|romeo|gianni|toselli|agresti|balzarini)$/i.test(cleanText(value));
 }
 
+async function fetchSourceItems(source) {
+  const text = await fetchText(source.url);
+  if (isTelegramWebSource(source.url)) return parseTelegramWeb(text, source);
+  return parseRss(text);
+}
+
+function isTelegramWebSource(url) {
+  return /:\/\/t\.me\/s\//i.test(String(url || ""));
+}
+
+function parseTelegramWeb(html, source) {
+  const chunks = html.match(/<div class="tgme_widget_message[^\"]*"[^>]*data-post=[\s\S]*?(?=<div class="tgme_widget_message[^\"]*"[^>]*data-post=|<\/section>|<\/body>)/gi) || [];
+  return chunks.map(chunk => {
+    const textMatch = chunk.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)(?=<\/div>\s*<div class="tgme_widget_message_footer|<div class="tgme_widget_message_footer|<\/div>\s*<div class="tgme_widget_message_reactions|<\/div>\s*<div class="tgme_widget_message_views|$)/i);
+    const text = cleanTelegramText(textMatch ? textMatch[1] : "");
+    const link = canonicalTelegramPostUrl(tagAttr(chunk, "data-post"), source.url);
+    const date = telegramDate(chunk);
+    const title = telegramTitle(text);
+    return {
+      title,
+      link,
+      description: text,
+      pubDate: date,
+    };
+  }).filter(item => item.title);
+}
+
+function tagAttr(html, attrName) {
+  const re = new RegExp("\\s" + attrName + "=[\"']([^\"']+)[\"']", "i");
+  const match = html.match(re);
+  return match ? decodeXml(match[1]) : "";
+}
+
+function telegramDate(html) {
+  const time = html.match(/<time[^>]+datetime=["']([^"']+)["']/i);
+  if (time) return decodeXml(time[1]);
+  const dateLink = html.match(/class=["'][^"']*tgme_widget_message_date[^"']*["'][\s\S]*?<a[^>]+href=["'][^"']+["'][^>]*>([\s\S]*?)<\/a>/i);
+  return dateLink ? cleanText(dateLink[1]) : "";
+}
+
+function canonicalTelegramPostUrl(post, fallbackUrl) {
+  const value = String(post || "").replace(/^@/, "").trim();
+  if (value && value.includes("/")) return "https://t.me/" + value;
+  return fallbackUrl || "";
+}
+
+function cleanTelegramText(value) {
+  return cleanText(String(value || "")
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<a[^>]+href=["'][^"']*["'][^>]*>([\s\S]*?)<\/a>/gi, "$1")
+  );
+}
+
+function telegramTitle(text) {
+  const clean = cleanText(text);
+  if (!clean) return "";
+  const firstSentence = clean.split(/(?<=[.!?])\s+/)[0] || clean;
+  return firstSentence.length > 140 ? firstSentence.slice(0, 137).trim() + "..." : firstSentence;
+}
+
 function parseRss(xml) {
   const chunks = xml.match(/<item[\s\S]*?<\/item>/gi) || [];
   return chunks.map(chunk => ({
@@ -1503,6 +1590,20 @@ function isOfficialSource(source, sourceName = "", url = "") {
 
 function isTrustedSource(source, sourceName = "", url = "") {
   return matchesAnySourcePattern(sourceText(source, sourceName, url), TRUSTED_SOURCE_PATTERNS);
+}
+
+function isAutoPublishTrustedSource(env, source, sourceName = "", url = "") {
+  const envPatterns = String(env && env.NEWS_TRUSTED_AUTOPUBLISH || "")
+    .split(",")
+    .map(item => item.trim().toLowerCase())
+    .filter(Boolean);
+  return matchesAnySourcePattern(sourceText(source, sourceName, url), AUTO_PUBLISH_TRUSTED_SOURCE_PATTERNS.concat(envPatterns));
+}
+
+function shouldAutoPublishCandidate(env, source, candidate) {
+  if (!candidate) return false;
+  if (candidate.reliability === "official" && isOfficialSource(source, candidate.sourceName, candidate.sourceUrl)) return true;
+  return candidate.reliability === "trusted" && isAutoPublishTrustedSource(env, source, candidate.sourceName, candidate.sourceUrl);
 }
 
 function sourceTier(env, source, sourceName = "", url = "") {

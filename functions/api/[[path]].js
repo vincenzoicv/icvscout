@@ -326,7 +326,7 @@ async function adminNews(request, env) {
     const [drafts, news, sources, social, market, matches, runs, radar, graphics] = await Promise.all([
       sb(env, "/news_drafts?order=created_at.desc&limit=80"),
       sb(env, "/news?order=created_at.desc&limit=80"),
-      sb(env, "/sources?order=reliability.asc,name.asc"),
+      getSources(env),
       sb(env, "/social_drafts?order=created_at.desc&limit=40"),
       sb(env, "/market_items?order=updated_at.desc&limit=60"),
       sb(env, "/match_reports?order=match_date.desc&limit=20"),
@@ -669,7 +669,7 @@ async function fetchNewsDrafts(env, sources) {
         continue;
       }
 
-      const items = (await fetchSourceItems(source)).slice(0, 6);
+      const items = (await fetchSourceItems(source)).slice(0, itemScanLimitForSource(source));
       scanned += items.length;
 
       for (const item of items) {
@@ -1354,6 +1354,11 @@ async function fetchSourceItems(source) {
 
 function isTelegramWebSource(url) {
   return /:\/\/t\.me\/s\//i.test(String(url || ""));
+}
+
+function itemScanLimitForSource(source) {
+  if (isTelegramWebSource(source && source.url)) return 24;
+  return 6;
 }
 
 function parseTelegramWeb(html, source) {

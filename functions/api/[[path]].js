@@ -661,8 +661,18 @@ async function fetchNewsDrafts(env, sources) {
   let skippedDuplicates = 0;
   let skippedBlacklisted = 0;
   const errors = [];
+  const sourcesReport = [];
 
   for (const source of sources.filter(s => s.active !== false)) {
+    const report = {
+      source: source.name,
+      scanned: 0,
+      relevant: 0,
+      inserted: 0,
+      published: 0,
+      updated: 0,
+      skipped_duplicates: 0,
+    };
     try {
       if (isBlacklistedSource(env, source)) {
         skippedBlacklisted++;
@@ -671,12 +681,14 @@ async function fetchNewsDrafts(env, sources) {
 
       const items = (await fetchSourceItems(source)).slice(0, itemScanLimitForSource(source));
       scanned += items.length;
+      report.scanned = items.length;
 
       for (const item of items) {
         const normalized = normalizeGoogleTitle(item.title);
         const title = normalized.title;
         const sourceName = normalized.source || source.name;
         if (!isRelevantNewsItem(title, item.description, source)) continue;
+        report.relevant++;
         const url = item.link || source.url;
         const body = cleanText(item.description || title).slice(0, 500);
         const category = source.category || inferCategory(title);
@@ -692,8 +704,12 @@ async function fetchNewsDrafts(env, sources) {
 
         const existingNews = await findExistingNews(env, candidate);
         if (existingNews) {
-          if (await updateExistingNewsFromCandidate(env, existingNews, candidate)) updated++;
+          if (await updateExistingNewsFromCandidate(env, existingNews, candidate)) {
+            updated++;
+            report.updated++;
+          }
           skippedDuplicates++;
+          report.skipped_duplicates++;
           continue;
         }
 
@@ -705,11 +721,14 @@ async function fetchNewsDrafts(env, sources) {
             if (news) {
               await markDraftApproved(env, existingDraft.id);
               published++;
+              report.published++;
             }
           } else if (promotedDraft.review_status === "ready" && existingDraft.review_status !== "ready") {
             updated++;
+            report.updated++;
           }
           skippedDuplicates++;
+          report.skipped_duplicates++;
           continue;
         }
 
@@ -741,20 +760,27 @@ async function fetchNewsDrafts(env, sources) {
           prefer: "return=representation",
         });
         inserted++;
+        report.inserted++;
         if (shouldPublish) {
           const news = await publishDraftAsNews(env, draftRows[0]);
           if (news) {
             await markDraftApproved(env, draftRows[0].id);
             published++;
+            report.published++;
           }
         }
       }
     } catch (err) {
+      report.error = err.message;
       errors.push({ source: source.name, error: err.message });
+    } finally {
+      if (isAutoPublishTrustedSource(env, source) || isTelegramWebSource(source.url)) {
+        sourcesReport.push(report);
+      }
     }
   }
 
-  return { ok: true, scanned, inserted, published, updated, skipped_duplicates: skippedDuplicates, skipped_blacklisted: skippedBlacklisted, errors };
+  return { ok: true, scanned, inserted, published, updated, skipped_duplicates: skippedDuplicates, skipped_blacklisted: skippedBlacklisted, errors, sources_report: sourcesReport };
 }
 
 async function generateMarketDrafts(env, sources, options = {}) {
@@ -1098,9 +1124,20 @@ function json(data, status = 200) {
 }
 
 async function fetchText(url) {
-  const response = await fetch(url, { headers: { "User-Agent": "ICV Scout/1.0" } });
+  const response = await fetch(url, { headers: fetchHeadersForUrl(url) });
   if (!response.ok) throw new Error("HTTP " + response.status);
   return response.text();
+}
+
+function fetchHeadersForUrl(url) {
+  if (isTelegramWebSource(url)) {
+    return {
+      "User-Agent": "Mozilla/5.0 (compatible; ICV Scout/1.0; +https://ilcalciodivince.com)",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "it-IT,it;q=0.9,en;q=0.8",
+    };
+  }
+  return { "User-Agent": "ICV Scout/1.0" };
 }
 
 async function fetchJson(url, headers) {

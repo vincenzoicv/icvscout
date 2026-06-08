@@ -639,6 +639,15 @@ function automationResultMessage(action, res){
     var details = youtubeScoutChannelDetails(res || {});
     return "YouTube Scout: " + countLabel(n.scanned, "video", "video") + ", " + countLabel(n.inserted, "bozza", "bozze") + (n.errors ? ", " + countLabel(n.errors, "scartato", "scartati") : "") + (details ? " · " + details : "");
   }
+  if(action === "fetch_news"){
+    var romano = sourceReportFor(res || {}, "Fabrizio Romano");
+    var base = "Fetch news: " + Number(res && res.scanned || 0) + " lette, " + Number(res && res.published || 0) + " pubblicate, " + Number(res && res.updated || 0) + " aggiornate";
+    if(romano){
+      base += " · Romano: " + Number(romano.scanned || 0) + " lette, " + Number(romano.relevant || 0) + " rilevanti, " + Number(romano.published || 0) + " pubblicate, " + Number(romano.updated || 0) + " aggiornate";
+      if(romano.error) base += " · errore: " + romano.error;
+    }
+    return base;
+  }
   var labels = {
     news:"Fetch news",
     market:"Mercato",
@@ -647,6 +656,11 @@ function automationResultMessage(action, res){
     instagram_import:"Instagram"
   };
   return (labels[action] || action) + " completata";
+}
+function sourceReportFor(res, name){
+  var rows = Array.isArray(res.sources_report) ? res.sources_report : [];
+  var needle = String(name || "").toLowerCase();
+  return rows.find(function(item){ return String(item.source || "").toLowerCase().indexOf(needle) !== -1; }) || null;
 }
 function youtubeScoutAlert(run){
   if(!run){

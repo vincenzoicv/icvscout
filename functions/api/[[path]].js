@@ -1798,18 +1798,6 @@ async function updateExistingNewsFromCandidate(env, existing, candidate) {
   return true;
 }
 
-function mergeSourceNames(existingSource, newSource) {
-  const existing = cleanText(existingSource || "");
-  const incoming = cleanText(newSource || "");
-  if (!incoming) return existing;
-  if (!existing) return incoming;
-
-  const names = existing.split(/\s*,\s*/).map(cleanText).filter(Boolean);
-  const seen = new Set(names.map(canonicalSourceName));
-  if (!seen.has(canonicalSourceName(incoming))) names.push(incoming);
-  return names.join(", ");
-}
-
 async function promoteExistingDraftFromCandidate(env, existing, candidate) {
   if (!existing || !existing.id) return existing;
 

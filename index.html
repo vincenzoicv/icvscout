@@ -925,12 +925,31 @@ function renderNextMatch(match) {
 
 // ── ULTIMI RISULTATI ──
 function loadLastResults() {
-  var cached = cacheGet("last_results_sa_cl");
+  var cached = cacheGet("last_results_sa_cl_v2");
   if (cached) { renderResults(cached); return; }
-  fdFetch("/teams/" + JUVE_ID + "/matches?status=FINISHED&competitions=SA,CL&limit=60", function(err, data) {
-    if (err || !data || !data.matches || !data.matches.length) return;
-    cacheSet("last_results_sa_cl", data.matches);
-    renderResults(data.matches);
+
+  var collected = [];
+  var pending = 2;
+  function done(matches) {
+    if (matches && matches.length) collected = collected.concat(matches);
+    pending--;
+    if (pending > 0) return;
+    if (!collected.length) return;
+    cacheSet("last_results_sa_cl_v2", collected);
+    renderResults(collected);
+  }
+
+  fdFetch("/competitions/SA/matches?status=FINISHED&season=2025", function(err, data) {
+    done(err ? [] : juveOnlyMatches(data && data.matches));
+  });
+  fdFetch("/teams/" + JUVE_ID + "/matches?status=FINISHED&competitions=CL&limit=60", function(err, data) {
+    done(err ? [] : juveOnlyMatches(data && data.matches));
+  });
+}
+
+function juveOnlyMatches(matches) {
+  return (matches || []).filter(function(m) {
+    return m && m.homeTeam && m.awayTeam && (m.homeTeam.id === JUVE_ID || m.awayTeam.id === JUVE_ID);
   });
 }
 
@@ -947,8 +966,10 @@ function renderResults(matches) {
   }).slice(0, 60);
   sorted.forEach(function(m) {
     var isHome = m.homeTeam.id === JUVE_ID;
-    var juveGoals = isHome ? m.score.fullTime.home : m.score.fullTime.away;
-    var oppGoals = isHome ? m.score.fullTime.away : m.score.fullTime.home;
+    var homeGoals = Number(m.score && m.score.fullTime ? m.score.fullTime.home : 0);
+    var awayGoals = Number(m.score && m.score.fullTime ? m.score.fullTime.away : 0);
+    var juveGoals = isHome ? homeGoals : awayGoals;
+    var oppGoals = isHome ? awayGoals : homeGoals;
     var oppName = isHome ? m.awayTeam.name : m.homeTeam.name;
     var homeName = isHome ? "Juventus" : oppName;
     var awayName = isHome ? oppName : "Juventus";
@@ -957,13 +978,15 @@ function renderResults(matches) {
     else if (juveGoals < oppGoals) { result = "S"; cls = "res-l"; }
     var date = new Date(m.utcDate);
     var dateStr = date.toLocaleDateString("it-IT", {day:"2-digit", month:"short"});
-    var score = juveGoals + " - " + oppGoals;
+    var score = homeGoals + " - " + awayGoals;
+    var compName = m.competition && m.competition.name ? m.competition.name : "Serie A";
+    var round = m.matchday ? " · " + m.matchday + "ª giornata" : "";
     var div = document.createElement("div");
     div.className = "result-item";
     div.innerHTML =
       "<div class='res-badge " + cls + "'>" + result + "</div>" +
       "<div class='res-teams'><div class='res-name'>" + homeName + " vs " + awayName + "</div>" +
-      "<div class='res-comp'>" + m.competition.name + "</div></div>" +
+      "<div class='res-comp'>" + compName + round + "</div></div>" +
       "<div class='res-score'>" + score + "</div>" +
       "<div class='res-date'>" + dateStr + "</div>";
     list.appendChild(div);

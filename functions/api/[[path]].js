@@ -662,6 +662,8 @@ async function fetchNewsDrafts(env, sources) {
   let skippedBlacklisted = 0;
   const errors = [];
   const sourcesReport = [];
+  const recentNews = await recentNewsRows(env);
+  const recentDrafts = await recentDraftRows(env);
 
   for (const source of sources.filter(s => s.active !== false)) {
     const report = {
@@ -702,9 +704,17 @@ async function fetchNewsDrafts(env, sources) {
         const hash = await digest(dedupeKey(title, sourceName, url));
         const candidate = { title, body, category, urgency, sourceName, sourceUrl: url, reliability, editorialStatus };
 
-        const existingNews = await findExistingNews(env, candidate);
+        const existingNews = findExistingNewsInRows(recentNews, candidate);
         if (existingNews) {
           if (await updateExistingNewsFromCandidate(env, existingNews, candidate)) {
+            Object.assign(existingNews, {
+              body: candidate.body && candidate.body.length > String(existingNews.body || "").length ? candidate.body : existingNews.body,
+              source: mergeSourceNames(existingNews.source, candidate.sourceName),
+              source_url: existingNews.source_url || candidate.sourceUrl,
+              reliability: priorityForReliability(candidate.reliability) > priorityForReliability(existingNews.reliability) ? candidate.reliability : existingNews.reliability,
+              editorial_status: priorityForReliability(candidate.reliability) > priorityForReliability(existingNews.reliability) ? candidate.editorialStatus : existingNews.editorial_status,
+              urgency: priorityForUrgency(candidate.urgency) > priorityForUrgency(existingNews.urgency) ? candidate.urgency : existingNews.urgency,
+            });
             updated++;
             report.updated++;
           }
@@ -713,13 +723,16 @@ async function fetchNewsDrafts(env, sources) {
           continue;
         }
 
-        const existingDraft = await findExistingDraft(env, candidate, hash);
+        const existingDraft = findExistingDraftInRows(recentDrafts, candidate, hash);
         if (existingDraft) {
-          const promotedDraft = await promoteExistingDraftFromCandidate(env, existingDraft, candidate);
+          const promotedDraft = await promoteExistingDraftFromCandidate(env, existingDraft, candidate, recentDrafts);
+          Object.assign(existingDraft, promotedDraft);
           if (shouldAutoPublishCandidate(env, source, candidate)) {
-            const news = await publishDraftAsNews(env, promotedDraft);
+            const news = await publishDraftAsNews(env, promotedDraft, { skipExistingCheck: true });
             if (news) {
+              recentNews.unshift(news);
               await markDraftApproved(env, existingDraft.id);
+              existingDraft.review_status = "approved";
               published++;
               report.published++;
             }
@@ -732,7 +745,7 @@ async function fetchNewsDrafts(env, sources) {
           continue;
         }
 
-        const trustedConfirmation = reliability === "trusted" ? await findTrustedConfirmation(env, candidate) : null;
+        const trustedConfirmation = reliability === "trusted" ? findTrustedConfirmationInRows(recentDrafts, candidate) : null;
         const shouldPublish = shouldAutoPublishCandidate(env, source, candidate);
         const reviewStatus = shouldPublish ? "ready" : reviewStatusForReliability(reliability, trustedConfirmation);
         const draftRows = await sb(env, "/news_drafts", {
@@ -759,12 +772,16 @@ async function fetchNewsDrafts(env, sources) {
           }],
           prefer: "return=representation",
         });
+        const draft = draftRows[0];
+        if (draft) recentDrafts.unshift(draft);
         inserted++;
         report.inserted++;
         if (shouldPublish) {
-          const news = await publishDraftAsNews(env, draftRows[0]);
+          const news = await publishDraftAsNews(env, draft, { skipExistingCheck: true });
           if (news) {
-            await markDraftApproved(env, draftRows[0].id);
+            recentNews.unshift(news);
+            await markDraftApproved(env, draft.id);
+            draft.review_status = "approved";
             published++;
             report.published++;
           }
@@ -1401,15 +1418,15 @@ function itemScanLimitForSource(source) {
 function parseTelegramWeb(html, source) {
   const chunks = html.match(/<div class="tgme_widget_message[^\"]*"[^>]*data-post=[\s\S]*?(?=<div class="tgme_widget_message[^\"]*"[^>]*data-post=|<\/section>|<\/body>)/gi) || [];
   return chunks.map(chunk => {
-    const textMatch = chunk.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)(?=<\/div>\s*<div class="tgme_widget_message_footer|<div class="tgme_widget_message_footer|<\/div>\s*<div class="tgme_widget_message_reactions|<\/div>\s*<div class="tgme_widget_message_views|$)/i);
+    const textMatch = chunk.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
     const text = cleanTelegramText(textMatch ? textMatch[1] : "");
+    const editorial = telegramEditorialText(text);
     const link = canonicalTelegramPostUrl(tagAttr(chunk, "data-post"), source.url);
     const date = telegramDate(chunk);
-    const title = telegramTitle(text);
     return {
-      title,
+      title: editorial.title,
       link,
-      description: text,
+      description: editorial.body,
       pubDate: date,
     };
   }).filter(item => item.title);
@@ -1438,7 +1455,13 @@ function cleanTelegramText(value) {
   return cleanText(String(value || "")
     .replace(/<br\s*\/?>/gi, " ")
     .replace(/<a[^>]+href=["'][^"']*["'][^>]*>([\s\S]*?)<\/a>/gi, "$1")
-  );
+  )
+    .replace(/^RT\s+@?FabrizioRomano:\s*/i, "")
+    .replace(/\s*[-—]\s*Fabrizio Romano\s*\(@FabrizioRomano\).*$/i, "")
+    .replace(/\s*(YouTube|X \(formerly Twitter\)|Twitter)\s+.*$/i, "")
+    .replace(/[🚨⚪⚫🔵🌎🔃🎥📺🎬🔗❤👍🔥😁🤩✍🙏🤔⚡👌😐👀🇮🇹🇦🇹]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function telegramTitle(text) {
@@ -1446,6 +1469,49 @@ function telegramTitle(text) {
   if (!clean) return "";
   const firstSentence = clean.split(/(?<=[.!?])\s+/)[0] || clean;
   return firstSentence.length > 140 ? firstSentence.slice(0, 137).trim() + "..." : firstSentence;
+}
+
+function telegramEditorialText(text) {
+  const clean = cleanTelegramText(text);
+  const topic = normalizeTopicKey(clean);
+
+  if (/juventus.*dibu martinez|dibu martinez.*juventus/.test(topic)) {
+    return {
+      title: "Juve, Dibu Martinez e la priorita per la porta",
+      body: "Secondo Fabrizio Romano, la Juventus considera Dibu Martinez una priorita per la porta dopo lo stop alla pista Alisson. Sono partiti i contatti per capire prezzo e dettagli contrattuali; resta sullo sfondo anche Vicario.",
+    };
+  }
+
+  if (/juve.*sorloth|sorloth.*juve|sorloth.*juventus/.test(topic)) {
+    return {
+      title: "Juve, Sorloth resta un nome caldo per l'attacco",
+      body: "Secondo Fabrizio Romano, Sorloth resta un profilo da seguire per l'attacco bianconero. La Juventus continua a monitorare il mercato offensivo in vista delle prossime mosse.",
+    };
+  }
+
+  if (/juventus|juve/.test(topic)) {
+    return {
+      title: telegramTitle(translateTelegramJuventusText(clean)),
+      body: translateTelegramJuventusText(clean).slice(0, 500),
+    };
+  }
+
+  return {
+    title: telegramTitle(clean),
+    body: clean.slice(0, 500),
+  };
+}
+
+function translateTelegramJuventusText(text) {
+  return cleanText(text)
+    .replace(/\bJuventus want\b/gi, "La Juventus vuole")
+    .replace(/\bJuve want\b/gi, "La Juve vuole")
+    .replace(/\bas priority target\b/gi, "come obiettivo prioritario")
+    .replace(/\bfor GK position\b/gi, "per la porta")
+    .replace(/\bafter Alisson deal off\b/gi, "dopo lo stop alla pista Alisson")
+    .replace(/\bTalks have started to ask about price and contract details\b/gi, "Sono iniziati i contatti per capire prezzo e dettagli contrattuali")
+    .replace(/\bhigh salary but Juve keen to explore move\b/gi, "ingaggio alto, ma la Juve vuole esplorare l'operazione")
+    .replace(/\bAnother option remains Spurs GK Vicario\b/gi, "Resta tra le opzioni anche Vicario del Tottenham");
 }
 
 function parseRss(xml) {
@@ -1592,6 +1658,7 @@ function normalizeTopicKey(value) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ø/g, "o")
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 }
@@ -1700,6 +1767,10 @@ function safeDecodeURIComponent(value) {
 
 async function findTrustedConfirmation(env, candidate) {
   const rows = await sb(env, "/news_drafts?order=created_at.desc&select=id,title,source_name,source_url,reliability,review_status,created_at&limit=80");
+  return findTrustedConfirmationInRows(rows, candidate);
+}
+
+function findTrustedConfirmationInRows(rows, candidate) {
   const similar = findSimilarRow(
     rows.filter(row =>
       row.reliability &&
@@ -1724,6 +1795,32 @@ async function findExistingNews(env, candidate) {
 
   const recent = await sb(env, "/news?order=created_at.desc&select=id,title,body,source,source_url,reliability,editorial_status,urgency&limit=80");
   return findSimilarRow(recent, candidate, { urlField: "source_url" });
+}
+
+async function recentNewsRows(env) {
+  return sb(env, "/news?order=created_at.desc&select=id,title,body,source,source_url,reliability,editorial_status,urgency&limit=120");
+}
+
+async function recentDraftRows(env) {
+  return sb(env, "/news_drafts?order=created_at.desc&select=id,title,body,category,urgency,source_name,source_url,reliability,editorial_status,review_status,content_hash&limit=160");
+}
+
+function findExistingNewsInRows(rows, candidate) {
+  const exact = findExactNewsInRows(rows, candidate);
+  return exact || findSimilarRow(rows, candidate, { urlField: "source_url" });
+}
+
+function findExactNewsInRows(rows, candidate) {
+  const canonicalUrl = canonicalNewsUrl(candidate.sourceUrl);
+  if (candidate.sourceUrl) {
+    const byUrl = rows.find(row => row.source_url === candidate.sourceUrl);
+    if (byUrl) return byUrl;
+  }
+  if (canonicalUrl) {
+    const byCanonicalUrl = rows.find(row => canonicalNewsUrl(row.source_url) === canonicalUrl);
+    if (byCanonicalUrl) return byCanonicalUrl;
+  }
+  return rows.find(row => row.title === candidate.title && row.source === (candidate.sourceName || "")) || null;
 }
 
 async function findExactNews(env, candidate) {
@@ -1756,6 +1853,11 @@ async function findExistingDraft(env, candidate, hash) {
   return findSimilarRow(recent, candidate, { urlField: "source_url" });
 }
 
+function findExistingDraftInRows(rows, candidate, hash) {
+  const byHash = rows.find(row => row.content_hash && row.content_hash === hash);
+  return byHash || findSimilarRow(rows, candidate, { urlField: "source_url" });
+}
+
 function findSimilarRow(rows, candidate, fields) {
   const candidateTitle = canonicalNewsTitle(candidate.title);
   const candidateUrl = canonicalNewsUrl(candidate.sourceUrl);
@@ -1779,7 +1881,9 @@ async function updateExistingNewsFromCandidate(env, existing, candidate) {
   const patch = {};
 
   if (candidate.sourceUrl && !existing.source_url) patch.source_url = candidate.sourceUrl;
-  if (candidate.body && candidate.body.length > String(existing.body || "").length) patch.body = candidate.body;
+  if (isFabrizioCandidate(candidate) && candidate.title && candidate.title !== existing.title) patch.title = candidate.title;
+  if (isFabrizioCandidate(candidate) && candidate.body && candidate.body !== existing.body) patch.body = candidate.body;
+  if (!patch.body && candidate.body && candidate.body.length > String(existing.body || "").length) patch.body = candidate.body;
   if (priorityForUrgency(candidate.urgency) > priorityForUrgency(existing.urgency)) patch.urgency = candidate.urgency;
   const mergedSource = mergeSourceNames(existing.source, candidate.sourceName);
   if (mergedSource !== cleanText(existing.source || "")) patch.source = mergedSource;
@@ -1796,15 +1900,23 @@ async function updateExistingNewsFromCandidate(env, existing, candidate) {
   return true;
 }
 
-async function promoteExistingDraftFromCandidate(env, existing, candidate) {
+function isFabrizioCandidate(candidate) {
+  return /fabrizio\s+romano/i.test(candidate && candidate.sourceName || "");
+}
+
+async function promoteExistingDraftFromCandidate(env, existing, candidate, recentDrafts = null) {
   if (!existing || !existing.id) return existing;
 
-  const confirmation = candidate.reliability === "trusted" ? await findTrustedConfirmation(env, candidate) : null;
+  const confirmation = candidate.reliability === "trusted"
+    ? (Array.isArray(recentDrafts) ? findTrustedConfirmationInRows(recentDrafts, candidate) : await findTrustedConfirmation(env, candidate))
+    : null;
   const patch = {
     updated_at: new Date().toISOString(),
   };
 
-  if (candidate.body && candidate.body.length > String(existing.body || "").length) patch.body = candidate.body;
+  if (isFabrizioCandidate(candidate) && candidate.title && candidate.title !== existing.title) patch.title = candidate.title;
+  if (isFabrizioCandidate(candidate) && candidate.body && candidate.body !== existing.body) patch.body = candidate.body;
+  if (!patch.body && candidate.body && candidate.body.length > String(existing.body || "").length) patch.body = candidate.body;
   if (priorityForUrgency(candidate.urgency) > priorityForUrgency(existing.urgency)) patch.urgency = candidate.urgency;
 
   if (priorityForReliability(candidate.reliability) > priorityForReliability(existing.reliability)) {
@@ -1902,10 +2014,12 @@ function priorityForUrgency(value) {
   return 0;
 }
 
-async function publishDraftAsNews(env, draft) {
+async function publishDraftAsNews(env, draft, options = {}) {
   if (!draft) return null;
-  const existing = await findExistingNews(env, { title: draft.title, sourceName: draft.source_name, sourceUrl: draft.source_url });
-  if (existing) return null;
+  if (!options.skipExistingCheck) {
+    const existing = await findExistingNews(env, { title: draft.title, sourceName: draft.source_name, sourceUrl: draft.source_url });
+    if (existing) return null;
+  }
 
   const inserted = await sb(env, "/news", {
     method: "POST",

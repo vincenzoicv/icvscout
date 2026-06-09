@@ -1087,7 +1087,12 @@ async function sb(env, path, options = {}) {
   const hasBody = Object.prototype.hasOwnProperty.call(options, "body");
   let requestBody;
   if (hasBody) {
-    requestBody = JSON.stringify(options.body);
+    const normalizedBody = normalizeSupabaseBody(options.body);
+    if (isEmptySupabaseBody(normalizedBody)) {
+      if (/^PATCH$/i.test(method)) return [];
+      throw new Error("Body JSON vuoto per " + method + " " + path);
+    }
+    requestBody = JSON.stringify(normalizedBody);
     if (requestBody === undefined) throw new Error("Body JSON non valido per " + method + " " + path);
   } else if (/^(POST|PATCH|PUT)$/i.test(method)) {
     throw new Error("Body JSON mancante per " + method + " " + path);
@@ -1106,11 +1111,38 @@ async function sb(env, path, options = {}) {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error("Supabase " + response.status + ": " + text);
+    throw new Error("Supabase " + response.status + " " + method + " " + path + ": " + text);
   }
   if (response.status === 204) return [];
   const text = await response.text();
   return text ? JSON.parse(text) : [];
+}
+
+function normalizeSupabaseBody(value) {
+  if (Array.isArray(value)) {
+    return value.map(normalizeSupabaseBody).filter(item => item !== undefined);
+  }
+  if (value && typeof value === "object" && !(value instanceof ArrayBuffer) && !(value instanceof Uint8Array)) {
+    return Object.entries(value).reduce((acc, entry) => {
+      const key = entry[0];
+      const clean = normalizeSupabaseBody(entry[1]);
+      if (clean !== undefined) acc[key] = clean;
+      return acc;
+    }, {});
+  }
+  return value;
+}
+
+function isEmptySupabaseBody(value) {
+  if (value === undefined) return true;
+  if (Array.isArray(value)) return value.length === 0 || value.every(isEmptySupabaseRow);
+  return isEmptySupabaseRow(value);
+}
+
+function isEmptySupabaseRow(value) {
+  if (value === undefined) return true;
+  if (value && typeof value === "object" && !(value instanceof ArrayBuffer) && !(value instanceof Uint8Array)) return Object.keys(value).length === 0;
+  return false;
 }
 
 async function safeAdminRead(read, fallback) {
@@ -1579,6 +1611,9 @@ function cleanNewsDescription(description, sourceName = "", title = "") {
     .replace(/\s*[-–—]\s*Juventus Football Club\s*-\s*Sito Ufficiale\s*$/i, "")
     .replace(/\s*[-–—]\s*Juventus Football Club\s*$/i, "")
     .replace(/\s*[-–—]\s*Sito Ufficiale\s*$/i, "")
+    .replace(/\s+Juventus Football Club\s*-\s*Sito Ufficiale\s*$/i, "")
+    .replace(/\s+Juventus Football Club\s*$/i, "")
+    .replace(/\s+Sito Ufficiale\s*$/i, "")
     .replace(/^Juventus Football Club\s*-\s*Sito Ufficiale$/i, "")
     .replace(/^Juventus Football Club$/i, "")
     .replace(/^Sito Ufficiale$/i, ""));
@@ -1664,7 +1699,7 @@ function marketTopicName(row) {
     ["Openda", /\bopenda\b/i],
     ["Goretzka", /\bgoretzka\b/i],
     ["Dibu Martinez", /\bdibu\s+martinez\b|\bjuve\s+su\s+martinez\b|\bmartinez\b.*\b(porta|portiere|juve|juventus)\b/i],
-    ["Kessie", /\bkessi[eé]\b/i],
+    ["Kessie", /\bkessi(?:e|é)?\b/i],
     ["Brahim Diaz", /\bbrahim\s+diaz\b/i],
     ["Jonathan David", /\bjonathan\s+david\b|\bdavid\b/i],
     ["Maignan", /\bmaignan\b/i],

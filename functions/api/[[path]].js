@@ -801,8 +801,12 @@ async function fetchNewsDrafts(env, sources) {
         }
       }
     } catch (err) {
-      report.error = err.message;
-      errors.push({ source: source.name, error: err.message });
+      if (isTransientFetchError(err)) {
+        report.warning = err.message;
+      } else {
+        report.error = err.message;
+        errors.push({ source: source.name, error: err.message });
+      }
     } finally {
       if (isAutoPublishTrustedSource(env, source) || isTelegramWebSource(source.url)) {
         sourcesReport.push(report);
@@ -1208,9 +1212,15 @@ function json(data, status = 200) {
 }
 
 async function fetchText(url) {
-  const response = await fetch(url, { headers: fetchHeadersForUrl(url) });
-  if (!response.ok) throw new Error("HTTP " + response.status);
-  return response.text();
+  let lastStatus = 0;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await fetch(url, { headers: fetchHeadersForUrl(url) });
+    if (response.ok) return response.text();
+    lastStatus = response.status;
+    if (!isTransientHttpStatus(response.status) || attempt === 1) break;
+    await delay(300);
+  }
+  throw new Error("HTTP " + lastStatus);
 }
 
 function fetchHeadersForUrl(url) {
@@ -1228,6 +1238,20 @@ async function fetchJson(url, headers) {
   const response = await fetch(url, { headers });
   if (!response.ok) throw new Error("HTTP " + response.status);
   return response.json();
+}
+
+function isTransientHttpStatus(status) {
+  return [429, 500, 502, 503, 504].includes(Number(status));
+}
+
+function isTransientFetchError(err) {
+  const msg = String(err && err.message || err || "");
+  const match = msg.match(/HTTP\s+(\d{3})/i);
+  return !!match && isTransientHttpStatus(match[1]);
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function transcriptApiBase(env) {

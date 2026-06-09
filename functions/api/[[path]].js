@@ -664,6 +664,9 @@ async function fetchNewsDrafts(env, sources) {
   const sourcesReport = [];
   const recentNews = await recentNewsRows(env);
   const recentDrafts = await recentDraftRows(env);
+  const romanoCleanup = await cleanupFabrizioRows(env, recentNews, recentDrafts);
+  updated += romanoCleanup.updated;
+  if (romanoCleanup.errors.length) errors.push(...romanoCleanup.errors);
 
   for (const source of sources.filter(s => s.active !== false)) {
     const report = {
@@ -797,7 +800,7 @@ async function fetchNewsDrafts(env, sources) {
     }
   }
 
-  return { ok: true, scanned, inserted, published, updated, skipped_duplicates: skippedDuplicates, skipped_blacklisted: skippedBlacklisted, errors, sources_report: sourcesReport };
+  return { ok: true, scanned, inserted, published, updated, skipped_duplicates: skippedDuplicates, skipped_blacklisted: skippedBlacklisted, errors, sources_report: sourcesReport, romano_cleanup: romanoCleanup };
 }
 
 async function generateMarketDrafts(env, sources, options = {}) {
@@ -1271,10 +1274,18 @@ function hasUsableYoutubeTranscript(text) {
 }
 
 function isRelevantNewsItem(title, description, source) {
-  const text = normalizeTopicKey([title, description, source && source.name].join(" "));
-  if (/juve|juventus|bianconer|spalletti|comolli|vlahovic|dusan|bremer|cambiaso|sorloth|sorlot|kolo muani|openda|locatelli|conceicao|douglas luiz|kenan|yildiz/.test(text)) return true;
-  if ((source && source.category) === "calciomercato" && /mercato|calciomercato|rinnovo|cessione|trattativa|prestito|offerta/.test(text)) return true;
+  const text = normalizeTopicKey([title, description].join(" "));
+  if (isJuventusNewsText(text)) return true;
+  if ((source && source.category) === "calciomercato" && isJuventusMarketText(text)) return true;
   return false;
+}
+
+function isJuventusNewsText(text) {
+  return /juve|juventus|bianconer|spalletti|comolli|vlahovic|dusan|bremer|cambiaso|sorloth|sorlot|kolo muani|openda|locatelli|conceicao|douglas luiz|kenan|yildiz|dibu martinez|vicario|di gregorio|perin|kalulu|koopmeiners|thuram|gatti|milik/.test(text);
+}
+
+function isJuventusMarketText(text) {
+  return isJuventusNewsText(text) && /mercato|calciomercato|rinnovo|cessione|trattativa|prestito|offerta|contatti|priorita|ingaggio|porta|attacco|difesa/.test(text);
 }
 
 function youtubeDraftTitle(video, transcriptText) {
@@ -1798,11 +1809,74 @@ async function findExistingNews(env, candidate) {
 }
 
 async function recentNewsRows(env) {
-  return sb(env, "/news?order=created_at.desc&select=id,title,body,source,source_url,reliability,editorial_status,urgency&limit=120");
+  return sb(env, "/news?order=created_at.desc&select=id,title,body,category,source,source_url,reliability,editorial_status,urgency,visible&limit=120");
 }
 
 async function recentDraftRows(env) {
   return sb(env, "/news_drafts?order=created_at.desc&select=id,title,body,category,urgency,source_name,source_url,reliability,editorial_status,review_status,content_hash&limit=160");
+}
+
+async function cleanupFabrizioRows(env, recentNews, recentDrafts) {
+  let updated = 0;
+  let hidden = 0;
+  let discarded = 0;
+  const errors = [];
+
+  for (const row of (recentNews || []).filter(row => isFabrizioSourceName(row.source)).slice(0, 8)) {
+    try {
+      const fixed = existingFabrizioEditorial(row);
+      const patch = {};
+      if (fixed) {
+        if (fixed.title && fixed.title !== row.title) patch.title = fixed.title;
+        if (fixed.body && fixed.body !== row.body) patch.body = fixed.body;
+      } else if (row.visible !== false) {
+        patch.visible = false;
+      }
+      if (!Object.keys(patch).length) continue;
+      await sb(env, "/news?id=eq." + encodeURIComponent(row.id), {
+        method: "PATCH",
+        body: patch,
+      });
+      Object.assign(row, patch);
+      updated++;
+      if (patch.visible === false) hidden++;
+    } catch (err) {
+      errors.push({ source: row.source || "Fabrizio Romano", error: err.message || "Errore pulizia news Fabrizio" });
+    }
+  }
+
+  for (const row of (recentDrafts || []).filter(row => isFabrizioSourceName(row.source_name) && row.review_status !== "approved" && row.review_status !== "discarded").slice(0, 8)) {
+    try {
+      const fixed = existingFabrizioEditorial(row);
+      const patch = { updated_at: new Date().toISOString() };
+      if (fixed) {
+        if (fixed.title && fixed.title !== row.title) patch.title = fixed.title;
+        if (fixed.body && fixed.body !== row.body) patch.body = fixed.body;
+      } else {
+        patch.review_status = "discarded";
+      }
+      if (Object.keys(patch).length === 1) continue;
+      const rows = await sb(env, "/news_drafts?id=eq." + encodeURIComponent(row.id), {
+        method: "PATCH",
+        body: patch,
+        prefer: "return=representation",
+      });
+      Object.assign(row, rows[0] || patch);
+      updated++;
+      if (patch.review_status === "discarded") discarded++;
+    } catch (err) {
+      errors.push({ source: row.source_name || "Fabrizio Romano", error: err.message || "Errore pulizia bozza Fabrizio" });
+    }
+  }
+
+  return { updated, hidden, discarded, errors };
+}
+
+function existingFabrizioEditorial(row) {
+  const text = cleanTelegramText([row && row.title, row && row.body].join(" "));
+  const editorial = telegramEditorialText(text);
+  if (!isRelevantNewsItem(editorial.title, editorial.body, { category: (row && row.category) || "calciomercato" })) return null;
+  return editorial.title && editorial.body ? editorial : null;
 }
 
 function findExistingNewsInRows(rows, candidate) {
@@ -1901,7 +1975,11 @@ async function updateExistingNewsFromCandidate(env, existing, candidate) {
 }
 
 function isFabrizioCandidate(candidate) {
-  return /fabrizio\s+romano/i.test(candidate && candidate.sourceName || "");
+  return isFabrizioSourceName(candidate && candidate.sourceName);
+}
+
+function isFabrizioSourceName(value) {
+  return /fabrizio\s+romano/i.test(cleanText(value || ""));
 }
 
 async function promoteExistingDraftFromCandidate(env, existing, candidate, recentDrafts = null) {
@@ -2109,6 +2187,7 @@ function publicNewsRows(rows) {
       source: cleanText(row.source),
       editorial_status: cleanText(row.editorial_status),
     }))
+    .filter(row => !isFabrizioSourceName(row.source) || isRelevantNewsItem(row.title, row.body, { category: row.category || "calciomercato" }))
     .sort((a, b) => {
       const scoreDiff = newsPriorityScore(b) - newsPriorityScore(a);
       if (scoreDiff) return scoreDiff;

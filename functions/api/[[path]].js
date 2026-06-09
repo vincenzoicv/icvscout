@@ -346,7 +346,7 @@ async function adminNews(request, env) {
           title: body.title,
           body: body.body,
           category: body.category || "juventus",
-          urgency: body.urgency || "normal",
+          urgency: normalizeNewsUrgencyForDb(body.urgency),
           source: body.source || "ICV",
           visible: body.visible !== false,
           auto_fetched: false,
@@ -366,7 +366,7 @@ async function adminNews(request, env) {
           title: body.title || draft.title,
           body: body.body || draft.body,
           category: body.category || draft.category,
-          urgency: body.urgency || draft.urgency || "normal",
+          urgency: normalizeNewsUrgencyForDb(body.urgency || draft.urgency),
           source: draft.source_name,
           source_url: draft.source_url,
           visible: true,
@@ -2075,7 +2075,7 @@ async function updateExistingNewsFromCandidate(env, existing, candidate) {
   if (isFabrizioCandidate(candidate) && candidate.title && candidate.title !== existing.title) patch.title = candidate.title;
   if (isFabrizioCandidate(candidate) && candidate.body && candidate.body !== existing.body) patch.body = candidate.body;
   if (!patch.body && candidate.body && candidate.body.length > String(existing.body || "").length) patch.body = candidate.body;
-  if (priorityForUrgency(candidate.urgency) > priorityForUrgency(existing.urgency)) patch.urgency = candidate.urgency;
+  if (priorityForUrgency(candidate.urgency) > priorityForUrgency(existing.urgency)) patch.urgency = normalizeNewsUrgencyForDb(candidate.urgency);
   const mergedSource = mergeSourceNames(existing.source, candidate.sourceName);
   if (mergedSource !== cleanText(existing.source || "")) patch.source = mergedSource;
   if (priorityForReliability(candidate.reliability) > priorityForReliability(existing.reliability)) {
@@ -2222,7 +2222,7 @@ async function publishDraftAsNews(env, draft, options = {}) {
       title: draft.title,
       body: draft.body,
       category: draft.category,
-      urgency: draft.urgency || "normal",
+      urgency: normalizeNewsUrgencyForDb(draft.urgency),
       source: draft.source_name,
       source_url: draft.source_url,
       visible: true,
@@ -2333,6 +2333,11 @@ function normalizeUrgency(value) {
   const clean = cleanText(value).toLowerCase();
   if (clean === "breaking" || clean === "important" || clean === "normal" || clean === "low" || clean === "rumor") return clean;
   return "normal";
+}
+
+function normalizeNewsUrgencyForDb(value) {
+  const urgency = normalizeUrgency(value);
+  return urgency === "low" ? "normal" : urgency;
 }
 
 function newsPriorityScore(row) {

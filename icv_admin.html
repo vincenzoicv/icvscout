@@ -644,11 +644,11 @@ function automationResultMessage(action, res){
     var base = "Fetch news: " + Number(res && res.scanned || 0) + " lette, " + Number(res && res.published || 0) + " pubblicate, " + Number(res && res.updated || 0) + " aggiornate";
     if(romano){
       base += " · Romano: " + Number(romano.scanned || 0) + " lette, " + Number(romano.relevant || 0) + " rilevanti, " + Number(romano.published || 0) + " pubblicate, " + Number(romano.updated || 0) + " aggiornate";
-      if(romano.error) base += " · errore: " + romano.error;
+      if(romano.error && !isIgnorableAutomationError(romano.error)) base += " · errore: " + friendlyAutomationError(romano.error);
     }
-    if(!romano || !romano.error){
+    if(!romano || !romano.error || isIgnorableAutomationError(romano.error)){
       var firstError = firstAutomationError(res || {});
-      if(firstError) base += " · errore: " + firstError;
+      if(firstError) base += " · errore: " + friendlyAutomationError(firstError);
     }
     return base;
   }
@@ -669,8 +669,20 @@ function sourceReportFor(res, name){
 function firstAutomationError(res){
   var errors = Array.isArray(res.errors) ? res.errors : [];
   if(!errors.length) return "";
+  errors = errors.filter(function(item){
+    return !isIgnorableAutomationError([item && item.source || "", item && item.error || ""].join(": "));
+  });
+  if(!errors.length) return "";
   var first = errors[0] || {};
   return [first.source || first.title || first.draft || "", first.error || ""].filter(Boolean).join(": ");
+}
+function isIgnorableAutomationError(message){
+  return /PGRST102|empty or invalid json|Body JSON vuoto|Body JSON non valido/i.test(String(message || ""));
+}
+function friendlyAutomationError(message){
+  var text = String(message || "");
+  if(isIgnorableAutomationError(text)) return "alcuni elementi senza dati utili sono stati saltati";
+  return text.length > 160 ? text.slice(0, 157) + "..." : text;
 }
 function youtubeScoutAlert(run){
   if(!run){

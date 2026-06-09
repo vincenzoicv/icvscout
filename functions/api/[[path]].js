@@ -751,30 +751,40 @@ async function fetchNewsDrafts(env, sources) {
         const trustedConfirmation = reliability === "trusted" ? findTrustedConfirmationInRows(recentDrafts, candidate) : null;
         const shouldPublish = shouldAutoPublishCandidate(env, source, candidate);
         const reviewStatus = shouldPublish ? "ready" : reviewStatusForReliability(reliability, trustedConfirmation);
-        const draftRows = await sb(env, "/news_drafts", {
-          method: "POST",
-          body: [{
-            title,
-            body,
-            category,
-            urgency,
-            source_name: sourceName,
-            source_url: url,
-            reliability,
-            editorial_status: editorialStatus,
-            review_status: reviewStatus,
-            content_hash: hash,
-            raw_payload: {
-              ...item,
-              source_policy: {
-                tier: reliability,
-                auto_publish: shouldPublish,
-                trusted_confirmation: trustedConfirmation,
+        let draftRows = [];
+        try {
+          draftRows = await sb(env, "/news_drafts", {
+            method: "POST",
+            body: [{
+              title,
+              body,
+              category,
+              urgency,
+              source_name: sourceName,
+              source_url: url,
+              reliability,
+              editorial_status: editorialStatus,
+              review_status: reviewStatus,
+              content_hash: hash,
+              raw_payload: {
+                ...item,
+                source_policy: {
+                  tier: reliability,
+                  auto_publish: shouldPublish,
+                  trusted_confirmation: trustedConfirmation,
+                },
               },
-            },
-          }],
-          prefer: "return=representation",
-        });
+            }],
+            prefer: "return=representation",
+          });
+        } catch (err) {
+          if (isSupabaseEmptyJsonError(err)) {
+            skippedDuplicates++;
+            report.skipped_duplicates++;
+            continue;
+          }
+          throw err;
+        }
         const draft = draftRows[0];
         if (draft) recentDrafts.unshift(draft);
         inserted++;
@@ -1143,6 +1153,11 @@ function isEmptySupabaseRow(value) {
   if (value === undefined) return true;
   if (value && typeof value === "object" && !(value instanceof ArrayBuffer) && !(value instanceof Uint8Array)) return Object.keys(value).length === 0;
   return false;
+}
+
+function isSupabaseEmptyJsonError(err) {
+  const msg = String(err && err.message || err || "");
+  return /PGRST102|empty or invalid json|Body JSON vuoto|Body JSON non valido/i.test(msg);
 }
 
 async function safeAdminRead(read, fallback) {

@@ -1722,19 +1722,19 @@ async function findExistingNews(env, candidate) {
   const exact = await findExactNews(env, candidate);
   if (exact) return exact;
 
-  const recent = await sb(env, "/news?order=created_at.desc&select=id,title,body,source,source_url,reliability,editorial_status,urgency,updated_at&limit=80");
+  const recent = await sb(env, "/news?order=created_at.desc&select=id,title,body,source,source_url,reliability,editorial_status,urgency&limit=80");
   return findSimilarRow(recent, candidate, { urlField: "source_url" });
 }
 
 async function findExactNews(env, candidate) {
   const canonicalUrl = canonicalNewsUrl(candidate.sourceUrl);
   if (candidate.sourceUrl) {
-    const rows = await sb(env, "/news?source_url=eq." + encodeURIComponent(candidate.sourceUrl) + "&select=id,title,body,source,source_url,reliability,editorial_status,urgency,updated_at&limit=1");
+    const rows = await sb(env, "/news?source_url=eq." + encodeURIComponent(candidate.sourceUrl) + "&select=id,title,body,source,source_url,reliability,editorial_status,urgency&limit=1");
     if (rows.length) return rows[0];
   }
 
   if (canonicalUrl) {
-    const recentByUrl = await sb(env, "/news?order=created_at.desc&select=id,title,body,source,source_url,reliability,editorial_status,urgency,updated_at&limit=80");
+    const recentByUrl = await sb(env, "/news?order=created_at.desc&select=id,title,body,source,source_url,reliability,editorial_status,urgency&limit=80");
     const byCanonicalUrl = recentByUrl.find(row => canonicalNewsUrl(row.source_url) === canonicalUrl);
     if (byCanonicalUrl) return byCanonicalUrl;
   }
@@ -1743,7 +1743,7 @@ async function findExactNews(env, candidate) {
     env,
     "/news?title=eq." + encodeURIComponent(candidate.title) +
     "&source=eq." + encodeURIComponent(candidate.sourceName || "") +
-    "&select=id,title,body,source,source_url,reliability,editorial_status,urgency,updated_at&limit=1"
+    "&select=id,title,body,source,source_url,reliability,editorial_status,urgency&limit=1"
   );
   return sameTitleSource[0] || null;
 }
@@ -1776,9 +1776,7 @@ function findSimilarRow(rows, candidate, fields) {
 
 async function updateExistingNewsFromCandidate(env, existing, candidate) {
   if (!existing || !existing.id) return false;
-  const patch = {
-    updated_at: new Date().toISOString(),
-  };
+  const patch = {};
 
   if (candidate.sourceUrl && !existing.source_url) patch.source_url = candidate.sourceUrl;
   if (candidate.body && candidate.body.length > String(existing.body || "").length) patch.body = candidate.body;
@@ -1790,7 +1788,7 @@ async function updateExistingNewsFromCandidate(env, existing, candidate) {
     patch.editorial_status = candidate.editorialStatus;
   }
 
-  if (Object.keys(patch).length === 1) return false;
+  if (!Object.keys(patch).length) return false;
   await sb(env, "/news?id=eq." + encodeURIComponent(existing.id), {
     method: "PATCH",
     body: patch,

@@ -1288,13 +1288,16 @@ function focusFallbackFromTitle(title) {
   if (/portier|porta|martinez|vicario|dibu/i.test(text)) {
     return "Il tema portiere resta uno snodo tecnico da monitorare: prima delle scelte di mercato, conta capire priorità e margini reali della Juve.";
   }
+  if (/sorloth|attacco|attaccante/i.test(text)) {
+    return "Il nome di Sorloth resta legato al mercato bianconero: prima di alzare il tono, serve capire se l'interesse diventa una trattativa concreta.";
+  }
   if (/del piero|dichiar|intervista|parole/i.test(text)) {
     return "Le parole dei protagonisti vanno lette come segnale di clima: raccontano percezioni, aspettative e pressione intorno al mondo Juve.";
   }
   if (/mercato|calciomercato|trattativa|rinnovo|cessione|acquisto/i.test(text)) {
     return "Il mercato va letto per incastri: ogni nome pesa davvero solo se torna con budget, ruolo scoperto e priorità tecniche.";
   }
-  return "Tema da seguire con attenzione nel quadro bianconero, separando il fatto centrale dal rumore che lo circonda.";
+  return "Aggiornamento Juventus da monitorare: il punto e capire se avra effetti concreti su campo, mercato o programmazione del club.";
 }
 
 function cleanFocusText(body, title, source) {
@@ -1307,6 +1310,8 @@ function cleanFocusText(body, title, source) {
   if (cleanSource) {
     text = text.replace(new RegExp("\\s*(?:-|·|–|—)?\\s*" + escapeRegExp(cleanSource) + "\\s*$", "i"), "").trim();
   }
+  text = text.replace(/\s*(?:-|·|–|—)?\s*Juventus Football Club\s*-\s*Sito Ufficiale\s*$/i, "").trim();
+  text = text.replace(/^(Juventus Football Club|Sito Ufficiale)$/i, "").trim();
   text = text.replace(/\s*(?:-|·|–|—)?\s*(Gianluca Di Marzio|Di Marzio|Juventus\\.com|Lega Serie A|Il Bianconero|Tuttosport|Sky Sport)\s*$/i, "").trim();
   if (cleanTitle && text.toLowerCase() === cleanTitle.toLowerCase()) return "";
   return text;

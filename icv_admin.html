@@ -646,6 +646,10 @@ function automationResultMessage(action, res){
       base += " · Romano: " + Number(romano.scanned || 0) + " lette, " + Number(romano.relevant || 0) + " rilevanti, " + Number(romano.published || 0) + " pubblicate, " + Number(romano.updated || 0) + " aggiornate";
       if(romano.error) base += " · errore: " + romano.error;
     }
+    if(!romano || !romano.error){
+      var firstError = firstAutomationError(res || {});
+      if(firstError) base += " · errore: " + firstError;
+    }
     return base;
   }
   var labels = {
@@ -661,6 +665,12 @@ function sourceReportFor(res, name){
   var rows = Array.isArray(res.sources_report) ? res.sources_report : [];
   var needle = String(name || "").toLowerCase();
   return rows.find(function(item){ return String(item.source || "").toLowerCase().indexOf(needle) !== -1; }) || null;
+}
+function firstAutomationError(res){
+  var errors = Array.isArray(res.errors) ? res.errors : [];
+  if(!errors.length) return "";
+  var first = errors[0] || {};
+  return [first.source || first.title || first.draft || "", first.error || ""].filter(Boolean).join(": ");
 }
 function youtubeScoutAlert(run){
   if(!run){

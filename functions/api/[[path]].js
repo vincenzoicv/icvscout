@@ -194,9 +194,9 @@ async function publicHome(env) {
   }
 
   const [news, market, marketNews, matches, social, auto, radar] = await Promise.all([
-    sb(env, "/news?visible=eq.true&order=created_at.desc&limit=24"),
+    sb(env, "/news?visible=eq.true&order=created_at.desc&limit=48"),
     sb(env, "/market_items?order=updated_at.desc&limit=12"),
-    sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=6"),
+    sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=18"),
     sb(env, "/match_reports?order=match_date.desc&limit=3"),
     sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&order=created_at.desc&limit=12"),
     latestAutomationRun(env, "home_autopilot"),
@@ -324,15 +324,15 @@ async function adminNews(request, env) {
 
   if (request.method === "GET") {
     const [drafts, news, sources, social, market, matches, runs, radar, graphics] = await Promise.all([
-      sb(env, "/news_drafts?order=created_at.desc&limit=80"),
-      sb(env, "/news?order=created_at.desc&limit=80"),
-      getSources(env),
-      sb(env, "/social_drafts?order=created_at.desc&limit=40"),
-      sb(env, "/market_items?order=updated_at.desc&limit=60"),
-      sb(env, "/match_reports?order=match_date.desc&limit=20"),
-      sb(env, "/automation_runs?order=created_at.desc&limit=12"),
-      getSiteSetting(env, "radar_home", DEFAULT_RADAR),
-      getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS),
+      safeAdminRead(() => sb(env, "/news_drafts?order=created_at.desc&limit=80"), []),
+      safeAdminRead(() => sb(env, "/news?order=created_at.desc&limit=80"), []),
+      safeAdminRead(() => getSources(env), DEFAULT_SOURCES),
+      safeAdminRead(() => sb(env, "/social_drafts?order=created_at.desc&limit=40"), []),
+      safeAdminRead(() => sb(env, "/market_items?order=updated_at.desc&limit=60"), []),
+      safeAdminRead(() => sb(env, "/match_reports?order=match_date.desc&limit=20"), []),
+      safeAdminRead(() => sb(env, "/automation_runs?order=created_at.desc&limit=12"), []),
+      safeAdminRead(() => getSiteSetting(env, "radar_home", DEFAULT_RADAR), DEFAULT_RADAR),
+      safeAdminRead(() => getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS), DEFAULT_GRAPHICS),
     ]);
     return json({ drafts, news, sources, social, market, matches, runs, radar, graphics });
   }
@@ -695,7 +695,7 @@ async function fetchNewsDrafts(env, sources) {
         if (!isRelevantNewsItem(title, item.description, source)) continue;
         report.relevant++;
         const url = item.link || source.url;
-        const body = cleanText(item.description || title).slice(0, 500);
+        const body = cleanNewsDescription(item.description || title, sourceName, title).slice(0, 500);
         const category = source.category || inferCategory(title);
         const reliability = reliabilityForSourceTier(sourceTier(env, source, sourceName, url));
         if (reliability === "blacklist") {
@@ -1083,16 +1083,25 @@ async function sb(env, path, options = {}) {
   const url = env.SUPABASE_URL;
   const key = env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("Configura SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY nelle variabili ambiente");
+  const method = options.method || "GET";
+  const hasBody = Object.prototype.hasOwnProperty.call(options, "body");
+  let requestBody;
+  if (hasBody) {
+    requestBody = JSON.stringify(options.body);
+    if (requestBody === undefined) throw new Error("Body JSON non valido per " + method + " " + path);
+  } else if (/^(POST|PATCH|PUT)$/i.test(method)) {
+    throw new Error("Body JSON mancante per " + method + " " + path);
+  }
 
   const response = await fetch(url.replace(/\/$/, "") + "/rest/v1" + path, {
-    method: options.method || "GET",
+    method,
     headers: {
       "Content-Type": "application/json",
       "apikey": key,
       "Authorization": "Bearer " + key,
       ...(options.prefer ? { "Prefer": options.prefer } : {}),
     },
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: requestBody,
   });
 
   if (!response.ok) {
@@ -1102,6 +1111,14 @@ async function sb(env, path, options = {}) {
   if (response.status === 204) return [];
   const text = await response.text();
   return text ? JSON.parse(text) : [];
+}
+
+async function safeAdminRead(read, fallback) {
+  try {
+    return await read();
+  } catch {
+    return fallback;
+  }
 }
 
 function hasSupabase(env) {
@@ -1555,6 +1572,27 @@ function cleanText(value) {
   return decodeXml(String(value || "").replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
 }
 
+function cleanNewsDescription(description, sourceName = "", title = "") {
+  let text = cleanText(description || title);
+  const source = cleanText(sourceName);
+  text = cleanText(text
+    .replace(/\s*[-–—]\s*Juventus Football Club\s*-\s*Sito Ufficiale\s*$/i, "")
+    .replace(/\s*[-–—]\s*Juventus Football Club\s*$/i, "")
+    .replace(/\s*[-–—]\s*Sito Ufficiale\s*$/i, "")
+    .replace(/^Juventus Football Club\s*-\s*Sito Ufficiale$/i, "")
+    .replace(/^Juventus Football Club$/i, "")
+    .replace(/^Sito Ufficiale$/i, ""));
+  if (source) {
+    text = text.replace(new RegExp("\\s*[-–—]\\s*" + escapeRegExp(source) + "\\s*$", "i"), "");
+    text = text.replace(new RegExp("\\s+" + escapeRegExp(source) + "\\s*$", "i"), "");
+  }
+  return cleanText(text.replace(/\s*[-–—:·]\s*$/i, ""));
+}
+
+function escapeRegExp(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function normalizeGoogleTitle(title) {
   const clean = cleanText(title);
   const parts = clean.match(/^(.+?)\s+-\s+([^-]{3,80})$/);
@@ -1625,6 +1663,11 @@ function marketTopicName(row) {
     ["Kolo Muani", /kolo\s+muani|muani/i],
     ["Openda", /\bopenda\b/i],
     ["Goretzka", /\bgoretzka\b/i],
+    ["Dibu Martinez", /\bdibu\s+martinez\b|\bjuve\s+su\s+martinez\b|\bmartinez\b.*\b(porta|portiere|juve|juventus)\b/i],
+    ["Kessie", /\bkessi[eé]\b/i],
+    ["Brahim Diaz", /\bbrahim\s+diaz\b/i],
+    ["Jonathan David", /\bjonathan\s+david\b|\bdavid\b/i],
+    ["Maignan", /\bmaignan\b/i],
     ["Alisson-Juve", /\balisson\b/i],
     ["Icardi", /\bicardi\b/i],
     ["Robertson", /\brobertson\b/i],
@@ -1661,7 +1704,7 @@ function isIgnoredMarketSignal(row) {
 }
 
 function isBadMarketTopic(value) {
-  return /^(youtube\s+)?scout$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^siamo$|^buonasera$|^buongiorno$|^adesso$|^oggi$|^perch$|^pap$|^papa$|^luca\s+toselli$|^romeo\s+agresti$|^gianni\s+balzarini$/i.test(cleanText(value));
+  return /^(youtube\s+)?scout$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^siamo$|^buonasera$|^buongiorno$|^adesso$|^oggi$|^perch$|^pap$|^papa$|^inter$|^milan$|^roma$|^napoli$|^udinese$|^solet$|^atta$|^greenwood$|^luca\s+toselli$|^romeo\s+agresti$|^gianni\s+balzarini$/i.test(cleanText(value));
 }
 
 function normalizeTopicKey(value) {
@@ -2130,7 +2173,13 @@ function inferCategory(title) {
 }
 
 function inferUrgency(title, body = "", category = "", reliability = "") {
-  const text = cleanText([title, body, category, reliability].join(" ")).toLowerCase();
+  const text = cleanText([title, body, category, reliability].join(" "))
+    .replace(/\bjuventus football club\b|\bsito ufficiale\b/gi, " ")
+    .toLowerCase();
+
+  if (isLowValueOfficialText(text)) {
+    return "low";
+  }
 
   if (/rumor|indiscrezione|sondaggio|interesse|contatti|offerta|trattativa|osserva|piace|nel mirino/.test(text) && reliability !== "official") {
     return "rumor";
@@ -2151,8 +2200,12 @@ function inferUrgency(title, body = "", category = "", reliability = "") {
   return "normal";
 }
 
+function isLowValueOfficialText(text) {
+  return /academy|settore giovanile|under\s?\d+|u\d{2}|women|femminile|convocate con le nazionali|agenda del mese|buon compleanno|compleanno|commemorazione|museo|museum|membership|ticketing|biglietti/.test(text);
+}
+
 function extractPlayer(title) {
-  const ignored = new Set(["Juventus", "Juve", "Mercato", "Calciomercato", "Serie", "Sky", "Sport", "Scout", "YouTube", "Marzio", "Sicilia", "Buongiorno", "Buonasera", "Siamo", "Adesso", "Fonte", "Pap", "Papa", "Luca Toselli", "Romeo Agresti", "Gianni Balzarini"]);
+  const ignored = new Set(["Juventus", "Juve", "Mercato", "Calciomercato", "Serie", "Sky", "Sport", "Scout", "YouTube", "Marzio", "Sicilia", "Buongiorno", "Buonasera", "Siamo", "Adesso", "Fonte", "Pap", "Papa", "Inter", "Milan", "Roma", "Napoli", "Udinese", "Solet", "Atta", "Greenwood", "Luca Toselli", "Romeo Agresti", "Gianni Balzarini"]);
   const names = title.match(/\b[A-ZÀ-Ý][a-zà-ÿ']{2,}(?:\s+[A-ZÀ-Ý][a-zà-ÿ']{2,})?\b/g) || [];
   return names.find(name => {
     const parts = name.split(" ");
@@ -2181,18 +2234,25 @@ function publicNewsRows(rows) {
     .map(row => ({
       ...row,
       title: cleanText(row.title),
-      body: cleanText(row.body),
+      body: cleanNewsDescription(row.body, row.source, row.title),
       category: cleanText(row.category),
       urgency: normalizeUrgency(row.urgency),
       source: cleanText(row.source),
       editorial_status: cleanText(row.editorial_status),
     }))
     .filter(row => !isFabrizioSourceName(row.source) || isRelevantNewsItem(row.title, row.body, { category: row.category || "calciomercato" }))
+    .filter(row => !isLowValuePublicNews(row))
     .sort((a, b) => {
       const scoreDiff = newsPriorityScore(b) - newsPriorityScore(a);
       if (scoreDiff) return scoreDiff;
       return new Date(b.created_at || 0) - new Date(a.created_at || 0);
     });
+}
+
+function isLowValuePublicNews(row) {
+  const text = cleanText([row && row.title, row && row.body].join(" ")).toLowerCase();
+  const official = cleanText(row && row.reliability).toLowerCase() === "official" || /juventus\.com|sito ufficiale/i.test(cleanText(row && row.source));
+  return official && isLowValueOfficialText(text);
 }
 
 function normalizeUrgency(value) {

@@ -566,24 +566,6 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 </section>
 <section class="section" id="statistiche">
   <div class="sec-head"><div class="sec-tag" id="statsSecTag">Stagione 2025/26 &middot; Serie A</div><div class="sec-title">STATISTICHE</div><div class="gold-bar"></div></div>
-  <div class="offseason-board" style="margin-bottom:18px;">
-    <div class="offseason-main">
-      <div class="offseason-kicker" id="radarKicker">Radar ICV</div>
-      <div class="offseason-title" id="radarTitle">Ripartenza 2026/27</div>
-      <div class="offseason-copy" id="radarCopy">In attesa dei dati automatici, il radar resta orientato sui temi centrali: rosa, calendario e identita tecnica.</div>
-      <div class="radar-grid" id="radarCards">
-        <div class="radar-card"><strong>Rosa</strong><span>Valutare uscite e rinnovi prima dei nuovi innesti.</span></div>
-        <div class="radar-card"><strong>Calendario</strong><span>La prossima stagione si costruisce appena arrivano date e avversarie.</span></div>
-      </div>
-    </div>
-    <div class="offseason-side">
-      <div class="offseason-kicker">Da osservare</div>
-      <div class="watch-list" id="radarWatch">
-        <div class="watch-item"><div class="watch-num">01</div><div class="watch-text"><strong>Mercato</strong><span>Capire quali temi diventano trattative reali.</span></div></div>
-        <div class="watch-item"><div class="watch-num">02</div><div class="watch-text"><strong>Campo</strong><span>Monitorare segnali tattici e scelte di preparazione.</span></div></div>
-      </div>
-    </div>
-  </div>
   <div class="stats-grid">
     <div class="stat-card"><div class="stat-val">68</div><div class="stat-lbl">Punti (37 gare)</div><div class="stat-sub">6&#176; posto &middot; a -2 da Milan e Roma</div></div>
     <div class="stat-card"><div class="stat-val">1.4</div><div class="stat-lbl">Gol / partita</div><div class="stat-sub">7&#176; in Serie A per gol segnati</div></div>
@@ -943,11 +925,11 @@ function renderNextMatch(match) {
 
 // ── ULTIMI RISULTATI ──
 function loadLastResults() {
-  var cached = cacheGet("last_results");
+  var cached = cacheGet("last_results_sa_cl");
   if (cached) { renderResults(cached); return; }
-  fdFetch("/teams/" + JUVE_ID + "/matches?status=FINISHED&limit=5", function(err, data) {
+  fdFetch("/teams/" + JUVE_ID + "/matches?status=FINISHED&competitions=SA,CL&limit=60", function(err, data) {
     if (err || !data || !data.matches || !data.matches.length) return;
-    cacheSet("last_results", data.matches);
+    cacheSet("last_results_sa_cl", data.matches);
     renderResults(data.matches);
   });
 }
@@ -956,7 +938,13 @@ function renderResults(matches) {
   var list = document.querySelector(".results-list");
   if (!list || !matches || !matches.length) return;
   list.innerHTML = "";
-  var sorted = matches.slice().reverse();
+  var wantedCompetitions = { SA: true, CL: true };
+  var sorted = matches.slice().filter(function(m) {
+    var code = m && m.competition && m.competition.code;
+    return !code || wantedCompetitions[code];
+  }).sort(function(a, b) {
+    return new Date(b.utcDate) - new Date(a.utcDate);
+  }).slice(0, 60);
   sorted.forEach(function(m) {
     var isHome = m.homeTeam.id === JUVE_ID;
     var juveGoals = isHome ? m.score.fullTime.home : m.score.fullTime.away;

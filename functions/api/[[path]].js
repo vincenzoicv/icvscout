@@ -340,9 +340,7 @@ async function adminNews(request, env) {
   const body = await readBody(request);
   if (request.method === "POST") {
     if (body.type === "manual_news") {
-      const inserted = await sb(env, "/news", {
-        method: "POST",
-        body: [{
+      const inserted = await insertNewsRow(env, {
           title: body.title,
           body: body.body,
           category: body.category || "juventus",
@@ -352,17 +350,13 @@ async function adminNews(request, env) {
           auto_fetched: false,
           reliability: body.reliability || "trusted",
           editorial_status: body.editorial_status || "Confermato",
-        }],
-        prefer: "return=representation",
       });
       return json({ news: inserted[0] });
     }
 
     if (body.type === "approve_draft") {
       const draft = await getOne(env, "/news_drafts?id=eq." + encodeURIComponent(body.id));
-      const inserted = await sb(env, "/news", {
-        method: "POST",
-        body: [{
+      const inserted = await insertNewsRow(env, {
           title: body.title || draft.title,
           body: body.body || draft.body,
           category: body.category || draft.category,
@@ -373,8 +367,6 @@ async function adminNews(request, env) {
           auto_fetched: true,
           reliability: draft.reliability,
           editorial_status: body.editorial_status || statusFromReliability(draft.reliability),
-        }],
-        prefer: "return=representation",
       });
       await sb(env, "/news_drafts?id=eq." + encodeURIComponent(body.id), {
         method: "PATCH",
@@ -1162,6 +1154,10 @@ function isEmptySupabaseRow(value) {
 function isSupabaseEmptyJsonError(err) {
   const msg = String(err && err.message || err || "");
   return /PGRST102|empty or invalid json|Body JSON vuoto|Body JSON non valido/i.test(msg);
+}
+
+function isSupabaseCheckConstraintError(err) {
+  return /23514|violates check constraint|new row for relation .* violates check constraint/i.test(String(err && err.message || err || ""));
 }
 
 async function safeAdminRead(read, fallback) {
@@ -2216,9 +2212,7 @@ async function publishDraftAsNews(env, draft, options = {}) {
     if (existing) return null;
   }
 
-  const inserted = await sb(env, "/news", {
-    method: "POST",
-    body: [{
+  const inserted = await insertNewsRow(env, {
       title: draft.title,
       body: draft.body,
       category: draft.category,
@@ -2229,10 +2223,55 @@ async function publishDraftAsNews(env, draft, options = {}) {
       auto_fetched: true,
       reliability: draft.reliability,
       editorial_status: draft.editorial_status || statusFromReliability(draft.reliability),
-    }],
-    prefer: "return=representation",
   });
   return inserted[0] || null;
+}
+
+async function insertNewsRow(env, payload) {
+  const cleanPayload = normalizeNewsInsertPayload(payload);
+  try {
+    return await sb(env, "/news", {
+      method: "POST",
+      body: [cleanPayload],
+      prefer: "return=representation",
+    });
+  } catch (err) {
+    if (!isSupabaseCheckConstraintError(err)) throw err;
+    return sb(env, "/news", {
+      method: "POST",
+      body: [compatNewsInsertPayload(cleanPayload)],
+      prefer: "return=representation",
+    });
+  }
+}
+
+function normalizeNewsInsertPayload(payload) {
+  const reliability = normalizeReliabilityForDb(payload && payload.reliability);
+  return {
+    title: cleanText(payload && payload.title).slice(0, 220) || "News Juventus",
+    body: cleanText(payload && payload.body).slice(0, 1000) || cleanText(payload && payload.title).slice(0, 500) || "Aggiornamento Juventus.",
+    category: normalizeNewsCategoryForDb(payload && payload.category),
+    urgency: normalizeNewsUrgencyForDb(payload && payload.urgency),
+    source: cleanText(payload && payload.source).slice(0, 120) || "ICV",
+    source_url: cleanText(payload && payload.source_url).slice(0, 500) || null,
+    visible: payload && payload.visible === false ? false : true,
+    auto_fetched: payload && payload.auto_fetched === true,
+    reliability,
+    editorial_status: normalizeEditorialStatusForDb(payload && payload.editorial_status, reliability),
+  };
+}
+
+function compatNewsInsertPayload(payload) {
+  return {
+    title: payload.title,
+    body: payload.body,
+    category: "juventus",
+    urgency: "normal",
+    source: payload.source,
+    source_url: payload.source_url,
+    visible: payload.visible,
+    auto_fetched: payload.auto_fetched,
+  };
 }
 
 async function markDraftApproved(env, id) {
@@ -2338,6 +2377,29 @@ function normalizeUrgency(value) {
 function normalizeNewsUrgencyForDb(value) {
   const urgency = normalizeUrgency(value);
   return urgency === "low" ? "normal" : urgency;
+}
+
+function normalizeNewsCategoryForDb(value) {
+  const clean = cleanText(value).toLowerCase();
+  if (clean === "calciomercato" || clean === "mercato") return "calciomercato";
+  if (clean === "statistiche" || clean === "stats") return "statistiche";
+  if (clean === "grafiche" || clean === "graphics") return "grafiche";
+  return "juventus";
+}
+
+function normalizeReliabilityForDb(value) {
+  const clean = cleanText(value).toLowerCase();
+  if (clean === "official" || clean === "trusted" || clean === "aggregator" || clean === "rumor") return clean;
+  return "trusted";
+}
+
+function normalizeEditorialStatusForDb(value, reliability = "trusted") {
+  const clean = cleanText(value);
+  if (/^ufficiale$/i.test(clean)) return "Ufficiale";
+  if (/^confermato$/i.test(clean)) return "Confermato";
+  if (/^da verificare$/i.test(clean)) return "Da verificare";
+  if (/^rumor$/i.test(clean)) return "Rumor";
+  return statusFromReliability(reliability);
 }
 
 function newsPriorityScore(row) {

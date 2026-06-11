@@ -106,6 +106,7 @@ export async function onRequest(context) {
     if (path === "public/home") return publicHome(env);
     if (path === "public/graphics") return publicGraphics(env);
     if (path === "public/news") return publicNews(env, url);
+    if (path === "world-cup/overview") return worldCupOverview(request, env, context);
     if (path === "admin/news") return adminNews(request, env);
     if (path === "admin/automate") return adminAutomate(request, env);
     if (path === "cron/autopilot") return cronAutopilot(request, env);
@@ -1047,6 +1048,102 @@ async function footballDataProxy(path, url, env) {
     status: response.status,
     headers: { ...JSON_HEADERS, "Cache-Control": "public, max-age=900" },
   });
+}
+
+async function worldCupOverview(request, env, context) {
+  if (!env.FOOTBALL_DATA_KEY) return json({ error: "FOOTBALL_DATA_KEY non configurata" }, 500);
+
+  const cacheUrl = new URL(request.url);
+  cacheUrl.search = "";
+  const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
+  const cache = typeof caches !== "undefined" ? caches.default : null;
+  if (cache) {
+    const cached = await cache.match(cacheKey);
+    if (cached) return cached;
+  }
+
+  const headers = { "X-Auth-Token": env.FOOTBALL_DATA_KEY };
+  const base = "https://api.football-data.org/v4/competitions/WC";
+  const [competition, matchesData, standingsData, scorersData] = await Promise.all([
+    fetchJson(base, headers),
+    fetchJson(base + "/matches", headers),
+    fetchJson(base + "/standings", headers),
+    fetchJson(base + "/scorers?limit=25", headers).catch(() => ({ scorers: [] })),
+  ]);
+
+  const matches = (matchesData.matches || []).map(match => ({
+    id: match.id,
+    utcDate: match.utcDate,
+    status: match.status,
+    stage: match.stage,
+    group: match.group,
+    matchday: match.matchday,
+    homeTeam: compactTeam(match.homeTeam),
+    awayTeam: compactTeam(match.awayTeam),
+    score: match.score,
+  }));
+  const standings = (standingsData.standings || []).map(group => ({
+    stage: group.stage,
+    type: group.type,
+    group: group.group,
+    table: (group.table || []).map(row => ({
+      position: row.position,
+      team: compactTeam(row.team),
+      playedGames: row.playedGames,
+      won: row.won,
+      draw: row.draw,
+      lost: row.lost,
+      points: row.points,
+      goalsFor: row.goalsFor,
+      goalsAgainst: row.goalsAgainst,
+      goalDifference: row.goalDifference,
+      form: row.form,
+    })),
+  }));
+  const scorers = (scorersData.scorers || []).map(row => ({
+    player: { id: row.player && row.player.id, name: row.player && row.player.name },
+    team: compactTeam(row.team),
+    goals: row.goals || 0,
+    assists: row.assists || 0,
+    penalties: row.penalties || 0,
+  }));
+  const live = matches.some(match => ["IN_PLAY", "PAUSED", "EXTRA_TIME", "PENALTY_SHOOTOUT"].includes(match.status));
+  const maxAge = live ? 30 : 180;
+  const payload = {
+    competition: {
+      id: competition.id,
+      name: competition.name,
+      code: competition.code,
+      emblem: competition.emblem,
+    },
+    season: competition.currentSeason,
+    resultSet: matchesData.resultSet,
+    matches,
+    standings,
+    scorers,
+    live,
+    fetchedAt: new Date().toISOString(),
+  };
+  const response = new Response(JSON.stringify(payload), {
+    headers: {
+      ...JSON_HEADERS,
+      "Cache-Control": `public, max-age=${maxAge}, stale-while-revalidate=300`,
+    },
+  });
+  if (cache && context && typeof context.waitUntil === "function") {
+    context.waitUntil(cache.put(cacheKey, response.clone()));
+  }
+  return response;
+}
+
+function compactTeam(team) {
+  return {
+    id: team && team.id,
+    name: team && team.name,
+    shortName: team && team.shortName,
+    tla: team && team.tla,
+    crest: team && team.crest,
+  };
 }
 
 async function apiSportsProxy(path, url, env) {

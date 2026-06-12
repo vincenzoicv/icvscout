@@ -1,0 +1,30 @@
+ICV SCOUT - AGENDA MONDIALI 2026
+
+Pagine e indirizzi
+- Pagina: https://ilcalciodivince.com/agenda
+- Feed calendario: https://ilcalciodivince.com/api/world-cup/calendar.ics
+- Dati: football-data.org, la stessa fonte della pagina Mondiali
+
+APPLE CALENDAR
+Il pulsante usa il protocollo webcal e crea una sottoscrizione. Apple Calendar
+puo quindi rileggere il feed e ricevere variazioni di orario o di squadre.
+
+GOOGLE CALENDAR
+Il pulsante copia l'indirizzo del feed e apre:
+Impostazioni > Aggiungi calendario > Da URL.
+L'utente deve incollare il link e confermare.
+
+FILE ICS
+Il download crea una copia importabile in qualunque calendario. Una copia
+scaricata non si aggiorna automaticamente; per gli aggiornamenti va usata la
+sottoscrizione Apple o Google.
+
+NEWSLETTER FACOLTATIVA
+Il calendario funziona anche senza Brevo. Per attivare il modulo email,
+aggiungere nelle variabili di produzione di Cloudflare Pages:
+
+BREVO_API_KEY = chiave API Brevo
+BREVO_LIST_ID = ID numerico della lista
+
+Il Worker non salva email nel database del sito. Se Brevo non e configurato,
+il modulo informa l'utente ma non blocca calendario e download.

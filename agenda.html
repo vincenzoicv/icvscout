@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agenda Mondiali 2026 · ICV Scout</title>
+  <meta name="description" content="Aggiungi le 104 partite dei Mondiali 2026 ad Apple Calendar o Google Calendar con aggiornamenti automatici.">
+  <meta property="og:title" content="Agenda Mondiali 2026 · ICV Scout">
+  <meta property="og:description" content="Tutte le partite dei Mondiali nel tuo calendario, con orari e squadre aggiornati.">
+  <meta property="og:image" content="/og-image.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#070708;--panel:rgba(255,255,255,.04);--panel2:rgba(255,255,255,.065);--line:rgba(255,255,255,.1);--gold:#c99837;--gold2:#edbe52;--text:#f0ede6;--muted:rgba(240,237,230,.58);--faint:rgba(240,237,230,.3);--green:#4ade80}
+    html{scroll-behavior:smooth}
+    body{min-height:100vh;background:var(--bg);color:var(--text);font-family:Inter,sans-serif;-webkit-font-smoothing:antialiased}
+    a{color:inherit}
+    header{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:14px;padding:14px 24px;background:rgba(7,7,8,.9);border-bottom:1px solid var(--line);backdrop-filter:blur(20px)}
+    .back{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:13px;text-decoration:none}
+    .back:hover{color:var(--gold2)}
+    .back svg{width:14px}
+    .sep{width:1px;height:18px;background:var(--line)}
+    .badge{font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:var(--gold2);font-size:18px}
+    .hero{position:relative;overflow:hidden;min-height:calc(100vh - 58px);display:grid;place-items:center;padding:64px 24px}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 50% 0,rgba(201,152,55,.16),transparent 70%);pointer-events:none}
+    .hero-inner{position:relative;width:min(940px,100%);text-align:center}
+    .eyebrow{margin-bottom:16px;color:var(--gold);font-size:11px;font-weight:700;letter-spacing:5px;text-transform:uppercase}
+    h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(66px,13vw,138px);line-height:.86;letter-spacing:2px;background:linear-gradient(135deg,#fff 0%,#eee 35%,var(--gold2) 70%,var(--gold) 100%);background-clip:text;-webkit-background-clip:text;color:transparent}
+    .lead{max-width:640px;margin:24px auto 0;color:var(--muted);font-size:clamp(15px,2vw,19px);line-height:1.65}
+    .facts{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:30px 0 38px}
+    .fact{display:flex;gap:8px;align-items:baseline;padding:9px 15px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
+    .fact strong{font-family:'Bebas Neue',sans-serif;color:var(--gold2);font-size:22px;letter-spacing:1px}
+    .fact span{font-size:12px;color:var(--muted)}
+    .calendar-box{width:min(760px,100%);margin:auto;padding:26px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.035);text-align:left;box-shadow:0 24px 80px rgba(0,0,0,.28)}
+    .calendar-box h2{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px}
+    .calendar-box>p{margin:5px 0 20px;color:var(--muted);font-size:13px;line-height:1.55}
+    .platforms{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .platform{min-height:76px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--text);font:600 14px Inter,sans-serif;cursor:pointer;text-align:left;transition:.2s ease}
+    .platform:hover{transform:translateY(-2px);border-color:rgba(237,190,82,.55);background:rgba(201,152,55,.1)}
+    .platform.primary{color:#0b0905;border-color:transparent;background:linear-gradient(135deg,var(--gold2),#c4962a)}
+    .platform small{display:block;margin-top:5px;font-size:10px;font-weight:500;line-height:1.4;opacity:.7}
+    .status{min-height:18px;margin-top:14px;color:var(--green);font-size:12px;text-align:center}
+    main{width:min(1060px,100%);margin:auto;padding:72px 24px}
+    .section-eye{color:var(--gold);font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase}
+    .section-title{margin:10px 0 30px;font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,7vw,66px);line-height:.95}
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .card{padding:22px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+    .card .num{font-family:'Bebas Neue',sans-serif;color:var(--gold2);font-size:28px}
+    .card h3{margin:10px 0 7px;font-size:15px}
+    .card p{color:var(--muted);font-size:13px;line-height:1.6}
+    .preview{margin-top:72px}
+    .matches{display:grid;gap:8px}
+    .match{display:grid;grid-template-columns:135px 1fr auto;align-items:center;gap:12px;padding:13px 16px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+    .match time{color:var(--faint);font-size:11px;font-weight:600}
+    .match strong{font-size:13px}
+    .match span{padding:3px 8px;border-radius:999px;background:rgba(201,152,55,.12);color:var(--gold2);font-size:9px;font-weight:700;text-transform:uppercase}
+    .loading{padding:36px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);text-align:center;font-size:13px}
+    .newsletter{margin-top:72px;padding:30px;border:1px solid rgba(201,152,55,.24);border-radius:14px;background:rgba(201,152,55,.06);text-align:center}
+    .newsletter h2{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:1px}
+    .newsletter p{margin:6px auto 18px;color:var(--muted);font-size:13px}
+    .newsletter form{display:flex;gap:8px;width:min(500px,100%);margin:auto}
+    .newsletter input{min-width:0;flex:1;padding:13px 15px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.06);color:var(--text);font:14px Inter,sans-serif;outline:none}
+    .newsletter input:focus{border-color:rgba(237,190,82,.55)}
+    .newsletter button{padding:13px 18px;border:0;border-radius:9px;background:var(--gold2);color:#0b0905;font-weight:700;cursor:pointer}
+    .newsletter .note{min-height:17px;margin-top:10px;color:var(--muted);font-size:11px}
+    footer{padding:25px;border-top:1px solid var(--line);color:var(--faint);font-size:12px;text-align:center}
+    footer a{color:var(--muted);text-decoration:none}
+    @media(max-width:720px){.platforms,.features{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}}
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/mondiali.html" class="back">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3 5 8l5 5"/></svg>
+      Mondiali 2026
+    </a>
+    <div class="sep"></div>
+    <span class="badge">Agenda ICV</span>
+  </header>
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Il Calcio di Vince</div>
+      <h1>Agenda<br>Mondiali 2026</h1>
+      <p class="lead">Tutte le partite nel tuo calendario. Gli orari e le squadre della fase finale vengono aggiornati dalla stessa fonte usata dalla pagina Mondiali.</p>
+      <div class="facts">
+        <div class="fact"><strong>104</strong><span>partite</span></div>
+        <div class="fact"><strong>48</strong><span>nazionali</span></div>
+        <div class="fact"><strong>1</strong><span>calendario live</span></div>
+      </div>
+
+      <div class="calendar-box">
+        <h2>Scegli il tuo calendario</h2>
+        <p>La sottoscrizione resta aggiornata. Il file scaricato, invece, è una copia degli eventi disponibili in questo momento.</p>
+        <div class="platforms">
+          <button class="platform primary" type="button" onclick="openAppleCalendar()">Apple Calendar<small>Abbonamento aggiornabile su iPhone, iPad e Mac</small></button>
+          <button class="platform" type="button" onclick="openGoogleCalendar()">Google Calendar<small>Copia il link e apre la pagina “Da URL”</small></button>
+          <button class="platform" type="button" onclick="downloadCalendar()">Scarica file .ics<small>Importazione universale su telefono e computer</small></button>
+        </div>
+        <div class="status" id="calendarStatus" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <div class="section-eye">Come funziona</div>
+    <div class="section-title">Un solo calendario,<br>tre modi per usarlo</div>
+    <div class="features">
+      <article class="card"><div class="num">01</div><h3>Orari aggiornati</h3><p>Il feed viene rigenerato dai dati live del torneo. Se cambia un calcio d’inizio, la sottoscrizione riceve il nuovo orario.</p></article>
+      <article class="card"><div class="num">02</div><h3>Tabellone automatico</h3><p>Gli eventi mantengono un ID stabile: quando vengono definite le qualificate, i nomi sostituiscono le squadre ancora da decidere.</p></article>
+      <article class="card"><div class="num">03</div><h3>Promemoria incluso</h3><p>Ogni partita contiene un avviso trenta minuti prima e un collegamento rapido alla pagina Mondiali di ICV Scout.</p></article>
+    </div>
+
+    <section class="preview">
+      <div class="section-eye">Anteprima live</div>
+      <div class="section-title">Le prossime partite</div>
+      <div class="matches" id="matchPreview"><div class="loading">Caricamento del calendario in corso...</div></div>
+    </section>
+
+    <section class="newsletter">
+      <h2>Ricevi gli aggiornamenti ICV</h2>
+      <p>L’iscrizione è facoltativa e non serve per scaricare il calendario.</p>
+      <form id="subscribeForm">
+        <input type="email" name="email" placeholder="la.tua@email.it" autocomplete="email" required>
+        <input type="text" name="website" tabindex="-1" autocomplete="off" hidden>
+        <button type="submit">Iscriviti</button>
+      </form>
+      <div class="note" id="subscribeStatus" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer><a href="/">ICV Scout · Il Calcio di Vince</a></footer>
+
+  <script>
+    const calendarPath = '/api/world-cup/calendar.ics';
+    const publicCalendarUrl = 'https://ilcalciodivince.com' + calendarPath;
+
+    function setCalendarStatus(message) {
+      document.getElementById('calendarStatus').textContent = message;
+    }
+
+    function openAppleCalendar() {
+      setCalendarStatus('Apertura di Apple Calendar...');
+      window.location.href = 'webcal://ilcalciodivince.com' + calendarPath;
+    }
+
+    async function openGoogleCalendar() {
+      const googleWindow = window.open('https://calendar.google.com/calendar/u/0/r/settings/addbyurl', '_blank');
+      if (googleWindow) googleWindow.opener = null;
+      try {
+        await navigator.clipboard.writeText(publicCalendarUrl);
+        setCalendarStatus('Link copiato. Incollalo nel campo “URL del calendario” su Google Calendar.');
+      } catch {
+        setCalendarStatus('Copia questo link in Google Calendar: ' + publicCalendarUrl);
+        window.prompt('Copia il link del calendario', publicCalendarUrl);
+      }
+      if (!googleWindow) setCalendarStatus('Il browser ha bloccato la nuova scheda. Consenti i popup e riprova.');
+    }
+
+    function downloadCalendar() {
+      setCalendarStatus('Download del calendario in corso...');
+      window.location.href = calendarPath;
+    }
+
+    function stageLabel(match) {
+      const labels = {GROUP_STAGE:'Gironi',LAST_32:'Sedicesimi',LAST_16:'Ottavi',QUARTER_FINALS:'Quarti',SEMI_FINALS:'Semifinale',THIRD_PLACE:'Terzo posto',FINAL:'Finale'};
+      return labels[match.stage] || 'Mondiali 2026';
+    }
+
+    function teamName(team) {
+      return team && (team.shortName || team.name || team.tla) || 'Da definire';
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[character]);
+    }
+
+    async function loadPreview() {
+      const container = document.getElementById('matchPreview');
+      try {
+        const response = await fetch('/api/world-cup/overview');
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const data = await response.json();
+        const now = Date.now();
+        const matches = (data.matches || []).filter(match => Date.parse(match.utcDate) >= now - 3 * 60 * 60 * 1000).slice(0, 5);
+        if (!matches.length) throw new Error('Nessuna partita disponibile');
+        container.innerHTML = matches.map(match => {
+          const date = new Intl.DateTimeFormat('it-IT',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(match.utcDate));
+          return `<article class="match"><time>${escapeHtml(date)}</time><strong>${escapeHtml(teamName(match.homeTeam))} - ${escapeHtml(teamName(match.awayTeam))}</strong><span>${escapeHtml(stageLabel(match))}</span></article>`;
+        }).join('');
+      } catch {
+        container.innerHTML = '<div class="loading">Il calendario resta disponibile. L’anteprima live tornerà al prossimo aggiornamento.</div>';
+      }
+    }
+
+    document.getElementById('subscribeForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const status = document.getElementById('subscribeStatus');
+      const button = form.querySelector('button');
+      button.disabled = true;
+      status.textContent = 'Iscrizione in corso...';
+      try {
+        const payload = Object.fromEntries(new FormData(form).entries());
+        const response = await fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error('Iscrizione non disponibile');
+        status.textContent = result.subscribed === false ? 'Calendario disponibile. La newsletter sarà attivata a breve.' : 'Iscrizione completata.';
+        form.reset();
+      } catch {
+        status.textContent = 'Iscrizione momentaneamente non disponibile. Il calendario funziona comunque.';
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    loadPreview();
+  </script>
+</body>
+</html>

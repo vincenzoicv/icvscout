@@ -107,6 +107,8 @@ export async function onRequest(context) {
     if (path === "public/graphics") return publicGraphics(env);
     if (path === "public/news") return publicNews(env, url);
     if (path === "world-cup/overview") return worldCupOverview(request, env, context);
+    if (path === "world-cup/calendar.ics") return worldCupCalendar(request, env);
+    if (path === "subscribe") return subscribeWorldCup(request, env);
     if (path === "admin/news") return adminNews(request, env);
     if (path === "admin/automate") return adminAutomate(request, env);
     if (path === "cron/autopilot") return cronAutopilot(request, env);
@@ -1135,6 +1137,154 @@ async function worldCupOverview(request, env, context) {
     context.waitUntil(cache.put(cacheKey, response.clone()));
   }
   return response;
+}
+
+async function worldCupCalendar(request, env) {
+  if (request.method !== "GET") return json({ error: "Metodo non consentito" }, 405);
+  if (!env.FOOTBALL_DATA_KEY) return json({ error: "FOOTBALL_DATA_KEY non configurata" }, 500);
+
+  const headers = { "X-Auth-Token": env.FOOTBALL_DATA_KEY };
+  const data = await fetchJson("https://api.football-data.org/v4/competitions/WC/matches", headers);
+  const now = new Date();
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//ICV Scout//Mondiali 2026//IT",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "X-WR-CALNAME:ICV Mondiali 2026",
+    "X-WR-CALDESC:Calendario aggiornato delle 104 partite dei Mondiali 2026",
+    "X-APPLE-CALENDAR-COLOR:#C99837",
+    "REFRESH-INTERVAL;VALUE=DURATION:PT1H",
+    "X-PUBLISHED-TTL:PT1H",
+  ];
+
+  for (const match of data.matches || []) {
+    const kickoff = new Date(match.utcDate);
+    if (!Number.isFinite(kickoff.getTime())) continue;
+    const end = new Date(kickoff.getTime() + 2 * 60 * 60 * 1000);
+    const home = worldCupTeamName(match.homeTeam, "Squadra da definire");
+    const away = worldCupTeamName(match.awayTeam, "Squadra da definire");
+    const stage = worldCupStageLabel(match.stage, match.group);
+    const summary = `Mondiali 2026: ${home} - ${away}`;
+    const description = [
+      stage,
+      "Orario aggiornato automaticamente da ICV Scout.",
+      "https://ilcalciodivince.com/mondiali",
+    ].filter(Boolean).join("\n");
+
+    lines.push(
+      "BEGIN:VEVENT",
+      `UID:wc2026-${match.id || formatIcsDate(kickoff)}@ilcalciodivince.com`,
+      `DTSTAMP:${formatIcsDate(now)}`,
+      `DTSTART:${formatIcsDate(kickoff)}`,
+      `DTEND:${formatIcsDate(end)}`,
+      `SUMMARY:${escapeIcsText(summary)}`,
+      `DESCRIPTION:${escapeIcsText(description)}`,
+      `URL:https://ilcalciodivince.com/mondiali`,
+      `STATUS:${match.status === "CANCELLED" ? "CANCELLED" : "CONFIRMED"}`,
+      "TRANSP:TRANSPARENT",
+      "BEGIN:VALARM",
+      "TRIGGER:-PT30M",
+      "ACTION:DISPLAY",
+      `DESCRIPTION:${escapeIcsText(summary)}`,
+      "END:VALARM",
+      "END:VEVENT",
+    );
+  }
+
+  lines.push("END:VCALENDAR");
+  const calendar = lines.map(foldIcsLine).join("\r\n") + "\r\n";
+  return new Response(calendar, {
+    headers: {
+      "Content-Type": "text/calendar; charset=utf-8",
+      "Content-Disposition": 'attachment; filename="ICV-Mondiali-2026.ics"',
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+}
+
+async function subscribeWorldCup(request, env) {
+  if (request.method !== "POST") return json({ error: "Metodo non consentito" }, 405);
+  const body = await readBody(request);
+  const email = cleanText(body.email || "").toLowerCase();
+  if (body.website) return json({ ok: true, subscribed: false });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return json({ error: "Email non valida" }, 400);
+  }
+
+  const listId = Number(env.BREVO_LIST_ID);
+  if (!env.BREVO_API_KEY || !Number.isFinite(listId)) {
+    return json({ ok: true, subscribed: false, configured: false });
+  }
+
+  const response = await fetch("https://api.brevo.com/v3/contacts", {
+    method: "POST",
+    headers: {
+      "api-key": env.BREVO_API_KEY,
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, listIds: [listId], updateEnabled: true }),
+  });
+  if (response.ok) return json({ ok: true, subscribed: true });
+
+  const error = await response.json().catch(() => ({}));
+  if (error && error.code === "duplicate_parameter") {
+    return json({ ok: true, subscribed: true });
+  }
+  console.error("[subscribe] Brevo error", response.status, error);
+  return json({ ok: false, subscribed: false }, 502);
+}
+
+function worldCupTeamName(team, fallback) {
+  return cleanText(team && (team.name || team.shortName || team.tla)) || fallback;
+}
+
+function worldCupStageLabel(stage, group) {
+  const labels = {
+    GROUP_STAGE: group ? "Fase a gironi - " + String(group).replace(/^GROUP_?/i, "Gruppo ") : "Fase a gironi",
+    LAST_32: "Sedicesimi di finale",
+    LAST_16: "Ottavi di finale",
+    QUARTER_FINALS: "Quarti di finale",
+    SEMI_FINALS: "Semifinale",
+    THIRD_PLACE: "Finale terzo posto",
+    FINAL: "Finale",
+  };
+  return labels[stage] || cleanText(stage || "Mondiali 2026").replace(/_/g, " ");
+}
+
+function formatIcsDate(date) {
+  return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+}
+
+function escapeIcsText(value) {
+  return String(value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/\r?\n/g, "\\n")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,");
+}
+
+function foldIcsLine(line) {
+  const encoder = new TextEncoder();
+  const parts = [];
+  let current = "";
+  let bytes = 0;
+  for (const char of String(line)) {
+    const size = encoder.encode(char).length;
+    if (current && bytes + size > 73) {
+      parts.push(current);
+      current = " " + char;
+      bytes = 1 + size;
+    } else {
+      current += char;
+      bytes += size;
+    }
+  }
+  parts.push(current);
+  return parts.join("\r\n");
 }
 
 function isWorldCupMatchLive(match, now = Date.now()) {

@@ -42,8 +42,16 @@
       font-family:'Bebas Neue',sans-serif; font-size:20px;
       letter-spacing:2px; color:var(--gold-l);
     }
+    .header-actions { margin-left:auto; display:flex; align-items:center; gap:8px; }
+    .agenda-btn {
+      padding:7px 14px; border:1px solid rgba(201,152,55,.35);
+      border-radius:99px; background:rgba(201,152,55,.1); color:var(--gold-l);
+      font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+      text-decoration:none; transition:all .2s;
+    }
+    .agenda-btn:hover { background:rgba(201,152,55,.2); border-color:var(--gold); }
     .reset-btn {
-      margin-left:auto; padding:6px 14px; border:1px solid var(--bdr2);
+      padding:6px 14px; border:1px solid var(--bdr2);
       border-radius:99px; background:transparent; color:var(--text2);
       font-family:'Inter',sans-serif; font-size:11px; font-weight:600;
       letter-spacing:1px; text-transform:uppercase; cursor:pointer;
@@ -338,6 +346,10 @@
       .panel-head { align-items:flex-start; flex-direction:column; }
       .fixture-list { grid-template-columns:1fr; }
       .stats-grid { grid-template-columns:repeat(2,1fr); }
+      header { padding-left:14px; padding-right:14px; }
+      .header-title,.header-sep { display:none; }
+      .header-actions { gap:6px; }
+      .agenda-btn,.reset-btn { padding:7px 10px; font-size:9px; }
     }
   </style>
 </head>
@@ -353,7 +365,10 @@
   </a>
   <div class="header-sep"></div>
   <span class="header-title">Mondiali 2026</span>
-  <button class="reset-btn" id="refreshBtn" onclick="loadWorldCup(true)">Aggiorna</button>
+  <div class="header-actions">
+    <a class="agenda-btn" href="/agenda.html">Aggiungi al calendario</a>
+    <button class="reset-btn" id="refreshBtn" onclick="loadWorldCup(true)">Aggiorna</button>
+  </div>
 </header>
 
 <!-- HERO -->

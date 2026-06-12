@@ -1841,17 +1841,23 @@ function telegramEditorialText(text) {
     };
   }
 
-  if (/juventus|juve/.test(topic)) {
+  if (/carnevali.*(?:ceo|chief executive|comolli)|(?:ceo|chief executive|comolli).*carnevali/.test(topic)) {
     return {
-      title: telegramTitle(translateTelegramJuventusText(clean)),
-      body: translateTelegramJuventusText(clean).slice(0, 500),
+      title: "Juventus, Carnevali scelto come nuovo amministratore delegato",
+      body: "Secondo Fabrizio Romano, il piano della Juventus e definito: Giovanni Carnevali e destinato a diventare il nuovo amministratore delegato al posto di Damien Comolli.",
     };
   }
 
-  return {
-    title: telegramTitle(clean),
-    body: clean.slice(0, 500),
-  };
+  if (/juventus|juve/.test(topic)) {
+    const translated = translateTelegramJuventusText(clean);
+    if (hasUntranslatedEnglish(translated)) return { title: "", body: "" };
+    return {
+      title: telegramTitle(translated),
+      body: translated.slice(0, 500),
+    };
+  }
+
+  return { title: "", body: "" };
 }
 
 function translateTelegramJuventusText(text) {
@@ -1864,6 +1870,10 @@ function translateTelegramJuventusText(text) {
     .replace(/\bTalks have started to ask about price and contract details\b/gi, "Sono iniziati i contatti per capire prezzo e dettagli contrattuali")
     .replace(/\bhigh salary but Juve keen to explore move\b/gi, "ingaggio alto, ma la Juve vuole esplorare l'operazione")
     .replace(/\bAnother option remains Spurs GK Vicario\b/gi, "Resta tra le opzioni anche Vicario del Tottenham");
+}
+
+function hasUntranslatedEnglish(value) {
+  return /\b(?:the|with|after|before|from|into|will|would|have|has|had|want|wants|wanted|talks|deal|agreement|confirmed|expected|set to|new ceo|replace|join|leave|move|club|player|sign|signed|signing)\b/i.test(cleanText(value));
 }
 
 function parseRss(xml) {
@@ -2601,15 +2611,21 @@ function labelInstagramMedia(type) {
 
 function publicNewsRows(rows) {
   return (rows || [])
-    .map(row => ({
-      ...row,
-      title: cleanText(row.title),
-      body: cleanNewsDescription(row.body, row.source, row.title),
-      category: cleanText(row.category),
-      urgency: normalizeUrgency(row.urgency),
-      source: cleanText(row.source),
-      editorial_status: cleanText(row.editorial_status),
-    }))
+    .map(row => {
+      const normalized = {
+        ...row,
+        title: cleanText(row.title),
+        body: cleanNewsDescription(row.body, row.source, row.title),
+        category: cleanText(row.category),
+        urgency: normalizeUrgency(row.urgency),
+        source: cleanText(row.source),
+        editorial_status: cleanText(row.editorial_status),
+      };
+      if (!isFabrizioSourceName(normalized.source)) return normalized;
+      const editorial = existingFabrizioEditorial(normalized);
+      return editorial ? { ...normalized, title: editorial.title, body: editorial.body } : null;
+    })
+    .filter(Boolean)
     .filter(row => !isFabrizioSourceName(row.source) || isRelevantNewsItem(row.title, row.body, { category: row.category || "calciomercato" }))
     .filter(row => !isLowValuePublicNews(row))
     .sort((a, b) => {

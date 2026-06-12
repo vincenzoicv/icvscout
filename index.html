@@ -536,7 +536,6 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
   <div class="home-panel">
     <h3>Focus ICV</h3>
     <div class="home-main-title" id="homeFocusTitle">ICV Scout in aggiornamento</div>
-    <div class="home-text" id="homeFocusText">Le notizie approvate e il Match Center appariranno qui dopo la revisione admin.</div>
   </div>
   <div class="home-panel">
     <h3>Match Center</h3>
@@ -1169,7 +1168,6 @@ function loadHomeDashboard() {
     renderRadar(data.radar);
     var focus = buildEditorialFocus(market, news);
     document.getElementById("homeFocusTitle").textContent = focus.title;
-    document.getElementById("homeFocusText").textContent = focus.text;
     if (matches[0]) {
       document.getElementById("homeMatchTitle").textContent = matches[0].title || matches[0].opponent || "Match Center";
       document.getElementById("homeMatchText").textContent = matches[0].summary || matches[0].tactical_key || "Scheda match pronta.";

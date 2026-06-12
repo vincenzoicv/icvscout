@@ -4,6 +4,8 @@
   var API_URL = "/api/world-cup/overview";
   var CACHE_KEY = "icv_world_cup_2026_live";
   var LIVE_STATUSES = ["IN_PLAY", "PAUSED", "EXTRA_TIME", "PENALTY_SHOOTOUT"];
+  var SCHEDULED_STATUSES = ["TIMED", "SCHEDULED"];
+  var LIVE_WINDOW_MS = 150 * 60 * 1000;
   var FINISHED_STATUSES = ["FINISHED", "AWARDED"];
   var currentFilter = "today";
   var worldCup = null;
@@ -127,7 +129,7 @@
       standings: payloads[2].standings || [],
       scorers: payloads[3].scorers || [],
       fetchedAt: new Date().toISOString(),
-      live: matches.some(function (match) { return LIVE_STATUSES.includes(match.status); })
+      live: matches.some(isLiveMatch)
     };
   }
 
@@ -140,7 +142,7 @@
   }
 
   function renderConnectionState() {
-    var live = (worldCup.matches || []).some(function (match) { return LIVE_STATUSES.includes(match.status); });
+    var live = (worldCup.matches || []).some(isLiveMatch);
     var played = (worldCup.matches || []).filter(isFinished).length;
     var label = live ? "Partite in diretta" : "Dati live · " + played + " di 104 partite concluse";
     setConnectionState(live, label);
@@ -182,22 +184,22 @@
 
   function matchForCurrentFilter(match) {
     if (currentFilter === "all") return true;
-    if (currentFilter === "live") return LIVE_STATUSES.includes(match.status);
+    if (currentFilter === "live") return isLiveMatch(match);
     if (currentFilter === "finished") return isFinished(match);
-    if (currentFilter === "upcoming") return !isFinished(match) && !LIVE_STATUSES.includes(match.status) && new Date(match.utcDate) >= new Date();
+    if (currentFilter === "upcoming") return !isFinished(match) && !isLiveMatch(match) && new Date(match.utcDate) >= new Date();
     return localDateKey(match.utcDate) === localDateKey(new Date());
   }
 
   function fixtureHtml(match) {
-    var live = LIVE_STATUSES.includes(match.status);
+    var live = isLiveMatch(match);
     var score = scorePair(match);
-    var time = live ? (STATUS_LABELS[match.status] || "Live") :
+    var time = live ? (LIVE_STATUSES.includes(match.status) ? STATUS_LABELS[match.status] : "In corso") :
       (isFinished(match) ? "Finale" : new Date(match.utcDate).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }));
     return '<article class="fixture' + (live ? " live" : "") + '">' +
       '<div class="fixture-time">' + escapeHtml(time) + '<small>' + escapeHtml(groupOrStage(match)) + '</small></div>' +
       '<div class="fixture-teams">' + teamLine(match.homeTeam) + teamLine(match.awayTeam) + '</div>' +
       '<div class="fixture-score"><span>' + score[0] + '</span><span>' + score[1] + '</span></div>' +
-      '<div class="fixture-meta">' + escapeHtml(STATUS_LABELS[match.status] || match.status) + '</div>' +
+      '<div class="fixture-meta">' + escapeHtml(live && !LIVE_STATUSES.includes(match.status) ? "In corso" : STATUS_LABELS[match.status] || match.status) + '</div>' +
       '</article>';
   }
 
@@ -288,7 +290,7 @@
       var score = scorePair(match, true);
       return total + (score[0] || 0) + (score[1] || 0);
     }, 0);
-    var live = matches.filter(function (match) { return LIVE_STATUSES.includes(match.status); }).length;
+    var live = matches.filter(isLiveMatch).length;
     var values = [
       { value: played.length, label: "Partite concluse" },
       { value: 104 - played.length, label: "Partite da giocare" },
@@ -336,6 +338,16 @@
   }
 
   function isFinished(match) { return FINISHED_STATUSES.includes(match.status); }
+
+  function isLiveMatch(match) {
+    if (!match || isFinished(match)) return false;
+    if (match.isLive || LIVE_STATUSES.includes(match.status)) return true;
+    if (!SCHEDULED_STATUSES.includes(match.status)) return false;
+    var kickoff = Date.parse(match.utcDate || "");
+    var now = Date.now();
+    return Number.isFinite(kickoff) && now >= kickoff && now <= kickoff + LIVE_WINDOW_MS;
+  }
+
   function byDate(a, b) { return new Date(a.utcDate) - new Date(b.utcDate); }
 
   function localDateKey(value) {
@@ -381,7 +393,8 @@
 
   function scheduleRefresh() {
     clearTimeout(refreshTimer);
-    var delay = worldCup && worldCup.live ? 30000 : 180000;
+    var live = worldCup && (worldCup.matches || []).some(isLiveMatch);
+    var delay = live ? 30000 : 180000;
     refreshTimer = setTimeout(function () {
       if (document.visibilityState === "visible") window.loadWorldCup(false);
       else scheduleRefresh();

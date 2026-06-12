@@ -1081,6 +1081,7 @@ async function worldCupOverview(request, env, context) {
     homeTeam: compactTeam(match.homeTeam),
     awayTeam: compactTeam(match.awayTeam),
     score: match.score,
+    isLive: isWorldCupMatchLive(match),
   }));
   const standings = (standingsData.standings || []).map(group => ({
     stage: group.stage,
@@ -1107,7 +1108,7 @@ async function worldCupOverview(request, env, context) {
     assists: row.assists || 0,
     penalties: row.penalties || 0,
   }));
-  const live = matches.some(match => ["IN_PLAY", "PAUSED", "EXTRA_TIME", "PENALTY_SHOOTOUT"].includes(match.status));
+  const live = matches.some(match => match.isLive);
   const maxAge = live ? 30 : 180;
   const payload = {
     competition: {
@@ -1134,6 +1135,15 @@ async function worldCupOverview(request, env, context) {
     context.waitUntil(cache.put(cacheKey, response.clone()));
   }
   return response;
+}
+
+function isWorldCupMatchLive(match, now = Date.now()) {
+  const liveStatuses = ["IN_PLAY", "PAUSED", "EXTRA_TIME", "PENALTY_SHOOTOUT"];
+  if (!match || ["FINISHED", "AWARDED"].includes(match.status)) return false;
+  if (liveStatuses.includes(match.status)) return true;
+  if (!["TIMED", "SCHEDULED"].includes(match.status)) return false;
+  const kickoff = Date.parse(match.utcDate || "");
+  return Number.isFinite(kickoff) && now >= kickoff && now <= kickoff + 150 * 60 * 1000;
 }
 
 function compactTeam(team) {

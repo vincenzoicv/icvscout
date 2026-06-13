@@ -312,6 +312,14 @@
     .fixture-team img,.mini-crest { width:19px; height:19px; object-fit:contain; flex-shrink:0; }
     .fixture-team span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .fixture-score { display:grid; gap:7px; text-align:center; font-weight:700; font-variant-numeric:tabular-nums; }
+    .fixture-goals {
+      grid-column:2 / -1; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+      gap:4px 14px; padding-top:8px; border-top:1px solid rgba(255,255,255,.06);
+    }
+    .goal-event { min-width:0; color:var(--text2); font-size:10px; line-height:1.35; overflow-wrap:anywhere; }
+    .goal-event.home { grid-column:1; }
+    .goal-event.away { grid-column:2; text-align:right; }
+    .goal-minute { color:var(--gold-l); font-weight:700; font-variant-numeric:tabular-nums; }
     .fixture-meta { grid-column:2 / -1; font-size:9px; letter-spacing:1px; text-transform:uppercase; color:var(--text3); }
     .empty-state,.error-state { text-align:center; padding:52px 20px; color:var(--text2); border:1px dashed var(--bdr2); border-radius:14px; }
     .error-state { color:var(--red); }

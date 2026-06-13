@@ -34,6 +34,8 @@ IG_ACCESS_TOKEN=...
 HOME_AUTO_INTERVAL_HOURS=6
 ```
 
+`APISPORTS_KEY` arricchisce le partite live dei Mondiali con minuto e nome dei marcatori. Se non e configurata, calendario, risultati, gironi e tabellone continuano a usare normalmente football-data.org.
+
 `ADMIN_TOKEN` e `SUPABASE_SERVICE_ROLE_KEY` non devono mai stare in `index.html` o `icv_admin.html`.
 
 La cartella include anche `wrangler.toml` per Cloudflare Pages. Il nome progetto predefinito e `icv-scout`; puoi rinominarlo nel file se su Cloudflare scegli un altro nome.

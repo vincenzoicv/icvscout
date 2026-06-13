@@ -199,8 +199,21 @@
       '<div class="fixture-time">' + escapeHtml(time) + '<small>' + escapeHtml(groupOrStage(match)) + '</small></div>' +
       '<div class="fixture-teams">' + teamLine(match.homeTeam) + teamLine(match.awayTeam) + '</div>' +
       '<div class="fixture-score"><span>' + score[0] + '</span><span>' + score[1] + '</span></div>' +
+      liveGoalEventsHtml(match, live) +
       '<div class="fixture-meta">' + escapeHtml(live && !LIVE_STATUSES.includes(match.status) ? "In corso" : STATUS_LABELS[match.status] || match.status) + '</div>' +
       '</article>';
+  }
+
+  function liveGoalEventsHtml(match, live) {
+    var goals = Array.isArray(match.goalEvents) ? match.goalEvents : [];
+    if (!live || !goals.length) return "";
+    return '<div class="fixture-goals">' + goals.map(function (goal) {
+      var minute = String(goal.minute || 0) + (goal.extra ? "+" + goal.extra : "") + "'";
+      var detail = /penalty/i.test(goal.detail || "") ? " (rig.)" : /own goal/i.test(goal.detail || "") ? " (aut.)" : "";
+      return '<div class="goal-event ' + (goal.side === "away" ? "away" : "home") + '">' +
+        '<span class="goal-minute">' + escapeHtml(minute) + '</span> ' + escapeHtml(goal.player || "Marcatore da confermare") + escapeHtml(detail) +
+        '</div>';
+    }).join("") + '</div>';
   }
 
   function teamLine(team) {

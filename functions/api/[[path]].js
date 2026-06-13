@@ -1073,7 +1073,7 @@ async function worldCupOverview(request, env, context) {
     fetchJson(base + "/scorers?limit=25", headers).catch(() => ({ scorers: [] })),
   ]);
 
-  const matches = (matchesData.matches || []).map(match => ({
+  let matches = (matchesData.matches || []).map(match => ({
     id: match.id,
     utcDate: match.utcDate,
     status: match.status,
@@ -1085,6 +1085,7 @@ async function worldCupOverview(request, env, context) {
     score: match.score,
     isLive: isWorldCupMatchLive(match),
   }));
+  matches = await enrichWorldCupLiveGoals(matches, env);
   const standings = (standingsData.standings || []).map(group => ({
     stage: group.stage,
     type: group.type,
@@ -1304,6 +1305,84 @@ function compactTeam(team) {
     tla: team && team.tla,
     crest: team && team.crest,
   };
+}
+
+async function enrichWorldCupLiveGoals(matches, env) {
+  if (!env.APISPORTS_KEY) return matches;
+  const liveMatches = matches.filter(match => match.isLive);
+  if (!liveMatches.length) return matches;
+
+  try {
+    const headers = { "x-apisports-key": env.APISPORTS_KEY };
+    const dates = [...new Set(liveMatches.map(match => String(match.utcDate || "").slice(0, 10)).filter(Boolean))];
+    const fixturePayloads = await Promise.all(dates.map(date => fetchJson(
+      `https://v3.football.api-sports.io/fixtures?league=1&season=2026&date=${encodeURIComponent(date)}&timezone=UTC`,
+      headers
+    )));
+    const fixtures = fixturePayloads.flatMap(payload => Array.isArray(payload.response) ? payload.response : []);
+    const links = liveMatches.map(match => ({ match, fixture: findApiSportsFixture(match, fixtures) }))
+      .filter(link => link.fixture && link.fixture.fixture && link.fixture.fixture.id);
+    if (!links.length) return matches;
+
+    const eventPayloads = await Promise.all(links.map(link => fetchJson(
+      `https://v3.football.api-sports.io/fixtures/events?fixture=${encodeURIComponent(link.fixture.fixture.id)}`,
+      headers
+    ).catch(() => ({ response: [] }))));
+    const goalsByMatch = new Map();
+    links.forEach((link, index) => {
+      const events = Array.isArray(eventPayloads[index].response) ? eventPayloads[index].response : [];
+      goalsByMatch.set(link.match.id, compactGoalEvents(events, link.match));
+    });
+    return matches.map(match => goalsByMatch.has(match.id)
+      ? { ...match, goalEvents: goalsByMatch.get(match.id) }
+      : match);
+  } catch (error) {
+    console.warn("World Cup live goals unavailable", error && error.message ? error.message : error);
+    return matches;
+  }
+}
+
+function findApiSportsFixture(match, fixtures) {
+  const kickoff = Date.parse(match.utcDate || "");
+  return fixtures
+    .filter(item => {
+      const home = item && item.teams && item.teams.home && item.teams.home.name;
+      const away = item && item.teams && item.teams.away && item.teams.away.name;
+      return sameWorldCupTeam(match.homeTeam && match.homeTeam.name, home)
+        && sameWorldCupTeam(match.awayTeam && match.awayTeam.name, away);
+    })
+    .sort((a, b) => Math.abs(Date.parse(a.fixture.date) - kickoff) - Math.abs(Date.parse(b.fixture.date) - kickoff))[0] || null;
+}
+
+function sameWorldCupTeam(left, right) {
+  const aliases = {
+    "bosnia herzegovina": "bosnia",
+    "congo dr": "dr congo",
+    "cote d ivoire": "ivory coast",
+    "korea republic": "south korea",
+    "usa": "united states",
+  };
+  const normalize = value => {
+    const clean = String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase().replace(/\b(fc|national team)\b/g, " ").replace(/[^a-z0-9]+/g, " ").trim();
+    return aliases[clean] || clean;
+  };
+  const a = normalize(left);
+  const b = normalize(right);
+  return !!a && !!b && (a === b || a.includes(b) || b.includes(a));
+}
+
+function compactGoalEvents(events, match) {
+  return events.filter(event => event && event.type === "Goal" && !/missed/i.test(event.detail || ""))
+    .map(event => ({
+      minute: Number(event.time && event.time.elapsed) || 0,
+      extra: Number(event.time && event.time.extra) || 0,
+      player: event.player && event.player.name || "Marcatore da confermare",
+      assist: event.assist && event.assist.name || "",
+      detail: event.detail || "Normal Goal",
+      side: sameWorldCupTeam(match.homeTeam && match.homeTeam.name, event.team && event.team.name) ? "home" : "away",
+    }))
+    .sort((a, b) => (a.minute + a.extra / 100) - (b.minute + b.extra / 100));
 }
 
 async function apiSportsProxy(path, url, env) {

@@ -34,7 +34,7 @@ IG_ACCESS_TOKEN=...
 HOME_AUTO_INTERVAL_HOURS=6
 ```
 
-`APISPORTS_KEY` arricchisce le partite live dei Mondiali con minuto e nome dei marcatori. Se non e configurata, calendario, risultati, gironi e tabellone continuano a usare normalmente football-data.org.
+`APISPORTS_KEY` arricchisce le partite live dei Mondiali con minuto e nome dei marcatori. Le risposte vengono conservate e aggiornate quando cambia il punteggio, per limitare il consumo della quota API. Se la chiave non e configurata, calendario, risultati, gironi e tabellone continuano a usare normalmente football-data.org.
 
 `ADMIN_TOKEN` e `SUPABASE_SERVICE_ROLE_KEY` non devono mai stare in `index.html` o `icv_admin.html`.
 

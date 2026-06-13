@@ -1085,7 +1085,7 @@ async function worldCupOverview(request, env, context) {
     score: match.score,
     isLive: isWorldCupMatchLive(match),
   }));
-  matches = await enrichWorldCupLiveGoals(matches, env);
+  matches = await enrichWorldCupLiveGoals(matches, env, request, cache, context);
   const standings = (standingsData.standings || []).map(group => ({
     stage: group.stage,
     type: group.type,
@@ -1307,39 +1307,109 @@ function compactTeam(team) {
   };
 }
 
-async function enrichWorldCupLiveGoals(matches, env) {
+async function enrichWorldCupLiveGoals(matches, env, request, cache, context) {
   if (!env.APISPORTS_KEY) return matches;
   const liveMatches = matches.filter(match => match.isLive);
   if (!liveMatches.length) return matches;
 
   try {
     const headers = { "x-apisports-key": env.APISPORTS_KEY };
-    const dates = [...new Set(liveMatches.map(match => String(match.utcDate || "").slice(0, 10)).filter(Boolean))];
+    const cachedGoals = new Map();
+    const pending = [];
+    await Promise.all(liveMatches.map(async match => {
+      const cached = await readLiveGoalCache(match, request, cache);
+      if (cached && cached.scoreKey === worldCupScoreKey(match)
+        && cached.goalEvents.length >= worldCupExpectedGoals(match)) {
+        cachedGoals.set(match.id, cached);
+      } else {
+        pending.push({ match, cached });
+      }
+    }));
+    if (!pending.length) {
+      return matches.map(match => cachedGoals.has(match.id)
+        ? { ...match, goalEvents: cachedGoals.get(match.id).goalEvents }
+        : match);
+    }
+
+    const needsFixture = pending.filter(link => !(link.cached && link.cached.fixtureId));
+    const dates = [...new Set(needsFixture.map(link => String(link.match.utcDate || "").slice(0, 10)).filter(Boolean))];
     const fixturePayloads = await Promise.all(dates.map(date => fetchJson(
       `https://v3.football.api-sports.io/fixtures?league=1&season=2026&date=${encodeURIComponent(date)}&timezone=UTC`,
       headers
     )));
     const fixtures = fixturePayloads.flatMap(payload => Array.isArray(payload.response) ? payload.response : []);
-    const links = liveMatches.map(match => ({ match, fixture: findApiSportsFixture(match, fixtures) }))
-      .filter(link => link.fixture && link.fixture.fixture && link.fixture.fixture.id);
-    if (!links.length) return matches;
+    const links = pending.map(link => {
+      if (link.cached && link.cached.fixtureId) return { ...link, fixtureId: link.cached.fixtureId };
+      const fixture = findApiSportsFixture(link.match, fixtures);
+      return { ...link, fixtureId: fixture && fixture.fixture && fixture.fixture.id };
+    }).filter(link => link.fixtureId);
+    if (!links.length) {
+      return matches.map((match) => cachedGoals.has(match.id)
+        ? { ...match, goalEvents: cachedGoals.get(match.id).goalEvents }
+        : match);
+    }
 
     const eventPayloads = await Promise.all(links.map(link => fetchJson(
-      `https://v3.football.api-sports.io/fixtures/events?fixture=${encodeURIComponent(link.fixture.fixture.id)}`,
+      `https://v3.football.api-sports.io/fixtures/events?fixture=${encodeURIComponent(link.fixtureId)}`,
       headers
     ).catch(() => ({ response: [] }))));
-    const goalsByMatch = new Map();
     links.forEach((link, index) => {
       const events = Array.isArray(eventPayloads[index].response) ? eventPayloads[index].response : [];
-      goalsByMatch.set(link.match.id, compactGoalEvents(events, link.match));
+      const value = {
+        fixtureId: link.fixtureId,
+        scoreKey: worldCupScoreKey(link.match),
+        goalEvents: compactGoalEvents(events, link.match),
+      };
+      cachedGoals.set(link.match.id, value);
+      writeLiveGoalCache(link.match, value, request, cache, context);
     });
-    return matches.map(match => goalsByMatch.has(match.id)
-      ? { ...match, goalEvents: goalsByMatch.get(match.id) }
+    return matches.map(match => cachedGoals.has(match.id)
+      ? { ...match, goalEvents: cachedGoals.get(match.id).goalEvents }
       : match);
   } catch (error) {
     console.warn("World Cup live goals unavailable", error && error.message ? error.message : error);
     return matches;
   }
+}
+
+function liveGoalCacheKey(match, request) {
+  const url = new URL(request.url);
+  url.pathname = `/api/world-cup/live-goals/${encodeURIComponent(match.id)}`;
+  url.search = "";
+  return new Request(url.toString(), { method: "GET" });
+}
+
+async function readLiveGoalCache(match, request, cache) {
+  if (!cache) return null;
+  try {
+    const response = await cache.match(liveGoalCacheKey(match, request));
+    if (!response) return null;
+    const value = await response.json();
+    return value && Array.isArray(value.goalEvents) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeLiveGoalCache(match, value, request, cache, context) {
+  if (!cache || !context || typeof context.waitUntil !== "function") return;
+  const complete = value.goalEvents.length >= worldCupExpectedGoals(match);
+  const response = new Response(JSON.stringify(value), {
+    headers: { ...JSON_HEADERS, "Cache-Control": `public, max-age=${complete ? 21600 : 45}` },
+  });
+  context.waitUntil(cache.put(liveGoalCacheKey(match, request), response));
+}
+
+function worldCupScoreKey(match) {
+  const score = match && match.score || {};
+  const current = score.fullTime || score.regularTime || {};
+  return `${current.home ?? ""}:${current.away ?? ""}`;
+}
+
+function worldCupExpectedGoals(match) {
+  const score = match && match.score || {};
+  const current = score.fullTime || score.regularTime || {};
+  return Math.max(0, Number(current.home) || 0) + Math.max(0, Number(current.away) || 0);
 }
 
 function findApiSportsFixture(match, fixtures) {

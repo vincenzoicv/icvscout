@@ -1308,12 +1308,10 @@ function compactTeam(team) {
 }
 
 async function enrichWorldCupLiveGoals(matches, env, request, cache, context) {
-  if (!env.APISPORTS_KEY) return matches;
   const liveMatches = matches.filter(match => match.isLive);
   if (!liveMatches.length) return matches;
 
   try {
-    const headers = { "x-apisports-key": env.APISPORTS_KEY };
     const cachedGoals = new Map();
     const pending = [];
     await Promise.all(liveMatches.map(async match => {
@@ -1331,14 +1329,42 @@ async function enrichWorldCupLiveGoals(matches, env, request, cache, context) {
         : match);
     }
 
-    const needsFixture = pending.filter(link => !(link.cached && link.cached.fixtureId));
+    const worldCup26Payload = await fetchJson("https://worldcup26.ir/get/games").catch(() => []);
+    const worldCup26Games = Array.isArray(worldCup26Payload)
+      ? worldCup26Payload
+      : (Array.isArray(worldCup26Payload && worldCup26Payload.games)
+        ? worldCup26Payload.games
+        : (Array.isArray(worldCup26Payload && worldCup26Payload.data) ? worldCup26Payload.data : []));
+    pending.forEach(link => {
+      const game = findWorldCup26Game(link.match, worldCup26Games);
+      if (!game || worldCup26ScoreKey(game) !== worldCupScoreKey(link.match)) return;
+      const goalEvents = compactWorldCup26Goals(game);
+      if (goalEvents.length < worldCupExpectedGoals(link.match)) return;
+      const value = {
+        source: "worldcup2026",
+        scoreKey: worldCupScoreKey(link.match),
+        goalEvents,
+      };
+      cachedGoals.set(link.match.id, value);
+      writeLiveGoalCache(link.match, value, request, cache, context);
+    });
+
+    const unresolved = pending.filter(link => !cachedGoals.has(link.match.id));
+    if (!unresolved.length || !env.APISPORTS_KEY) {
+      return matches.map(match => cachedGoals.has(match.id)
+        ? { ...match, goalEvents: cachedGoals.get(match.id).goalEvents }
+        : match);
+    }
+
+    const headers = { "x-apisports-key": env.APISPORTS_KEY };
+    const needsFixture = unresolved.filter(link => !(link.cached && link.cached.fixtureId));
     const dates = [...new Set(needsFixture.map(link => String(link.match.utcDate || "").slice(0, 10)).filter(Boolean))];
     const fixturePayloads = await Promise.all(dates.map(date => fetchJson(
       `https://v3.football.api-sports.io/fixtures?league=1&season=2026&date=${encodeURIComponent(date)}&timezone=UTC`,
       headers
     )));
     const fixtures = fixturePayloads.flatMap(payload => Array.isArray(payload.response) ? payload.response : []);
-    const links = pending.map(link => {
+    const links = unresolved.map(link => {
       if (link.cached && link.cached.fixtureId) return { ...link, fixtureId: link.cached.fixtureId };
       const fixture = findApiSportsFixture(link.match, fixtures);
       return { ...link, fixtureId: fixture && fixture.fixture && fixture.fixture.id };
@@ -1410,6 +1436,42 @@ function worldCupExpectedGoals(match) {
   const score = match && match.score || {};
   const current = score.fullTime || score.regularTime || {};
   return Math.max(0, Number(current.home) || 0) + Math.max(0, Number(current.away) || 0);
+}
+
+function findWorldCup26Game(match, games) {
+  return games.find(game => sameWorldCupTeam(match.homeTeam && match.homeTeam.name, game && game.home_team_name_en)
+    && sameWorldCupTeam(match.awayTeam && match.awayTeam.name, game && game.away_team_name_en)) || null;
+}
+
+function worldCup26ScoreKey(game) {
+  return `${Math.max(0, Number(game && game.home_score) || 0)}:${Math.max(0, Number(game && game.away_score) || 0)}`;
+}
+
+function compactWorldCup26Goals(game) {
+  return [
+    ...parseWorldCup26Scorers(game && game.home_scorers, "home"),
+    ...parseWorldCup26Scorers(game && game.away_scorers, "away"),
+  ].sort((a, b) => (a.minute + a.extra / 100) - (b.minute + b.extra / 100));
+}
+
+function parseWorldCup26Scorers(rawValue, side) {
+  const raw = String(rawValue || "").trim();
+  if (!raw || raw.toLowerCase() === "null") return [];
+  const entries = raw.replace(/[“”]/g, '"').replace(/^\s*\{|\}\s*$/g, "").split(/\s*,\s*/);
+  return entries.map(entry => {
+    const clean = entry.replace(/^"+|"+$/g, "").trim();
+    const match = clean.match(/^(.*?)\s+(\d+)'(?:\+(\d+)')?\s*(.*)$/);
+    if (!match) return null;
+    const marker = match[4] || "";
+    return {
+      minute: Number(match[2]) || 0,
+      extra: Number(match[3]) || 0,
+      player: match[1].trim() || "Marcatore da confermare",
+      assist: "",
+      detail: /\bog\b/i.test(marker) ? "Own Goal" : (/\(\s*p\s*\)/i.test(marker) ? "Penalty" : "Normal Goal"),
+      side,
+    };
+  }).filter(Boolean);
 }
 
 function findApiSportsFixture(match, fixtures) {

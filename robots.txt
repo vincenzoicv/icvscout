@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /icv_admin
+Disallow: /icv_admin.html
+Disallow: /api/admin/
+
+Sitemap: https://ilcalciodivince.com/sitemap.xml

@@ -537,10 +537,10 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
     <h3>Focus ICV</h3>
     <div class="home-main-title" id="homeFocusTitle">ICV Scout in aggiornamento</div>
   </div>
-  <div class="home-panel">
+  <div class="home-panel" id="homeMatchPanel" hidden>
     <h3>Match Center</h3>
-    <div class="home-main-title" id="homeMatchTitle">Calendario in attesa</div>
-    <div class="home-text" id="homeMatchText">Nessuna partita attiva nel Match Center.</div>
+    <div class="home-main-title" id="homeMatchTitle"></div>
+    <div class="home-text" id="homeMatchText"></div>
   </div>
   <div class="home-panel">
     <h3>Scorciatoie</h3>
@@ -1146,13 +1146,17 @@ function icvEsc(value) {
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
   });
 }
-var OFFICIAL_SERIE_A_CALENDAR = {
-  title: "Calendario Serie A 2026/27 ufficiale",
-  text: "La Juventus ha pubblicato il calendario ufficiale della nuova stagione. Fonti: <a href='https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27' target='_blank' rel='noopener' style='color:var(--gold-l)'>Juventus.com</a> · <a href='https://www.legaseriea.it/serie-a/calendario-risultati' target='_blank' rel='noopener' style='color:var(--gold-l)'>Lega Serie A</a>."
-};
-function renderOfficialCalendarFallback() {
-  document.getElementById("homeMatchTitle").textContent = OFFICIAL_SERIE_A_CALENDAR.title;
-  document.getElementById("homeMatchText").innerHTML = OFFICIAL_SERIE_A_CALENDAR.text;
+function renderHomeMatch(match) {
+  var panel = document.getElementById("homeMatchPanel");
+  var summary = match && String(match.summary || "").trim();
+  var isDraft = /bozza pre-partita|scheda pre-partita demo|da rifinire|da completare/i.test(summary);
+  if (!match || !summary || isDraft) {
+    panel.hidden = true;
+    return;
+  }
+  document.getElementById("homeMatchTitle").textContent = match.title || match.opponent || "Match Center";
+  document.getElementById("homeMatchText").textContent = summary;
+  panel.hidden = false;
 }
 
 function loadHomeDashboard() {
@@ -1168,12 +1172,7 @@ function loadHomeDashboard() {
     renderRadar(data.radar);
     var focus = buildEditorialFocus(market, news);
     document.getElementById("homeFocusTitle").textContent = focus.title;
-    if (matches[0]) {
-      document.getElementById("homeMatchTitle").textContent = matches[0].title || matches[0].opponent || "Match Center";
-      document.getElementById("homeMatchText").textContent = matches[0].summary || matches[0].tactical_key || "Scheda match pronta.";
-    } else {
-      renderOfficialCalendarFallback();
-    }
+    renderHomeMatch(matches[0]);
     renderHomeList("homeNewsList", focus.skipNewsId ? news.filter(function(n){ return n.id !== focus.skipNewsId; }) : news, function(n) {
       return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : "")};
     }, "Nessuna news approvata al momento.");

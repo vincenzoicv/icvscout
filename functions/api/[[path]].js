@@ -873,8 +873,8 @@ async function generateMatchCenter(env) {
     match_date: match.utcDate,
     status: "pre_match",
     title: "Verso " + (isHome ? "Juventus-" + opponent : opponent + "-Juventus"),
-    summary: "Bozza pre-partita generata automaticamente: forma recente, indisponibili e chiave tattica da rifinire in admin.",
-    tactical_key: "Da completare: duello decisivo, uscita palla e zona in cui la Juve puo creare superiorita.",
+    summary: "",
+    tactical_key: "",
     source_payload: match,
     updated_at: new Date().toISOString(),
   };

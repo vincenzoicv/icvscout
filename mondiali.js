@@ -102,7 +102,8 @@
   };
 
   async function fetchOverview(force) {
-    var response = await fetch(API_URL, { cache: force ? "reload" : "default" });
+    var url = force ? API_URL + "?refresh=" + Date.now() : API_URL;
+    var response = await fetch(url, { cache: "no-store" });
     if (response.ok) return response.json();
 
     var localHost = location.hostname === "127.0.0.1" || location.hostname === "localhost";
@@ -407,7 +408,7 @@
   function scheduleRefresh() {
     clearTimeout(refreshTimer);
     var live = worldCup && (worldCup.matches || []).some(isLiveMatch);
-    var delay = live ? 30000 : 180000;
+    var delay = live ? 10000 : 180000;
     refreshTimer = setTimeout(function () {
       if (document.visibilityState === "visible") window.loadWorldCup(false);
       else scheduleRefresh();

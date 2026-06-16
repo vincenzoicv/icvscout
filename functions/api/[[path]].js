@@ -1055,11 +1055,13 @@ async function footballDataProxy(path, url, env) {
 async function worldCupOverview(request, env, context) {
   if (!env.FOOTBALL_DATA_KEY) return json({ error: "FOOTBALL_DATA_KEY non configurata" }, 500);
 
+  const requestUrl = new URL(request.url);
+  const forceRefresh = requestUrl.searchParams.has("refresh");
   const cacheUrl = new URL(request.url);
   cacheUrl.search = "";
   const cacheKey = new Request(cacheUrl.toString(), { method: "GET" });
   const cache = typeof caches !== "undefined" ? caches.default : null;
-  if (cache) {
+  if (cache && !forceRefresh) {
     const cached = await cache.match(cacheKey);
     if (cached) return cached;
   }
@@ -1112,7 +1114,7 @@ async function worldCupOverview(request, env, context) {
     penalties: row.penalties || 0,
   }));
   const live = matches.some(match => match.isLive);
-  const maxAge = live ? 30 : 180;
+  const maxAge = live ? 8 : 180;
   const payload = {
     competition: {
       id: competition.id,
@@ -1131,7 +1133,9 @@ async function worldCupOverview(request, env, context) {
   const response = new Response(JSON.stringify(payload), {
     headers: {
       ...JSON_HEADERS,
-      "Cache-Control": `public, max-age=${maxAge}, stale-while-revalidate=300`,
+      "Cache-Control": live
+        ? `public, max-age=${maxAge}, must-revalidate`
+        : `public, max-age=${maxAge}, stale-while-revalidate=300`,
     },
   });
   if (cache && context && typeof context.waitUntil === "function") {
@@ -1313,21 +1317,11 @@ async function enrichWorldCupLiveGoals(matches, env, request, cache, context) {
 
   try {
     const cachedGoals = new Map();
-    const pending = [];
+    const cachedFallbacks = new Map();
     await Promise.all(liveMatches.map(async match => {
       const cached = await readLiveGoalCache(match, request, cache);
-      if (cached && cached.scoreKey === worldCupScoreKey(match)
-        && cached.goalEvents.length >= worldCupExpectedGoals(match)) {
-        cachedGoals.set(match.id, cached);
-      } else {
-        pending.push({ match, cached });
-      }
+      if (cached) cachedFallbacks.set(match.id, cached);
     }));
-    if (!pending.length) {
-      return matches.map(match => cachedGoals.has(match.id)
-        ? { ...match, goalEvents: cachedGoals.get(match.id).goalEvents }
-        : match);
-    }
 
     const worldCup26Payload = await fetchJson("https://worldcup26.ir/get/games").catch(() => []);
     const worldCup26Games = Array.isArray(worldCup26Payload)
@@ -1335,25 +1329,28 @@ async function enrichWorldCupLiveGoals(matches, env, request, cache, context) {
       : (Array.isArray(worldCup26Payload && worldCup26Payload.games)
         ? worldCup26Payload.games
         : (Array.isArray(worldCup26Payload && worldCup26Payload.data) ? worldCup26Payload.data : []));
-    pending.forEach(link => {
-      const game = findWorldCup26Game(link.match, worldCup26Games);
-      if (!game || worldCup26ScoreKey(game) !== worldCupScoreKey(link.match)) return;
+    liveMatches.forEach(match => {
+      const game = findWorldCup26Game(match, worldCup26Games);
+      if (!game) return;
+      const liveScore = worldCup26Score(game);
       const goalEvents = compactWorldCup26Goals(game);
-      if (goalEvents.length < worldCupExpectedGoals(link.match)) return;
+      const sourceGoals = liveScore.home + liveScore.away;
+      if (sourceGoals < worldCupExpectedGoals(match) || goalEvents.length < sourceGoals) return;
       const value = {
         source: "worldcup2026",
-        scoreKey: worldCupScoreKey(link.match),
+        scoreKey: `${liveScore.home}:${liveScore.away}`,
+        liveScore,
         goalEvents,
       };
-      cachedGoals.set(link.match.id, value);
-      writeLiveGoalCache(link.match, value, request, cache, context);
+      cachedGoals.set(match.id, value);
+      writeLiveGoalCache(match, value, request, cache, context);
     });
 
-    const unresolved = pending.filter(link => !cachedGoals.has(link.match.id));
+    const unresolved = liveMatches
+      .filter(match => !cachedGoals.has(match.id))
+      .map(match => ({ match, cached: cachedFallbacks.get(match.id) }));
     if (!unresolved.length || !env.APISPORTS_KEY) {
-      return matches.map(match => cachedGoals.has(match.id)
-        ? { ...match, goalEvents: cachedGoals.get(match.id).goalEvents }
-        : match);
+      return applyWorldCupLiveGoals(matches, cachedGoals, cachedFallbacks);
     }
 
     const headers = { "x-apisports-key": env.APISPORTS_KEY };
@@ -1370,9 +1367,7 @@ async function enrichWorldCupLiveGoals(matches, env, request, cache, context) {
       return { ...link, fixtureId: fixture && fixture.fixture && fixture.fixture.id };
     }).filter(link => link.fixtureId);
     if (!links.length) {
-      return matches.map((match) => cachedGoals.has(match.id)
-        ? { ...match, goalEvents: cachedGoals.get(match.id).goalEvents }
-        : match);
+      return applyWorldCupLiveGoals(matches, cachedGoals, cachedFallbacks);
     }
 
     const eventPayloads = await Promise.all(links.map(link => fetchJson(
@@ -1381,21 +1376,42 @@ async function enrichWorldCupLiveGoals(matches, env, request, cache, context) {
     ).catch(() => ({ response: [] }))));
     links.forEach((link, index) => {
       const events = Array.isArray(eventPayloads[index].response) ? eventPayloads[index].response : [];
+      const goalEvents = compactGoalEvents(events, link.match);
+      if (goalEvents.length < worldCupExpectedGoals(link.match)) return;
       const value = {
         fixtureId: link.fixtureId,
         scoreKey: worldCupScoreKey(link.match),
-        goalEvents: compactGoalEvents(events, link.match),
+        goalEvents,
       };
       cachedGoals.set(link.match.id, value);
       writeLiveGoalCache(link.match, value, request, cache, context);
     });
-    return matches.map(match => cachedGoals.has(match.id)
-      ? { ...match, goalEvents: cachedGoals.get(match.id).goalEvents }
-      : match);
+    return applyWorldCupLiveGoals(matches, cachedGoals, cachedFallbacks);
   } catch (error) {
     console.warn("World Cup live goals unavailable", error && error.message ? error.message : error);
     return matches;
   }
+}
+
+function applyWorldCupLiveGoals(matches, freshGoals, cachedFallbacks) {
+  return matches.map(match => {
+    const value = freshGoals.get(match.id) || cachedFallbacks.get(match.id);
+    if (!value) return match;
+    const candidateScore = value.liveScore;
+    const liveScore = candidateScore
+      && candidateScore.home + candidateScore.away >= worldCupExpectedGoals(match)
+      ? candidateScore
+      : null;
+    const score = liveScore ? {
+      ...match.score,
+      fullTime: {
+        ...(match.score && match.score.fullTime || {}),
+        home: liveScore.home,
+        away: liveScore.away,
+      },
+    } : match.score;
+    return { ...match, score, goalEvents: value.goalEvents };
+  });
 }
 
 function liveGoalCacheKey(match, request) {
@@ -1419,9 +1435,8 @@ async function readLiveGoalCache(match, request, cache) {
 
 function writeLiveGoalCache(match, value, request, cache, context) {
   if (!cache || !context || typeof context.waitUntil !== "function") return;
-  const complete = value.goalEvents.length >= worldCupExpectedGoals(match);
   const response = new Response(JSON.stringify(value), {
-    headers: { ...JSON_HEADERS, "Cache-Control": `public, max-age=${complete ? 21600 : 45}` },
+    headers: { ...JSON_HEADERS, "Cache-Control": "public, max-age=8, must-revalidate" },
   });
   context.waitUntil(cache.put(liveGoalCacheKey(match, request), response));
 }
@@ -1443,8 +1458,11 @@ function findWorldCup26Game(match, games) {
     && sameWorldCupTeam(match.awayTeam && match.awayTeam.name, game && game.away_team_name_en)) || null;
 }
 
-function worldCup26ScoreKey(game) {
-  return `${Math.max(0, Number(game && game.home_score) || 0)}:${Math.max(0, Number(game && game.away_score) || 0)}`;
+function worldCup26Score(game) {
+  return {
+    home: Math.max(0, Number(game && game.home_score) || 0),
+    away: Math.max(0, Number(game && game.away_score) || 0),
+  };
 }
 
 function compactWorldCup26Goals(game) {

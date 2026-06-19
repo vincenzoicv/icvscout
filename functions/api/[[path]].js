@@ -107,6 +107,7 @@ export async function onRequest(context) {
     if (path === "public/graphics") return publicGraphics(env);
     if (path === "public/news") return publicNews(env, url);
     if (path === "world-cup/overview") return worldCupOverview(request, env, context);
+    if (path === "world-cup/live") return worldCupLive(request, env);
     if (path === "world-cup/calendar.ics") return worldCupCalendar(request, env);
     if (path === "subscribe") return subscribeWorldCup(request, env);
     if (path === "admin/news") return adminNews(request, env);
@@ -1144,6 +1145,21 @@ async function worldCupOverview(request, env, context) {
   return response;
 }
 
+async function worldCupLive(request, env) {
+  const games = await fetchWorldCup26Games();
+  const matches = games.map(compactWorldCup26Game).filter(Boolean);
+  return new Response(JSON.stringify({
+    matches,
+    live: matches.some(match => match.isLive),
+    fetchedAt: new Date().toISOString(),
+  }), {
+    headers: {
+      ...JSON_HEADERS,
+      "Cache-Control": "no-store, max-age=0",
+    },
+  });
+}
+
 async function worldCupCalendar(request, env) {
   if (request.method !== "GET") return json({ error: "Metodo non consentito" }, 405);
   if (!env.FOOTBALL_DATA_KEY) return json({ error: "FOOTBALL_DATA_KEY non configurata" }, 500);
@@ -1323,12 +1339,7 @@ async function enrichWorldCupLiveGoals(matches, env, request, cache, context) {
       if (cached) cachedFallbacks.set(match.id, cached);
     }));
 
-    const worldCup26Payload = await fetchJson("https://worldcup26.ir/get/games").catch(() => []);
-    const worldCup26Games = Array.isArray(worldCup26Payload)
-      ? worldCup26Payload
-      : (Array.isArray(worldCup26Payload && worldCup26Payload.games)
-        ? worldCup26Payload.games
-        : (Array.isArray(worldCup26Payload && worldCup26Payload.data) ? worldCup26Payload.data : []));
+    const worldCup26Games = await fetchWorldCup26Games().catch(() => []);
     liveMatches.forEach(match => {
       const game = findWorldCup26Game(match, worldCup26Games);
       if (!game) return;
@@ -1391,6 +1402,42 @@ async function enrichWorldCupLiveGoals(matches, env, request, cache, context) {
     console.warn("World Cup live goals unavailable", error && error.message ? error.message : error);
     return matches;
   }
+}
+
+async function fetchWorldCup26Games() {
+  const worldCup26Payload = await fetchJson("https://worldcup26.ir/get/games");
+  return Array.isArray(worldCup26Payload)
+    ? worldCup26Payload
+    : (Array.isArray(worldCup26Payload && worldCup26Payload.games)
+      ? worldCup26Payload.games
+      : (Array.isArray(worldCup26Payload && worldCup26Payload.data) ? worldCup26Payload.data : []));
+}
+
+function compactWorldCup26Game(game) {
+  if (!game) return null;
+  const liveScore = worldCup26Score(game);
+  const status = worldCup26Status(game);
+  return {
+    source: "worldcup2026",
+    sourceId: game.id || game._id || "",
+    utcDate: game.local_date || "",
+    status,
+    isLive: status === "IN_PLAY" || status === "PAUSED",
+    homeTeam: { name: cleanText(game.home_team_name_en), id: game.home_team_id || null },
+    awayTeam: { name: cleanText(game.away_team_name_en), id: game.away_team_id || null },
+    score: { fullTime: liveScore },
+    goalEvents: compactWorldCup26Goals(game),
+    timeElapsed: cleanText(game.time_elapsed),
+  };
+}
+
+function worldCup26Status(game) {
+  const finished = String(game && game.finished || "").toLowerCase();
+  const elapsed = String(game && game.time_elapsed || "").toLowerCase();
+  if (finished === "true" || elapsed === "finished" || elapsed === "ft") return "FINISHED";
+  if (elapsed === "pause" || elapsed === "paused" || elapsed === "ht") return "PAUSED";
+  if (/^\d+/.test(elapsed) || elapsed === "live" || elapsed === "in_play") return "IN_PLAY";
+  return "TIMED";
 }
 
 function applyWorldCupLiveGoals(matches, freshGoals, cachedFallbacks) {

@@ -2,6 +2,7 @@
   "use strict";
 
   var API_URL = "/api/world-cup/overview";
+  var LIVE_API_URL = "/api/world-cup/live";
   var CACHE_KEY = "icv_world_cup_2026_live";
   var LIVE_STATUSES = ["IN_PLAY", "PAUSED", "EXTRA_TIME", "PENALTY_SHOOTOUT"];
   var SCHEDULED_STATUSES = ["TIMED", "SCHEDULED"];
@@ -10,6 +11,7 @@
   var currentFilter = "today";
   var worldCup = null;
   var refreshTimer = null;
+  var liveRefreshTimer = null;
 
   var TEAM_NAMES = {
     "Bosnia-Herzegovina": "Bosnia-Erzegovina",
@@ -98,6 +100,7 @@
         refreshButton.textContent = "Aggiorna";
       }
       scheduleRefresh();
+      scheduleLiveRefresh();
     }
   };
 
@@ -408,11 +411,125 @@
   function scheduleRefresh() {
     clearTimeout(refreshTimer);
     var live = worldCup && (worldCup.matches || []).some(isLiveMatch);
-    var delay = live ? 10000 : 180000;
+    var delay = live ? 30000 : 180000;
     refreshTimer = setTimeout(function () {
       if (document.visibilityState === "visible") window.loadWorldCup(false);
       else scheduleRefresh();
     }, delay);
+  }
+
+  async function refreshLiveMatches() {
+    if (!worldCup || !shouldRunLiveRefresh()) {
+      scheduleLiveRefresh();
+      return;
+    }
+    try {
+      var response = await fetch(LIVE_API_URL + "?refresh=" + Date.now(), { cache: "no-store" });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      var payload = await response.json();
+      var liveMatches = Array.isArray(payload.matches) ? payload.matches : [];
+      if (liveMatches.length) {
+        mergeLiveMatches(liveMatches);
+        worldCup.live = (worldCup.matches || []).some(isLiveMatch);
+        renderConnectionState();
+        renderSchedule();
+      }
+    } catch (error) {
+      // La overview resta la fonte stabile; il canale live e' solo un boost per gol e minuti.
+    } finally {
+      scheduleLiveRefresh();
+    }
+  }
+
+  function shouldRunLiveRefresh() {
+    if (document.visibilityState !== "visible") return false;
+    if (currentFilter === "live") return true;
+    return Boolean(worldCup && (worldCup.matches || []).some(isLiveMatch));
+  }
+
+  function scheduleLiveRefresh() {
+    clearTimeout(liveRefreshTimer);
+    if (!worldCup || !shouldRunLiveRefresh()) return;
+    liveRefreshTimer = setTimeout(refreshLiveMatches, 5000);
+  }
+
+  function mergeLiveMatches(liveMatches) {
+    var matches = worldCup.matches || [];
+    liveMatches.forEach(function (liveMatch) {
+      var match = matches.find(function (item) { return sameWorldCupMatch(item, liveMatch); });
+      if (!match) return;
+
+      var currentScore = scorePair(match).map(Number);
+      var liveScore = scorePair(liveMatch).map(Number);
+      var currentTotal = (currentScore[0] || 0) + (currentScore[1] || 0);
+      var liveTotal = (liveScore[0] || 0) + (liveScore[1] || 0);
+      if (liveTotal >= currentTotal) {
+        var previousScore = match.score || {};
+        var previousFullTime = previousScore.fullTime || {};
+        match.score = Object.assign({}, previousScore, {
+          fullTime: Object.assign({}, previousFullTime, {
+            home: liveScore[0] || 0,
+            away: liveScore[1] || 0
+          })
+        });
+      }
+
+      if (liveMatch.isLive && !isFinished(match)) {
+        match.status = liveMatch.status || "IN_PLAY";
+        match.isLive = true;
+      }
+
+      if (Array.isArray(liveMatch.goalEvents) && liveMatch.goalEvents.length) {
+        var existingGoals = Array.isArray(match.goalEvents) ? match.goalEvents : [];
+        match.goalEvents = mergeGoalEvents(existingGoals, liveMatch.goalEvents);
+      }
+    });
+  }
+
+  function mergeGoalEvents(existingGoals, incomingGoals) {
+    var goalsByKey = {};
+    existingGoals.concat(incomingGoals).forEach(function (goal) {
+      var key = [
+        goal.side || "",
+        goal.minute || 0,
+        goal.extra || 0,
+        normalizeGoalName(goal.player || ""),
+        goal.detail || ""
+      ].join("|");
+      var previous = goalsByKey[key] || {};
+      goalsByKey[key] = Object.assign({}, previous, goal, {
+        player: goal.player || previous.player || "Marcatore da confermare"
+      });
+    });
+    return Object.keys(goalsByKey).map(function (key) { return goalsByKey[key]; }).sort(function (a, b) {
+      return ((a.minute || 0) + (a.extra || 0) / 100) - ((b.minute || 0) + (b.extra || 0) / 100);
+    });
+  }
+
+  function sameWorldCupMatch(a, b) {
+    if (a.id && b.id && String(a.id) === String(b.id)) return true;
+    if (a.sourceId && b.sourceId && String(a.sourceId) === String(b.sourceId)) return true;
+    return sameWorldCupTeam(a.homeTeam, b.homeTeam) && sameWorldCupTeam(a.awayTeam, b.awayTeam);
+  }
+
+  function sameWorldCupTeam(a, b) {
+    return normalizeTeamName(teamName(a)) === normalizeTeamName(teamName(b));
+  }
+
+  function normalizeTeamName(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "");
+  }
+
+  function normalizeGoalName(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "");
   }
 
   document.getElementById("matchFilters").addEventListener("click", function (event) {
@@ -421,10 +538,12 @@
     currentFilter = button.getAttribute("data-filter");
     document.querySelectorAll(".filter-btn").forEach(function (item) { item.classList.toggle("active", item === button); });
     renderSchedule();
+    scheduleLiveRefresh();
   });
 
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "visible" && worldCup) window.loadWorldCup(false);
+    else clearTimeout(liveRefreshTimer);
   });
 
   window.loadWorldCup(false);

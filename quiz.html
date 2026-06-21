@@ -585,6 +585,7 @@ document.getElementById("restartBtn").addEventListener("click",()=>{
 
 document.getElementById("leadForm").addEventListener("submit",async(event)=>{
   event.preventDefault();
+  formStatus.style.color = "var(--muted)";
   formStatus.textContent = "Invio in corso...";
   const form = event.currentTarget;
   const email = form.email.value.trim();
@@ -601,8 +602,13 @@ document.getElementById("leadForm").addEventListener("submit",async(event)=>{
         profile:lastProfile ? lastProfile.title : ""
       })
     });
-    if(!res.ok) throw new Error("subscribe failed");
     const data = await res.json().catch(()=>({}));
+    if(!res.ok || data.ok === false){
+      formStatus.style.color = "var(--red)";
+      formStatus.textContent = data.error || "Non sono riuscito a inviare la mail adesso. Riprova tra poco.";
+      return;
+    }
+    formStatus.style.color = "var(--green)";
     formStatus.textContent = data.sent
       ? "Perfetto: controlla la mail, il tuo profilo ICV è in arrivo."
       : "Perfetto: abbiamo ricevuto la tua mail. Il profilo ICV sarà inviato appena l'invio automatico è attivo.";

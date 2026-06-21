@@ -1237,14 +1237,15 @@ async function subscribeWorldCup(request, env) {
   }
 
   const listId = Number(env.BREVO_LIST_ID);
-  if (!env.BREVO_API_KEY || !Number.isFinite(listId)) {
+  const apiKey = brevoApiKey(env);
+  if (!apiKey || !Number.isFinite(listId)) {
     return json({ ok: true, subscribed: false, configured: false });
   }
 
   const response = await fetch("https://api.brevo.com/v3/contacts", {
     method: "POST",
     headers: {
-      "api-key": env.BREVO_API_KEY,
+      "api-key": apiKey,
       "Accept": "application/json",
       "Content-Type": "application/json",
     },
@@ -1280,41 +1281,59 @@ async function sendQuizResult(request, env) {
     return false;
   });
 
+  const apiKey = brevoApiKey(env);
   const senderEmail = cleanText(env.QUIZ_EMAIL_SENDER || env.BREVO_SENDER_EMAIL || "");
   const senderName = cleanText(env.QUIZ_EMAIL_SENDER_NAME || env.BREVO_SENDER_NAME || "Il Calcio di Vince");
-  if (!env.BREVO_API_KEY || !senderEmail) {
+  if (!apiKey || !senderEmail) {
     return json({ ok: true, sent: false, subscribed, configured: false });
   }
 
-  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: {
-      "api-key": env.BREVO_API_KEY,
-      "Accept": "application/json",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      sender: { name: senderName, email: senderEmail },
-      to: [{ email }],
-      subject: "Il tuo profilo ICV: " + profile.title,
-      htmlContent: quizResultEmailHtml(profile, score),
-      textContent: quizResultEmailText(profile, score),
-    }),
-  });
+  let response;
+  try {
+    response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "api-key": apiKey,
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sender: { name: senderName, email: senderEmail },
+        to: [{ email }],
+        subject: "Il tuo profilo ICV: " + profile.title,
+        htmlContent: quizResultEmailHtml(profile, score),
+        textContent: quizResultEmailText(profile, score),
+      }),
+    });
+  } catch (err) {
+    console.error("[quiz-result] Brevo email fetch failed", err && err.message || err);
+    return json({
+      ok: false,
+      sent: false,
+      subscribed,
+      error: "Invio mail non disponibile: controlla la chiave API Brevo salvata su Cloudflare.",
+    });
+  }
 
   if (response.ok) return json({ ok: true, sent: true, subscribed });
   const error = await response.json().catch(() => ({}));
   console.error("[quiz-result] Brevo email error", response.status, error);
-  return json({ ok: false, sent: false, subscribed }, 502);
+  return json({
+    ok: false,
+    sent: false,
+    subscribed,
+    error: brevoPublicErrorMessage(response.status, error),
+  });
 }
 
 async function upsertBrevoContact(email, env) {
   const listId = Number(env.BREVO_LIST_ID);
-  if (!env.BREVO_API_KEY || !Number.isFinite(listId)) return false;
+  const apiKey = brevoApiKey(env);
+  if (!apiKey || !Number.isFinite(listId)) return false;
   const response = await fetch("https://api.brevo.com/v3/contacts", {
     method: "POST",
     headers: {
-      "api-key": env.BREVO_API_KEY,
+      "api-key": apiKey,
       "Accept": "application/json",
       "Content-Type": "application/json",
     },
@@ -1330,6 +1349,23 @@ async function upsertBrevoContact(email, env) {
   if (error && error.code === "duplicate_parameter") return true;
   console.error("[quiz-result] Brevo contact upsert error", response.status, error);
   return false;
+}
+
+function brevoApiKey(env) {
+  return String(env.BREVO_API_KEY || "").replace(/\s+/g, "").trim();
+}
+
+function brevoPublicErrorMessage(status, error = {}) {
+  const code = cleanText(error.code || "");
+  const message = cleanText(error.message || "");
+  const detail = (code + " " + message).toLowerCase();
+  if (status === 401 || detail.includes("unauthorized") || detail.includes("authentication")) {
+    return "Brevo non ha accettato la chiave API: ricontrolla BREVO_API_KEY su Cloudflare.";
+  }
+  if (detail.includes("sender") || detail.includes("from") || detail.includes("mittente")) {
+    return "Brevo non ha accettato il mittente: verifica che QUIZ_EMAIL_SENDER sia una mail mittente confermata.";
+  }
+  return "Brevo non ha accettato l'invio adesso. Controlla mittente e piano Email transazionali.";
 }
 
 function quizProfileFromScore(score) {

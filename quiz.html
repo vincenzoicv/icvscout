@@ -1,0 +1,704 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Quanto sei juventino? · ICV Scout</title>
+<meta name="description" content="Quiz ICV Scout: scopri che tipo di tifoso juventino sei e resta aggiornato con Il Calcio di Vince.">
+<meta property="og:title" content="Quanto sei juventino? · ICV Scout">
+<meta property="og:description" content="10 domande, un profilo bianconero e i link ICV per seguire news, mercato e Mondiali.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ilcalciodivince.com/quiz">
+<link rel="canonical" href="https://ilcalciodivince.com/quiz">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#050505;
+  --panel:#151515;
+  --panel-2:#1c1c1c;
+  --gold:#d3a536;
+  --gold-2:#f5d479;
+  --text:#f5f2ea;
+  --muted:#9a9a9a;
+  --line:rgba(255,255,255,.1);
+  --green:#23d77d;
+  --red:#ff6868;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(211,165,54,.2),transparent 30rem),
+    radial-gradient(circle at 15% 20%,rgba(255,255,255,.05),transparent 18rem),
+    linear-gradient(180deg,#080808 0%,#020202 100%);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  opacity:.22;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:38px 38px;
+  mask-image:linear-gradient(to bottom,black,transparent 82%);
+}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit}
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:18px 28px;
+  border-bottom:1px solid rgba(211,165,54,.18);
+  background:rgba(5,5,5,.88);
+  backdrop-filter:blur(18px);
+}
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  color:rgba(255,255,255,.72);
+  font-size:13px;
+  font-weight:800;
+}
+.brand strong{
+  color:var(--gold);
+  font-family:"Bebas Neue",Impact,sans-serif;
+  font-size:24px;
+}
+.brand span{width:1px;height:22px;background:rgba(211,165,54,.35)}
+.top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.pill{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:36px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:999px;
+  padding:9px 16px;
+  background:rgba(255,255,255,.04);
+  color:rgba(255,255,255,.76);
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.pill.gold{
+  border-color:rgba(211,165,54,.45);
+  color:#111;
+  background:linear-gradient(135deg,var(--gold),var(--gold-2));
+}
+.wrap{width:min(1180px,calc(100% - 40px));margin:0 auto}
+.hero{
+  min-height:calc(100vh - 74px);
+  display:grid;
+  align-items:center;
+  padding:64px 0 42px;
+}
+.hero-inner{text-align:center}
+.eyebrow{
+  color:var(--gold);
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  margin-bottom:18px;
+}
+h1{
+  margin:0 auto;
+  max-width:980px;
+  font-family:"Bebas Neue",Impact,sans-serif;
+  font-size:92px;
+  line-height:.92;
+  font-weight:400;
+  text-transform:uppercase;
+}
+h1 em{font-style:normal;color:var(--gold-2)}
+.lead{
+  max-width:650px;
+  margin:24px auto 0;
+  color:rgba(255,255,255,.68);
+  font-size:18px;
+  line-height:1.65;
+}
+.stats{
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin:28px 0 34px;
+}
+.stat{
+  display:inline-flex;
+  align-items:baseline;
+  gap:8px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:999px;
+  padding:10px 16px;
+  background:rgba(255,255,255,.045);
+}
+.stat strong{color:var(--gold-2);font-size:20px}
+.stat span{color:var(--muted);font-size:12px;font-weight:700}
+.quiz-shell{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 340px;
+  gap:18px;
+  align-items:start;
+  margin:0 auto 72px;
+}
+.quiz-card,.side-panel,.result-card{
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:linear-gradient(180deg,rgba(28,28,28,.96),rgba(12,12,12,.96));
+  box-shadow:0 24px 60px rgba(0,0,0,.34);
+}
+.quiz-card{padding:28px}
+.progress-meta{
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  color:rgba(255,255,255,.58);
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+}
+.progress-track{
+  height:8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  overflow:hidden;
+  margin:14px 0 28px;
+}
+.progress-bar{
+  height:100%;
+  width:0;
+  border-radius:inherit;
+  background:linear-gradient(90deg,var(--gold),var(--gold-2));
+  transition:width .25s ease;
+}
+.question{
+  margin:0 0 20px;
+  font-family:"Bebas Neue",Impact,sans-serif;
+  font-size:42px;
+  line-height:1.02;
+  font-weight:400;
+}
+.answers{display:grid;gap:10px}
+.answer{
+  width:100%;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;
+  padding:16px 18px;
+  background:rgba(255,255,255,.045);
+  color:rgba(255,255,255,.82);
+  text-align:left;
+  cursor:pointer;
+  transition:transform .18s ease,border-color .18s ease,background .18s ease,color .18s ease;
+}
+.answer:hover{transform:translateY(-1px);border-color:rgba(211,165,54,.42)}
+.answer.active{
+  background:rgba(211,165,54,.16);
+  border-color:rgba(211,165,54,.7);
+  color:#fff;
+}
+.controls{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:24px;
+}
+.control-btn{
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:999px;
+  padding:12px 18px;
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.78);
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.control-btn.primary{
+  min-width:150px;
+  border-color:rgba(211,165,54,.5);
+  background:linear-gradient(135deg,var(--gold),var(--gold-2));
+  color:#111;
+}
+.control-btn:disabled{opacity:.42;cursor:not-allowed}
+.side-panel{padding:22px}
+.side-panel h2,.result-card h2{
+  margin:0 0 14px;
+  font-family:"Bebas Neue",Impact,sans-serif;
+  font-size:30px;
+  font-weight:400;
+}
+.side-panel p,.result-card p{
+  color:rgba(255,255,255,.64);
+  line-height:1.6;
+  margin:0;
+}
+.levels{display:grid;gap:8px;margin-top:18px}
+.level{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  border-top:1px solid rgba(255,255,255,.08);
+  padding-top:10px;
+  color:rgba(255,255,255,.66);
+  font-size:12px;
+  font-weight:800;
+}
+.level strong{color:var(--gold-2)}
+.result-card{display:none;padding:28px;margin:0 auto 84px}
+.result-card.show{display:block}
+.scoreline{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:18px;
+  border-bottom:1px solid rgba(255,255,255,.1);
+  padding-bottom:20px;
+  margin-bottom:20px;
+}
+.scoreline h2{font-size:56px;margin:0;line-height:.95}
+.scoreline strong{
+  color:var(--gold-2);
+  font-family:"Bebas Neue",Impact,sans-serif;
+  font-size:48px;
+  font-weight:400;
+}
+.social-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:22px 0;
+}
+.social-grid a{
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;
+  padding:14px;
+  background:rgba(255,255,255,.045);
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.82);
+}
+.social-grid a:hover{border-color:rgba(211,165,54,.46);color:var(--gold-2)}
+.mail-box{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  margin-top:18px;
+}
+.mail-box input{
+  min-height:48px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:8px;
+  background:rgba(0,0,0,.28);
+  color:#fff;
+  padding:0 14px;
+  outline:none;
+}
+.mail-box button{
+  min-height:48px;
+  border:0;
+  border-radius:8px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-2));
+  color:#111;
+  padding:0 18px;
+  font-size:12px;
+  font-weight:900;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+.form-note{margin-top:10px;color:rgba(255,255,255,.55);font-size:12px}
+.status{min-height:20px;margin-top:10px;color:var(--green);font-size:13px;font-weight:800}
+.hidden-field{position:absolute;left:-9999px;opacity:0}
+.footer{
+  border-top:1px solid rgba(255,255,255,.08);
+  padding:28px 0 42px;
+  color:rgba(255,255,255,.54);
+  font-size:12px;
+  font-weight:800;
+  text-transform:uppercase;
+}
+@media(max-width:920px){
+  .quiz-shell{grid-template-columns:1fr}
+  .side-panel{order:-1}
+  h1{font-size:68px}
+  .question{font-size:34px}
+}
+@media(max-width:620px){
+  .topbar{padding:14px 16px}
+  .brand{font-size:12px}
+  .brand strong{font-size:21px}
+  .wrap{width:min(100% - 28px,1180px)}
+  .hero{padding:42px 0 30px;min-height:auto}
+  h1{font-size:54px}
+  .lead{font-size:15px}
+  .quiz-card,.side-panel,.result-card{padding:20px}
+  .controls{flex-direction:column}
+  .control-btn.primary{width:100%}
+  .scoreline{align-items:flex-start;flex-direction:column}
+  .scoreline h2{font-size:42px}
+  .social-grid{grid-template-columns:1fr}
+  .mail-box{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/">
+    <strong>ICV</strong>
+    <span aria-hidden="true"></span>
+    <b>Quiz ICV</b>
+  </a>
+  <div class="top-actions">
+    <a class="pill" href="/mondiali.html">Mondiali</a>
+    <a class="pill gold" href="/">Scout</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <div class="eyebrow">Il Calcio di Vince</div>
+      <h1>Quanto sei <em>juventino?</em></h1>
+      <p class="lead">Dieci domande rapide per scoprire il tuo profilo bianconero: passione, memoria, mercato, campo e fonti.</p>
+      <div class="stats" aria-label="Dettagli quiz">
+        <div class="stat"><strong>10</strong><span>domande</span></div>
+        <div class="stat"><strong>5</strong><span>profili</span></div>
+        <div class="stat"><strong>0</strong><span>spam</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap quiz-shell" id="quizArea">
+    <article class="quiz-card" aria-live="polite">
+      <div class="progress-meta">
+        <span id="stepLabel">Domanda 1 di 10</span>
+        <span id="pointsLabel">0 punti</span>
+      </div>
+      <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
+      <h2 class="question" id="questionText"></h2>
+      <div class="answers" id="answers"></div>
+      <div class="controls">
+        <button class="control-btn" id="prevBtn" type="button">Indietro</button>
+        <button class="control-btn primary" id="nextBtn" type="button">Avanti</button>
+      </div>
+    </article>
+
+    <aside class="side-panel">
+      <h2>Profili finali</h2>
+      <p>Il risultato pesa fedeltà, attenzione alle fonti, lettura tattica e memoria bianconera.</p>
+      <div class="levels">
+        <div class="level"><span>10-17</span><strong>Occasionale</strong></div>
+        <div class="level"><span>18-25</span><strong>Matchday</strong></div>
+        <div class="level"><span>26-33</span><strong>Sul pezzo</strong></div>
+        <div class="level"><span>34-38</span><strong>Scout ICV</strong></div>
+        <div class="level"><span>39-40</span><strong>Malato di Juve</strong></div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="wrap result-card" id="resultCard">
+    <div class="scoreline">
+      <h2 id="resultTitle"></h2>
+      <strong id="resultScore"></strong>
+    </div>
+    <p id="resultText"></p>
+    <div class="social-grid" aria-label="Link ICV">
+      <a href="https://instagram.com/ilcalciodivince_" target="_blank" rel="noopener">Instagram</a>
+      <a href="https://www.tiktok.com/@ilcalciodivince" target="_blank" rel="noopener">TikTok</a>
+      <a href="https://x.com/VikBrancato" target="_blank" rel="noopener">X</a>
+      <a href="/mercato.html">Mercato live</a>
+      <a href="/mondiali.html">Mondiali</a>
+      <a href="/">ICV Scout</a>
+    </div>
+    <form class="mail-box" id="leadForm">
+      <label class="hidden-field">Non compilare <input name="website" autocomplete="off"></label>
+      <input id="emailInput" type="email" name="email" placeholder="La tua email" autocomplete="email" required>
+      <button type="submit">Mandami i link</button>
+    </form>
+    <div class="form-note">Ti mandiamo il risultato e i link ufficiali ICV per restare aggiornato sulla Juventus.</div>
+    <div class="status" id="formStatus"></div>
+    <div class="controls">
+      <button class="control-btn" type="button" id="restartBtn">Rifai il quiz</button>
+      <button class="control-btn primary" type="button" id="shareBtn">Condividi risultato</button>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">© 2026 Il Calcio di Vince · ICV Scout</div>
+</footer>
+
+<script>
+const questions = [
+  {
+    text:"Quando gioca la Juve, tu di solito:",
+    answers:[
+      ["La guardo sempre, anche in condizioni impossibili",4],
+      ["La seguo se posso",3],
+      ["Guardo highlights e risultato",2],
+      ["Dipende dalla partita",1]
+    ]
+  },
+  {
+    text:"Quanto segui il mercato Juve?",
+    answers:[
+      ["Ogni giorno, anche le voci minori",4],
+      ["Solo le trattative principali",3],
+      ["Solo quando arriva l'ufficialità",2],
+      ["Quasi mai",1]
+    ]
+  },
+  {
+    text:"Se leggi 'Juve su un giocatore', cosa fai?",
+    answers:[
+      ["Controllo subito la fonte",4],
+      ["Aspetto altri aggiornamenti",3],
+      ["Ci credo se lo vedo ovunque",2],
+      ["Mi basta il titolo",1]
+    ]
+  },
+  {
+    text:"Quanto conosci la storia della Juventus?",
+    answers:[
+      ["Molto, anche stagioni e giocatori meno recenti",4],
+      ["Abbastanza bene",3],
+      ["Solo le ere più famose",2],
+      ["Poco",1]
+    ]
+  },
+  {
+    text:"Durante una partita guardi soprattutto:",
+    answers:[
+      ["Movimenti, pressing, ruoli e scelte tattiche",4],
+      ["Risultato e atteggiamento",3],
+      ["I singoli giocatori",2],
+      ["Solo se si vince o si perde",1]
+    ]
+  },
+  {
+    text:"Quanto conosci la rosa attuale?",
+    answers:[
+      ["Titolari, riserve, giovani e situazioni contrattuali",4],
+      ["Titolari e principali alternative",3],
+      ["Solo i nomi più famosi",2],
+      ["Mi aggiorno quando serve",1]
+    ]
+  },
+  {
+    text:"Dopo una sconfitta della Juve:",
+    answers:[
+      ["Analizzo cosa non ha funzionato",4],
+      ["Mi arrabbio, poi cerco di capire",3],
+      ["Do la colpa a qualcuno",2],
+      ["Stacco tutto",1]
+    ]
+  },
+  {
+    text:"Segui anche Juventus Women, Next Gen o Primavera?",
+    answers:[
+      ["Sì, almeno gli aggiornamenti principali",4],
+      ["Qualche volta",3],
+      ["Solo se c'è una notizia importante",2],
+      ["No",1]
+    ]
+  },
+  {
+    text:"Quale contenuto ICV ti interessa di più?",
+    answers:[
+      ["Mercato e fonti",4],
+      ["Analisi tattiche",3],
+      ["News rapide",2],
+      ["Grafiche e contenuti social",1]
+    ]
+  },
+  {
+    text:"La Juve per te è:",
+    answers:[
+      ["Una cosa quotidiana",4],
+      ["Una tradizione di famiglia",3],
+      ["Una passione forte",2],
+      ["Una squadra da seguire",1]
+    ]
+  }
+];
+
+const profiles = [
+  {
+    min:10,
+    max:17,
+    title:"Tifoso occasionale",
+    text:"La Juve ti interessa, ma scegli i momenti. ICV può essere il tuo riepilogo pulito: poche cose, buone fonti, niente confusione."
+  },
+  {
+    min:18,
+    max:25,
+    title:"Bianconero da matchday",
+    text:"Il giorno della partita cambia ritmo. Segui risultato, emozioni e notizie principali: sei dentro, ma senza vivere ogni voce di mercato come una finale."
+  },
+  {
+    min:26,
+    max:33,
+    title:"Sempre sul pezzo",
+    text:"Hai occhio per fonti, rosa e momenti chiave. Non ti basta sapere cosa è successo: vuoi capire perché conta."
+  },
+  {
+    min:34,
+    max:38,
+    title:"Scout ICV",
+    text:"Sei il tipo che legge la partita e pesa le notizie. Fonti, ruoli, calendario e mercato per te sono parti dello stesso quadro."
+  },
+  {
+    min:39,
+    max:40,
+    title:"Malato di Juve",
+    text:"Vivi la Juve ogni giorno. Non segui solo le partite: segui umore, fonti, dettagli, giovani, mercato e tutto quello che può cambiare la stagione."
+  }
+];
+
+let current = 0;
+let answers = Array(questions.length).fill(null);
+let lastProfile = null;
+
+const stepLabel = document.getElementById("stepLabel");
+const pointsLabel = document.getElementById("pointsLabel");
+const progressBar = document.getElementById("progressBar");
+const questionText = document.getElementById("questionText");
+const answersBox = document.getElementById("answers");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const quizArea = document.getElementById("quizArea");
+const resultCard = document.getElementById("resultCard");
+const resultTitle = document.getElementById("resultTitle");
+const resultScore = document.getElementById("resultScore");
+const resultText = document.getElementById("resultText");
+const formStatus = document.getElementById("formStatus");
+
+function score(){
+  return answers.reduce((sum,value)=>sum + (value || 0),0);
+}
+
+function renderQuestion(){
+  const item = questions[current];
+  stepLabel.textContent = `Domanda ${current + 1} di ${questions.length}`;
+  pointsLabel.textContent = `${score()} punti`;
+  progressBar.style.width = `${((current + 1) / questions.length) * 100}%`;
+  questionText.textContent = item.text;
+  answersBox.innerHTML = "";
+
+  item.answers.forEach(([label,value])=>{
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "answer" + (answers[current] === value ? " active" : "");
+    btn.textContent = label;
+    btn.setAttribute("aria-pressed",answers[current] === value ? "true" : "false");
+    btn.addEventListener("click",()=>{
+      answers[current] = value;
+      renderQuestion();
+    });
+    answersBox.appendChild(btn);
+  });
+
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = answers[current] === null;
+  nextBtn.textContent = current === questions.length - 1 ? "Vedi risultato" : "Avanti";
+}
+
+function getProfile(total){
+  return profiles.find(profile=>total >= profile.min && total <= profile.max) || profiles[0];
+}
+
+function showResult(){
+  const total = score();
+  const profile = getProfile(total);
+  lastProfile = profile;
+  resultTitle.textContent = profile.title;
+  resultScore.textContent = `${total}/40`;
+  resultText.textContent = profile.text;
+  quizArea.style.display = "none";
+  resultCard.classList.add("show");
+  resultCard.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+prevBtn.addEventListener("click",()=>{
+  if(current > 0){
+    current -= 1;
+    renderQuestion();
+  }
+});
+
+nextBtn.addEventListener("click",()=>{
+  if(answers[current] === null) return;
+  if(current < questions.length - 1){
+    current += 1;
+    renderQuestion();
+  }else{
+    showResult();
+  }
+});
+
+document.getElementById("restartBtn").addEventListener("click",()=>{
+  answers = Array(questions.length).fill(null);
+  current = 0;
+  lastProfile = null;
+  formStatus.textContent = "";
+  resultCard.classList.remove("show");
+  quizArea.style.display = "grid";
+  renderQuestion();
+  quizArea.scrollIntoView({behavior:"smooth",block:"start"});
+});
+
+document.getElementById("shareBtn").addEventListener("click",async()=>{
+  const total = score();
+  const title = lastProfile ? lastProfile.title : getProfile(total).title;
+  const text = `Sono ${title} nel quiz ICV: ${total}/40. Quanto sei juventino?`;
+  const url = "https://ilcalciodivince.com/quiz";
+  try{
+    if(navigator.share){
+      await navigator.share({title:"Quanto sei juventino?",text,url});
+    }else if(navigator.clipboard){
+      await navigator.clipboard.writeText(`${text} ${url}`);
+      formStatus.textContent = "Risultato copiato negli appunti.";
+    }
+  }catch(err){}
+});
+
+document.getElementById("leadForm").addEventListener("submit",async(event)=>{
+  event.preventDefault();
+  formStatus.textContent = "Invio in corso...";
+  const form = event.currentTarget;
+  const email = form.email.value.trim();
+  const website = form.website.value.trim();
+  try{
+    const res = await fetch("/api/subscribe",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,website,source:"quiz-juve"})
+    });
+    if(!res.ok) throw new Error("subscribe failed");
+    formStatus.textContent = "Perfetto: contatto salvato. Intanto trovi qui sopra tutti i link ICV.";
+    form.reset();
+  }catch(err){
+    formStatus.style.color = "var(--red)";
+    formStatus.textContent = "Non sono riuscito a salvare la mail adesso. I link ICV sono già disponibili qui sopra.";
+  }
+});
+
+renderQuestion();
+</script>
+</body>
+</html>

@@ -110,6 +110,7 @@ export async function onRequest(context) {
     if (path === "world-cup/live") return worldCupLive(request, env);
     if (path === "world-cup/calendar.ics") return worldCupCalendar(request, env);
     if (path === "subscribe") return subscribeWorldCup(request, env);
+    if (path === "quiz-result") return sendQuizResult(request, env);
     if (path === "admin/news") return adminNews(request, env);
     if (path === "admin/automate") return adminAutomate(request, env);
     if (path === "cron/autopilot") return cronAutopilot(request, env);
@@ -1257,6 +1258,176 @@ async function subscribeWorldCup(request, env) {
   }
   console.error("[subscribe] Brevo error", response.status, error);
   return json({ ok: false, subscribed: false }, 502);
+}
+
+async function sendQuizResult(request, env) {
+  if (request.method !== "POST") return json({ error: "Metodo non consentito" }, 405);
+  const body = await readBody(request);
+  const email = cleanText(body.email || "").toLowerCase();
+  if (body.website) return json({ ok: true, sent: false, subscribed: false });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return json({ error: "Email non valida" }, 400);
+  }
+
+  const numericScore = Number(body.score);
+  if (!Number.isFinite(numericScore)) {
+    return json({ error: "Risultato quiz non valido" }, 400);
+  }
+  const score = Math.max(10, Math.min(40, Math.round(numericScore)));
+  const profile = quizProfileFromScore(score);
+  const subscribed = await upsertBrevoContact(email, env).catch((err) => {
+    console.error("[quiz-result] Brevo contact error", err && err.message || err);
+    return false;
+  });
+
+  const senderEmail = cleanText(env.QUIZ_EMAIL_SENDER || env.BREVO_SENDER_EMAIL || "");
+  const senderName = cleanText(env.QUIZ_EMAIL_SENDER_NAME || env.BREVO_SENDER_NAME || "Il Calcio di Vince");
+  if (!env.BREVO_API_KEY || !senderEmail) {
+    return json({ ok: true, sent: false, subscribed, configured: false });
+  }
+
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      "api-key": env.BREVO_API_KEY,
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      sender: { name: senderName, email: senderEmail },
+      to: [{ email }],
+      subject: "Il tuo profilo ICV: " + profile.title,
+      htmlContent: quizResultEmailHtml(profile, score),
+      textContent: quizResultEmailText(profile, score),
+    }),
+  });
+
+  if (response.ok) return json({ ok: true, sent: true, subscribed });
+  const error = await response.json().catch(() => ({}));
+  console.error("[quiz-result] Brevo email error", response.status, error);
+  return json({ ok: false, sent: false, subscribed }, 502);
+}
+
+async function upsertBrevoContact(email, env) {
+  const listId = Number(env.BREVO_LIST_ID);
+  if (!env.BREVO_API_KEY || !Number.isFinite(listId)) return false;
+  const response = await fetch("https://api.brevo.com/v3/contacts", {
+    method: "POST",
+    headers: {
+      "api-key": env.BREVO_API_KEY,
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      listIds: [listId],
+      updateEnabled: true,
+      attributes: { SOURCE: "quiz-juve" },
+    }),
+  });
+  if (response.ok) return true;
+  const error = await response.json().catch(() => ({}));
+  if (error && error.code === "duplicate_parameter") return true;
+  console.error("[quiz-result] Brevo contact upsert error", response.status, error);
+  return false;
+}
+
+function quizProfileFromScore(score) {
+  const profiles = [
+    {
+      min: 10,
+      max: 17,
+      title: "Tifoso occasionale",
+      text: "La Juve ti interessa, ma scegli i momenti. ICV può essere il tuo riepilogo pulito: poche cose, buone fonti, niente confusione.",
+    },
+    {
+      min: 18,
+      max: 25,
+      title: "Bianconero da matchday",
+      text: "Il giorno della partita cambia ritmo. Segui risultato, emozioni e notizie principali: sei dentro, ma senza vivere ogni voce di mercato come una finale.",
+    },
+    {
+      min: 26,
+      max: 33,
+      title: "Sempre sul pezzo",
+      text: "Hai occhio per fonti, rosa e momenti chiave. Non ti basta sapere cosa è successo: vuoi capire perché conta.",
+    },
+    {
+      min: 34,
+      max: 38,
+      title: "Scout ICV",
+      text: "Sei il tipo che legge la partita e pesa le notizie. Fonti, ruoli, calendario e mercato per te sono parti dello stesso quadro.",
+    },
+    {
+      min: 39,
+      max: 40,
+      title: "Malato di Juve",
+      text: "Vivi la Juve ogni giorno. Non segui solo le partite: segui umore, fonti, dettagli, giovani, mercato e tutto quello che può cambiare la stagione.",
+    },
+  ];
+  return profiles.find((profile) => score >= profile.min && score <= profile.max) || profiles[0];
+}
+
+function quizResultEmailHtml(profile, score) {
+  const safeTitle = escapeHtml(profile.title);
+  const safeText = escapeHtml(profile.text);
+  const scoreText = escapeHtml(score + "/40");
+  const links = [
+    ["ICV Scout", "https://ilcalciodivince.com/"],
+    ["News Juventus", "https://ilcalciodivince.com/#news"],
+    ["Mercato live", "https://ilcalciodivince.com/mercato.html"],
+    ["Mondiali", "https://ilcalciodivince.com/mondiali.html"],
+    ["Agenda Mondiali", "https://ilcalciodivince.com/agenda.html"],
+    ["Instagram", "https://instagram.com/ilcalciodivince_"],
+    ["TikTok", "https://www.tiktok.com/@ilcalciodivince"],
+    ["X", "https://x.com/VikBrancato"],
+  ];
+  const linkHtml = links.map(([label, href]) => {
+    return '<a href="' + escapeHtml(href) + '" style="display:block;margin:8px 0;color:#d3a536;font-weight:800;text-decoration:none">' + escapeHtml(label) + '</a>';
+  }).join("");
+  return [
+    '<div style="margin:0;padding:24px;background:#080808;color:#f5f2ea;font-family:Arial,Helvetica,sans-serif">',
+    '<div style="max-width:620px;margin:0 auto;background:#151515;border:1px solid rgba(211,165,54,.35);border-radius:10px;padding:28px">',
+    '<p style="margin:0 0 10px;color:#d3a536;font-size:12px;font-weight:900;letter-spacing:.12em;text-transform:uppercase">Il Calcio di Vince</p>',
+    '<h1 style="margin:0 0 12px;font-size:34px;line-height:1.05">Il tuo profilo: ' + safeTitle + '</h1>',
+    '<p style="margin:0 0 18px;color:#aaa;font-size:15px;line-height:1.6">Hai chiuso il quiz con <strong style="color:#f5d479">' + scoreText + '</strong>.</p>',
+    '<p style="margin:0 0 22px;color:#ddd;font-size:16px;line-height:1.65">' + safeText + '</p>',
+    '<h2 style="margin:24px 0 10px;font-size:20px">Resta aggiornato sulla Juventus</h2>',
+    linkHtml,
+    '<p style="margin:24px 0 0;color:#777;font-size:12px;line-height:1.5">Ricevi questa mail perché hai completato il quiz ICV “Quanto sei juventino?”.</p>',
+    '</div>',
+    '</div>',
+  ].join("");
+}
+
+function quizResultEmailText(profile, score) {
+  return [
+    "Il tuo profilo ICV: " + profile.title,
+    "",
+    "Punteggio: " + score + "/40",
+    "",
+    profile.text,
+    "",
+    "Link ICV:",
+    "ICV Scout: https://ilcalciodivince.com/",
+    "News Juventus: https://ilcalciodivince.com/#news",
+    "Mercato live: https://ilcalciodivince.com/mercato.html",
+    "Mondiali: https://ilcalciodivince.com/mondiali.html",
+    "Agenda Mondiali: https://ilcalciodivince.com/agenda.html",
+    "Instagram: https://instagram.com/ilcalciodivince_",
+    "TikTok: https://www.tiktok.com/@ilcalciodivince",
+    "X: https://x.com/VikBrancato",
+  ].join("\n");
+}
+
+function escapeHtml(value) {
+  return String(value || "").replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[char]));
 }
 
 function worldCupTeamName(team, fallback) {

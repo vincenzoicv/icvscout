@@ -151,12 +151,13 @@ h1 em{font-style:normal;color:var(--gold-2)}
 .stat span{color:var(--muted);font-size:12px;font-weight:700}
 .quiz-shell{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 340px;
+  grid-template-columns:minmax(0,860px);
+  justify-content:center;
   gap:18px;
   align-items:start;
   margin:0 auto 72px;
 }
-.quiz-card,.side-panel,.result-card{
+.quiz-card,.result-card{
   border:1px solid var(--line);
   border-radius:8px;
   background:linear-gradient(180deg,rgba(28,28,28,.96),rgba(12,12,12,.96));
@@ -235,65 +236,19 @@ h1 em{font-style:normal;color:var(--gold-2)}
   color:#111;
 }
 .control-btn:disabled{opacity:.42;cursor:not-allowed}
-.side-panel{padding:22px}
-.side-panel h2,.result-card h2{
+.result-card h2{
   margin:0 0 14px;
   font-family:"Bebas Neue",Impact,sans-serif;
   font-size:30px;
   font-weight:400;
 }
-.side-panel p,.result-card p{
+.result-card p{
   color:rgba(255,255,255,.64);
   line-height:1.6;
   margin:0;
 }
-.levels{display:grid;gap:8px;margin-top:18px}
-.level{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  border-top:1px solid rgba(255,255,255,.08);
-  padding-top:10px;
-  color:rgba(255,255,255,.66);
-  font-size:12px;
-  font-weight:800;
-}
-.level strong{color:var(--gold-2)}
-.result-card{display:none;padding:28px;margin:0 auto 84px}
+.result-card{display:none;padding:28px;margin:0 auto 84px;max-width:860px}
 .result-card.show{display:block}
-.scoreline{
-  display:flex;
-  align-items:end;
-  justify-content:space-between;
-  gap:18px;
-  border-bottom:1px solid rgba(255,255,255,.1);
-  padding-bottom:20px;
-  margin-bottom:20px;
-}
-.scoreline h2{font-size:56px;margin:0;line-height:.95}
-.scoreline strong{
-  color:var(--gold-2);
-  font-family:"Bebas Neue",Impact,sans-serif;
-  font-size:48px;
-  font-weight:400;
-}
-.social-grid{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:10px;
-  margin:22px 0;
-}
-.social-grid a{
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:8px;
-  padding:14px;
-  background:rgba(255,255,255,.045);
-  font-size:12px;
-  font-weight:900;
-  text-transform:uppercase;
-  color:rgba(255,255,255,.82);
-}
-.social-grid a:hover{border-color:rgba(211,165,54,.46);color:var(--gold-2)}
 .mail-box{
   display:grid;
   grid-template-columns:minmax(0,1fr) auto;
@@ -334,7 +289,6 @@ h1 em{font-style:normal;color:var(--gold-2)}
 }
 @media(max-width:920px){
   .quiz-shell{grid-template-columns:1fr}
-  .side-panel{order:-1}
   h1{font-size:68px}
   .question{font-size:34px}
 }
@@ -346,12 +300,9 @@ h1 em{font-style:normal;color:var(--gold-2)}
   .hero{padding:42px 0 30px;min-height:auto}
   h1{font-size:54px}
   .lead{font-size:15px}
-  .quiz-card,.side-panel,.result-card{padding:20px}
+  .quiz-card,.result-card{padding:20px}
   .controls{flex-direction:column}
   .control-btn.primary{width:100%}
-  .scoreline{align-items:flex-start;flex-direction:column}
-  .scoreline h2{font-size:42px}
-  .social-grid{grid-template-columns:1fr}
   .mail-box{grid-template-columns:1fr}
 }
 </style>
@@ -387,7 +338,6 @@ h1 em{font-style:normal;color:var(--gold-2)}
     <article class="quiz-card" aria-live="polite">
       <div class="progress-meta">
         <span id="stepLabel">Domanda 1 di 10</span>
-        <span id="pointsLabel">0 punti</span>
       </div>
       <div class="progress-track" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
       <h2 class="question" id="questionText"></h2>
@@ -397,44 +347,20 @@ h1 em{font-style:normal;color:var(--gold-2)}
         <button class="control-btn primary" id="nextBtn" type="button">Avanti</button>
       </div>
     </article>
-
-    <aside class="side-panel">
-      <h2>Profili finali</h2>
-      <p>Il risultato pesa fedeltà, attenzione alle fonti, lettura tattica e memoria bianconera.</p>
-      <div class="levels">
-        <div class="level"><span>10-17</span><strong>Occasionale</strong></div>
-        <div class="level"><span>18-25</span><strong>Matchday</strong></div>
-        <div class="level"><span>26-33</span><strong>Sul pezzo</strong></div>
-        <div class="level"><span>34-38</span><strong>Scout ICV</strong></div>
-        <div class="level"><span>39-40</span><strong>Malato di Juve</strong></div>
-      </div>
-    </aside>
   </section>
 
   <section class="wrap result-card" id="resultCard">
-    <div class="scoreline">
-      <h2 id="resultTitle"></h2>
-      <strong id="resultScore"></strong>
-    </div>
-    <p id="resultText"></p>
-    <div class="social-grid" aria-label="Link ICV">
-      <a href="https://instagram.com/ilcalciodivince_" target="_blank" rel="noopener">Instagram</a>
-      <a href="https://www.tiktok.com/@ilcalciodivince" target="_blank" rel="noopener">TikTok</a>
-      <a href="https://x.com/VikBrancato" target="_blank" rel="noopener">X</a>
-      <a href="/mercato.html">Mercato live</a>
-      <a href="/mondiali.html">Mondiali</a>
-      <a href="/">ICV Scout</a>
-    </div>
+    <h2>Scopri che tipo di juventino sei</h2>
+    <p>Inserisci la mail: ti mandiamo il profilo finale e tutti i link ICV per restare aggiornato sulla Juventus.</p>
     <form class="mail-box" id="leadForm">
       <label class="hidden-field">Non compilare <input name="website" autocomplete="off"></label>
       <input id="emailInput" type="email" name="email" placeholder="La tua email" autocomplete="email" required>
-      <button type="submit">Mandami i link</button>
+      <button type="submit">Ricevi risultato</button>
     </form>
-    <div class="form-note">Ti mandiamo il risultato e i link ufficiali ICV per restare aggiornato sulla Juventus.</div>
+    <div class="form-note">Il risultato non viene mostrato qui: lo ricevi direttamente via email.</div>
     <div class="status" id="formStatus"></div>
     <div class="controls">
       <button class="control-btn" type="button" id="restartBtn">Rifai il quiz</button>
-      <button class="control-btn primary" type="button" id="shareBtn">Condividi risultato</button>
     </div>
   </section>
 </main>
@@ -573,9 +499,9 @@ const profiles = [
 let current = 0;
 let answers = Array(questions.length).fill(null);
 let lastProfile = null;
+let lastScore = 0;
 
 const stepLabel = document.getElementById("stepLabel");
-const pointsLabel = document.getElementById("pointsLabel");
 const progressBar = document.getElementById("progressBar");
 const questionText = document.getElementById("questionText");
 const answersBox = document.getElementById("answers");
@@ -583,9 +509,6 @@ const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const quizArea = document.getElementById("quizArea");
 const resultCard = document.getElementById("resultCard");
-const resultTitle = document.getElementById("resultTitle");
-const resultScore = document.getElementById("resultScore");
-const resultText = document.getElementById("resultText");
 const formStatus = document.getElementById("formStatus");
 
 function score(){
@@ -595,7 +518,6 @@ function score(){
 function renderQuestion(){
   const item = questions[current];
   stepLabel.textContent = `Domanda ${current + 1} di ${questions.length}`;
-  pointsLabel.textContent = `${score()} punti`;
   progressBar.style.width = `${((current + 1) / questions.length) * 100}%`;
   questionText.textContent = item.text;
   answersBox.innerHTML = "";
@@ -623,12 +545,10 @@ function getProfile(total){
 }
 
 function showResult(){
-  const total = score();
-  const profile = getProfile(total);
-  lastProfile = profile;
-  resultTitle.textContent = profile.title;
-  resultScore.textContent = `${total}/40`;
-  resultText.textContent = profile.text;
+  lastScore = score();
+  lastProfile = getProfile(lastScore);
+  formStatus.textContent = "";
+  formStatus.style.color = "var(--green)";
   quizArea.style.display = "none";
   resultCard.classList.add("show");
   resultCard.scrollIntoView({behavior:"smooth",block:"start"});
@@ -655,26 +575,12 @@ document.getElementById("restartBtn").addEventListener("click",()=>{
   answers = Array(questions.length).fill(null);
   current = 0;
   lastProfile = null;
+  lastScore = 0;
   formStatus.textContent = "";
   resultCard.classList.remove("show");
   quizArea.style.display = "grid";
   renderQuestion();
   quizArea.scrollIntoView({behavior:"smooth",block:"start"});
-});
-
-document.getElementById("shareBtn").addEventListener("click",async()=>{
-  const total = score();
-  const title = lastProfile ? lastProfile.title : getProfile(total).title;
-  const text = `Sono ${title} nel quiz ICV: ${total}/40. Quanto sei juventino?`;
-  const url = "https://ilcalciodivince.com/quiz";
-  try{
-    if(navigator.share){
-      await navigator.share({title:"Quanto sei juventino?",text,url});
-    }else if(navigator.clipboard){
-      await navigator.clipboard.writeText(`${text} ${url}`);
-      formStatus.textContent = "Risultato copiato negli appunti.";
-    }
-  }catch(err){}
 });
 
 document.getElementById("leadForm").addEventListener("submit",async(event)=>{
@@ -684,17 +590,26 @@ document.getElementById("leadForm").addEventListener("submit",async(event)=>{
   const email = form.email.value.trim();
   const website = form.website.value.trim();
   try{
-    const res = await fetch("/api/subscribe",{
+    const res = await fetch("/api/quiz-result",{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email,website,source:"quiz-juve"})
+      body:JSON.stringify({
+        email,
+        website,
+        source:"quiz-juve",
+        score:lastScore,
+        profile:lastProfile ? lastProfile.title : ""
+      })
     });
     if(!res.ok) throw new Error("subscribe failed");
-    formStatus.textContent = "Perfetto: contatto salvato. Intanto trovi qui sopra tutti i link ICV.";
+    const data = await res.json().catch(()=>({}));
+    formStatus.textContent = data.sent
+      ? "Perfetto: controlla la mail, il tuo profilo ICV è in arrivo."
+      : "Perfetto: abbiamo ricevuto la tua mail. Il profilo ICV sarà inviato appena l'invio automatico è attivo.";
     form.reset();
   }catch(err){
     formStatus.style.color = "var(--red)";
-    formStatus.textContent = "Non sono riuscito a salvare la mail adesso. I link ICV sono già disponibili qui sopra.";
+    formStatus.textContent = "Non sono riuscito a inviare la mail adesso. Riprova tra poco.";
   }
 });
 

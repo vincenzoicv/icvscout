@@ -1358,6 +1358,7 @@ function brevoApiKey(env) {
 function brevoPublicErrorMessage(status, error = {}) {
   const code = cleanText(error.code || "");
   const message = cleanText(error.message || "");
+  const publicDetail = [code, message].filter(Boolean).join(": ");
   const detail = (code + " " + message).toLowerCase();
   if (status === 401 || detail.includes("unauthorized") || detail.includes("authentication")) {
     return "Brevo non ha accettato la chiave API: ricontrolla BREVO_API_KEY su Cloudflare.";
@@ -1365,7 +1366,9 @@ function brevoPublicErrorMessage(status, error = {}) {
   if (detail.includes("sender") || detail.includes("from") || detail.includes("mittente")) {
     return "Brevo non ha accettato il mittente: verifica che QUIZ_EMAIL_SENDER sia una mail mittente confermata.";
   }
-  return "Brevo non ha accettato l'invio adesso. Controlla mittente e piano Email transazionali.";
+  return publicDetail
+    ? "Brevo " + status + ": " + publicDetail
+    : "Brevo non ha accettato l'invio adesso. Controlla mittente e piano Email transazionali.";
 }
 
 function quizProfileFromScore(score) {

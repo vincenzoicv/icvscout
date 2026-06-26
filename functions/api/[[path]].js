@@ -688,7 +688,7 @@ async function fetchNewsDrafts(env, sources) {
       for (const item of items) {
         const normalized = normalizeGoogleTitle(item.title);
         const title = normalized.title;
-        const sourceName = normalized.source || source.name;
+        const sourceName = normalized.source || item.source || source.name;
         if (!isRelevantNewsItem(title, item.description, source)) continue;
         report.relevant++;
         const url = item.link || source.url;
@@ -2249,8 +2249,8 @@ function isTelegramWebSource(url) {
 }
 
 function itemScanLimitForSource(source) {
-  if (isTelegramWebSource(source && source.url)) return 24;
-  return 6;
+  if (isTelegramWebSource(source && source.url)) return 32;
+  return 18;
 }
 
 function parseTelegramWeb(html, source) {
@@ -2364,12 +2364,17 @@ function hasUntranslatedEnglish(value) {
 
 function parseRss(xml) {
   const chunks = xml.match(/<item[\s\S]*?<\/item>/gi) || [];
-  return chunks.map(chunk => ({
-    title: decodeXml(tag(chunk, "title")),
-    link: decodeXml(tag(chunk, "link")),
-    description: decodeXml(tag(chunk, "description")),
-    pubDate: decodeXml(tag(chunk, "pubDate")),
-  })).filter(item => item.title);
+  return chunks.map(chunk => {
+    const description = decodeXml(tag(chunk, "description"));
+    const content = decodeXml(tag(chunk, "content:encoded"));
+    return {
+      title: decodeXml(tag(chunk, "title")),
+      link: decodeXml(tag(chunk, "link")),
+      description: description || content,
+      pubDate: decodeXml(tag(chunk, "pubDate")),
+      source: decodeXml(tag(chunk, "source")),
+    };
+  }).filter(item => item.title);
 }
 
 function tag(xml, name) {

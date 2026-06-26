@@ -19,6 +19,12 @@ const DEFAULT_SOURCES = [
     reliability: "trusted",
   },
   {
+    name: "Juventus ultime 3 giorni",
+    url: "https://news.google.com/rss/search?q=Juventus%20when%3A3d&hl=it&gl=IT&ceid=IT:it",
+    category: "juventus",
+    reliability: "aggregator",
+  },
+  {
     name: "Di Marzio Juventus",
     url: "https://news.google.com/rss/search?q=Juventus%20Di%20Marzio&hl=it&gl=IT&ceid=IT:it",
     category: "calciomercato",
@@ -39,6 +45,12 @@ const DEFAULT_SOURCES = [
   {
     name: "Google News mercato",
     url: "https://news.google.com/rss/search?q=Juventus%20calciomercato&hl=it&gl=IT&ceid=IT:it",
+    category: "calciomercato",
+    reliability: "aggregator",
+  },
+  {
+    name: "Mercato Juve ultime 3 giorni",
+    url: "https://news.google.com/rss/search?q=Juventus%20mercato%20when%3A3d&hl=it&gl=IT&ceid=IT:it",
     category: "calciomercato",
     reliability: "aggregator",
   },
@@ -613,9 +625,10 @@ async function runMarketAutomation(env, options = {}) {
   try {
     const rawSources = options.sources || await getSources(env);
     const marketSources = rawSources.filter(s => s.category === "calciomercato");
+    const defaultLimit = marketSources.length ? marketSources.length : DEFAULT_SOURCES.length;
     const sources = (marketSources.length ? marketSources : DEFAULT_SOURCES)
       .filter(s => s.category === "calciomercato" || !marketSources.length)
-      .slice(0, Math.max(1, Number(options.sourceLimit || 3)));
+      .slice(0, Math.max(1, Number(options.sourceLimit || defaultLimit)));
     return await generateMarketDrafts(env, sources, { draftLimit: options.draftLimit || 8 });
   } catch (err) {
     return { ok: false, error: err.message || "Errore mercato", scanned: 0, inserted: 0, market_items: 0 };

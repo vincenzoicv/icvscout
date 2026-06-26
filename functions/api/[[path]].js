@@ -221,7 +221,10 @@ async function publicHome(env) {
   ]);
   const cleanNews = publicNewsRows(news).slice(0, 6);
   const cleanMarketNews = publicNewsRows(marketNews);
-  const cleanMarket = publicMarketRows(market && market.length ? market : publicMarketFromNews(cleanMarketNews));
+  const cleanMarket = publicMarketRows([
+    ...publicMarketFromNews(cleanMarketNews),
+    ...(market || []),
+  ]);
   return json({
     news: cleanNews,
     market: aggregateMarketItems(cleanMarket),
@@ -835,6 +838,7 @@ async function generateMarketDrafts(env, sources, options = {}) {
   const errors = Array.isArray(result.errors) ? result.errors.slice() : [];
 
   for (const draft of drafts) {
+    if (isStaleMarketDraft(draft)) continue;
     const player = marketTopicName({ player_name: extractPlayer(draft.title), note: draft.title }).slice(0, 80);
     if (!player || player === "Mercato Juve") continue;
     try {
@@ -867,6 +871,12 @@ async function generateMarketDrafts(env, sources, options = {}) {
   }
 
   return { ...result, errors, market_items: inserted };
+}
+
+function isStaleMarketDraft(draft) {
+  const createdAt = new Date(draft && draft.created_at || 0).getTime();
+  if (!createdAt) return false;
+  return Date.now() - createdAt > 72 * 3600000;
 }
 
 async function generateMatchCenter(env) {
@@ -2537,6 +2547,8 @@ function marketTopicName(row) {
 function isIgnoredMarketSignal(row) {
   const name = cleanText(row && row.player_name);
   const text = cleanText([name, row && row.note, row && row.source_name].join(" ")).toLowerCase();
+  const createdAt = new Date(row && row.created_at || 0).getTime();
+  if (createdAt && Date.now() - createdAt > 72 * 3600000) return true;
   if (/^(pap|papa|marzio|di marzio|luca toselli|romeo agresti|gianni balzarini)$/i.test(name)) return true;
   if (/youtube/.test(text) && isBadMarketTopic(name)) return true;
   if (/youtube scout:/.test(text)) return true;

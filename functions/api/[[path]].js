@@ -1191,6 +1191,7 @@ async function worldCupCalendar(request, env) {
   const headers = { "X-Auth-Token": env.FOOTBALL_DATA_KEY };
   const data = await fetchJson("https://api.football-data.org/v4/competitions/WC/matches", headers);
   const now = new Date();
+  const calendarSequence = Math.floor(now.getTime() / (60 * 60 * 1000));
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -1222,6 +1223,8 @@ async function worldCupCalendar(request, env) {
       "BEGIN:VEVENT",
       `UID:wc2026-${match.id || formatIcsDate(kickoff)}@ilcalciodivince.com`,
       `DTSTAMP:${formatIcsDate(now)}`,
+      `LAST-MODIFIED:${formatIcsDate(now)}`,
+      `SEQUENCE:${calendarSequence}`,
       `DTSTART:${formatIcsDate(kickoff)}`,
       `DTEND:${formatIcsDate(end)}`,
       `SUMMARY:${escapeIcsText(summary)}`,
@@ -1244,7 +1247,9 @@ async function worldCupCalendar(request, env) {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'attachment; filename="ICV-Mondiali-2026.ics"',
-      "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+      "Cache-Control": "no-store, max-age=0, must-revalidate",
+      "Pragma": "no-cache",
+      "Expires": "0",
       "Access-Control-Allow-Origin": "*",
     },
   });

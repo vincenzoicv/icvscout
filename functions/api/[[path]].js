@@ -1212,9 +1212,13 @@ async function worldCupCalendar(request, env) {
     const home = worldCupTeamName(match.homeTeam, "Squadra da definire");
     const away = worldCupTeamName(match.awayTeam, "Squadra da definire");
     const stage = worldCupStageLabel(match.stage, match.group);
-    const summary = `Mondiali 2026: ${home} - ${away}`;
+    const teamsDefined = home !== "Squadra da definire" || away !== "Squadra da definire";
+    const summary = teamsDefined
+      ? `Mondiali 2026: ${home} - ${away}`
+      : `Mondiali 2026: ${stage}`;
     const description = [
       stage,
+      teamsDefined ? "" : "Squadre aggiornate automaticamente appena definite.",
       "Orario aggiornato automaticamente da ICV Scout.",
       "https://ilcalciodivince.com/mondiali",
     ].filter(Boolean).join("\n");

@@ -84,6 +84,11 @@ const AUTO_PUBLISH_TRUSTED_SOURCE_PATTERNS = [
   "fabrizio romano",
 ];
 
+const BLOCKED_NEWS_TOPIC_PATTERNS = [
+  /\bjuve\s+stabia\b/,
+  /\bjuvestabia\b/,
+];
+
 const DEFAULT_RADAR = {
   kicker: "Centro di controllo",
   title: "Estate Juve",
@@ -2134,9 +2139,14 @@ function hasUsableYoutubeTranscript(text) {
 
 function isRelevantNewsItem(title, description, source) {
   const text = normalizeTopicKey([title, description].join(" "));
+  if (isBlockedNewsTopic(text)) return false;
   if (isJuventusNewsText(text)) return true;
   if ((source && source.category) === "calciomercato" && isJuventusMarketText(text)) return true;
   return false;
+}
+
+function isBlockedNewsTopic(text) {
+  return BLOCKED_NEWS_TOPIC_PATTERNS.some(pattern => pattern.test(text));
 }
 
 function isJuventusNewsText(text) {

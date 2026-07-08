@@ -769,6 +769,12 @@ async function fetchNewsDrafts(env, sources) {
         const trustedConfirmation = reliability === "trusted" ? findTrustedConfirmationInRows(recentDrafts, candidate) : null;
         const shouldPublish = shouldAutoPublishCandidate(env, source, candidate);
         const reviewStatus = shouldPublish ? "ready" : reviewStatusForReliability(reliability, trustedConfirmation);
+        const existingDraftByHash = await sb(env, "/news_drafts?content_hash=eq." + encodeURIComponent(hash) + "&select=id&limit=1");
+        if (existingDraftByHash.length) {
+          skippedDuplicates++;
+          report.skipped_duplicates++;
+          continue;
+        }
         let draftRows = [];
         try {
           draftRows = await sb(env, "/news_drafts", {

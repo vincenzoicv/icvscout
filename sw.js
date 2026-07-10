@@ -1,11 +1,12 @@
 // ICV Scout — Service Worker
 // Strategia: cache-first per risorse statiche, network-only per API/Supabase
-const CACHE = 'icv-v8';
+const CACHE = 'icv-v9';
 const STATIC = [
   '/',
   '/index.html',
   '/mercato.html',
   '/grafiche.html',
+  '/quiz.html',
   '/mondiali.html',
   '/mondiali.js',
   '/agenda.html',
@@ -20,7 +21,9 @@ const STATIC = [
   '/splash-1179x2556.png',
   '/splash-1290x2796.png',
   '/splash-2048x2732.png',
-  '/og-image.png'
+  '/og-image.png',
+  '/assets/icv-logo.jpg',
+  '/assets/hero-yildiz.jpg'
 ];
 
 self.addEventListener('install', e => {

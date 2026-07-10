@@ -121,7 +121,7 @@ export async function onRequest(context) {
 
   try {
     if (path === "public/home") return publicHome(env);
-    if (path === "public/graphics") return publicGraphics(env);
+    if (path === "public/graphics") return publicGraphics(env, url);
     if (path === "public/news") return publicNews(env, url);
     if (path === "world-cup/overview") return worldCupOverview(request, env, context);
     if (path === "world-cup/live") return worldCupLive(request, env);
@@ -241,10 +241,23 @@ async function publicHome(env) {
   });
 }
 
-async function publicGraphics(env) {
+async function publicGraphics(env, url) {
   if (!hasSupabase(env)) return json(DEFAULT_GRAPHICS);
-  const graphics = await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS);
-  return json(publicGraphicsRows(graphics));
+  const graphics = publicGraphicsRows(await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS));
+  const id = cleanText(url.searchParams.get("id") || "");
+
+  if (id && url.searchParams.get("image") === "1") {
+    const graphic = graphics.find(item => item.id === id);
+    if (!graphic) return json({ error: "Grafica non trovata" }, 404);
+    return publicGraphicImage(graphic);
+  }
+
+  const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || graphics.length), 1), 48);
+  const rows = graphics.slice(0, limit);
+  if (url.searchParams.get("meta") === "1") {
+    return json(rows.map(item => publicGraphicMetadata(item)));
+  }
+  return json(rows);
 }
 
 function publicMarketFromNews(rows) {
@@ -502,6 +515,26 @@ async function adminNews(request, env) {
       ]);
       await setSiteSetting(env, "graphics_gallery", graphics);
       return json({ graphic: graphics[0], graphics });
+    }
+
+    if (body.type === "migrate_graphics_to_storage") {
+      const current = normalizeGraphics(await getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS));
+      let migrated = 0;
+      const graphics = [];
+      for (const item of current) {
+        if (!String(item.image_url || "").startsWith("data:image/")) {
+          graphics.push(item);
+          continue;
+        }
+        const imageUrl = await uploadGraphicImage(env, {
+          image_data: item.image_url,
+          filename: item.title || "grafica-icv",
+        });
+        graphics.push({ ...item, image_url: imageUrl });
+        migrated += 1;
+      }
+      await setSiteSetting(env, "graphics_gallery", graphics);
+      return json({ migrated, graphics });
     }
   }
 
@@ -3155,7 +3188,7 @@ function publicNewsRows(rows) {
     .map(row => {
       const normalized = {
         ...row,
-        title: cleanText(row.title),
+        title: cleanNewsDescription(row.title, row.source) || cleanText(row.title),
         body: cleanNewsDescription(row.body, row.source, row.title),
         category: cleanText(row.category),
         urgency: normalizeUrgency(row.urgency),
@@ -3266,6 +3299,34 @@ function publicSocialRows(rows) {
 function publicGraphicsRows(rows) {
   return normalizeGraphics(rows)
     .filter(item => item.visible !== false && item.image_url);
+}
+
+function publicGraphicMetadata(item) {
+  const imageUrl = String(item.image_url || "");
+  return {
+    id: item.id,
+    title: item.title,
+    link_url: item.link_url,
+    created_at: item.created_at,
+    image_url: imageUrl.startsWith("data:image/")
+      ? "/api/public/graphics?id=" + encodeURIComponent(item.id) + "&image=1"
+      : imageUrl,
+  };
+}
+
+function publicGraphicImage(item) {
+  const imageUrl = String(item.image_url || "");
+  if (!imageUrl.startsWith("data:image/")) {
+    return Response.redirect(imageUrl, 302);
+  }
+  const match = imageUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,([a-zA-Z0-9+/=\s]+)$/);
+  if (!match) return json({ error: "Immagine grafica non valida" }, 500);
+  return new Response(decodeBase64(match[2].replace(/\s/g, "")), {
+    headers: {
+      "Content-Type": match[1],
+      "Cache-Control": "public, max-age=31536000, immutable",
+    },
+  });
 }
 
 function inlineGraphicImage(body) {

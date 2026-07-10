@@ -154,7 +154,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         </div>
 
         <div class="card admin-panel" data-panel="graphics">
-          <h2>Grafiche</h2>
+          <div class="item-head"><h2>Grafiche</h2><button class="ghost small" onclick="migrateGraphics()">Ottimizza archivio</button></div>
           <div class="form" style="margin-bottom:12px">
             <div><label>Titolo</label><input id="graphicTitle" placeholder="Es. Pagellone finale"></div>
             <div><label>Immagine</label><input id="graphicFile" type="file" accept="image/*"></div>
@@ -305,7 +305,7 @@ function addGraphic(){
   showToast("Caricamento grafica");
   prepareGraphicUpload(file).then(function(upload){
     return api("/api/admin/news", {method:"POST", body:{
-      type:"graphic_inline",
+      type:"graphic_upload",
       title:val("graphicTitle") || "Grafica ICV",
       link_url:val("graphicLinkUrl"),
       filename:upload.filename,
@@ -334,6 +334,13 @@ function deleteGraphic(id){
 function moveGraphic(id, direction){
   api("/api/admin/news", {method:"PATCH", body:{type:"move_graphic", id:id, direction:direction}})
     .then(function(){ showToast("Ordine aggiornato"); load(); })
+    .catch(function(err){ showToast(err.message); });
+}
+function migrateGraphics(){
+  if(!confirm("Ottimizzare le grafiche esistenti? Verranno spostate nello storage senza modificare titoli, link o ordine.")) return;
+  showToast("Ottimizzazione archivio in corso");
+  api("/api/admin/news", {method:"POST", body:{type:"migrate_graphics_to_storage"}})
+    .then(function(data){ showToast((data.migrated || 0) + " grafiche ottimizzate"); load(); })
     .catch(function(err){ showToast(err.message); });
 }
 function render(){

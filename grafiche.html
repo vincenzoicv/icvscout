@@ -6,7 +6,15 @@
 <title>Grafiche ICV - Il Calcio di Vince</title>
 <meta name="description" content="Archivio grafiche ICV Scout per Juventus, mercato, statistiche e contenuti social.">
 <link rel="canonical" href="https://ilcalciodivince.com/grafiche">
+<meta property="og:title" content="Grafiche ICV · Il Calcio di Vince">
+<meta property="og:description" content="L'archivio delle grafiche ICV Scout dedicate alla Juventus.">
+<meta property="og:type" content="website">
 <meta property="og:url" content="https://ilcalciodivince.com/grafiche">
+<meta property="og:image" content="https://ilcalciodivince.com/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Grafiche ICV · Il Calcio di Vince">
+<meta name="twitter:description" content="L'archivio delle grafiche ICV Scout dedicate alla Juventus.">
+<meta name="twitter:image" content="https://ilcalciodivince.com/og-image.png">
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#C4962A">
 <meta name="mobile-web-app-capable" content="yes">
@@ -52,6 +60,8 @@ footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-fa
     <a href="/">Home</a>
     <a href="/#news">News</a>
     <a href="/mercato">Mercato</a>
+    <a href="/mondiali">Mondiali</a>
+    <a href="/quiz">Quiz</a>
   </nav>
 </header>
 <main>
@@ -81,7 +91,7 @@ function renderGraphics(rows){
     return "<" + tag + " class='card'" + attrs + "><img src='" + esc(item.image_url) + "' alt='" + esc(item.title || "Grafica ICV") + "' loading='lazy'><h2>" + esc(item.title || "Grafica ICV") + "</h2></" + tag + ">";
   }).join("");
 }
-fetch("/api/public/graphics").then(function(response){return response.json();}).then(function(data){renderGraphics(data || []);}).catch(function(){document.getElementById("graphicsArchive").innerHTML = "<div class='empty'>Grafiche non disponibili</div>";});
+fetch("/api/public/graphics?meta=1&limit=48").then(function(response){return response.json();}).then(function(data){renderGraphics(data || []);}).catch(function(){document.getElementById("graphicsArchive").innerHTML = "<div class='empty'>Grafiche non disponibili</div>";});
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function(){
     navigator.serviceWorker.register("/sw.js").catch(function(){});

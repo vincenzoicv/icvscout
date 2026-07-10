@@ -3,7 +3,7 @@
   "short_name": "ICV Scout",
   "description": "Formazioni, analisi tattiche, statistiche e mercato della Juventus.",
   "id": "/",
-  "start_url": "/index.html?source=pwa",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui", "browser"],
@@ -43,28 +43,28 @@
       "name": "Home",
       "short_name": "Home",
       "description": "Apri la home di ICV Scout",
-      "url": "/index.html",
+      "url": "/",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Mercato",
       "short_name": "Mercato",
       "description": "Apri il radar mercato ICV",
-      "url": "/mercato.html",
+      "url": "/mercato",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Grafiche",
       "short_name": "Grafiche",
       "description": "Apri l'archivio grafiche ICV",
-      "url": "/grafiche.html",
+      "url": "/grafiche",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "News",
       "short_name": "News",
       "description": "Vai alle ultime news ICV",
-      "url": "/index.html#news",
+      "url": "/#news",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ],

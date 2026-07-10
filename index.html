@@ -111,6 +111,10 @@ main{padding-top:58px;position:relative;z-index:1;}
 .mb-info strong{font-family:"Barlow Condensed";font-size:16px;font-weight:700;color:rgba(255,255,255,0.88);letter-spacing:1px;}
 .home-dash{max-width:1100px;margin:-28px auto 18px;padding:0 20px;position:relative;z-index:2;display:grid;grid-template-columns:1.25fr .85fr .85fr;gap:12px;}
 .home-panel{background:var(--surface);border:1px solid var(--bdr);border-radius:10px;padding:20px;min-height:136px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.035),0 16px 36px rgba(0,0,0,0.16);}
+.home-panel{position:relative;overflow:hidden;transition:transform .32s cubic-bezier(.2,.8,.2,1),border-color .32s ease,box-shadow .32s ease;}
+.home-panel::after{content:"";position:absolute;inset:0;background:linear-gradient(108deg,transparent 28%,rgba(232,184,75,.075) 48%,transparent 68%);transform:translateX(-115%);pointer-events:none;}
+.home-panel:hover{transform:translateY(-3px);border-color:rgba(196,150,42,.32);box-shadow:0 20px 42px rgba(0,0,0,.28),0 0 24px rgba(196,150,42,.055),inset 0 1px 0 rgba(255,255,255,.06);}
+.home-panel:hover::after{animation:panelSheen .85s ease both;}
 .home-panel:nth-child(1){grid-column:span 2;min-height:168px;padding:24px 26px 22px;border-left:3px solid var(--gold);background:linear-gradient(145deg,rgba(28,28,28,.98),rgba(17,17,17,.96));box-shadow:0 22px 48px rgba(0,0,0,0.28),inset 0 1px 0 rgba(255,255,255,0.055);}
 .home-panel h3{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:3px;color:var(--gold-l);text-transform:uppercase;margin-bottom:10px;}
 .home-panel:nth-child(1) h3{margin-bottom:12px;}
@@ -341,6 +345,14 @@ body.light .mob-btn.active{color:var(--gold);background:rgba(196,150,42,0.10);bo
 @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(1.3)}}
 @keyframes glowbar{0%,100%{opacity:0.6}50%{opacity:1}}
+@keyframes revealRise{from{opacity:0;transform:translateY(26px) scale(.985);filter:blur(5px)}to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+@keyframes panelSheen{to{transform:translateX(115%)}}
+.reveal-item{opacity:0;will-change:transform,opacity,filter;}
+.reveal-item.is-visible{opacity:1;transform:translateY(0) scale(1);filter:blur(0);animation:revealRise .62s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--reveal-delay,0ms);}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;scroll-behavior:auto !important;transition-duration:.01ms !important;}
+  .reveal-item{opacity:1;filter:none;}
+}
 @media(max-width:768px){
 header{padding:0 14px;height:54px;}main{padding-top:54px;padding-bottom:calc(72px + env(safe-area-inset-bottom,0px));}
 body.is-standalone header{height:calc(54px + env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px);}
@@ -1569,6 +1581,45 @@ showSec = function(id, btn) {
   if (id === "news") loadAndRenderNews();
   if (id === "mercato") loadMercatoNews();
 };
+
+function setupHomeMotion() {
+  if (!window.IntersectionObserver || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var selector = ".home-dash > .home-panel, .section > .sec-head, .stat-card, .chart-box, .result-item, .market-card, .news-card, .graphic-card, .ctx-box";
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      observer.unobserve(entry.target);
+    });
+  }, { rootMargin: "0px 0px -9%", threshold: 0.08 });
+
+  function observeItems(root) {
+    var items = [];
+    if (root.matches && root.matches(selector)) items.push(root);
+    if (root.querySelectorAll) items = items.concat(Array.prototype.slice.call(root.querySelectorAll(selector)));
+    items.forEach(function(item, index) {
+      if (item.classList.contains("reveal-item") || item.hidden) return;
+      item.classList.add("reveal-item");
+      item.style.setProperty("--reveal-delay", ((index % 5) * 65) + "ms");
+      observer.observe(item);
+    });
+    // Fallback: a browser that does not emit intersection events must never leave content hidden.
+    window.setTimeout(function() {
+      items.forEach(function(item) { item.classList.add("is-visible"); });
+    }, 480);
+  }
+
+  observeItems(document);
+  new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      mutation.addedNodes.forEach(function(node) {
+        if (node.nodeType === 1) observeItems(node);
+      });
+    });
+  }).observe(document.querySelector("main"), { childList: true, subtree: true });
+}
+
+setupHomeMotion();
 loadHomeDashboard();
 loadHomeGraphics();
 

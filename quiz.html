@@ -553,6 +553,13 @@ function getProfile(total){
 function showResult(){
   lastScore = score();
   lastProfile = getProfile(lastScore);
+  try{
+    localStorage.setItem("icvQuizResult",JSON.stringify({
+      score:lastScore,
+      profile:lastProfile.title,
+      completed_at:new Date().toISOString()
+    }));
+  }catch(error){}
   formStatus.textContent = "";
   formStatus.style.color = "var(--green)";
   quizArea.style.display = "none";

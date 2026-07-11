@@ -379,11 +379,15 @@ async function communityRoute(request, env, url, route) {
 
   if (route === "me" && method === "PATCH") {
     const body = await readBody(request);
+    const quizScore = Number(body.quiz_score);
     const patch = {
       display_name: cleanText(body.display_name || profile.display_name).slice(0, 60),
       username: normalizeCommunityUsername(body.username || profile.username),
       bio: cleanText(body.bio || "").slice(0, 180),
-      quiz_badge: cleanText(body.quiz_badge || profile.quiz_badge || "Bianconero").slice(0, 50),
+      avatar_url: body.avatar_url === undefined ? profile.avatar_url : safeCommunityImageUrl(body.avatar_url),
+      quiz_badge: Number.isFinite(quizScore) && quizScore >= 10 && quizScore <= 40
+        ? quizProfileFromScore(Math.round(quizScore)).title
+        : cleanText(profile.quiz_badge || "Bianconero").slice(0, 50),
       updated_at: new Date().toISOString(),
     };
     const updated = await sb(env, "/community_profiles?id=eq." + encodeURIComponent(user.id), {

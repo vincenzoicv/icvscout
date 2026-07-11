@@ -3785,8 +3785,16 @@ async function ensureStorageBucket(env, bucket) {
 
   const existing = await fetch(root + "/storage/v1/bucket/" + encodeURIComponent(bucket), { headers });
   if (existing.ok) return;
-  if (existing.status !== 404) {
-    const text = await existing.text();
+  const existingText = await existing.text();
+  let bucketMissing = existing.status === 404;
+  try {
+    const payload = JSON.parse(existingText);
+    bucketMissing = bucketMissing || Number(payload.statusCode) === 404 || /bucket not found/i.test(payload.message || "");
+  } catch {
+    bucketMissing = bucketMissing || /bucket not found/i.test(existingText);
+  }
+  if (!bucketMissing) {
+    const text = existingText;
     throw new Error("Storage Supabase " + existing.status + ": " + text);
   }
 

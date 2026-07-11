@@ -404,6 +404,11 @@ async function communityRoute(request, env, url, route) {
     return json({ url: await uploadCommunityImage(env, body) }, 201);
   }
 
+  if (route === "upload-ticket" && method === "POST") {
+    const body = await readBody(request);
+    return json(await createCommunityUploadTicket(env, body), 201);
+  }
+
   if (route === "posts" && method === "POST") {
     const body = await readBody(request);
     const text = cleanText(body.body || "").slice(0, 1200);
@@ -603,6 +608,33 @@ async function uploadCommunityImage(env, body) {
   });
   if (!response.ok) throw await communityStorageError(response);
   return base + "/storage/v1/object/public/" + COMMUNITY_BUCKET + "/" + encodeURIComponent(objectName);
+}
+
+async function createCommunityUploadTicket(env, body) {
+  const contentType = cleanText(body.content_type || "").toLowerCase();
+  const size = Number(body.size || 0);
+  if (!/^image\/(jpeg|png|webp|gif)$/.test(contentType)) throw communityError("Formato immagine non supportato", 400);
+  if (!Number.isFinite(size) || size <= 0) throw communityError("Immagine non valida", 400);
+  if (size > MAX_COMMUNITY_UPLOAD_BYTES) throw communityError("Immagine troppo pesante: massimo 6 MB", 400);
+
+  await ensureStorageBucket(env, COMMUNITY_BUCKET);
+  const objectName = Date.now().toString(36) + "-" + safeStorageName(body.filename || "avatar", contentType);
+  const base = env.SUPABASE_URL.replace(/\/$/, "");
+  const key = env.SUPABASE_SERVICE_ROLE_KEY;
+  const response = await fetch(base + "/storage/v1/object/upload/sign/" + COMMUNITY_BUCKET + "/" + encodeURIComponent(objectName), {
+    method: "POST",
+    headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json" },
+    body: JSON.stringify({ upsert: false }),
+  });
+  if (!response.ok) throw await communityStorageError(response);
+  const payload = await response.json();
+  if (!payload.token) throw communityError("Supabase non ha generato il permesso di caricamento", 502);
+  return {
+    bucket: COMMUNITY_BUCKET,
+    path: objectName,
+    token: payload.token,
+    url: base + "/storage/v1/object/public/" + COMMUNITY_BUCKET + "/" + encodeURIComponent(objectName),
+  };
 }
 
 async function communityStorageError(response) {

@@ -80,6 +80,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
       <button data-tab="market" onclick="setAdminTab('market',this)">Mercato</button>
       <button data-tab="social" onclick="setAdminTab('social',this)">Social</button>
       <button data-tab="graphics" onclick="setAdminTab('graphics',this)">Grafiche</button>
+      <button data-tab="community" onclick="setAdminTab('community',this)">Community</button>
       <button data-tab="sources" onclick="setAdminTab('sources',this)">Fonti</button>
       <button data-tab="advanced" onclick="setAdminTab('advanced',this)">Avanzate</button>
     </nav>
@@ -100,6 +101,12 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         <div class="card admin-panel" data-panel="published">
           <h2>News Pubblicate</h2>
           <div id="newsList"></div>
+        </div>
+
+        <div class="card admin-panel" data-panel="community">
+          <h2>Moderazione Community</h2>
+          <div id="communityReportList"></div>
+          <div id="communityPostList"></div>
         </div>
       </div>
 
@@ -171,7 +178,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 <div class="toast" id="toast"></div>
 
 <script>
-var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], filter: "all", adminTab: "drafts" };
+var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], communityPosts: [], communityReports: [], filter: "all", adminTab: "drafts" };
 var OFFICIAL_SERIE_A_CALENDAR = {
   season: "Serie A 2026/27",
   title: "Calendario Juventus 2026/27 ufficiale",
@@ -218,6 +225,8 @@ function load(){
     state.market = data.market || [];
     state.matches = data.matches || [];
     state.runs = data.runs || [];
+    state.communityPosts = data.community_posts || [];
+    state.communityReports = data.community_reports || [];
     render();
   });
 }
@@ -349,7 +358,7 @@ function render(){
   document.getElementById("stNews").textContent = state.news.filter(function(n){ return n.visible; }).length;
   document.getElementById("stMarket").textContent = state.market.length;
   document.getElementById("stSocial").textContent = state.social.length;
-  renderAutomationStatus(); renderAdminAlerts(); renderDrafts(); renderNews(); renderSources(); renderMarket(); renderMatches(); renderSocial(); renderGraphics();
+  renderAutomationStatus(); renderAdminAlerts(); renderDrafts(); renderNews(); renderSources(); renderMarket(); renderMatches(); renderSocial(); renderGraphics(); renderCommunity();
 }
 function renderAutomationStatus(){
   var box = document.getElementById("automationStatus");
@@ -533,6 +542,27 @@ function renderGraphics(){
     var img = g.image_url ? "<img class='graphic-thumb' src='"+escAttr(g.image_url)+"' alt='"+escAttr(g.title || "Grafica ICV")+"'>" : "<div class='graphic-thumb'></div>";
     return "<div class='item graphic-admin-card'>" + img + "<div><div class='item-head'><div><h3>"+esc(g.title || "Grafica ICV")+"</h3><div class='meta'>"+(g.visible === false ? "nascosta" : "visibile")+link+"</div></div></div><div class='item-actions' style='margin-top:10px'><button class='ghost small order-btn' "+(index === 0 ? "disabled" : "")+" onclick='moveGraphic(\""+escAttr(g.id)+"\",\"up\")'>Su</button><button class='ghost small order-btn' "+(index === state.graphics.length - 1 ? "disabled" : "")+" onclick='moveGraphic(\""+escAttr(g.id)+"\",\"down\")'>Giu</button><button class='small visibility-btn "+(g.visible === false ? "" : "visible")+"' onclick='toggleGraphic(\""+escAttr(g.id)+"\","+(g.visible !== false)+")'>"+(g.visible === false ? "Mostra" : "Nascondi")+"</button><button class='danger small' onclick='deleteGraphic(\""+escAttr(g.id)+"\")'>Elimina</button></div></div></div>";
   }).join("");
+}
+function renderCommunity(){
+  var reports = document.getElementById("communityReportList");
+  var posts = document.getElementById("communityPostList");
+  if(!reports || !posts) return;
+  var openReports = state.communityReports.filter(function(row){ return row.status === "open"; });
+  reports.innerHTML = "<h3 style='margin:8px 0 10px'>Segnalazioni aperte</h3>" + (openReports.length ? openReports.map(function(row){
+    var author = row.reporter && (row.reporter.display_name || row.reporter.username) || "Utente";
+    var excerpt = row.post && row.post.body || "Commento segnalato";
+    return "<div class='item'><div class='item-head'><div><h3>"+esc(row.reason)+"</h3><div class='meta'>"+esc(author)+" · "+date(row.created_at)+"</div></div></div><p>"+esc(excerpt)+"</p><div class='item-actions'><button class='ghost small' onclick='closeCommunityReport(\""+escAttr(row.id)+"\")'>Chiudi segnalazione</button>"+(row.post_id?"<button class='danger small' onclick='setCommunityPost(\""+escAttr(row.post_id)+"\",false)'>Nascondi post</button>":"")+"</div></div>";
+  }).join("") : "<div class='empty'>Nessuna segnalazione aperta.</div>");
+  posts.innerHTML = "<h3 style='margin:22px 0 10px'>Post recenti</h3>" + (state.communityPosts.length ? state.communityPosts.map(function(row){
+    var author = row.author && (row.author.display_name || row.author.username) || "Utente";
+    return "<div class='item'><div class='item-head'><div><h3>"+esc(author)+"</h3><div class='meta'>"+esc(row.category)+" · "+esc(row.status)+" · "+date(row.created_at)+"</div></div></div><p>"+esc(row.body)+"</p><div class='item-actions'><button class='"+(row.status === "published"?"danger":"ghost")+" small' onclick='setCommunityPost(\""+escAttr(row.id)+"\","+(row.status !== "published")+")'>"+(row.status === "published"?"Nascondi":"Ripristina")+"</button></div></div>";
+  }).join("") : "<div class='empty'>Nessun post della community.</div>");
+}
+function setCommunityPost(id, visible){
+  api("/api/admin/news", {method:"PATCH", body:{type:visible?"restore_community_post":"hide_community_post",id:id}}).then(function(){showToast(visible?"Post ripristinato":"Post nascosto");load();}).catch(function(err){showToast(err.message);});
+}
+function closeCommunityReport(id){
+  api("/api/admin/news", {method:"PATCH", body:{type:"close_community_report",id:id}}).then(function(){showToast("Segnalazione chiusa");load();}).catch(function(err){showToast(err.message);});
 }
 function val(id){ return document.getElementById(id).value.trim(); }
 function setVal(id,value){ var el=document.getElementById(id); if(el) el.value=value == null ? "" : value; }

@@ -66,6 +66,13 @@
       "description": "Vai alle ultime news ICV",
       "url": "/#news",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "ICV Community",
+      "short_name": "Community",
+      "description": "Apri la community bianconera",
+      "url": "/community",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ],
   "lang": "it"

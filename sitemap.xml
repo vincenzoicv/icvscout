@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ilcalciodivince.com/</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-07-11</lastmod>
   </url>
   <url>
     <loc>https://ilcalciodivince.com/mercato</loc>
@@ -22,6 +22,10 @@
   </url>
   <url>
     <loc>https://ilcalciodivince.com/quiz</loc>
-    <lastmod>2026-07-10</lastmod>
+    <lastmod>2026-07-11</lastmod>
+  </url>
+  <url>
+    <loc>https://ilcalciodivince.com/community</loc>
+    <lastmod>2026-07-11</lastmod>
   </url>
 </urlset>

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>ICV Community · Il Calcio di Vince</title>
+  <meta name="description" content="La community bianconera di ICV Scout: mercato, partite, analisi e discussioni sulla Juventus.">
+  <link rel="canonical" href="https://ilcalciodivince.com/community">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ICV Community · Il Calcio di Vince">
+  <meta property="og:description" content="Il social bianconero per discutere di Juventus con notizie verificate, analisi e Match Room.">
+  <meta property="og:url" content="https://ilcalciodivince.com/community">
+  <meta property="og:image" content="https://ilcalciodivince.com/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#080704">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root{--gold:#d3a536;--gold2:#f3cd68;--ink:#070706;--glass:rgba(10,9,7,.66);--glass2:rgba(20,17,11,.72);--line:rgba(255,255,255,.1);--goldline:rgba(211,165,54,.3);--text:#f6f2e8;--muted:rgba(246,242,232,.58);--faint:rgba(246,242,232,.34);--green:#4ade80;--red:#ff7474}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;color:var(--text);font-family:Barlow,system-ui,sans-serif;background:#090909 url('/assets/community-stadium.jpg') center/cover fixed no-repeat;-webkit-font-smoothing:antialiased}
+    body::before{content:"";position:fixed;inset:0;background:linear-gradient(90deg,rgba(3,4,7,.72),rgba(8,7,4,.38) 48%,rgba(5,4,3,.68)),linear-gradient(180deg,rgba(0,0,0,.2),rgba(0,0,0,.62));pointer-events:none}
+    button,input,textarea{font:inherit}button{color:inherit}a{color:inherit;text-decoration:none}.hidden{display:none!important}
+    .page{position:relative;z-index:1;min-height:100vh;padding:clamp(12px,2.2vw,34px);display:grid;place-items:center}
+    .app-shell{width:min(1500px,100%);height:min(1050px,calc(100vh - clamp(24px,4.4vw,68px)));min-height:680px;display:grid;grid-template-columns:88px minmax(0,1fr) 360px;overflow:hidden;border:1px solid rgba(255,255,255,.22);border-radius:24px;background:var(--glass);backdrop-filter:blur(30px) saturate(135%);-webkit-backdrop-filter:blur(30px) saturate(135%);box-shadow:0 30px 100px rgba(0,0,0,.56),inset 0 1px 0 rgba(255,255,255,.14)}
+    .rail{display:flex;flex-direction:column;align-items:center;border-right:1px solid var(--line);background:rgba(3,3,3,.48)}.rail-logo{display:grid;place-items:center;width:100%;height:84px;border-bottom:1px solid var(--line);font:42px/1 'Bebas Neue';color:var(--gold2);letter-spacing:2px}.rail-nav{display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:18px}.icon-btn{display:grid;place-items:center;width:50px;height:50px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer;transition:.22s}.icon-btn:hover,.icon-btn.active{color:var(--gold2);border-color:var(--goldline);background:rgba(211,165,54,.12);transform:translateY(-1px)}.icon-btn svg{width:22px;height:22px}.rail-bottom{margin-top:auto;padding:0 0 18px}
+    .center{min-width:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(211,165,54,.35) transparent}.topbar{position:sticky;top:0;z-index:10;height:84px;display:flex;align-items:center;justify-content:space-between;padding:0 34px;border-bottom:1px solid var(--line);background:rgba(12,10,7,.7);backdrop-filter:blur(24px)}.brand{display:flex;align-items:center;gap:14px}.brand strong{font:34px/1 'Bebas Neue';letter-spacing:2px}.brand span{height:25px;width:1px;background:var(--goldline)}.brand small{font:800 13px 'Barlow Condensed';letter-spacing:3px;text-transform:uppercase;color:var(--gold2)}.live-pill{display:flex;align-items:center;gap:9px;padding:9px 15px;border:1px solid var(--goldline);border-radius:999px;background:rgba(211,165,54,.13);font:800 13px 'Barlow Condensed';letter-spacing:1px;color:var(--gold2)}.live-dot{width:8px;height:8px;border-radius:50%;background:var(--gold2);box-shadow:0 0 15px var(--gold2);animation:pulse 1.8s infinite}
+    .tabs{position:sticky;top:84px;z-index:9;display:flex;gap:34px;height:68px;padding:0 34px;border-bottom:1px solid var(--line);background:rgba(10,9,7,.76);backdrop-filter:blur(22px)}.tab{position:relative;border:0;background:none;color:var(--faint);font:900 17px 'Barlow Condensed';letter-spacing:1.5px;text-transform:uppercase;cursor:pointer}.tab:hover,.tab.active{color:var(--gold2)}.tab.active::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--gold2);box-shadow:0 0 13px rgba(211,165,54,.55)}
+    .composer{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:13px;align-items:start;padding:24px 34px;border-bottom:1px solid var(--line);background:rgba(6,6,5,.24)}.avatar{flex:0 0 auto;display:grid;place-items:center;width:46px;height:46px;border:1px solid var(--goldline);border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#f2cb61,#b8831e);color:#151005;font:900 15px 'Barlow Condensed'}.avatar img{width:100%;height:100%;object-fit:cover}.composer-main textarea{width:100%;min-height:48px;max-height:150px;resize:vertical;border:1px solid var(--line);border-radius:8px;padding:13px 15px;background:rgba(0,0,0,.26);color:var(--text);outline:none;line-height:1.45}.composer-main textarea:focus{border-color:var(--goldline);box-shadow:0 0 0 3px rgba(211,165,54,.07)}.composer-tools{display:flex;align-items:center;gap:8px;margin-top:9px}.tool-btn{display:inline-flex;align-items:center;gap:7px;border:0;background:none;color:var(--muted);font:700 12px 'Barlow Condensed';cursor:pointer}.tool-btn:hover{color:var(--gold2)}.tool-btn svg{width:17px}.image-name{max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gold2);font-size:11px}.publish{height:42px;padding:0 18px;border:1px solid rgba(211,165,54,.55);border-radius:8px;background:linear-gradient(135deg,#e7bd52,#b98520);color:#151005;font:900 13px 'Barlow Condensed';letter-spacing:1px;text-transform:uppercase;cursor:pointer}.publish:disabled{opacity:.42;cursor:not-allowed}
+    .feed-status{padding:22px 34px;color:var(--muted);text-align:center}.post{position:relative;padding:26px 34px;border-bottom:1px solid var(--line);background:rgba(5,5,4,.08);transition:.2s}.post:hover{background:rgba(255,255,255,.025)}.post.official{background:linear-gradient(90deg,rgba(211,165,54,.1),transparent 58%)}.post.official::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold2)}.post-head{display:flex;align-items:center;gap:12px}.post-author{min-width:0}.post-author strong{display:block;font-size:16px}.post-author span{display:flex;align-items:center;gap:5px;margin-top:2px;color:var(--gold2);font:700 12px 'Barlow Condensed'}.post-author span svg{width:13px}.post-time{margin-left:auto;color:var(--faint);font-size:12px}.more{width:32px;height:32px;border:0;background:none;color:var(--muted);cursor:pointer}.more svg{width:18px}.category-chip{display:inline-flex;margin:15px 0 0;padding:5px 9px;border:1px solid var(--goldline);border-radius:6px;background:rgba(211,165,54,.1);color:var(--gold2);font:800 10px 'Barlow Condensed';letter-spacing:1.5px;text-transform:uppercase}.post-body{margin:15px 0 0;white-space:pre-wrap;font-size:17px;line-height:1.62;color:rgba(246,242,232,.9)}.post-body strong{color:#fff}.post-image{display:block;width:min(100%,760px);max-height:520px;object-fit:cover;margin-top:18px;border:1px solid var(--line);border-radius:8px}.post-actions{display:flex;align-items:center;gap:25px;margin-top:18px}.action{display:inline-flex;align-items:center;gap:7px;border:0;background:none;color:var(--faint);font:700 13px 'Barlow Condensed';cursor:pointer}.action:hover,.action.active{color:var(--gold2)}.action svg{width:20px}.action.save{margin-left:auto}.comments{margin-top:18px;padding-top:15px;border-top:1px solid var(--line)}.comment{display:flex;gap:10px;padding:10px 0}.comment .avatar{width:34px;height:34px;font-size:11px}.comment-body{min-width:0}.comment-body strong{font-size:13px}.comment-body p{margin:3px 0 0;color:var(--muted);line-height:1.4;font-size:14px}.comment-form{display:flex;gap:8px;margin-top:10px}.comment-form input{min-width:0;flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:7px;background:rgba(0,0,0,.24);color:var(--text);outline:none}.comment-form button{border:1px solid var(--goldline);border-radius:7px;background:rgba(211,165,54,.12);color:var(--gold2);padding:0 13px;cursor:pointer}
+    .right{overflow-y:auto;border-left:1px solid var(--line);padding:25px 24px;background:rgba(2,2,2,.36)}.side-title{margin:0 0 12px;font:900 14px 'Barlow Condensed';letter-spacing:2.5px;text-transform:uppercase;color:var(--muted)}.side-section{margin-bottom:28px}.side-box{border:1px solid var(--goldline);border-radius:8px;padding:20px;background:linear-gradient(145deg,rgba(211,165,54,.14),rgba(10,8,4,.34));box-shadow:inset 0 1px rgba(255,255,255,.06)}.match-kicker{display:flex;align-items:center;gap:8px;color:var(--gold2);font:800 12px 'Barlow Condensed';letter-spacing:1.5px;text-transform:uppercase}.side-box h2{margin:11px 0 4px;font-size:22px}.score{font:54px/1 'Bebas Neue';letter-spacing:2px}.match-meta{margin-top:7px;color:var(--muted);font-size:13px}.profile-line{display:flex;align-items:center;gap:12px}.profile-line .avatar{width:48px;height:48px}.profile-line strong{font-size:18px}.badge{margin:17px 0 10px;color:var(--gold2);font:900 19px 'Bebas Neue';letter-spacing:1px}.profile-actions{display:flex;gap:8px;margin-top:14px}.small-btn{border:1px solid var(--goldline);border-radius:7px;padding:7px 10px;background:rgba(211,165,54,.1);color:var(--gold2);font:800 11px 'Barlow Condensed';text-transform:uppercase;cursor:pointer}.small-btn.ghost{border-color:var(--line);background:rgba(255,255,255,.035);color:var(--muted)}.suggestion{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}.suggestion:last-child{border-bottom:0}.suggestion .avatar{width:36px;height:36px;background:#20201f;color:var(--muted);border-color:var(--line)}.suggestion-info{min-width:0;flex:1}.suggestion-info strong,.suggestion-info span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.suggestion-info strong{font-size:13px}.suggestion-info span{margin-top:2px;color:var(--gold2);font:700 11px 'Barlow Condensed'}.trend{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font:700 14px 'Barlow Condensed'}.trend span:last-child{color:var(--faint)}
+    .mobile-nav{display:none}.modal-wrap{position:fixed;z-index:100;inset:0;display:grid;place-items:center;padding:18px;background:rgba(0,0,0,.68);backdrop-filter:blur(12px)}.modal{width:min(460px,100%);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:28px;background:rgba(20,18,14,.86);backdrop-filter:blur(28px);box-shadow:0 30px 100px rgba(0,0,0,.65)}.modal-head{display:flex;align-items:start;justify-content:space-between;gap:20px}.modal h2{margin:0;font:40px/1 'Bebas Neue';letter-spacing:1px}.modal p{color:var(--muted);line-height:1.55}.close{border:0;background:none;color:var(--muted);cursor:pointer}.auth-form{display:grid;gap:10px;margin-top:20px}.auth-form input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,.28);color:var(--text);outline:none}.auth-submit,.google-btn{min-height:44px;border-radius:8px;font:900 13px 'Barlow Condensed';letter-spacing:1px;text-transform:uppercase;cursor:pointer}.auth-submit{border:0;background:linear-gradient(135deg,var(--gold2),#b88622);color:#161005}.google-btn{display:flex;align-items:center;justify-content:center;gap:9px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text)}.divider{display:flex;align-items:center;gap:10px;color:var(--faint);font-size:11px}.divider::before,.divider::after{content:"";height:1px;background:var(--line);flex:1}.auth-status{min-height:18px;color:var(--gold2);font-size:12px;text-align:center}.legal{font-size:11px!important;color:var(--faint)!important}.toast{position:fixed;z-index:120;left:50%;bottom:25px;transform:translate(-50%,20px);opacity:0;padding:11px 16px;border:1px solid var(--goldline);border-radius:8px;background:rgba(12,10,7,.92);color:var(--text);font-size:13px;transition:.25s;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}
+    body::before{background:linear-gradient(90deg,rgba(3,4,7,.52),rgba(8,7,4,.18) 48%,rgba(5,4,3,.48)),linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.46))}
+    .app-shell{border-color:rgba(255,255,255,.26);background:linear-gradient(135deg,rgba(255,255,255,.07),transparent 20%),rgba(10,9,7,.5);box-shadow:0 30px 100px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.18)}
+    .rail{background:rgba(3,3,3,.34)}
+    .right{background:rgba(2,2,2,.22)}
+    @keyframes pulse{50%{opacity:.48;transform:scale(.84)}}
+    @media(max-width:1080px){.app-shell{grid-template-columns:78px minmax(0,1fr)}.right{display:none}}
+    @media(max-width:700px){body{background-attachment:scroll}.page{padding:0;display:block}.app-shell{height:100vh;min-height:0;border:0;border-radius:0;grid-template-columns:1fr}.rail{display:none}.center{padding-bottom:72px}.topbar{height:66px;padding:0 16px}.brand strong{font-size:27px}.brand small{display:none}.live-pill{font-size:11px;padding:7px 10px}.tabs{top:66px;height:56px;padding:0 16px;gap:22px;overflow-x:auto}.tab{font-size:14px;flex:0 0 auto}.composer{grid-template-columns:40px 1fr;padding:17px 16px}.composer>.publish{grid-column:2;width:100%}.composer .avatar{width:40px;height:40px}.post{padding:21px 16px}.post-body{font-size:16px}.mobile-nav{position:fixed;z-index:30;left:0;right:0;bottom:0;display:flex;justify-content:space-around;height:66px;padding-bottom:env(safe-area-inset-bottom);border-top:1px solid var(--line);background:rgba(8,7,5,.88);backdrop-filter:blur(22px)}.mobile-nav button{display:grid;place-items:center;width:58px;border:0;background:none;color:var(--muted)}.mobile-nav button.active{color:var(--gold2)}.mobile-nav svg{width:21px}.mobile-nav .create-mobile{width:44px;height:44px;align-self:center;border:1px solid var(--goldline);border-radius:50%;background:var(--gold);color:#171105}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="app-shell">
+      <aside class="rail" aria-label="Navigazione community">
+        <a class="rail-logo" href="/" title="ICV Scout">ICV</a>
+        <nav class="rail-nav">
+          <button class="icon-btn active" title="Home" aria-label="Home"><i data-lucide="house"></i></button>
+          <button class="icon-btn" title="Cerca" aria-label="Cerca"><i data-lucide="search"></i></button>
+          <button class="icon-btn" title="Pubblica" aria-label="Pubblica" onclick="focusComposer()"><i data-lucide="square-pen"></i></button>
+          <button class="icon-btn" title="Notifiche" aria-label="Notifiche"><i data-lucide="bell"></i></button>
+          <a class="icon-btn" href="/" title="ICV Scout" aria-label="Torna a ICV Scout"><i data-lucide="chart-no-axes-combined"></i></a>
+        </nav>
+        <div class="rail-bottom"><button class="icon-btn" title="Profilo" aria-label="Profilo" onclick="openProfile()"><i data-lucide="user-round"></i></button></div>
+      </aside>
+
+      <main class="center">
+        <header class="topbar">
+          <a class="brand" href="/"><strong>ICV</strong><span></span><small>Community</small></a>
+          <div class="live-pill" id="livePill"><span class="live-dot"></span><span>Community live</span></div>
+        </header>
+        <nav class="tabs" aria-label="Filtri feed">
+          <button class="tab active" data-category="per_te">Per te</button>
+          <button class="tab" data-category="mercato">Mercato</button>
+          <button class="tab" data-category="partite">Partite</button>
+          <button class="tab" data-category="analisi">Analisi</button>
+        </nav>
+
+        <section class="composer" aria-label="Crea un post">
+          <div class="avatar" id="composerAvatar">IC</div>
+          <div class="composer-main">
+            <textarea id="postBody" maxlength="1200" placeholder="Cosa ne pensi della Juve?"></textarea>
+            <div class="composer-tools">
+              <label class="tool-btn" title="Aggiungi immagine"><i data-lucide="image-plus"></i> Immagine<input id="postImage" type="file" accept="image/*" hidden></label>
+              <span class="image-name" id="imageName"></span>
+            </div>
+          </div>
+          <button class="publish" id="publishBtn" type="button">Pubblica</button>
+        </section>
+        <section id="feed" aria-live="polite"><div class="feed-status">Caricamento della community...</div></section>
+      </main>
+
+      <aside class="right">
+        <section class="side-section">
+          <h2 class="side-title">In diretta</h2>
+          <div class="side-box" id="matchBox"><div class="match-kicker"><span class="live-dot"></span> Match Center</div><h2>Prossima partita</h2><div class="score">-</div><div class="match-meta">Dati in aggiornamento</div></div>
+        </section>
+        <section class="side-section">
+          <h2 class="side-title">Il tuo profilo</h2>
+          <div class="side-box" id="profileBox">
+            <div class="profile-line"><div class="avatar" id="profileAvatar">IC</div><strong id="profileName">Ospite ICV</strong></div>
+            <div class="badge" id="profileBadge">Bianconero</div>
+            <div class="profile-actions"><button class="small-btn" id="profileMainBtn">Accedi</button><button class="small-btn ghost hidden" id="logoutBtn">Esci</button></div>
+          </div>
+        </section>
+        <section class="side-section">
+          <h2 class="side-title">Da seguire</h2>
+          <div id="suggestions"><div class="feed-status">Caricamento...</div></div>
+        </section>
+        <section class="side-section">
+          <h2 class="side-title">Trending oggi</h2>
+          <div id="trending"></div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <nav class="mobile-nav" aria-label="Navigazione mobile">
+    <button class="active" title="Home"><i data-lucide="house"></i></button>
+    <button title="Cerca"><i data-lucide="search"></i></button>
+    <button class="create-mobile" title="Pubblica" onclick="focusComposer()"><i data-lucide="plus"></i></button>
+    <button title="Notifiche"><i data-lucide="bell"></i></button>
+    <button title="Profilo" onclick="openProfile()"><i data-lucide="user-round"></i></button>
+  </nav>
+
+  <div class="modal-wrap hidden" id="authModal">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <div class="modal-head"><div><h2 id="authTitle">Entra in ICV</h2><p>Accedi alla community bianconera con un link sicuro via email oppure con Google.</p></div><button class="close" title="Chiudi" onclick="closeAuth()"><i data-lucide="x"></i></button></div>
+      <form class="auth-form" id="emailForm"><input type="email" id="authEmail" placeholder="La tua email" autocomplete="email" required><button class="auth-submit" type="submit">Ricevi link di accesso</button><div class="divider">oppure</div><button class="google-btn" id="googleBtn" type="button"><i data-lucide="log-in"></i> Continua con Google</button><div class="auth-status" id="authStatus"></div><p class="legal">Accedendo accetti le regole della community. Niente insulti, discriminazioni, spam o contenuti illegali.</p></form>
+    </section>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    var apiConfig=null,supa=null,session=null,profile=null,currentCategory="per_te",pendingImage=null;
+    var feedEl=document.getElementById("feed"),postBody=document.getElementById("postBody"),postImage=document.getElementById("postImage");
+    function esc(value){return String(value==null?"":value).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+    function initials(value){return String(value||"IC").trim().split(/\s+/).slice(0,2).map(function(x){return x.charAt(0)}).join("").toUpperCase()||"IC";}
+    function avatarHtml(author,cls){var url=author&&author.avatar_url;return url?"<div class='avatar "+(cls||"")+"'><img src='"+esc(url)+"' alt=''></div>":"<div class='avatar "+(cls||"")+"'>"+esc(initials(author&&author.display_name||author&&author.username))+"</div>";}
+    function timeAgo(value){var seconds=Math.max(1,Math.floor((Date.now()-new Date(value).getTime())/1000));if(seconds<60)return seconds+"s";if(seconds<3600)return Math.floor(seconds/60)+"m";if(seconds<86400)return Math.floor(seconds/3600)+"h";return Math.floor(seconds/86400)+"g";}
+    function icon(name){return"<i data-lucide='"+name+"'></i>";}
+    function refreshIcons(){if(window.lucide)window.lucide.createIcons();}
+    function showToast(message){var el=document.getElementById("toast");el.textContent=message;el.classList.add("show");clearTimeout(el._timer);el._timer=setTimeout(function(){el.classList.remove("show")},2600);}
+    async function communityApi(path,options){options=options||{};var headers=options.headers||{};if(session&&session.access_token)headers.Authorization="Bearer "+session.access_token;if(options.body&&!(options.body instanceof FormData)){headers["Content-Type"]="application/json";options.body=JSON.stringify(options.body)}var response=await fetch("/api/community/"+path,Object.assign({},options,{headers:headers}));var data=await response.json().catch(function(){return{}});if(!response.ok)throw new Error(data.error||"Operazione non riuscita");return data;}
+    async function init(){refreshIcons();bindUi();try{apiConfig=await fetch("/api/community/config").then(function(r){return r.json()});if(apiConfig.configured&&window.supabase){supa=window.supabase.createClient(apiConfig.supabase_url,apiConfig.supabase_anon_key);var result=await supa.auth.getSession();session=result.data.session;if(session)await loadProfile();supa.auth.onAuthStateChange(function(event,next){session=next;if(session)loadProfile();else{profile=null;renderProfile()}})}else{document.getElementById("authStatus").textContent="Aggiungi SUPABASE_ANON_KEY su Cloudflare per attivare gli accessi."}}catch(error){showToast(error.message)}await Promise.all([loadFeed(),loadSuggestions(),loadMatch()]);renderProfile();}
+    function bindUi(){document.querySelectorAll(".tab").forEach(function(btn){btn.addEventListener("click",function(){document.querySelectorAll(".tab").forEach(function(x){x.classList.remove("active")});btn.classList.add("active");currentCategory=btn.dataset.category;loadFeed()})});document.getElementById("publishBtn").addEventListener("click",publishPost);document.getElementById("profileMainBtn").addEventListener("click",openProfile);document.getElementById("logoutBtn").addEventListener("click",logout);document.getElementById("emailForm").addEventListener("submit",emailLogin);document.getElementById("googleBtn").addEventListener("click",googleLogin);postImage.addEventListener("change",function(){pendingImage=postImage.files&&postImage.files[0];document.getElementById("imageName").textContent=pendingImage?pendingImage.name:""});document.getElementById("authModal").addEventListener("click",function(event){if(event.target===event.currentTarget)closeAuth()});}
+    async function loadProfile(){try{profile=await communityApi("me");renderProfile()}catch(error){showToast(error.message)}}
+    function renderProfile(){var name=profile&&profile.display_name||"Ospite ICV";var badge=profile&&profile.quiz_badge||"Bianconero";document.getElementById("profileName").textContent=name;document.getElementById("profileBadge").textContent=badge;document.getElementById("profileAvatar").textContent=initials(name);document.getElementById("composerAvatar").textContent=initials(name);document.getElementById("profileMainBtn").textContent=profile?"Modifica":"Accedi";document.getElementById("logoutBtn").classList.toggle("hidden",!profile);}
+    async function loadFeed(){feedEl.innerHTML="<div class='feed-status'>Aggiorno il feed...</div>";try{var data=await communityApi("feed?category="+encodeURIComponent(currentCategory));renderFeed(data.posts||[]);renderTrending(data.trending||[])}catch(error){feedEl.innerHTML="<div class='feed-status'>"+esc(error.message)+"</div>"}}
+    function renderFeed(posts){if(!posts.length){feedEl.innerHTML="<div class='feed-status'>Qui non ci sono ancora discussioni. Apri tu la prima.</div>";return}feedEl.innerHTML=posts.map(postHtml).join("");refreshIcons();}
+    function postHtml(post){var author=post.author||{},official=!!post.is_official,interactive=post.source!=="news";var badge=official?"Ufficiale":author.quiz_badge||"Bianconero";var sourceLink=post.source_url?"<a class='category-chip' href='"+esc(post.source_url)+"' target='_blank' rel='noopener'>Apri fonte</a>":"<span class='category-chip'>"+esc(categoryLabel(post.category))+"</span>";return"<article class='post "+(official?"official":"")+"' data-id='"+esc(post.id)+"'>"+"<div class='post-head'>"+avatarHtml(author)+"<div class='post-author'><strong>"+esc(author.display_name||author.username||"ICV Member")+"</strong><span>"+(official?icon("badge-check"):icon("flame"))+esc(badge)+"</span></div><time class='post-time'>"+esc(timeAgo(post.created_at))+"</time>"+(interactive?"<button class='more' title='Segnala' onclick='reportPost(\""+esc(post.id)+"\")'>"+icon("ellipsis")+"</button>":"")+"</div>"+sourceLink+"<div class='post-body'>"+esc(post.body)+"</div>"+(post.image_url?"<img class='post-image' src='"+esc(post.image_url)+"' alt='' loading='lazy'>":"")+"<div class='post-actions'>"+(interactive?"<button class='action' onclick='toggleReaction(this,\""+esc(post.id)+"\")'>"+icon("heart")+"<span>"+(post.reaction_count||0)+"</span></button><button class='action' onclick='toggleComments(\""+esc(post.id)+"\")'>"+icon("message-circle")+"<span>"+(post.comment_count||0)+"</span></button><button class='action' onclick='sharePost(\""+esc(post.id)+"\")'>"+icon("send")+"</button><button class='action save' onclick='toggleSave(this,\""+esc(post.id)+"\")'>"+icon("bookmark")+"</button>":"<button class='action' onclick='shareNews()'>"+icon("send")+" Condividi</button>")+"</div>"+(interactive?"<div class='comments hidden' id='comments-"+esc(post.id)+"'></div>":"")+"</article>";}
+    function categoryLabel(value){return{per_te:"Discussione",mercato:"Mercato",partite:"Partite",analisi:"Analisi"}[value]||"Discussione";}
+    async function publishPost(){if(!session)return openAuth();var text=postBody.value.trim();if(!text)return showToast("Scrivi qualcosa prima di pubblicare");var btn=document.getElementById("publishBtn");btn.disabled=true;try{var imageUrl="";if(pendingImage)imageUrl=await uploadImage(pendingImage);await communityApi("posts",{method:"POST",body:{body:text,category:currentCategory,image_url:imageUrl}});postBody.value="";postImage.value="";pendingImage=null;document.getElementById("imageName").textContent="";showToast("Post pubblicato");await loadFeed()}catch(error){showToast(error.message)}finally{btn.disabled=false}}
+    async function uploadImage(file){var form=new FormData();form.append("image",file);var result=await communityApi("upload",{method:"POST",body:form});return result.url||"";}
+    async function toggleReaction(btn,id){if(!session)return openAuth();try{var data=await communityApi("posts/"+id+"/reaction",{method:"POST"});btn.classList.toggle("active",data.active);var count=btn.querySelector("span");count.textContent=Math.max(0,Number(count.textContent||0)+(data.active?1:-1))}catch(error){showToast(error.message)}}
+    async function toggleSave(btn,id){if(!session)return openAuth();try{var data=await communityApi("posts/"+id+"/save",{method:"POST"});btn.classList.toggle("active",data.active);showToast(data.active?"Post salvato":"Rimosso dai salvati")}catch(error){showToast(error.message)}}
+    async function toggleComments(id){var box=document.getElementById("comments-"+id);if(!box)return;if(!box.classList.contains("hidden")){box.classList.add("hidden");return}box.classList.remove("hidden");box.innerHTML="<div class='feed-status'>Caricamento commenti...</div>";try{var rows=await communityApi("posts/"+id+"/comments");box.innerHTML=(rows.length?rows.map(commentHtml).join(""):"<div class='feed-status'>Ancora nessun commento.</div>")+"<form class='comment-form' onsubmit='submitComment(event,\""+id+"\")'><input name='body' maxlength='600' placeholder='Scrivi un commento'><button>Invia</button></form>"}catch(error){box.innerHTML="<div class='feed-status'>"+esc(error.message)+"</div>"}refreshIcons();}
+    function commentHtml(row){return"<div class='comment'>"+avatarHtml(row.author)+"<div class='comment-body'><strong>"+esc(row.author&&row.author.display_name||"ICV Member")+"</strong><p>"+esc(row.body)+"</p></div></div>";}
+    async function submitComment(event,id){event.preventDefault();if(!session)return openAuth();var input=event.currentTarget.body;var text=input.value.trim();if(!text)return;try{await communityApi("posts/"+id+"/comments",{method:"POST",body:{body:text}});var box=document.getElementById("comments-"+id);box.classList.add("hidden");await toggleComments(id)}catch(error){showToast(error.message)}}
+    async function loadSuggestions(){try{var rows=await communityApi("suggestions");document.getElementById("suggestions").innerHTML=rows.length?rows.map(function(row){return"<div class='suggestion'>"+avatarHtml(row)+"<div class='suggestion-info'><strong>"+esc(row.display_name)+"</strong><span>"+esc(row.quiz_badge||"Bianconero")+"</span></div><button class='small-btn' onclick='followUser(this,\""+row.id+"\")'>Segui</button></div>"}).join(""):"<div class='feed-status'>I primi profili appariranno qui.</div>"}catch(error){document.getElementById("suggestions").innerHTML=""}refreshIcons();}
+    async function followUser(btn,id){if(!session)return openAuth();try{var data=await communityApi("profiles/"+id+"/follow",{method:"POST"});btn.textContent=data.active?"Seguito":"Segui";btn.classList.toggle("ghost",data.active)}catch(error){showToast(error.message)}}
+    function renderTrending(rows){document.getElementById("trending").innerHTML=rows.map(function(row){return"<div class='trend'><span>"+esc(row.tag)+"</span><span>"+(row.count||"")+"</span></div>"}).join("")}
+    async function loadMatch(){try{var data=await fetch("/api/public/home").then(function(r){return r.json()});var match=data.matches&&data.matches[0];if(!match)return;document.getElementById("matchBox").innerHTML="<div class='match-kicker'><span class='live-dot'></span>"+esc(match.competition||"Match Center")+"</div><h2>"+esc(match.title||match.opponent||"Juventus")+"</h2><div class='score'>"+esc(match.score||"-")+"</div><div class='match-meta'>"+esc(match.status||match.summary||"Dati aggiornati da ICV")+"</div>"}catch(error){}}
+    function openAuth(){document.getElementById("authModal").classList.remove("hidden");document.getElementById("authEmail").focus();refreshIcons()}
+    function closeAuth(){document.getElementById("authModal").classList.add("hidden")}
+    async function emailLogin(event){event.preventDefault();if(!supa)return document.getElementById("authStatus").textContent="Accessi non ancora configurati.";var email=document.getElementById("authEmail").value.trim();document.getElementById("authStatus").textContent="Invio del link sicuro...";var result=await supa.auth.signInWithOtp({email:email,options:{emailRedirectTo:location.origin+"/community"}});document.getElementById("authStatus").textContent=result.error?result.error.message:"Controlla la tua email: il link è stato inviato.";}
+    async function googleLogin(){if(!supa)return document.getElementById("authStatus").textContent="Accessi non ancora configurati.";var result=await supa.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+"/community"}});if(result.error)document.getElementById("authStatus").textContent=result.error.message;}
+    async function logout(){if(supa)await supa.auth.signOut();session=null;profile=null;renderProfile();showToast("Sei uscito dalla community")}
+    function openProfile(){if(!session)return openAuth();var display=prompt("Nome pubblico",profile.display_name||"");if(display===null)return;var username=prompt("Username",profile.username||"");if(username===null)return;communityApi("me",{method:"PATCH",body:{display_name:display,username:username,quiz_badge:profile.quiz_badge}}).then(function(data){profile=data;renderProfile();showToast("Profilo aggiornato")}).catch(function(error){showToast(error.message)});}
+    function focusComposer(){if(!session){openAuth();return}postBody.focus();postBody.scrollIntoView({behavior:"smooth",block:"center"})}
+    function sharePost(id){var url=location.origin+"/community#post-"+id;if(navigator.share)navigator.share({title:"ICV Community",url:url}).catch(function(){});else navigator.clipboard.writeText(url).then(function(){showToast("Link copiato")})}
+    function shareNews(){if(navigator.share)navigator.share({title:"ICV Community",url:location.href}).catch(function(){})}
+    async function reportPost(id){if(!session)return openAuth();var reason=prompt("Perché vuoi segnalare questo post?","Contenuto non appropriato");if(!reason)return;try{await communityApi("reports",{method:"POST",body:{post_id:id,reason:reason}});showToast("Segnalazione inviata") }catch(error){showToast(error.message)}}
+    init();
+  </script>
+</body>
+</html>

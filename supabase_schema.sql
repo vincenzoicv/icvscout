@@ -134,3 +134,113 @@ values
   ('Il Bianconero', 'https://feeds.footballco.com/ilbianconero/feed/x2mb7fql9vce6t1p', 'juventus', 'trusted', true),
   ('Google News mercato', 'https://news.google.com/rss/search?q=Juventus%20calciomercato&hl=it&gl=IT&ceid=IT:it', 'calciomercato', 'aggregator', true)
 on conflict do nothing;
+
+-- ICV Community ------------------------------------------------------------
+-- Profili, discussioni e interazioni della community bianconera.
+
+create table if not exists public.community_profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  username text not null unique,
+  display_name text not null,
+  avatar_url text,
+  bio text,
+  quiz_badge text default 'Bianconero',
+  role text not null default 'member' check (role in ('member', 'moderator', 'admin')),
+  status text not null default 'active' check (status in ('active', 'suspended')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.community_posts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.community_profiles(id) on delete cascade,
+  category text not null default 'per_te' check (category in ('per_te', 'mercato', 'partite', 'analisi')),
+  body text not null check (char_length(body) between 1 and 1200),
+  image_url text,
+  is_official boolean not null default false,
+  status text not null default 'published' check (status in ('published', 'hidden', 'pending')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.community_comments (
+  id uuid primary key default gen_random_uuid(),
+  post_id uuid not null references public.community_posts(id) on delete cascade,
+  user_id uuid not null references public.community_profiles(id) on delete cascade,
+  body text not null check (char_length(body) between 1 and 600),
+  status text not null default 'published' check (status in ('published', 'hidden')),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.community_reactions (
+  post_id uuid not null references public.community_posts(id) on delete cascade,
+  user_id uuid not null references public.community_profiles(id) on delete cascade,
+  type text not null default 'like' check (type in ('like')),
+  created_at timestamptz not null default now(),
+  primary key (post_id, user_id, type)
+);
+
+create table if not exists public.community_saves (
+  post_id uuid not null references public.community_posts(id) on delete cascade,
+  user_id uuid not null references public.community_profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (post_id, user_id)
+);
+
+create table if not exists public.community_follows (
+  follower_id uuid not null references public.community_profiles(id) on delete cascade,
+  following_id uuid not null references public.community_profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (follower_id, following_id),
+  check (follower_id <> following_id)
+);
+
+create table if not exists public.community_reports (
+  id uuid primary key default gen_random_uuid(),
+  reporter_id uuid not null references public.community_profiles(id) on delete cascade,
+  post_id uuid references public.community_posts(id) on delete cascade,
+  comment_id uuid references public.community_comments(id) on delete cascade,
+  reason text not null check (char_length(reason) between 3 and 300),
+  status text not null default 'open' check (status in ('open', 'reviewed', 'closed')),
+  created_at timestamptz not null default now(),
+  check (post_id is not null or comment_id is not null)
+);
+
+create index if not exists idx_community_posts_feed on public.community_posts(status, category, created_at desc);
+create index if not exists idx_community_comments_post on public.community_comments(post_id, status, created_at asc);
+create index if not exists idx_community_reactions_post on public.community_reactions(post_id, type);
+create index if not exists idx_community_follows_following on public.community_follows(following_id);
+
+alter table public.community_profiles enable row level security;
+alter table public.community_posts enable row level security;
+alter table public.community_comments enable row level security;
+alter table public.community_reactions enable row level security;
+alter table public.community_saves enable row level security;
+alter table public.community_follows enable row level security;
+alter table public.community_reports enable row level security;
+
+drop policy if exists "community profiles public read" on public.community_profiles;
+create policy "community profiles public read" on public.community_profiles for select using (status = 'active');
+drop policy if exists "community posts public read" on public.community_posts;
+create policy "community posts public read" on public.community_posts for select using (status = 'published');
+drop policy if exists "community comments public read" on public.community_comments;
+create policy "community comments public read" on public.community_comments for select using (status = 'published');
+
+create or replace function public.create_icv_community_profile()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.community_profiles (id, username, display_name, avatar_url)
+  values (
+    new.id,
+    'icv_' || substr(replace(new.id::text, '-', ''), 1, 10),
+    coalesce(new.raw_user_meta_data->>'full_name', split_part(coalesce(new.email, 'Bianconero'), '@', 1)),
+    new.raw_user_meta_data->>'avatar_url'
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists create_icv_community_profile_after_signup on auth.users;
+create trigger create_icv_community_profile_after_signup
+after insert on auth.users for each row execute procedure public.create_icv_community_profile();

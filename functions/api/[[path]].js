@@ -109,7 +109,9 @@ const DEFAULT_RADAR = {
 
 const DEFAULT_GRAPHICS = [];
 const GRAPHICS_BUCKET = "graphics";
+const COMMUNITY_BUCKET = "community";
 const MAX_GRAPHIC_UPLOAD_BYTES = 8 * 1024 * 1024;
+const MAX_COMMUNITY_UPLOAD_BYTES = 6 * 1024 * 1024;
 const MAX_GRAPHIC_DATA_URL_LENGTH = 1100 * 1024;
 
 export async function onRequest(context) {
@@ -128,13 +130,15 @@ export async function onRequest(context) {
     if (path === "world-cup/calendar.ics") return worldCupCalendar(request, env);
     if (path === "subscribe") return subscribeWorldCup(request, env);
     if (path === "quiz-result") return sendQuizResult(request, env);
+    if (path === "community/config") return communityConfig(env);
+    if (path === "community/feed" || path.startsWith("community/")) return communityRoute(request, env, url, path.replace(/^community\/?/, ""));
     if (path === "admin/news") return adminNews(request, env);
     if (path === "admin/automate") return adminAutomate(request, env);
     if (path === "cron/autopilot") return cronAutopilot(request, env);
     if (path.startsWith("football-data/")) return footballDataProxy(path, url, env);
     return apiSportsProxy(path, url, env);
   } catch (err) {
-    return json({ error: err.message || "Errore API" }, 500);
+    return json({ error: err.message || "Errore API" }, Number(err.status) || 500);
   }
 }
 
@@ -339,6 +343,283 @@ async function publicNews(env, url) {
   }
 }
 
+function communityConfig(env) {
+  const url = cleanText(env.SUPABASE_URL || "");
+  const anonKey = cleanText(env.SUPABASE_ANON_KEY || "");
+  return json({
+    configured: Boolean(url && anonKey),
+    supabase_url: url,
+    supabase_anon_key: anonKey,
+  });
+}
+
+async function communityRoute(request, env, url, route) {
+  if (!hasSupabase(env)) throw communityError("Community non ancora configurata", 503);
+  const method = request.method.toUpperCase();
+  const category = normalizeCommunityCategory(url.searchParams.get("category"));
+
+  if (route === "feed" && method === "GET") {
+    return json(await communityFeed(env, category));
+  }
+
+  if (route === "suggestions" && method === "GET") {
+    const profiles = await sb(env, "/community_profiles?status=eq.active&select=id,username,display_name,avatar_url,quiz_badge,role&order=created_at.desc&limit=5");
+    return json(profiles);
+  }
+
+  const publicCommentMatch = route.match(/^posts\/([0-9a-f-]{36})\/comments$/i);
+  if (publicCommentMatch && method === "GET") {
+    return json(await communityComments(env, publicCommentMatch[1]));
+  }
+
+  const user = await requireCommunityUser(request, env);
+  const profile = await ensureCommunityProfile(env, user);
+
+  if (route === "me" && method === "GET") return json(profile);
+
+  if (route === "me" && method === "PATCH") {
+    const body = await readBody(request);
+    const patch = {
+      display_name: cleanText(body.display_name || profile.display_name).slice(0, 60),
+      username: normalizeCommunityUsername(body.username || profile.username),
+      bio: cleanText(body.bio || "").slice(0, 180),
+      quiz_badge: cleanText(body.quiz_badge || profile.quiz_badge || "Bianconero").slice(0, 50),
+      updated_at: new Date().toISOString(),
+    };
+    const updated = await sb(env, "/community_profiles?id=eq." + encodeURIComponent(user.id), {
+      method: "PATCH",
+      body: patch,
+      prefer: "return=representation",
+    });
+    return json(updated[0] || { ...profile, ...patch });
+  }
+
+  if (route === "upload" && method === "POST") {
+    const body = await readBody(request);
+    if (!body.image_file) throw communityError("Scegli un'immagine", 400);
+    return json({ url: await uploadCommunityFile(env, body.image_file, body.filename) }, 201);
+  }
+
+  if (route === "posts" && method === "POST") {
+    const body = await readBody(request);
+    const text = cleanText(body.body || "").slice(0, 1200);
+    if (!text) throw communityError("Scrivi qualcosa prima di pubblicare", 400);
+    const inserted = await sb(env, "/community_posts", {
+      method: "POST",
+      body: [{
+        user_id: user.id,
+        category: normalizeCommunityCategory(body.category),
+        body: text,
+        image_url: safeCommunityImageUrl(body.image_url),
+        is_official: profile.role === "admin",
+        status: "published",
+      }],
+      prefer: "return=representation",
+    });
+    return json({ post: inserted[0] }, 201);
+  }
+
+  const commentMatch = publicCommentMatch;
+  if (commentMatch && method === "POST") {
+    const body = await readBody(request);
+    const text = cleanText(body.body || "").slice(0, 600);
+    if (!text) throw communityError("Il commento è vuoto", 400);
+    const inserted = await sb(env, "/community_comments", {
+      method: "POST",
+      body: [{ post_id: commentMatch[1], user_id: user.id, body: text, status: "published" }],
+      prefer: "return=representation",
+    });
+    return json({ comment: inserted[0] }, 201);
+  }
+
+  const reactionMatch = route.match(/^posts\/([0-9a-f-]{36})\/reaction$/i);
+  if (reactionMatch && method === "POST") {
+    const postId = reactionMatch[1];
+    const existing = await sb(env, "/community_reactions?post_id=eq." + encodeURIComponent(postId) + "&user_id=eq." + encodeURIComponent(user.id) + "&type=eq.like&limit=1");
+    if (existing.length) {
+      await sb(env, "/community_reactions?post_id=eq." + encodeURIComponent(postId) + "&user_id=eq." + encodeURIComponent(user.id) + "&type=eq.like", { method: "DELETE" });
+      return json({ active: false });
+    }
+    await sb(env, "/community_reactions", { method: "POST", body: [{ post_id: postId, user_id: user.id, type: "like" }] });
+    return json({ active: true });
+  }
+
+  const saveMatch = route.match(/^posts\/([0-9a-f-]{36})\/save$/i);
+  if (saveMatch && method === "POST") {
+    const postId = saveMatch[1];
+    const existing = await sb(env, "/community_saves?post_id=eq." + encodeURIComponent(postId) + "&user_id=eq." + encodeURIComponent(user.id) + "&limit=1");
+    if (existing.length) {
+      await sb(env, "/community_saves?post_id=eq." + encodeURIComponent(postId) + "&user_id=eq." + encodeURIComponent(user.id), { method: "DELETE" });
+      return json({ active: false });
+    }
+    await sb(env, "/community_saves", { method: "POST", body: [{ post_id: postId, user_id: user.id }] });
+    return json({ active: true });
+  }
+
+  const followMatch = route.match(/^profiles\/([0-9a-f-]{36})\/follow$/i);
+  if (followMatch && method === "POST") {
+    if (followMatch[1] === user.id) throw communityError("Non puoi seguire te stesso", 400);
+    const existing = await sb(env, "/community_follows?follower_id=eq." + encodeURIComponent(user.id) + "&following_id=eq." + encodeURIComponent(followMatch[1]) + "&limit=1");
+    if (existing.length) {
+      await sb(env, "/community_follows?follower_id=eq." + encodeURIComponent(user.id) + "&following_id=eq." + encodeURIComponent(followMatch[1]), { method: "DELETE" });
+      return json({ active: false });
+    }
+    await sb(env, "/community_follows", { method: "POST", body: [{ follower_id: user.id, following_id: followMatch[1] }] });
+    return json({ active: true });
+  }
+
+  if (route === "reports" && method === "POST") {
+    const body = await readBody(request);
+    const reason = cleanText(body.reason || "Contenuto non appropriato").slice(0, 300);
+    await sb(env, "/community_reports", {
+      method: "POST",
+      body: [{ reporter_id: user.id, post_id: body.post_id || null, comment_id: body.comment_id || null, reason }],
+    });
+    return json({ ok: true });
+  }
+
+  throw communityError("Azione community non supportata", 404);
+}
+
+async function communityFeed(env, category) {
+  const categoryFilter = category === "per_te" ? "" : "&category=eq." + encodeURIComponent(category);
+  const select = "id,user_id,category,body,image_url,is_official,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role)";
+  const posts = await safeAdminRead(
+    () => sb(env, "/community_posts?status=eq.published" + categoryFilter + "&select=" + select + "&order=created_at.desc&limit=24"),
+    []
+  );
+  const ids = posts.map(item => item.id).filter(Boolean);
+  let reactions = [];
+  let comments = [];
+  if (ids.length) {
+    const filter = "in.(" + ids.join(",") + ")";
+    [reactions, comments] = await Promise.all([
+      safeAdminRead(() => sb(env, "/community_reactions?select=post_id&type=eq.like&post_id=" + filter), []),
+      safeAdminRead(() => sb(env, "/community_comments?select=post_id&status=eq.published&post_id=" + filter), []),
+    ]);
+  }
+  const reactionCounts = countCommunityRows(reactions);
+  const commentCounts = countCommunityRows(comments);
+  const community = posts.map(post => ({
+    ...post,
+    reaction_count: reactionCounts[post.id] || 0,
+    comment_count: commentCounts[post.id] || 0,
+    source: "community",
+  }));
+
+  if (category !== "per_te") return { posts: community, trending: communityTrending(community) };
+  const news = await safeAdminRead(() => sb(env, "/news?visible=eq.true&order=created_at.desc&limit=3"), []);
+  const official = publicNewsRows(news).slice(0, 3).map(item => ({
+    id: "news-" + item.id,
+    category: item.category === "calciomercato" ? "mercato" : "per_te",
+    body: item.title + (item.body ? "\n\n" + item.body : ""),
+    image_url: "",
+    is_official: true,
+    created_at: item.created_at,
+    reaction_count: 0,
+    comment_count: 0,
+    source: "news",
+    source_url: item.source_url,
+    author: { username: "icv_scout", display_name: "ICV Scout", quiz_badge: "Ufficiale", role: "admin" },
+  }));
+  const merged = [...official, ...community].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  return { posts: merged, trending: communityTrending(merged) };
+}
+
+async function communityComments(env, postId) {
+  const select = "id,post_id,user_id,body,created_at,author:community_profiles!community_comments_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)";
+  return sb(env, "/community_comments?post_id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=" + select + "&order=created_at.asc&limit=80");
+}
+
+async function requireCommunityUser(request, env) {
+  const token = (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+  if (!token) throw communityError("Accedi per continuare", 401);
+  const anonKey = env.SUPABASE_ANON_KEY;
+  if (!anonKey) throw communityError("Configura SUPABASE_ANON_KEY su Cloudflare", 503);
+  const response = await fetch(env.SUPABASE_URL.replace(/\/$/, "") + "/auth/v1/user", {
+    headers: { apikey: anonKey, Authorization: "Bearer " + token },
+  });
+  if (!response.ok) throw communityError("Sessione scaduta: accedi di nuovo", 401);
+  return response.json();
+}
+
+async function ensureCommunityProfile(env, user) {
+  const existing = await safeAdminRead(() => sb(env, "/community_profiles?id=eq." + encodeURIComponent(user.id) + "&limit=1"), []);
+  if (existing.length) return existing[0];
+  const metadata = user.user_metadata || {};
+  const fallback = cleanText(metadata.full_name || metadata.name || String(user.email || "Bianconero").split("@")[0]).slice(0, 60) || "Bianconero";
+  const inserted = await sb(env, "/community_profiles?on_conflict=id", {
+    method: "POST",
+    body: [{
+      id: user.id,
+      username: "icv_" + String(user.id).replace(/-/g, "").slice(0, 10),
+      display_name: fallback,
+      avatar_url: cleanText(metadata.avatar_url || metadata.picture || "").slice(0, 700),
+    }],
+    prefer: "resolution=merge-duplicates,return=representation",
+  });
+  return inserted[0];
+}
+
+async function uploadCommunityFile(env, file, filename) {
+  const contentType = cleanText(file.type || "image/jpeg").toLowerCase();
+  if (!/^image\/(jpeg|png|webp|gif)$/.test(contentType)) throw communityError("Formato immagine non supportato", 400);
+  if (file.size > MAX_COMMUNITY_UPLOAD_BYTES) throw communityError("Immagine troppo pesante: massimo 6 MB", 400);
+  await ensureStorageBucket(env, COMMUNITY_BUCKET);
+  const objectName = Date.now().toString(36) + "-" + safeStorageName(filename || file.name || "community", contentType);
+  const base = env.SUPABASE_URL.replace(/\/$/, "");
+  const key = env.SUPABASE_SERVICE_ROLE_KEY;
+  const response = await fetch(base + "/storage/v1/object/" + COMMUNITY_BUCKET + "/" + encodeURIComponent(objectName), {
+    method: "POST",
+    headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": contentType, "x-upsert": "false" },
+    body: await file.arrayBuffer(),
+  });
+  if (!response.ok) throw communityError("Caricamento immagine non riuscito", 502);
+  return base + "/storage/v1/object/public/" + COMMUNITY_BUCKET + "/" + encodeURIComponent(objectName);
+}
+
+function communityError(message, status) {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+}
+
+function normalizeCommunityCategory(value) {
+  const category = cleanText(value || "per_te").toLowerCase().replace(/\s+/g, "_");
+  return ["per_te", "mercato", "partite", "analisi"].includes(category) ? category : "per_te";
+}
+
+function normalizeCommunityUsername(value) {
+  const username = cleanText(value || "").toLowerCase().replace(/[^a-z0-9._]/g, "").slice(0, 24);
+  if (username.length < 3) throw communityError("Lo username deve avere almeno 3 caratteri", 400);
+  return username;
+}
+
+function safeCommunityImageUrl(value) {
+  const url = cleanText(value || "").slice(0, 700);
+  if (!url) return null;
+  if (!/^https:\/\//i.test(url)) throw communityError("Usa un URL immagine HTTPS", 400);
+  return url;
+}
+
+function countCommunityRows(rows) {
+  return (rows || []).reduce((counts, row) => {
+    counts[row.post_id] = (counts[row.post_id] || 0) + 1;
+    return counts;
+  }, {});
+}
+
+function communityTrending(posts) {
+  const counts = {};
+  (posts || []).forEach(post => {
+    const tags = String(post.body || "").match(/#[\p{L}\p{N}_]+/gu) || [];
+    tags.forEach(tag => { counts[tag] = (counts[tag] || 0) + 1; });
+  });
+  const fallback = [["#Juventus", 0], ["#MercatoJuve", 0], ["#SerieA", 0]];
+  const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  return (rows.length ? rows : fallback).map(item => ({ tag: item[0], count: item[1] }));
+}
+
 async function adminNews(request, env) {
   requireAdmin(request, env);
 
@@ -352,6 +633,8 @@ async function adminNews(request, env) {
       market: [],
       matches: [],
       runs: [],
+      community_posts: [],
+      community_reports: [],
       radar: DEFAULT_RADAR,
       setup: {
         supabase: false,
@@ -361,7 +644,7 @@ async function adminNews(request, env) {
   }
 
   if (request.method === "GET") {
-    const [drafts, news, sources, social, market, matches, runs, radar, graphics] = await Promise.all([
+    const [drafts, news, sources, social, market, matches, runs, radar, graphics, communityPosts, communityReports] = await Promise.all([
       safeAdminRead(() => sb(env, "/news_drafts?order=created_at.desc&limit=80"), []),
       safeAdminRead(() => sb(env, "/news?order=created_at.desc&limit=80"), []),
       safeAdminRead(() => getSources(env), DEFAULT_SOURCES),
@@ -371,8 +654,10 @@ async function adminNews(request, env) {
       safeAdminRead(() => sb(env, "/automation_runs?order=created_at.desc&limit=12"), []),
       safeAdminRead(() => getSiteSetting(env, "radar_home", DEFAULT_RADAR), DEFAULT_RADAR),
       safeAdminRead(() => getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS), DEFAULT_GRAPHICS),
+      safeAdminRead(() => sb(env, "/community_posts?select=id,user_id,category,body,image_url,is_official,status,created_at,author:community_profiles!community_posts_user_id_fkey(display_name,username)&order=created_at.desc&limit=80"), []),
+      safeAdminRead(() => sb(env, "/community_reports?select=id,reason,status,created_at,post_id,comment_id,reporter:community_profiles!community_reports_reporter_id_fkey(display_name,username),post:community_posts(body)&order=created_at.desc&limit=80"), []),
     ]);
-    return json({ drafts, news, sources, social, market, matches, runs, radar, graphics });
+    return json({ drafts, news, sources, social, market, matches, runs, radar, graphics, community_posts: communityPosts, community_reports: communityReports });
   }
 
   const body = await readBody(request);
@@ -539,6 +824,17 @@ async function adminNews(request, env) {
   }
 
   if (request.method === "PATCH") {
+    if (body.type === "hide_community_post" || body.type === "restore_community_post") {
+      const status = body.type === "hide_community_post" ? "hidden" : "published";
+      await sb(env, "/community_posts?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status, updated_at: new Date().toISOString() } });
+      return json({ ok: true, status });
+    }
+
+    if (body.type === "close_community_report") {
+      await sb(env, "/community_reports?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status: "closed" } });
+      return json({ ok: true });
+    }
+
     if (body.type === "discard_draft") {
       await sb(env, "/news_drafts?id=eq." + encodeURIComponent(body.id), {
         method: "PATCH",

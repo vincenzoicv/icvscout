@@ -400,8 +400,8 @@ async function communityRoute(request, env, url, route) {
 
   if (route === "upload" && method === "POST") {
     const body = await readBody(request);
-    if (!body.image_file) throw communityError("Scegli un'immagine", 400);
-    return json({ url: await uploadCommunityFile(env, body.image_file, body.filename) }, 201);
+    if (!body.image_file && !body.image_data) throw communityError("Scegli un'immagine", 400);
+    return json({ url: await uploadCommunityImage(env, body) }, 201);
   }
 
   if (route === "posts" && method === "POST") {
@@ -578,8 +578,44 @@ async function uploadCommunityFile(env, file, filename) {
     headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": contentType, "x-upsert": "false" },
     body: await file.arrayBuffer(),
   });
-  if (!response.ok) throw communityError("Caricamento immagine non riuscito", 502);
+  if (!response.ok) throw await communityStorageError(response);
   return base + "/storage/v1/object/public/" + COMMUNITY_BUCKET + "/" + encodeURIComponent(objectName);
+}
+
+async function uploadCommunityImage(env, body) {
+  if (body.image_file) return uploadCommunityFile(env, body.image_file, body.filename || body.image_file.name);
+
+  const match = String(body.image_data || "").match(/^data:(image\/(?:jpeg|png|webp|gif));base64,([a-zA-Z0-9+/=\s]+)$/i);
+  if (!match) throw communityError("Formato immagine non supportato", 400);
+  const contentType = match[1].toLowerCase();
+  const base64 = match[2].replace(/\s/g, "");
+  const byteLength = Math.floor(base64.length * 3 / 4);
+  if (byteLength > MAX_COMMUNITY_UPLOAD_BYTES) throw communityError("Immagine troppo pesante: massimo 6 MB", 400);
+
+  await ensureStorageBucket(env, COMMUNITY_BUCKET);
+  const objectName = Date.now().toString(36) + "-" + safeStorageName(body.filename || "avatar", contentType);
+  const base = env.SUPABASE_URL.replace(/\/$/, "");
+  const key = env.SUPABASE_SERVICE_ROLE_KEY;
+  const response = await fetch(base + "/storage/v1/object/" + COMMUNITY_BUCKET + "/" + encodeURIComponent(objectName), {
+    method: "POST",
+    headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": contentType, "x-upsert": "false" },
+    body: decodeBase64(base64),
+  });
+  if (!response.ok) throw await communityStorageError(response);
+  return base + "/storage/v1/object/public/" + COMMUNITY_BUCKET + "/" + encodeURIComponent(objectName);
+}
+
+async function communityStorageError(response) {
+  const raw = await response.text();
+  let detail = "";
+  try {
+    const payload = JSON.parse(raw);
+    detail = cleanText(payload.message || payload.error || "");
+  } catch {
+    detail = cleanText(raw);
+  }
+  console.error("Community image upload failed", response.status, detail.slice(0, 300));
+  return communityError(detail ? "Caricamento immagine non riuscito: " + detail.slice(0, 160) : "Caricamento immagine non riuscito", 502);
 }
 
 function communityError(message, status) {

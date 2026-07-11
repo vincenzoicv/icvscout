@@ -131,7 +131,7 @@ export async function onRequest(context) {
     if (path === "subscribe") return subscribeWorldCup(request, env);
     if (path === "quiz-result") return sendQuizResult(request, env);
     if (path === "community/config") return communityConfig(env);
-    if (path === "community/feed" || path.startsWith("community/")) return communityRoute(request, env, url, path.replace(/^community\/?/, ""));
+    if (path === "community/feed" || path.startsWith("community/")) return await communityRoute(request, env, url, path.replace(/^community\/?/, ""));
     if (path === "admin/news") return adminNews(request, env);
     if (path === "admin/automate") return adminAutomate(request, env);
     if (path === "cron/autopilot") return cronAutopilot(request, env);

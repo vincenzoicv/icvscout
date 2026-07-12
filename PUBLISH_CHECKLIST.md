@@ -2,11 +2,21 @@
 
 ## 1. Supabase
 
-Nel pannello Supabase apri SQL Editor ed esegui:
+Solo per una nuova installazione, nel pannello Supabase apri SQL Editor ed esegui:
 
 ```text
 supabase_schema.sql
 ```
+
+Per un database esistente applica invece le migrazioni versionate:
+
+```bash
+supabase migration list
+supabase db push --dry-run
+supabase db push
+```
+
+Vedi `SUPABASE_MIGRATIONS.md` per il collegamento iniziale del progetto e le regole del flusso.
 
 Controlla che esistano queste tabelle:
 

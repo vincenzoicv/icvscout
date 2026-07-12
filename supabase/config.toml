@@ -1,0 +1,3 @@
+# Configurazione locale del progetto Supabase CLI.
+# Il collegamento al progetto remoto e le credenziali restano in supabase/.temp/.
+project_id = "icvscout"

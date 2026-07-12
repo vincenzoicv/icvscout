@@ -10,7 +10,17 @@ Apri Supabase > SQL Editor e, dal file `supabase_schema.sql`, esegui la sezione 
 -- ICV Community
 ```
 
-La sezione crea profili, post, commenti, reazioni, salvataggi, follow, segnalazioni e relative regole di sicurezza.
+La sezione crea profili, post, commenti, reazioni, salvataggi, follow, segnalazioni e relative regole di sicurezza. Questo passaggio serve solo per una nuova installazione.
+
+Per un database gia attivo, applica invece gli aggiornamenti versionati con Supabase CLI:
+
+```bash
+supabase migration list
+supabase db push --dry-run
+supabase db push
+```
+
+La configurazione iniziale e il flusso completo sono descritti in `SUPABASE_MIGRATIONS.md`.
 
 ## 2. Variabile pubblica Supabase
 

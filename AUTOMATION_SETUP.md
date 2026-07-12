@@ -4,7 +4,7 @@ Questa versione sposta le chiavi fuori dal browser e usa le Pages Functions come
 
 ## 1. Supabase
 
-Nel pannello Supabase esegui il contenuto di:
+Solo per una nuova installazione, nel pannello Supabase esegui il contenuto di:
 
 ```text
 supabase_schema.sql
@@ -19,6 +19,8 @@ Lo schema aggiunge:
 - `social_drafts`: caption e testi card.
 - `automation_runs`: log delle automazioni.
 - `site_settings`: impostazioni modificabili dall'admin, incluso il Radar della home.
+
+Su un database gia attivo non rieseguire lo schema completo: usa le migrazioni versionate descritte in `SUPABASE_MIGRATIONS.md` (`supabase db push --dry-run`, poi `supabase db push`).
 
 ## 2. Variabili Ambiente Cloudflare
 

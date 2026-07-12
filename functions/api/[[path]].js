@@ -372,6 +372,11 @@ async function communityRoute(request, env, url, route) {
     return json(await communityComments(env, publicCommentMatch[1]));
   }
 
+  const publicNewsCommentMatch = route.match(/^news\/(\d+)\/comments$/i);
+  if (publicNewsCommentMatch && method === "GET") {
+    return json(await communityNewsComments(env, Number(publicNewsCommentMatch[1])));
+  }
+
   const user = await requireCommunityUser(request, env);
   const profile = await ensureCommunityProfile(env, user);
 
@@ -468,6 +473,21 @@ async function communityRoute(request, env, url, route) {
     return json({ comment: inserted[0] }, 201);
   }
 
+  if (publicNewsCommentMatch && method === "POST") {
+    const newsId = Number(publicNewsCommentMatch[1]);
+    const newsRows = await sb(env, "/news?id=eq." + encodeURIComponent(newsId) + "&visible=eq.true&select=id&limit=1");
+    if (!newsRows.length) throw communityError("News non trovata", 404);
+    const body = await readBody(request);
+    const text = cleanText(body.body || "").slice(0, 600);
+    if (!text) throw communityError("Il commento è vuoto", 400);
+    const inserted = await sb(env, "/community_comments", {
+      method: "POST",
+      body: [{ news_id: newsId, user_id: user.id, body: text, status: "published" }],
+      prefer: "return=representation",
+    });
+    return json({ comment: inserted[0] }, 201);
+  }
+
   const reactionMatch = route.match(/^posts\/([0-9a-f-]{36})\/reaction$/i);
   if (reactionMatch && method === "POST") {
     const postId = reactionMatch[1];
@@ -545,15 +565,22 @@ async function communityFeed(env, category) {
 
   if (category !== "per_te") return { posts: community, trending: communityTrending(community) };
   const news = await safeAdminRead(() => sb(env, "/news?visible=eq.true&order=created_at.desc&limit=3"), []);
-  const official = publicNewsRows(news).slice(0, 3).map(item => ({
+  const officialRows = publicNewsRows(news).slice(0, 3);
+  const newsIds = officialRows.map(item => item.id).filter(id => Number.isFinite(Number(id)));
+  const newsComments = newsIds.length
+    ? await safeAdminRead(() => sb(env, "/community_comments?select=news_id&status=eq.published&news_id=in.(" + newsIds.join(",") + ")"), [])
+    : [];
+  const newsCommentCounts = countCommunityRowsBy(newsComments, "news_id");
+  const official = officialRows.map(item => ({
     id: "news-" + item.id,
+    news_id: item.id,
     category: item.category === "calciomercato" ? "mercato" : "per_te",
-    body: item.title + (item.body ? "\n\n" + item.body : ""),
+    body: officialNewsBody(item),
     image_url: "",
     is_official: true,
     created_at: item.created_at,
     reaction_count: 0,
-    comment_count: 0,
+    comment_count: newsCommentCounts[item.id] || 0,
     source: "news",
     source_url: item.source_url,
     author: { username: "icv_scout", display_name: "ICV Scout", quiz_badge: "Ufficiale", role: "admin" },
@@ -565,6 +592,18 @@ async function communityFeed(env, category) {
 async function communityComments(env, postId) {
   const select = "id,post_id,user_id,body,created_at,author:community_profiles!community_comments_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)";
   return sb(env, "/community_comments?post_id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=" + select + "&order=created_at.asc&limit=80");
+}
+
+async function communityNewsComments(env, newsId) {
+  const select = "id,news_id,user_id,body,created_at,author:community_profiles!community_comments_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)";
+  return sb(env, "/community_comments?news_id=eq." + encodeURIComponent(newsId) + "&status=eq.published&select=" + select + "&order=created_at.asc&limit=80");
+}
+
+function officialNewsBody(item) {
+  const title = cleanText(item && item.title);
+  const body = cleanText(item && item.body);
+  if (!body || canonicalNewsTitle(body) === canonicalNewsTitle(title)) return title;
+  return title + "\n\n" + body;
 }
 
 async function requireCommunityUser(request, env) {
@@ -704,6 +743,14 @@ function safeCommunityImageUrl(value) {
 function countCommunityRows(rows) {
   return (rows || []).reduce((counts, row) => {
     counts[row.post_id] = (counts[row.post_id] || 0) + 1;
+    return counts;
+  }, {});
+}
+
+function countCommunityRowsBy(rows, field) {
+  return (rows || []).reduce((counts, row) => {
+    const key = row[field];
+    if (key !== undefined && key !== null) counts[key] = (counts[key] || 0) + 1;
     return counts;
   }, {});
 }

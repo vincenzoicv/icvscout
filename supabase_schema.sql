@@ -172,6 +172,13 @@ create table if not exists public.community_comments (
   created_at timestamptz not null default now()
 );
 
+-- Consente discussioni anche sotto le news ufficiali ICV.
+alter table public.community_comments alter column post_id drop not null;
+alter table public.community_comments add column if not exists news_id bigint references public.news(id) on delete cascade;
+alter table public.community_comments drop constraint if exists community_comments_target_check;
+alter table public.community_comments add constraint community_comments_target_check
+  check ((post_id is not null and news_id is null) or (post_id is null and news_id is not null));
+
 create table if not exists public.community_reactions (
   post_id uuid not null references public.community_posts(id) on delete cascade,
   user_id uuid not null references public.community_profiles(id) on delete cascade,
@@ -208,6 +215,7 @@ create table if not exists public.community_reports (
 
 create index if not exists idx_community_posts_feed on public.community_posts(status, category, created_at desc);
 create index if not exists idx_community_comments_post on public.community_comments(post_id, status, created_at asc);
+create index if not exists idx_community_comments_news on public.community_comments(news_id, status, created_at asc);
 create index if not exists idx_community_reactions_post on public.community_reactions(post_id, type);
 create index if not exists idx_community_follows_following on public.community_follows(following_id);
 

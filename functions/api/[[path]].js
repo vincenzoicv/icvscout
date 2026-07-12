@@ -1233,9 +1233,7 @@ async function fetchNewsDrafts(env, sources) {
         errors.push({ source: source.name, error: err.message });
       }
     } finally {
-      if (isAutoPublishTrustedSource(env, source) || isTelegramWebSource(source.url)) {
-        sourcesReport.push(report);
-      }
+      sourcesReport.push(report);
     }
   }
 
@@ -3131,11 +3129,13 @@ async function findExistingNews(env, candidate) {
 }
 
 async function recentNewsRows(env) {
-  return sb(env, "/news?order=created_at.desc&select=id,title,body,category,source,source_url,reliability,editorial_status,urgency,visible&limit=120");
+  const since = new Date(Date.now() - 7 * 86400000).toISOString();
+  return sb(env, "/news?created_at=gte." + encodeURIComponent(since) + "&order=created_at.desc&select=id,title,body,category,source,source_url,reliability,editorial_status,urgency,visible,created_at&limit=120");
 }
 
 async function recentDraftRows(env) {
-  return sb(env, "/news_drafts?order=created_at.desc&select=id,title,body,category,urgency,source_name,source_url,reliability,editorial_status,review_status,content_hash&limit=160");
+  const since = new Date(Date.now() - 7 * 86400000).toISOString();
+  return sb(env, "/news_drafts?created_at=gte." + encodeURIComponent(since) + "&order=created_at.desc&select=id,title,body,category,urgency,source_name,source_url,reliability,editorial_status,review_status,content_hash,created_at&limit=160");
 }
 
 async function cleanupFabrizioRows(env, recentNews, recentDrafts) {

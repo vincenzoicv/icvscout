@@ -679,7 +679,11 @@ function automationResultMessage(action, res){
   }
   if(action === "fetch_news"){
     var romano = sourceReportFor(res || {}, "Fabrizio Romano");
-    var base = "Fetch news: " + Number(res && res.scanned || 0) + " lette, " + Number(res && res.published || 0) + " pubblicate, " + Number(res && res.updated || 0) + " aggiornate";
+    var reports = Array.isArray(res && res.sources_report) ? res.sources_report : [];
+    var relevant = reports.reduce(function(total,item){ return total + Number(item.relevant || 0); },0);
+    var failed = reports.filter(function(item){ return !!item.error || !!item.warning; }).length;
+    var base = "Fetch news: " + Number(res && res.scanned || 0) + " lette, " + relevant + " rilevanti, " + Number(res && res.inserted || 0) + " nuove bozze, " + Number(res && res.skipped_duplicates || 0) + " duplicate";
+    if(failed) base += ", " + failed + " fonti non disponibili";
     if(romano){
       base += " · Romano: " + Number(romano.scanned || 0) + " lette, " + Number(romano.relevant || 0) + " rilevanti, " + Number(romano.published || 0) + " pubblicate, " + Number(romano.updated || 0) + " aggiornate";
       if(romano.error && !isIgnorableAutomationError(romano.error)) base += " · errore: " + friendlyAutomationError(romano.error);

@@ -428,6 +428,33 @@ async function communityRoute(request, env, url, route) {
     return json({ post: inserted[0] }, 201);
   }
 
+  const postMatch = route.match(/^posts\/([0-9a-f-]{36})$/i);
+  if (postMatch && (method === "PATCH" || method === "DELETE")) {
+    const postId = postMatch[1];
+    const rows = await sb(env, "/community_posts?id=eq." + encodeURIComponent(postId) + "&select=id,user_id,status&limit=1");
+    const post = rows[0];
+    if (!post) throw communityError("Post non trovato", 404);
+    if (post.user_id !== user.id && profile.role !== "admin") throw communityError("Non puoi modificare questo post", 403);
+
+    if (method === "DELETE") {
+      await sb(env, "/community_posts?id=eq." + encodeURIComponent(postId), {
+        method: "PATCH",
+        body: { status: "deleted", updated_at: new Date().toISOString() },
+      });
+      return json({ ok: true });
+    }
+
+    const body = await readBody(request);
+    const text = cleanText(body.body || "").slice(0, 1200);
+    if (!text) throw communityError("Il post non può essere vuoto", 400);
+    const updated = await sb(env, "/community_posts?id=eq." + encodeURIComponent(postId), {
+      method: "PATCH",
+      body: { body: text, category: normalizeCommunityCategory(body.category), updated_at: new Date().toISOString() },
+      prefer: "return=representation",
+    });
+    return json({ post: updated[0] }, 200);
+  }
+
   const commentMatch = publicCommentMatch;
   if (commentMatch && method === "POST") {
     const body = await readBody(request);

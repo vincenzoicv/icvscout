@@ -359,8 +359,13 @@ async function communityRoute(request, env, url, route) {
   const category = normalizeCommunityCategory(url.searchParams.get("category"));
 
   if (route === "feed" && method === "GET") {
-    return json(await communityFeed(env, category));
+    return json(await communityFeed(env, category, url.searchParams.get("before")));
   }
+
+  if (route === "search" && method === "GET") return json(await communitySearch(env, url.searchParams.get("q")));
+
+  const publicProfileMatch = route.match(/^profiles\/([a-z0-9._]{3,24})$/i);
+  if (publicProfileMatch && method === "GET") return json(await communityPublicProfile(env, publicProfileMatch[1]));
 
   if (route === "suggestions" && method === "GET") {
     const profiles = await sb(env, "/community_profiles?status=eq.active&select=id,username,display_name,avatar_url,quiz_badge,role&order=created_at.desc&limit=5");
@@ -379,8 +384,11 @@ async function communityRoute(request, env, url, route) {
 
   const user = await requireCommunityUser(request, env);
   const profile = await ensureCommunityProfile(env, user);
+  if (profile.status === "suspended") throw communityError("Profilo sospeso dalla moderazione", 403);
 
   if (route === "me" && method === "GET") return json(profile);
+
+  if (route === "notifications" && method === "GET") return json(await communityNotifications(env, user.id));
 
   if (route === "me" && method === "PATCH") {
     const body = await readBody(request);
@@ -444,7 +452,7 @@ async function communityRoute(request, env, url, route) {
     if (method === "DELETE") {
       await sb(env, "/community_posts?id=eq." + encodeURIComponent(postId), {
         method: "PATCH",
-        body: { status: "deleted", updated_at: new Date().toISOString() },
+        body: { status: "hidden", updated_at: new Date().toISOString() },
       });
       return json({ ok: true });
     }
@@ -486,6 +494,23 @@ async function communityRoute(request, env, url, route) {
       prefer: "return=representation",
     });
     return json({ comment: inserted[0] }, 201);
+  }
+
+  const ownCommentMatch = route.match(/^comments\/([0-9a-f-]{36})$/i);
+  if (ownCommentMatch && (method === "PATCH" || method === "DELETE")) {
+    const rows = await sb(env, "/community_comments?id=eq." + encodeURIComponent(ownCommentMatch[1]) + "&select=id,user_id,status&limit=1");
+    const comment = rows[0];
+    if (!comment) throw communityError("Commento non trovato", 404);
+    if (comment.user_id !== user.id && profile.role !== "admin") throw communityError("Non puoi modificare questo commento", 403);
+    if (method === "DELETE") {
+      await sb(env, "/community_comments?id=eq." + encodeURIComponent(comment.id), { method: "PATCH", body: { status: "hidden" } });
+      return json({ ok: true });
+    }
+    const body = await readBody(request);
+    const text = cleanText(body.body || "").slice(0, 600);
+    if (!text) throw communityError("Il commento non può essere vuoto", 400);
+    const updated = await sb(env, "/community_comments?id=eq." + encodeURIComponent(comment.id), { method: "PATCH", body: { body: text }, prefer: "return=representation" });
+    return json({ comment: updated[0] });
   }
 
   const reactionMatch = route.match(/^posts\/([0-9a-f-]{36})\/reaction$/i);
@@ -537,11 +562,12 @@ async function communityRoute(request, env, url, route) {
   throw communityError("Azione community non supportata", 404);
 }
 
-async function communityFeed(env, category) {
+async function communityFeed(env, category, before) {
   const categoryFilter = category === "per_te" ? "" : "&category=eq." + encodeURIComponent(category);
+  const cursorFilter = before ? "&created_at=lt." + encodeURIComponent(before) : "";
   const select = "id,user_id,category,body,image_url,is_official,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role)";
   const posts = await safeAdminRead(
-    () => sb(env, "/community_posts?status=eq.published" + categoryFilter + "&select=" + select + "&order=created_at.desc&limit=24"),
+    () => sb(env, "/community_posts?status=eq.published" + categoryFilter + cursorFilter + "&select=" + select + "&order=created_at.desc&limit=12"),
     []
   );
   const ids = posts.map(item => item.id).filter(Boolean);
@@ -563,7 +589,9 @@ async function communityFeed(env, category) {
     source: "community",
   }));
 
-  if (category !== "per_te") return { posts: community, trending: communityTrending(community) };
+  const nextCursor = community.length === 12 ? community[community.length - 1].created_at : null;
+  if (category !== "per_te") return { posts: community, trending: communityTrending(community), next_cursor: nextCursor };
+  if (before) return { posts: community, trending: communityTrending(community), next_cursor: nextCursor };
   const news = await safeAdminRead(() => sb(env, "/news?visible=eq.true&order=created_at.desc&limit=3"), []);
   const officialRows = publicNewsRows(news).slice(0, 3);
   const newsIds = officialRows.map(item => item.id).filter(id => Number.isFinite(Number(id)));
@@ -586,7 +614,48 @@ async function communityFeed(env, category) {
     author: { username: "icv_scout", display_name: "ICV Scout", quiz_badge: "Ufficiale", role: "admin" },
   }));
   const merged = [...official, ...community].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-  return { posts: merged, trending: communityTrending(merged) };
+  return { posts: merged, trending: communityTrending(merged), next_cursor: nextCursor };
+}
+
+async function communitySearch(env, query) {
+  const q = cleanText(query || "").slice(0, 60);
+  if (q.length < 2) return { profiles: [], posts: [], news: [] };
+  const like = encodeURIComponent("*" + q.replace(/[%,]/g, "") + "*");
+  const [profiles, posts, news] = await Promise.all([
+    safeAdminRead(() => sb(env, "/community_profiles?status=eq.active&or=(username.ilike." + like + ",display_name.ilike." + like + ")&select=id,username,display_name,avatar_url,quiz_badge,bio&limit=8"), []),
+    safeAdminRead(() => sb(env, "/community_posts?status=eq.published&body=ilike." + like + "&select=id,body,category,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)&order=created_at.desc&limit=12"), []),
+    safeAdminRead(() => sb(env, "/news?visible=eq.true&or=(title.ilike." + like + ",body.ilike." + like + ")&select=id,title,body,category,created_at,source_url&order=created_at.desc&limit=8"), []),
+  ]);
+  return { profiles, posts, news };
+}
+
+async function communityPublicProfile(env, username) {
+  const profiles = await sb(env, "/community_profiles?username=eq." + encodeURIComponent(username.toLowerCase()) + "&status=eq.active&select=id,username,display_name,avatar_url,bio,quiz_badge,role,created_at&limit=1");
+  const profile = profiles[0];
+  if (!profile) throw communityError("Profilo non trovato", 404);
+  const [posts, followers, following] = await Promise.all([
+    safeAdminRead(() => sb(env, "/community_posts?user_id=eq." + encodeURIComponent(profile.id) + "&status=eq.published&select=id,user_id,category,body,image_url,is_official,created_at&order=created_at.desc&limit=20"), []),
+    safeAdminRead(() => sb(env, "/community_follows?following_id=eq." + encodeURIComponent(profile.id) + "&select=follower_id"), []),
+    safeAdminRead(() => sb(env, "/community_follows?follower_id=eq." + encodeURIComponent(profile.id) + "&select=following_id"), []),
+  ]);
+  return { profile, posts, follower_count: followers.length, following_count: following.length };
+}
+
+async function communityNotifications(env, userId) {
+  const ownPosts = await safeAdminRead(() => sb(env, "/community_posts?user_id=eq." + encodeURIComponent(userId) + "&select=id,body&limit=80"), []);
+  const ids = ownPosts.map(row => row.id);
+  const postMap = Object.fromEntries(ownPosts.map(row => [row.id, row]));
+  const filter = ids.length ? "in.(" + ids.join(",") + ")" : "eq.00000000-0000-0000-0000-000000000000";
+  const [comments, reactions, follows] = await Promise.all([
+    safeAdminRead(() => sb(env, "/community_comments?post_id=" + filter + "&user_id=neq." + encodeURIComponent(userId) + "&status=eq.published&select=id,post_id,body,created_at,actor:community_profiles!community_comments_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
+    safeAdminRead(() => sb(env, "/community_reactions?post_id=" + filter + "&user_id=neq." + encodeURIComponent(userId) + "&select=post_id,created_at,actor:community_profiles!community_reactions_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
+    safeAdminRead(() => sb(env, "/community_follows?following_id=eq." + encodeURIComponent(userId) + "&select=created_at,actor:community_profiles!community_follows_follower_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
+  ]);
+  return [
+    ...comments.map(row => ({ type: "comment", created_at: row.created_at, actor: row.actor, text: "ha commentato: " + cleanText(row.body).slice(0, 90), post_id: row.post_id, post: postMap[row.post_id] })),
+    ...reactions.map(row => ({ type: "like", created_at: row.created_at, actor: row.actor, text: "ha messo Mi piace al tuo post", post_id: row.post_id, post: postMap[row.post_id] })),
+    ...follows.map(row => ({ type: "follow", created_at: row.created_at, actor: row.actor, text: "ha iniziato a seguirti" })),
+  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 30);
 }
 
 async function communityComments(env, postId) {
@@ -790,7 +859,7 @@ async function adminNews(request, env) {
   }
 
   if (request.method === "GET") {
-    const [drafts, news, sources, social, market, matches, runs, radar, graphics, communityPosts, communityReports] = await Promise.all([
+    const [drafts, news, sources, social, market, matches, runs, radar, graphics, communityPosts, communityReports, communityProfiles, communityComments] = await Promise.all([
       safeAdminRead(() => sb(env, "/news_drafts?order=created_at.desc&limit=80"), []),
       safeAdminRead(() => sb(env, "/news?order=created_at.desc&limit=80"), []),
       safeAdminRead(() => getSources(env), DEFAULT_SOURCES),
@@ -801,9 +870,11 @@ async function adminNews(request, env) {
       safeAdminRead(() => getSiteSetting(env, "radar_home", DEFAULT_RADAR), DEFAULT_RADAR),
       safeAdminRead(() => getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS), DEFAULT_GRAPHICS),
       safeAdminRead(() => sb(env, "/community_posts?select=id,user_id,category,body,image_url,is_official,status,created_at,author:community_profiles!community_posts_user_id_fkey(display_name,username)&order=created_at.desc&limit=80"), []),
-      safeAdminRead(() => sb(env, "/community_reports?select=id,reason,status,created_at,post_id,comment_id,reporter:community_profiles!community_reports_reporter_id_fkey(display_name,username),post:community_posts(body)&order=created_at.desc&limit=80"), []),
+      safeAdminRead(() => sb(env, "/community_reports?select=id,reason,status,created_at,post_id,comment_id,reporter:community_profiles!community_reports_reporter_id_fkey(display_name,username),post:community_posts(body),comment:community_comments(body)&order=created_at.desc&limit=80"), []),
+      safeAdminRead(() => sb(env, "/community_profiles?select=id,username,display_name,avatar_url,quiz_badge,role,status,created_at&order=created_at.desc&limit=100"), []),
+      safeAdminRead(() => sb(env, "/community_comments?select=id,post_id,news_id,user_id,body,status,created_at,author:community_profiles!community_comments_user_id_fkey(display_name,username)&order=created_at.desc&limit=100"), []),
     ]);
-    return json({ drafts, news, sources, social, market, matches, runs, radar, graphics, community_posts: communityPosts, community_reports: communityReports });
+    return json({ drafts, news, sources, social, market, matches, runs, radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments });
   }
 
   const body = await readBody(request);
@@ -979,6 +1050,17 @@ async function adminNews(request, env) {
     if (body.type === "close_community_report") {
       await sb(env, "/community_reports?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status: "closed" } });
       return json({ ok: true });
+    }
+    if (body.type === "hide_community_comment" || body.type === "restore_community_comment") {
+      const status = body.type === "hide_community_comment" ? "hidden" : "published";
+      await sb(env, "/community_comments?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status } });
+      return json({ ok: true, status });
+    }
+    if (body.type === "suspend_community_user" || body.type === "restore_community_user") {
+      const status = body.type === "suspend_community_user" ? "suspended" : "active";
+      await sb(env, "/community_profiles?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status, updated_at: new Date().toISOString() } });
+      if (status === "suspended") await sb(env, "/community_posts?user_id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status: "hidden", updated_at: new Date().toISOString() } });
+      return json({ ok: true, status });
     }
 
     if (body.type === "discard_draft") {

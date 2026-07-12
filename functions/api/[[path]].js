@@ -389,6 +389,11 @@ async function communityRoute(request, env, url, route) {
   if (route === "me" && method === "GET") return json(profile);
 
   if (route === "notifications" && method === "GET") return json(await communityNotifications(env, user.id));
+  if (route === "notifications/read" && method === "POST") {
+    await safeAdminRead(() => sb(env, "/community_notifications?user_id=eq." + encodeURIComponent(user.id) + "&read_at=is.null", { method: "PATCH", body: { read_at: new Date().toISOString() } }), []);
+    return json({ ok: true });
+  }
+  if (route === "saved" && method === "GET") return json(await communitySavedPosts(env, user.id));
 
   if (route === "me" && method === "PATCH") {
     const body = await readBody(request);
@@ -423,6 +428,7 @@ async function communityRoute(request, env, url, route) {
   }
 
   if (route === "posts" && method === "POST") {
+    await enforceCommunityRate(env, user.id, "post", 5, 600);
     const body = await readBody(request);
     const text = communityText(body.body, 1200);
     if (!text) throw communityError("Scrivi qualcosa prima di pubblicare", 400);
@@ -470,18 +476,20 @@ async function communityRoute(request, env, url, route) {
 
   const commentMatch = publicCommentMatch;
   if (commentMatch && method === "POST") {
+    await enforceCommunityRate(env, user.id, "comment", 12, 300);
     const body = await readBody(request);
     const text = communityText(body.body, 600);
     if (!text) throw communityError("Il commento è vuoto", 400);
     const inserted = await sb(env, "/community_comments", {
       method: "POST",
-      body: [{ post_id: commentMatch[1], user_id: user.id, body: text, status: "published" }],
+      body: [{ post_id: commentMatch[1], parent_id: body.parent_id || null, user_id: user.id, body: text, status: "published" }],
       prefer: "return=representation",
     });
     return json({ comment: inserted[0] }, 201);
   }
 
   if (publicNewsCommentMatch && method === "POST") {
+    await enforceCommunityRate(env, user.id, "comment", 12, 300);
     const newsId = Number(publicNewsCommentMatch[1]);
     const newsRows = await sb(env, "/news?id=eq." + encodeURIComponent(newsId) + "&visible=eq.true&select=id&limit=1");
     if (!newsRows.length) throw communityError("News non trovata", 404);
@@ -550,6 +558,7 @@ async function communityRoute(request, env, url, route) {
   }
 
   if (route === "reports" && method === "POST") {
+    await enforceCommunityRate(env, user.id, "report", 5, 3600);
     const body = await readBody(request);
     const reason = cleanText(body.reason || "Contenuto non appropriato").slice(0, 300);
     await sb(env, "/community_reports", {
@@ -642,6 +651,8 @@ async function communityPublicProfile(env, username) {
 }
 
 async function communityNotifications(env, userId) {
+  const stored = await safeAdminRead(() => sb(env, "/community_notifications?user_id=eq." + encodeURIComponent(userId) + "&select=id,type,text,read_at,created_at,post_id,comment_id,news_id,actor:community_profiles!community_notifications_actor_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=40"), null);
+  if (Array.isArray(stored)) return { items: stored, unread_count: stored.filter(row => !row.read_at).length };
   const profileRows = await safeAdminRead(() => sb(env, "/community_profiles?id=eq." + encodeURIComponent(userId) + "&select=username&limit=1"), []);
   const username = cleanText(profileRows[0] && profileRows[0].username).toLowerCase();
   const ownPosts = await safeAdminRead(() => sb(env, "/community_posts?user_id=eq." + encodeURIComponent(userId) + "&select=id,body&limit=80"), []);
@@ -656,13 +667,25 @@ async function communityNotifications(env, userId) {
     safeAdminRead(() => sb(env, "/community_posts?user_id=neq." + encodeURIComponent(userId) + "&status=eq.published&body=ilike." + mentionPattern + "&select=id,body,created_at,actor:community_profiles!community_posts_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
     safeAdminRead(() => sb(env, "/community_comments?user_id=neq." + encodeURIComponent(userId) + "&status=eq.published&body=ilike." + mentionPattern + "&select=id,post_id,news_id,body,created_at,actor:community_profiles!community_comments_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
   ]);
-  return [
+  const items = [
     ...comments.filter(row => !username || !cleanText(row.body).toLowerCase().includes("@" + username)).map(row => ({ type: "comment", created_at: row.created_at, actor: row.actor, text: "ha commentato: " + cleanText(row.body).slice(0, 90), post_id: row.post_id, post: postMap[row.post_id] })),
     ...reactions.map(row => ({ type: "like", created_at: row.created_at, actor: row.actor, text: "ha messo Mi piace al tuo post", post_id: row.post_id, post: postMap[row.post_id] })),
     ...follows.map(row => ({ type: "follow", created_at: row.created_at, actor: row.actor, text: "ha iniziato a seguirti" })),
     ...mentionedPosts.map(row => ({ type: "mention", created_at: row.created_at, actor: row.actor, text: "ti ha menzionato in un post", post_id: row.id })),
     ...mentionedComments.map(row => ({ type: "mention", created_at: row.created_at, actor: row.actor, text: "ti ha menzionato in un commento", post_id: row.post_id, news_id: row.news_id })),
   ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 30);
+  return { items, unread_count: 0 };
+}
+
+async function communitySavedPosts(env, userId) {
+  return safeAdminRead(() => sb(env, "/community_saves?user_id=eq." + encodeURIComponent(userId) + "&select=created_at,post:community_posts!community_saves_post_id_fkey(id,user_id,category,body,image_url,is_official,status,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role))&order=created_at.desc&limit=60"), []);
+}
+
+async function enforceCommunityRate(env, userId, action, maxCount, seconds) {
+  const since = new Date(Date.now() - seconds * 1000).toISOString();
+  const rows = await safeAdminRead(() => sb(env, "/community_activity?user_id=eq." + encodeURIComponent(userId) + "&action=eq." + encodeURIComponent(action) + "&created_at=gte." + encodeURIComponent(since) + "&select=id&limit=" + maxCount), []);
+  if (rows.length >= maxCount) throw communityError("Stai effettuando troppe operazioni. Attendi qualche minuto e riprova.", 429);
+  await safeAdminRead(() => sb(env, "/community_activity", { method: "POST", body: [{ user_id: userId, action }] }), []);
 }
 
 const COMMUNITY_BLOCKED_LANGUAGE = [

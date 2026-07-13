@@ -102,3 +102,18 @@ test("gli script esterni non bloccano il parsing", async () => {
   assert.match(html, /<script defer src="https:\/\/unpkg\.com\/lucide/);
   assert.match(html, /window\.addEventListener\("DOMContentLoaded",init\)/);
 });
+
+test("la Community completa feed, profili, notifiche e Match Room", async () => {
+  const [html, api, admin, migration, redirects] = await Promise.all([
+    read("community.html"),
+    read("functions/api/[[path]].js"),
+    read("icv_admin.html"),
+    read("supabase/migrations/20260713210000_community_completion.sql"),
+    read("_redirects"),
+  ]);
+  for (const marker of ["feedPostHtml", "renderProfileTab", "loadNotifications", "openPostDetail", "openMatchRoom"]) assert.ok(html.includes(marker), `manca ${marker}`);
+  for (const marker of ["reposted_by", "assertCommunityUniqueContent", 'route === "match-room"', "notificationReadMatch"]) assert.ok(api.includes(marker), `manca ${marker}`);
+  assert.match(admin, /Pubblica Nota ICV/);
+  assert.match(migration, /community_match_messages/);
+  assert.match(redirects, /\/community\/post\/\* \/community 200/);
+});

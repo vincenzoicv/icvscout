@@ -395,6 +395,13 @@ async function communityRoute(request, env, url, route) {
     return json(await communityNewsComments(env, Number(publicNewsCommentMatch[1])));
   }
 
+  if (route === "match-room" && method === "GET") {
+    const matchKey = normalizeCommunityMatchKey(url.searchParams.get("match_key"));
+    if (!matchKey) throw communityError("Partita non valida", 400);
+    const rows = await safeAdminRead(() => sb(env, "/community_match_messages?match_key=eq." + encodeURIComponent(matchKey) + "&status=eq.published&select=id,body,created_at,author:community_profiles!community_match_messages_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)&order=created_at.asc&limit=100"), []);
+    return json({ match_key: matchKey, messages: rows });
+  }
+
   const user = await requireCommunityUser(request, env);
   const profile = await ensureCommunityProfile(env, user);
   if (profile.status === "suspended" && profile.suspended_until && new Date(profile.suspended_until) <= new Date()) {
@@ -434,7 +441,7 @@ async function communityRoute(request, env, url, route) {
     return json({ ok: true });
   }
 
-  if (route === "notifications" && method === "GET") return json(await communityNotifications(env, user.id));
+  if (route === "notifications" && method === "GET") return json(await communityNotifications(env, user.id, url.searchParams.get("filter")));
   if (route === "preferences" && method === "GET") return json(await communityPreferences(env, user.id));
   if (route === "preferences" && method === "PATCH") {
     const body = await readBody(request);
@@ -463,6 +470,11 @@ async function communityRoute(request, env, url, route) {
   }
   if (route === "notifications/read" && method === "POST") {
     await safeAdminRead(() => sb(env, "/community_notifications?user_id=eq." + encodeURIComponent(user.id) + "&read_at=is.null", { method: "PATCH", body: { read_at: new Date().toISOString() } }), []);
+    return json({ ok: true });
+  }
+  const notificationReadMatch = route.match(/^notifications\/([0-9a-f-]{36})\/read$/i);
+  if (notificationReadMatch && method === "POST") {
+    await sb(env, "/community_notifications?id=eq." + encodeURIComponent(notificationReadMatch[1]) + "&user_id=eq." + encodeURIComponent(user.id), { method: "PATCH", body: { read_at: new Date().toISOString() } });
     return json({ ok: true });
   }
   if (route === "saved" && method === "GET") return json(await communitySavedPosts(env, user.id));
@@ -521,6 +533,7 @@ async function communityRoute(request, env, url, route) {
     const body = await readBody(request);
     const text = communityText(body.body, 1200);
     if (!text) throw communityError("Scrivi qualcosa prima di pubblicare", 400);
+    await assertCommunityUniqueContent(env, user.id, "post", text);
     const poll = normalizeCommunityPoll(body);
     const quotePostId = body.quote_post_id && /^[0-9a-f-]{36}$/i.test(body.quote_post_id) ? body.quote_post_id : null;
     const scheduledAt = profile.role === "admin" && body.scheduled_at && new Date(body.scheduled_at) > new Date() ? new Date(body.scheduled_at).toISOString() : null;
@@ -547,6 +560,17 @@ async function communityRoute(request, env, url, route) {
     }
     await notifyCommunityMentions(env, user.id, text, { post_id: inserted[0] && inserted[0].id });
     return json({ post: inserted[0] }, 201);
+  }
+
+  if (route === "match-room" && method === "POST") {
+    await enforceCommunityRate(env, user.id, "match_message", 20, 300);
+    const body = await readBody(request);
+    const matchKey = normalizeCommunityMatchKey(body.match_key);
+    const text = communityText(body.body, 400);
+    if (!matchKey || !text) throw communityError("Messaggio o partita non validi", 400);
+    await assertCommunityUniqueContent(env, user.id, "match", text);
+    const inserted = await sb(env, "/community_match_messages", { method: "POST", body: [{ match_key: matchKey, user_id: user.id, body: text, status: "published" }], prefer: "return=representation" });
+    return json({ message: inserted[0] }, 201);
   }
 
   const postMatch = route.match(/^posts\/([0-9a-f-]{36})$/i);
@@ -582,6 +606,7 @@ async function communityRoute(request, env, url, route) {
     const body = await readBody(request);
     const text = communityText(body.body, 600);
     if (!text) throw communityError("Il commento è vuoto", 400);
+    await assertCommunityUniqueContent(env, user.id, "comment", text);
     const inserted = await sb(env, "/community_comments", {
       method: "POST",
       body: [{ post_id: commentMatch[1], parent_id: body.parent_id || null, user_id: user.id, body: text, status: "published" }],
@@ -615,6 +640,7 @@ async function communityRoute(request, env, url, route) {
     const body = await readBody(request);
     const text = communityText(body.body, 600);
     if (!text) throw communityError("Il commento è vuoto", 400);
+    await assertCommunityUniqueContent(env, user.id, "comment", text);
     const inserted = await sb(env, "/community_comments", {
       method: "POST",
       body: [{ news_id: newsId, parent_id: body.parent_id || null, user_id: user.id, body: text, status: "published" }],
@@ -765,10 +791,28 @@ async function communityFeed(env, category, before, viewerId, topic) {
   const followingFilter = viewerId ? "&user_id=in.(" + followingIds.join(",") + ")" : "";
   const topicQuery = topicFilter ? "&body=ilike." + encodeURIComponent("*#" + topicFilter + "*") : "";
   const select = "id,user_id,category,body,image_url,is_official,quote_post_id,poll_question,poll_options,poll_ends_at,scheduled_at,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role),quoted_post:community_posts!community_posts_quote_post_id_fkey(id,body,image_url,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role))";
-  const posts = await safeAdminRead(
+  let posts = await safeAdminRead(
     () => sb(env, "/community_posts?status=eq.published" + categoryFilter + cursorFilter + scheduledFilter + followingFilter + topicQuery + "&select=" + select + "&order=created_at.desc&limit=12"),
     []
   );
+  if (viewerId) {
+    const repostCursor = before ? "&created_at=lt." + encodeURIComponent(before) : "";
+    const followedReposts = await safeAdminRead(() => sb(env, "/community_reposts?user_id=in.(" + followingIds.join(",") + ")" + repostCursor + "&select=post_id,user_id,created_at,reposter:community_profiles!community_reposts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)&order=created_at.desc&limit=18"), []);
+    const repostIds = [...new Set(followedReposts.map(row => row.post_id).filter(Boolean))];
+    const repostedPosts = repostIds.length
+      ? await safeAdminRead(() => sb(env, "/community_posts?id=in.(" + repostIds.join(",") + ")&status=eq.published" + categoryFilter + topicQuery + "&select=" + select), [])
+      : [];
+    const repostMap = Object.fromEntries(followedReposts.map(row => [row.post_id, row]));
+    const repostCards = repostedPosts.map(post => ({
+      ...post,
+      feed_created_at: repostMap[post.id].created_at,
+      reposted_by: repostMap[post.id].reposter,
+    }));
+    posts = [...posts.map(post => ({ ...post, feed_created_at: post.created_at })), ...repostCards]
+      .sort((a, b) => new Date(b.feed_created_at || b.created_at) - new Date(a.feed_created_at || a.created_at))
+      .filter((post, index, all) => all.findIndex(item => item.id === post.id) === index)
+      .slice(0, 12);
+  }
   const ids = posts.map(item => item.id).filter(Boolean);
   let reactions = [];
   let comments = [];
@@ -798,7 +842,7 @@ async function communityFeed(env, category, before, viewerId, topic) {
     source: "community",
   }));
 
-  const nextCursor = community.length === 12 ? community[community.length - 1].created_at : null;
+  const nextCursor = community.length === 12 ? (community[community.length - 1].feed_created_at || community[community.length - 1].created_at) : null;
   if (category !== "per_te" || viewerId || topicFilter) return { posts: community, trending: communityTrending(community), next_cursor: nextCursor };
   if (before) return { posts: community, trending: communityTrending(community), next_cursor: nextCursor };
   const news = await safeAdminRead(() => sb(env, "/news?visible=eq.true&order=created_at.desc&limit=3"), []);
@@ -885,12 +929,15 @@ async function communityPublicProfile(env, username) {
   const profiles = await sb(env, "/community_profiles?username=eq." + encodeURIComponent(username.toLowerCase()) + "&status=eq.active&select=id,username,display_name,avatar_url,bio,quiz_badge,role,created_at&limit=1");
   const profile = profiles[0];
   if (!profile) throw communityError("Profilo non trovato", 404);
-  const [posts, followers, following] = await Promise.all([
+  const [posts, replies, repostRows, followers, following] = await Promise.all([
     safeAdminRead(() => sb(env, "/community_posts?user_id=eq." + encodeURIComponent(profile.id) + "&status=eq.published&select=id,user_id,category,body,image_url,is_official,created_at&order=created_at.desc&limit=20"), []),
+    safeAdminRead(() => sb(env, "/community_comments?user_id=eq." + encodeURIComponent(profile.id) + "&status=eq.published&select=id,post_id,news_id,body,created_at,post:community_posts(id,body,category)&order=created_at.desc&limit=30"), []),
+    safeAdminRead(() => sb(env, "/community_reposts?user_id=eq." + encodeURIComponent(profile.id) + "&select=created_at,post:community_posts!community_reposts_post_id_fkey(id,user_id,category,body,image_url,is_official,status,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge))&order=created_at.desc&limit=30"), []),
     safeAdminRead(() => sb(env, "/community_follows?following_id=eq." + encodeURIComponent(profile.id) + "&select=follower_id"), []),
     safeAdminRead(() => sb(env, "/community_follows?follower_id=eq." + encodeURIComponent(profile.id) + "&select=following_id"), []),
   ]);
-  return { profile, posts, follower_count: followers.length, following_count: following.length };
+  const reposts = repostRows.filter(row => row.post && row.post.status === "published");
+  return { profile, posts, replies, media: posts.filter(post => post.image_url), reposts, follower_count: followers.length, following_count: following.length };
 }
 
 function normalizeCommunityPoll(body) {
@@ -1000,19 +1047,25 @@ async function notifyCommunityMentions(env, actorId, text, target, excludedIds =
   })));
 }
 
-async function communityNotifications(env, userId) {
-  const stored = await safeAdminRead(() => sb(env, "/community_notifications?user_id=eq." + encodeURIComponent(userId) + "&select=id,type,text,read_at,created_at,post_id,comment_id,news_id,actor:community_profiles!community_notifications_actor_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=40"), null);
-  if (Array.isArray(stored)) return { items: stored, unread_count: stored.filter(row => !row.read_at).length };
+async function communityNotifications(env, userId, filterName) {
+  const filter = cleanText(filterName || "all").toLowerCase();
+  const typeFilter = filter === "mentions" ? "&type=eq.mention" : "";
+  const readFilter = filter === "unread" ? "&read_at=is.null" : "";
+  const stored = await safeAdminRead(() => sb(env, "/community_notifications?user_id=eq." + encodeURIComponent(userId) + typeFilter + readFilter + "&select=id,type,text,read_at,created_at,post_id,comment_id,news_id,actor:community_profiles!community_notifications_actor_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=60"), null);
+  if (Array.isArray(stored)) {
+    const unreadRows = await safeAdminRead(() => sb(env, "/community_notifications?user_id=eq." + encodeURIComponent(userId) + "&read_at=is.null&select=id&limit=100"), []);
+    return { items: stored, unread_count: unreadRows.length, filter };
+  }
   const profileRows = await safeAdminRead(() => sb(env, "/community_profiles?id=eq." + encodeURIComponent(userId) + "&select=username&limit=1"), []);
   const username = cleanText(profileRows[0] && profileRows[0].username).toLowerCase();
   const ownPosts = await safeAdminRead(() => sb(env, "/community_posts?user_id=eq." + encodeURIComponent(userId) + "&select=id,body&limit=80"), []);
   const ids = ownPosts.map(row => row.id);
   const postMap = Object.fromEntries(ownPosts.map(row => [row.id, row]));
-  const filter = ids.length ? "in.(" + ids.join(",") + ")" : "eq.00000000-0000-0000-0000-000000000000";
+  const postFilter = ids.length ? "in.(" + ids.join(",") + ")" : "eq.00000000-0000-0000-0000-000000000000";
   const mentionPattern = username ? encodeURIComponent("*@" + username + "*") : "*__no_username__*";
   const [comments, reactions, follows, mentionedPosts, mentionedComments] = await Promise.all([
-    safeAdminRead(() => sb(env, "/community_comments?post_id=" + filter + "&user_id=neq." + encodeURIComponent(userId) + "&status=eq.published&select=id,post_id,body,created_at,actor:community_profiles!community_comments_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
-    safeAdminRead(() => sb(env, "/community_reactions?post_id=" + filter + "&user_id=neq." + encodeURIComponent(userId) + "&select=post_id,created_at,actor:community_profiles!community_reactions_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
+    safeAdminRead(() => sb(env, "/community_comments?post_id=" + postFilter + "&user_id=neq." + encodeURIComponent(userId) + "&status=eq.published&select=id,post_id,body,created_at,actor:community_profiles!community_comments_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
+    safeAdminRead(() => sb(env, "/community_reactions?post_id=" + postFilter + "&user_id=neq." + encodeURIComponent(userId) + "&select=post_id,created_at,actor:community_profiles!community_reactions_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
     safeAdminRead(() => sb(env, "/community_follows?following_id=eq." + encodeURIComponent(userId) + "&select=created_at,actor:community_profiles!community_follows_follower_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
     safeAdminRead(() => sb(env, "/community_posts?user_id=neq." + encodeURIComponent(userId) + "&status=eq.published&body=ilike." + mentionPattern + "&select=id,body,created_at,actor:community_profiles!community_posts_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
     safeAdminRead(() => sb(env, "/community_comments?user_id=neq." + encodeURIComponent(userId) + "&status=eq.published&body=ilike." + mentionPattern + "&select=id,post_id,news_id,body,created_at,actor:community_profiles!community_comments_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
@@ -1036,6 +1089,24 @@ async function enforceCommunityRate(env, userId, action, maxCount, seconds) {
   const rows = await safeAdminRead(() => sb(env, "/community_activity?user_id=eq." + encodeURIComponent(userId) + "&action=eq." + encodeURIComponent(action) + "&created_at=gte." + encodeURIComponent(since) + "&select=id&limit=" + maxCount), []);
   if (rows.length >= maxCount) throw communityError("Stai effettuando troppe operazioni. Attendi qualche minuto e riprova.", 429);
   await safeAdminRead(() => sb(env, "/community_activity", { method: "POST", body: [{ user_id: userId, action }] }), []);
+}
+
+async function assertCommunityUniqueContent(env, userId, kind, value) {
+  const normalized = cleanText(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+  if (!normalized) return;
+  const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+  let path;
+  if (kind === "post") path = "/community_posts?user_id=eq." + encodeURIComponent(userId) + "&status=eq.published&created_at=gte." + encodeURIComponent(since) + "&select=body&limit=20";
+  else if (kind === "match") path = "/community_match_messages?user_id=eq." + encodeURIComponent(userId) + "&status=eq.published&created_at=gte." + encodeURIComponent(since) + "&select=body&limit=30";
+  else path = "/community_comments?user_id=eq." + encodeURIComponent(userId) + "&status=eq.published&created_at=gte." + encodeURIComponent(since) + "&select=body&limit=30";
+  const recent = await safeAdminRead(() => sb(env, path), []);
+  if (recent.some(row => cleanText(row.body || "").toLowerCase().replace(/\s+/g, " ").trim() === normalized)) {
+    throw communityError("Hai già pubblicato questo contenuto di recente.", 409);
+  }
+}
+
+function normalizeCommunityMatchKey(value) {
+  return cleanText(value || "").toLowerCase().replace(/[^a-z0-9_-]/g, "").slice(0, 80);
 }
 
 const COMMUNITY_BLOCKED_LANGUAGE = [
@@ -1267,7 +1338,7 @@ async function adminNews(request, env) {
   }
 
   if (request.method === "GET") {
-    const [drafts, news, sources, social, market, matches, runs, radar, graphics, communityPosts, communityReports, communityProfiles, communityComments, communityModerationActions] = await Promise.all([
+    const [drafts, news, sources, social, market, matches, runs, radar, graphics, communityPosts, communityReports, communityProfiles, communityComments, communityModerationActions, communityContextNotes] = await Promise.all([
       safeAdminRead(() => sb(env, "/news_drafts?order=created_at.desc&limit=80"), []),
       safeAdminRead(() => sb(env, "/news?order=created_at.desc&limit=80"), []),
       safeAdminRead(() => getSources(env), DEFAULT_SOURCES),
@@ -1282,12 +1353,27 @@ async function adminNews(request, env) {
       safeAdminRead(() => sb(env, "/community_profiles?select=id,username,display_name,avatar_url,quiz_badge,role,status,suspension_reason,suspended_until,created_at&order=created_at.desc&limit=100"), []),
       safeAdminRead(() => sb(env, "/community_comments?select=id,post_id,news_id,user_id,body,status,created_at,author:community_profiles!community_comments_user_id_fkey(display_name,username)&order=created_at.desc&limit=100"), []),
       safeAdminRead(() => sb(env, "/community_moderation_actions?select=id,action,reason,created_at,target_user_id,post_id,comment_id&order=created_at.desc&limit=100"), []),
+      safeAdminRead(() => sb(env, "/community_context_notes?select=id,post_id,news_id,body,source_url,reliability,status,created_at&order=created_at.desc&limit=100"), []),
     ]);
-    return json({ drafts, news, sources, social, market, matches, runs, radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions });
+    return json({ drafts, news, sources, social, market, matches, runs, radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
   }
 
   const body = await readBody(request);
   if (request.method === "POST") {
+    if (body.type === "community_context_note") {
+      const noteBody = communityText(body.body, 600);
+      const postId = body.post_id && /^[0-9a-f-]{36}$/i.test(body.post_id) ? body.post_id : null;
+      const newsId = Number.isFinite(Number(body.news_id)) ? Number(body.news_id) : null;
+      if (noteBody.length < 20 || (!postId && !newsId)) return json({ error: "Nota o contenuto di destinazione non validi" }, 400);
+      let adminProfiles = await safeAdminRead(() => sb(env, "/community_profiles?role=eq.admin&status=eq.active&select=id&order=created_at.asc&limit=1"), []);
+      if (!adminProfiles.length) adminProfiles = await safeAdminRead(() => sb(env, "/community_profiles?status=eq.active&select=id&order=created_at.asc&limit=1"), []);
+      if (!adminProfiles.length) return json({ error: "Nessun profilo Community attivo disponibile per firmare la Nota ICV" }, 409);
+      const allowedReliability = ["official", "verified", "developing", "rumor"];
+      const reliability = allowedReliability.includes(body.reliability) ? body.reliability : "verified";
+      const sourceUrl = /^https?:\/\//i.test(cleanText(body.source_url || "")) ? cleanText(body.source_url).slice(0, 1000) : null;
+      const inserted = await sb(env, "/community_context_notes", { method: "POST", body: [{ post_id: postId, news_id: newsId, author_id: adminProfiles[0].id, body: noteBody, source_url: sourceUrl, reliability, status: "published" }], prefer: "return=representation" });
+      return json({ note: inserted[0] }, 201);
+    }
     if (body.type === "manual_news") {
       const inserted = await insertNewsRow(env, {
           title: body.title,
@@ -1450,6 +1536,10 @@ async function adminNews(request, env) {
   }
 
   if (request.method === "PATCH") {
+    if (body.type === "delete_community_context_note") {
+      await sb(env, "/community_context_notes?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status: "hidden" } });
+      return json({ ok: true });
+    }
     if (body.type === "hide_community_post" || body.type === "restore_community_post") {
       const status = body.type === "hide_community_post" ? "hidden" : "published";
       await sb(env, "/community_posts?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status, updated_at: new Date().toISOString() } });

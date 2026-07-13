@@ -105,6 +105,8 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 
         <div class="card admin-panel" data-panel="community">
           <h2>Moderazione Community</h2>
+          <div class="form" style="margin:14px 0 20px"><h3>Pubblica Nota ICV</h3><div class="row"><select id="noteTargetType"><option value="post">Post Community</option><option value="news">News ICV</option></select><input id="noteTargetId" placeholder="ID post o news"></div><textarea id="noteBody" maxlength="600" placeholder="Contesto utile, correzione o precisazione editoriale"></textarea><div class="row"><input id="noteSourceUrl" placeholder="URL fonte"><select id="noteReliability"><option value="official">Ufficiale</option><option value="verified">Verificata</option><option value="developing">In evoluzione</option></select></div><button class="primary" onclick="publishContextNote()">Pubblica Nota ICV</button></div>
+          <div id="communityNoteList"></div>
           <div id="communityReportList"></div>
           <div id="communityPostList"></div>
         </div>
@@ -178,7 +180,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 <div class="toast" id="toast"></div>
 
 <script>
-var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], filter: "all", adminTab: "drafts" };
+var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], filter: "all", adminTab: "drafts" };
 var OFFICIAL_SERIE_A_CALENDAR = {
   season: "Serie A 2026/27",
   title: "Calendario Juventus 2026/27 ufficiale",
@@ -230,6 +232,7 @@ function load(){
     state.communityProfiles = data.community_profiles || [];
     state.communityComments = data.community_comments || [];
     state.communityModerationActions = data.community_moderation_actions || [];
+    state.communityNotes = data.community_context_notes || [];
     render();
   });
 }
@@ -547,9 +550,11 @@ function renderGraphics(){
   }).join("");
 }
 function renderCommunity(){
+  var notes = document.getElementById("communityNoteList");
   var reports = document.getElementById("communityReportList");
   var posts = document.getElementById("communityPostList");
   if(!reports || !posts) return;
+  if(notes) notes.innerHTML = "<h3 style='margin:8px 0 10px'>Note ICV pubblicate</h3>" + (state.communityNotes.length ? state.communityNotes.map(function(row){return "<div class='item'><div class='item-head'><div><h3>"+esc(row.news_id?"News #"+row.news_id:"Post "+row.post_id)+"</h3><div class='meta'>"+esc(row.reliability||"context")+" · "+date(row.created_at)+"</div></div></div><p>"+esc(row.body)+"</p><div class='item-actions'><button class='danger small' onclick='deleteContextNote(\""+escAttr(row.id)+"\")'>Rimuovi</button></div></div>"}).join("") : "<div class='empty'>Nessuna Nota ICV pubblicata.</div>");
   var openReports = state.communityReports.filter(function(row){ return row.status === "open"; });
   reports.innerHTML = "<h3 style='margin:8px 0 10px'>Segnalazioni aperte</h3>" + (openReports.length ? openReports.map(function(row){
     var author = row.reporter && (row.reporter.display_name || row.reporter.username) || "Utente";
@@ -573,6 +578,8 @@ function renderCommunity(){
     return "<div class='item'><div class='item-head'><div><h3>"+esc(row.action)+"</h3><div class='meta'>"+date(row.created_at)+"</div></div></div><p>"+esc(row.reason || "Nessun motivo indicato")+"</p></div>";
   }).join("") : "<div class='empty'>Nessuna azione registrata.</div>");
 }
+function publishContextNote(){var kind=val("noteTargetType"),target=val("noteTargetId"),body=val("noteBody"),source=val("noteSourceUrl"),reliability=val("noteReliability");if(!target||body.length<20){showToast("Inserisci ID e una nota di almeno 20 caratteri");return}var payload={type:"community_context_note",body:body,source_url:source,reliability:reliability};payload[kind==="news"?"news_id":"post_id"]=kind==="news"?Number(target):target;api("/api/admin/news",{method:"POST",body:payload}).then(function(){showToast("Nota ICV pubblicata");setVal("noteTargetId","");setVal("noteBody","");setVal("noteSourceUrl","");load()}).catch(function(err){showToast(err.message)})}
+function deleteContextNote(id){api("/api/admin/news",{method:"PATCH",body:{type:"delete_community_context_note",id:id}}).then(function(){showToast("Nota rimossa");load()}).catch(function(err){showToast(err.message)})}
 function setCommunityPost(id, visible){
   api("/api/admin/news", {method:"PATCH", body:{type:visible?"restore_community_post":"hide_community_post",id:id}}).then(function(){showToast(visible?"Post ripristinato":"Post nascosto");load();}).catch(function(err){showToast(err.message);});
 }

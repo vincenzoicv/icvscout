@@ -27,6 +27,47 @@ test("la Community espone le funzioni finali di lancio", async () => {
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
 });
 
+test("la Community espone discovery, sondaggi e conversazioni evolute", async () => {
+  const html = await read("community.html");
+  for (const marker of [
+    'data-category="following"',
+    "togglePollEditor",
+    "toggleRepost",
+    "startQuote",
+    "openTopic",
+    "function timeUntil",
+    "openPostPermalink",
+    "openCommunitySettings",
+    "Nota ICV",
+  ]) assert.ok(html.includes(marker), `manca ${marker}`);
+});
+
+test("l'API supporta feed seguiti, sondaggi, repost e preferenze", async () => {
+  const api = await read("functions/api/[[path]].js");
+  for (const marker of [
+    'scope === "following"',
+    "normalizeCommunityPoll",
+    "communityPollSummary",
+    'route === "preferences"',
+    'route === "muted-words"',
+    "/community_reposts",
+    "/community_context_notes",
+    "newsNotes",
+  ]) assert.ok(api.includes(marker), `manca ${marker}`);
+});
+
+test("la migrazione social crea tabelle e colonne necessarie", async () => {
+  const sql = await read("supabase/migrations/20260713170000_community_social_features.sql");
+  for (const marker of [
+    "quote_post_id",
+    "community_poll_votes",
+    "community_reposts",
+    "community_notification_preferences",
+    "community_muted_words",
+    "community_context_notes",
+  ]) assert.ok(sql.includes(marker), `manca ${marker}`);
+});
+
 test("l'API protegge cancellazione account e deep link", async () => {
   const api = await read("functions/api/[[path]].js");
   assert.match(api, /route === "me" && method === "DELETE"/);

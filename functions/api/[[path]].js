@@ -359,7 +359,14 @@ async function communityRoute(request, env, url, route) {
   const category = normalizeCommunityCategory(url.searchParams.get("category"));
 
   if (route === "feed" && method === "GET") {
-    return json(await communityFeed(env, category, url.searchParams.get("before")));
+    const scope = cleanText(url.searchParams.get("scope") || "").toLowerCase();
+    let viewerId = null;
+    if (scope === "following") {
+      const viewer = await requireCommunityUser(request, env);
+      await ensureCommunityProfile(env, viewer);
+      viewerId = viewer.id;
+    }
+    return json(await communityFeed(env, category, url.searchParams.get("before"), viewerId, url.searchParams.get("topic")));
   }
 
   if (route === "search" && method === "GET") return json(await communitySearch(env, url.searchParams.get("q")));
@@ -428,6 +435,32 @@ async function communityRoute(request, env, url, route) {
   }
 
   if (route === "notifications" && method === "GET") return json(await communityNotifications(env, user.id));
+  if (route === "preferences" && method === "GET") return json(await communityPreferences(env, user.id));
+  if (route === "preferences" && method === "PATCH") {
+    const body = await readBody(request);
+    const patch = {};
+    ["replies", "mentions", "reactions", "follows", "official_news", "match_room"].forEach(key => {
+      if (typeof body[key] === "boolean") patch[key] = body[key];
+    });
+    patch.updated_at = new Date().toISOString();
+    const rows = await sb(env, "/community_notification_preferences?on_conflict=user_id", { method: "POST", body: [{ user_id: user.id, ...patch }], prefer: "resolution=merge-duplicates,return=representation" });
+    return json(rows[0] || { user_id: user.id, ...patch });
+  }
+  if (route === "muted-words" && method === "GET") {
+    return json(await safeAdminRead(() => sb(env, "/community_muted_words?user_id=eq." + encodeURIComponent(user.id) + "&select=id,word,created_at&order=created_at.desc"), []));
+  }
+  if (route === "muted-words" && method === "POST") {
+    const body = await readBody(request);
+    const word = cleanText(body.word || "").toLowerCase().replace(/^#/, "").slice(0, 40);
+    if (word.length < 2) throw communityError("Inserisci almeno 2 caratteri", 400);
+    const rows = await sb(env, "/community_muted_words?on_conflict=user_id,word", { method: "POST", body: [{ user_id: user.id, word }], prefer: "resolution=ignore-duplicates,return=representation" });
+    return json(rows[0] || { word }, 201);
+  }
+  const mutedWordMatch = route.match(/^muted-words\/([0-9a-f-]{36})$/i);
+  if (mutedWordMatch && method === "DELETE") {
+    await sb(env, "/community_muted_words?id=eq." + encodeURIComponent(mutedWordMatch[1]) + "&user_id=eq." + encodeURIComponent(user.id), { method: "DELETE" });
+    return json({ ok: true });
+  }
   if (route === "notifications/read" && method === "POST") {
     await safeAdminRead(() => sb(env, "/community_notifications?user_id=eq." + encodeURIComponent(user.id) + "&read_at=is.null", { method: "PATCH", body: { read_at: new Date().toISOString() } }), []);
     return json({ ok: true });
@@ -488,6 +521,9 @@ async function communityRoute(request, env, url, route) {
     const body = await readBody(request);
     const text = communityText(body.body, 1200);
     if (!text) throw communityError("Scrivi qualcosa prima di pubblicare", 400);
+    const poll = normalizeCommunityPoll(body);
+    const quotePostId = body.quote_post_id && /^[0-9a-f-]{36}$/i.test(body.quote_post_id) ? body.quote_post_id : null;
+    const scheduledAt = profile.role === "admin" && body.scheduled_at && new Date(body.scheduled_at) > new Date() ? new Date(body.scheduled_at).toISOString() : null;
     const inserted = await sb(env, "/community_posts", {
       method: "POST",
       body: [{
@@ -495,11 +531,20 @@ async function communityRoute(request, env, url, route) {
         category: normalizeCommunityCategory(body.category),
         body: text,
         image_url: safeCommunityImageUrl(body.image_url),
+        quote_post_id: quotePostId,
+        poll_question: poll && poll.question,
+        poll_options: poll && poll.options,
+        poll_ends_at: poll && poll.ends_at,
+        scheduled_at: scheduledAt,
         is_official: profile.role === "admin",
         status: "published",
       }],
       prefer: "return=representation",
     });
+    if (quotePostId) {
+      const quoted = await safeAdminRead(() => sb(env, "/community_posts?id=eq." + encodeURIComponent(quotePostId) + "&select=user_id&limit=1"), []);
+      await createCommunityNotification(env, { user_id: quoted[0] && quoted[0].user_id, actor_id: user.id, type: "quote", post_id: inserted[0] && inserted[0].id, text: "ha citato il tuo post" });
+    }
     await notifyCommunityMentions(env, user.id, text, { post_id: inserted[0] && inserted[0].id });
     return json({ post: inserted[0] }, 201);
   }
@@ -616,6 +661,46 @@ async function communityRoute(request, env, url, route) {
     return json({ active: true });
   }
 
+  const repostMatch = route.match(/^posts\/([0-9a-f-]{36})\/repost$/i);
+  if (repostMatch && method === "POST") {
+    const postId = repostMatch[1];
+    const existing = await sb(env, "/community_reposts?post_id=eq." + encodeURIComponent(postId) + "&user_id=eq." + encodeURIComponent(user.id) + "&limit=1");
+    if (existing.length) {
+      await sb(env, "/community_reposts?post_id=eq." + encodeURIComponent(postId) + "&user_id=eq." + encodeURIComponent(user.id), { method: "DELETE" });
+      return json({ active: false });
+    }
+    await sb(env, "/community_reposts", { method: "POST", body: [{ post_id: postId, user_id: user.id }] });
+    const original = await safeAdminRead(() => sb(env, "/community_posts?id=eq." + encodeURIComponent(postId) + "&select=user_id&limit=1"), []);
+    await createCommunityNotification(env, { user_id: original[0] && original[0].user_id, actor_id: user.id, type: "repost", post_id: postId, text: "ha ripubblicato il tuo post" });
+    return json({ active: true });
+  }
+
+  const voteMatch = route.match(/^posts\/([0-9a-f-]{36})\/vote$/i);
+  if (voteMatch && method === "POST") {
+    const body = await readBody(request);
+    const optionIndex = Number(body.option_index);
+    const pollRows = await sb(env, "/community_posts?id=eq." + encodeURIComponent(voteMatch[1]) + "&status=eq.published&select=poll_options,poll_ends_at&limit=1");
+    const pollPost = pollRows[0];
+    if (!pollPost || !Array.isArray(pollPost.poll_options)) throw communityError("Sondaggio non trovato", 404);
+    if (new Date(pollPost.poll_ends_at) <= new Date()) throw communityError("Il sondaggio è terminato", 409);
+    if (!Number.isInteger(optionIndex) || optionIndex < 0 || optionIndex >= pollPost.poll_options.length) throw communityError("Opzione non valida", 400);
+    await sb(env, "/community_poll_votes?on_conflict=post_id,user_id", { method: "POST", body: [{ post_id: voteMatch[1], user_id: user.id, option_index: optionIndex }], prefer: "resolution=merge-duplicates" });
+    return json(await communityPollSummary(env, voteMatch[1], user.id));
+  }
+
+  if (route === "context-notes" && method === "POST") {
+    if (!["moderator", "admin"].includes(profile.role)) throw communityError("Solo i profili verificati possono pubblicare una Nota ICV", 403);
+    const body = await readBody(request);
+    const text = communityText(body.body, 600);
+    if (text.length < 20) throw communityError("La Nota ICV deve spiegare il contesto", 400);
+    const sourceUrl = cleanText(body.source_url || "").slice(0, 700);
+    if (sourceUrl && !/^https:\/\//i.test(sourceUrl)) throw communityError("La fonte deve usare HTTPS", 400);
+    const reliability = ["official", "verified", "developing", "rumor"].includes(body.reliability) ? body.reliability : "verified";
+    const row = { author_id: user.id, body: text, source_url: sourceUrl || null, reliability, status: "published", post_id: body.post_id || null, news_id: body.news_id || null };
+    const inserted = await sb(env, "/community_context_notes", { method: "POST", body: [row], prefer: "return=representation" });
+    return json({ note: inserted[0] }, 201);
+  }
+
   const saveMatch = route.match(/^posts\/([0-9a-f-]{36})\/save$/i);
   if (saveMatch && method === "POST") {
     const postId = saveMatch[1];
@@ -669,35 +754,52 @@ async function communityRoute(request, env, url, route) {
   throw communityError("Azione community non supportata", 404);
 }
 
-async function communityFeed(env, category, before) {
+async function communityFeed(env, category, before, viewerId, topic) {
   const categoryFilter = category === "per_te" ? "" : "&category=eq." + encodeURIComponent(category);
   const cursorFilter = before ? "&created_at=lt." + encodeURIComponent(before) : "";
-  const select = "id,user_id,category,body,image_url,is_official,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role)";
+  const scheduledFilter = "&or=(scheduled_at.is.null,scheduled_at.lte." + encodeURIComponent(new Date().toISOString()) + ")";
+  const topicFilter = cleanText(topic || "").replace(/^#/, "").slice(0, 40);
+  const followingRows = viewerId ? await safeAdminRead(() => sb(env, "/community_follows?follower_id=eq." + encodeURIComponent(viewerId) + "&select=following_id"), []) : [];
+  const followingIds = followingRows.map(row => row.following_id).filter(Boolean);
+  if (viewerId && !followingIds.length) return { posts: [], trending: [], next_cursor: null };
+  const followingFilter = viewerId ? "&user_id=in.(" + followingIds.join(",") + ")" : "";
+  const topicQuery = topicFilter ? "&body=ilike." + encodeURIComponent("*#" + topicFilter + "*") : "";
+  const select = "id,user_id,category,body,image_url,is_official,quote_post_id,poll_question,poll_options,poll_ends_at,scheduled_at,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role),quoted_post:community_posts!community_posts_quote_post_id_fkey(id,body,image_url,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role))";
   const posts = await safeAdminRead(
-    () => sb(env, "/community_posts?status=eq.published" + categoryFilter + cursorFilter + "&select=" + select + "&order=created_at.desc&limit=12"),
+    () => sb(env, "/community_posts?status=eq.published" + categoryFilter + cursorFilter + scheduledFilter + followingFilter + topicQuery + "&select=" + select + "&order=created_at.desc&limit=12"),
     []
   );
   const ids = posts.map(item => item.id).filter(Boolean);
   let reactions = [];
   let comments = [];
+  let reposts = [];
+  let votes = [];
+  let notes = [];
   if (ids.length) {
     const filter = "in.(" + ids.join(",") + ")";
-    [reactions, comments] = await Promise.all([
+    [reactions, comments, reposts, votes, notes] = await Promise.all([
       safeAdminRead(() => sb(env, "/community_reactions?select=post_id&type=eq.like&post_id=" + filter), []),
       safeAdminRead(() => sb(env, "/community_comments?select=post_id&status=eq.published&post_id=" + filter), []),
+      safeAdminRead(() => sb(env, "/community_reposts?select=post_id,user_id&post_id=" + filter), []),
+      safeAdminRead(() => sb(env, "/community_poll_votes?select=post_id,user_id,option_index&post_id=" + filter), []),
+      safeAdminRead(() => sb(env, "/community_context_notes?select=id,post_id,body,source_url,reliability,created_at,author:community_profiles!community_context_notes_author_id_fkey(username,display_name,role)&status=eq.published&post_id=" + filter), []),
     ]);
   }
   const reactionCounts = countCommunityRows(reactions);
   const commentCounts = countCommunityRows(comments);
+  const repostCounts = countCommunityRows(reposts);
   const community = posts.map(post => ({
     ...post,
     reaction_count: reactionCounts[post.id] || 0,
     comment_count: commentCounts[post.id] || 0,
+    repost_count: repostCounts[post.id] || 0,
+    poll: post.poll_question ? communityPollData(post, votes, viewerId) : null,
+    context_note: notes.find(note => note.post_id === post.id) || null,
     source: "community",
   }));
 
   const nextCursor = community.length === 12 ? community[community.length - 1].created_at : null;
-  if (category !== "per_te") return { posts: community, trending: communityTrending(community), next_cursor: nextCursor };
+  if (category !== "per_te" || viewerId || topicFilter) return { posts: community, trending: communityTrending(community), next_cursor: nextCursor };
   if (before) return { posts: community, trending: communityTrending(community), next_cursor: nextCursor };
   const news = await safeAdminRead(() => sb(env, "/news?visible=eq.true&order=created_at.desc&limit=3"), []);
   const officialRows = publicNewsRows(news).slice(0, 3);
@@ -706,6 +808,9 @@ async function communityFeed(env, category, before) {
     ? await safeAdminRead(() => sb(env, "/community_comments?select=news_id&status=eq.published&news_id=in.(" + newsIds.join(",") + ")"), [])
     : [];
   const newsCommentCounts = countCommunityRowsBy(newsComments, "news_id");
+  const newsNotes = newsIds.length
+    ? await safeAdminRead(() => sb(env, "/community_context_notes?select=id,news_id,body,source_url,reliability,created_at,author:community_profiles!community_context_notes_author_id_fkey(username,display_name,role)&status=eq.published&news_id=in.(" + newsIds.join(",") + ")"), [])
+    : [];
   const official = officialRows.map(item => ({
     id: "news-" + item.id,
     news_id: item.id,
@@ -718,6 +823,7 @@ async function communityFeed(env, category, before) {
     comment_count: newsCommentCounts[item.id] || 0,
     source: "news",
     source_url: item.source_url,
+    context_note: newsNotes.find(note => Number(note.news_id) === Number(item.id)) || null,
     author: { username: "icv_scout", display_name: "ICV Scout", quiz_badge: "Ufficiale", role: "admin" },
   }));
   const merged = [...official, ...community].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
@@ -725,21 +831,27 @@ async function communityFeed(env, category, before) {
 }
 
 async function communitySinglePost(env, postId) {
-  const select = "id,user_id,category,body,image_url,is_official,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role)";
+  const select = "id,user_id,category,body,image_url,is_official,quote_post_id,poll_question,poll_options,poll_ends_at,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role),quoted_post:community_posts!community_posts_quote_post_id_fkey(id,body,image_url,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role))";
   const rows = await safeAdminRead(() => sb(env, "/community_posts?id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=" + select + "&limit=1"), []);
   if (!rows.length) throw communityError("Post non trovato", 404);
-  const [reactions, comments] = await Promise.all([
+  const [reactions, comments, reposts, votes, notes] = await Promise.all([
     safeAdminRead(() => sb(env, "/community_reactions?post_id=eq." + encodeURIComponent(postId) + "&type=eq.like&select=id"), []),
     safeAdminRead(() => sb(env, "/community_comments?post_id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=id"), []),
+    safeAdminRead(() => sb(env, "/community_reposts?post_id=eq." + encodeURIComponent(postId) + "&select=post_id"), []),
+    safeAdminRead(() => sb(env, "/community_poll_votes?post_id=eq." + encodeURIComponent(postId) + "&select=option_index,user_id"), []),
+    safeAdminRead(() => sb(env, "/community_context_notes?post_id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=id,body,source_url,reliability,created_at,author:community_profiles!community_context_notes_author_id_fkey(username,display_name,role)&limit=1"), []),
   ]);
-  return { ...rows[0], reaction_count: reactions.length, comment_count: comments.length, source: "community" };
+  return { ...rows[0], reaction_count: reactions.length, comment_count: comments.length, repost_count: reposts.length, poll: rows[0].poll_question ? communityPollData(rows[0], votes, null) : null, context_note: notes[0] || null, source: "community" };
 }
 
 async function communitySingleNews(env, newsId) {
   const rows = await safeAdminRead(() => sb(env, "/news?id=eq." + encodeURIComponent(newsId) + "&visible=eq.true&limit=1"), []);
   if (!rows.length) throw communityError("News non trovata", 404);
   const item = publicNewsRows(rows)[0];
-  const comments = await safeAdminRead(() => sb(env, "/community_comments?news_id=eq." + encodeURIComponent(newsId) + "&status=eq.published&select=id"), []);
+  const [comments, notes] = await Promise.all([
+    safeAdminRead(() => sb(env, "/community_comments?news_id=eq." + encodeURIComponent(newsId) + "&status=eq.published&select=id"), []),
+    safeAdminRead(() => sb(env, "/community_context_notes?news_id=eq." + encodeURIComponent(newsId) + "&status=eq.published&select=id,body,source_url,reliability,created_at,author:community_profiles!community_context_notes_author_id_fkey(username,display_name,role)&limit=1"), []),
+  ]);
   return {
     id: "news-" + item.id,
     news_id: item.id,
@@ -752,6 +864,7 @@ async function communitySingleNews(env, newsId) {
     comment_count: comments.length,
     source: "news",
     source_url: item.source_url,
+    context_note: notes[0] || null,
     author: { username: "icv_scout", display_name: "ICV Scout", quiz_badge: "Ufficiale", role: "admin" },
   };
 }
@@ -780,8 +893,71 @@ async function communityPublicProfile(env, username) {
   return { profile, posts, follower_count: followers.length, following_count: following.length };
 }
 
+function normalizeCommunityPoll(body) {
+  const question = cleanText(body.poll_question || "").slice(0, 120);
+  const options = Array.isArray(body.poll_options)
+    ? body.poll_options.map(option => cleanText(option || "").slice(0, 80)).filter(Boolean).slice(0, 4)
+    : [];
+  if (!question && !options.length) return null;
+  if (question.length < 4) throw communityError("Inserisci una domanda per il sondaggio", 400);
+  if (options.length < 2) throw communityError("Il sondaggio deve avere almeno due opzioni", 400);
+  if (new Set(options.map(option => option.toLowerCase())).size !== options.length) {
+    throw communityError("Le opzioni del sondaggio devono essere diverse", 400);
+  }
+  const durationHours = Math.max(1, Math.min(168, Number(body.poll_duration_hours) || 24));
+  return {
+    question,
+    options,
+    ends_at: new Date(Date.now() + durationHours * 60 * 60 * 1000).toISOString(),
+  };
+}
+
+function communityPollData(post, votes, viewerId) {
+  const options = Array.isArray(post.poll_options) ? post.poll_options.slice(0, 4) : [];
+  const postVotes = (votes || []).filter(vote => vote.post_id === post.id || !vote.post_id);
+  const counts = options.map((_, index) => postVotes.filter(vote => Number(vote.option_index) === index).length);
+  const selected = viewerId ? postVotes.find(vote => vote.user_id === viewerId) : null;
+  const endsAt = post.poll_ends_at || null;
+  return {
+    question: cleanText(post.poll_question || ""),
+    options: options.map((label, index) => ({ label, votes: counts[index] || 0 })),
+    total_votes: counts.reduce((sum, count) => sum + count, 0),
+    selected_option: selected ? Number(selected.option_index) : null,
+    ends_at: endsAt,
+    ended: Boolean(endsAt && new Date(endsAt) <= new Date()),
+  };
+}
+
+async function communityPollSummary(env, postId, viewerId) {
+  const rows = await sb(env, "/community_posts?id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=id,poll_question,poll_options,poll_ends_at&limit=1");
+  if (!rows.length || !rows[0].poll_question) throw communityError("Sondaggio non trovato", 404);
+  const votes = await safeAdminRead(() => sb(env, "/community_poll_votes?post_id=eq." + encodeURIComponent(postId) + "&select=post_id,user_id,option_index"), []);
+  return communityPollData(rows[0], votes, viewerId);
+}
+
+async function communityPreferences(env, userId) {
+  const defaults = { replies: true, mentions: true, reactions: true, follows: true, official_news: true, match_room: true };
+  const rows = await safeAdminRead(() => sb(env, "/community_notification_preferences?user_id=eq." + encodeURIComponent(userId) + "&select=replies,mentions,reactions,follows,official_news,match_room&limit=1"), []);
+  return { ...defaults, ...(rows[0] || {}) };
+}
+
 async function createCommunityNotification(env, notification) {
   if (!notification.user_id || notification.user_id === notification.actor_id) return;
+  const preferenceKey = {
+    comment: "replies",
+    reply: "replies",
+    mention: "mentions",
+    like: "reactions",
+    repost: "reactions",
+    quote: "reactions",
+    follow: "follows",
+    official_news: "official_news",
+    match_room: "match_room",
+  }[notification.type];
+  if (preferenceKey) {
+    const preferences = await communityPreferences(env, notification.user_id);
+    if (preferences[preferenceKey] === false) return;
+  }
   const row = {
     user_id: notification.user_id,
     actor_id: notification.actor_id || null,

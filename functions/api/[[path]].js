@@ -384,7 +384,16 @@ async function communityRoute(request, env, url, route) {
 
   const user = await requireCommunityUser(request, env);
   const profile = await ensureCommunityProfile(env, user);
-  if (profile.status === "suspended") throw communityError("Profilo sospeso dalla moderazione", 403);
+  if (profile.status === "suspended" && profile.suspended_until && new Date(profile.suspended_until) <= new Date()) {
+    await sb(env, "/community_profiles?id=eq." + encodeURIComponent(user.id), { method: "PATCH", body: { status: "active", suspension_reason: null, suspended_until: null, updated_at: new Date().toISOString() } });
+    profile.status = "active";
+    profile.suspension_reason = null;
+    profile.suspended_until = null;
+  }
+  if (profile.status === "suspended") {
+    const until = profile.suspended_until ? " fino al " + new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome" }).format(new Date(profile.suspended_until)) : "";
+    throw communityError("Profilo sospeso" + until + (profile.suspension_reason ? ": " + profile.suspension_reason : "."), 403);
+  }
 
   if (route === "me" && method === "GET") return json(profile);
 
@@ -723,6 +732,20 @@ async function createCommunityNotification(env, notification) {
   await safeAdminRead(() => sb(env, "/community_notifications", { method: "POST", body: [row] }), null);
 }
 
+async function recordCommunityModeration(env, action) {
+  await safeAdminRead(() => sb(env, "/community_moderation_actions", {
+    method: "POST",
+    body: [{
+      moderator_label: "ICV Admin",
+      target_user_id: action.target_user_id || null,
+      post_id: action.post_id || null,
+      comment_id: action.comment_id || null,
+      action: cleanText(action.action || "moderation").slice(0, 80),
+      reason: cleanText(action.reason || "").slice(0, 300) || null,
+    }],
+  }), null);
+}
+
 async function notifyCommunityMentions(env, actorId, text, target, excludedIds = []) {
   const usernames = [...new Set(Array.from(String(text || "").matchAll(/(?:^|\s)@([a-z0-9._]{3,24})\b/gi), match => match[1].toLowerCase()))];
   if (!usernames.length) return;
@@ -998,7 +1021,7 @@ async function adminNews(request, env) {
   }
 
   if (request.method === "GET") {
-    const [drafts, news, sources, social, market, matches, runs, radar, graphics, communityPosts, communityReports, communityProfiles, communityComments] = await Promise.all([
+    const [drafts, news, sources, social, market, matches, runs, radar, graphics, communityPosts, communityReports, communityProfiles, communityComments, communityModerationActions] = await Promise.all([
       safeAdminRead(() => sb(env, "/news_drafts?order=created_at.desc&limit=80"), []),
       safeAdminRead(() => sb(env, "/news?order=created_at.desc&limit=80"), []),
       safeAdminRead(() => getSources(env), DEFAULT_SOURCES),
@@ -1010,10 +1033,11 @@ async function adminNews(request, env) {
       safeAdminRead(() => getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS), DEFAULT_GRAPHICS),
       safeAdminRead(() => sb(env, "/community_posts?select=id,user_id,category,body,image_url,is_official,status,created_at,author:community_profiles!community_posts_user_id_fkey(display_name,username)&order=created_at.desc&limit=80"), []),
       safeAdminRead(() => sb(env, "/community_reports?select=id,reason,status,created_at,post_id,comment_id,reporter:community_profiles!community_reports_reporter_id_fkey(display_name,username),post:community_posts(body),comment:community_comments(body)&order=created_at.desc&limit=80"), []),
-      safeAdminRead(() => sb(env, "/community_profiles?select=id,username,display_name,avatar_url,quiz_badge,role,status,created_at&order=created_at.desc&limit=100"), []),
+      safeAdminRead(() => sb(env, "/community_profiles?select=id,username,display_name,avatar_url,quiz_badge,role,status,suspension_reason,suspended_until,created_at&order=created_at.desc&limit=100"), []),
       safeAdminRead(() => sb(env, "/community_comments?select=id,post_id,news_id,user_id,body,status,created_at,author:community_profiles!community_comments_user_id_fkey(display_name,username)&order=created_at.desc&limit=100"), []),
+      safeAdminRead(() => sb(env, "/community_moderation_actions?select=id,action,reason,created_at,target_user_id,post_id,comment_id&order=created_at.desc&limit=100"), []),
     ]);
-    return json({ drafts, news, sources, social, market, matches, runs, radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments });
+    return json({ drafts, news, sources, social, market, matches, runs, radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions });
   }
 
   const body = await readBody(request);
@@ -1183,6 +1207,7 @@ async function adminNews(request, env) {
     if (body.type === "hide_community_post" || body.type === "restore_community_post") {
       const status = body.type === "hide_community_post" ? "hidden" : "published";
       await sb(env, "/community_posts?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status, updated_at: new Date().toISOString() } });
+      await recordCommunityModeration(env, { action: body.type, post_id: body.id, reason: cleanText(body.reason || "Azione manuale") });
       return json({ ok: true, status });
     }
 
@@ -1193,13 +1218,19 @@ async function adminNews(request, env) {
     if (body.type === "hide_community_comment" || body.type === "restore_community_comment") {
       const status = body.type === "hide_community_comment" ? "hidden" : "published";
       await sb(env, "/community_comments?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status } });
+      await recordCommunityModeration(env, { action: body.type, comment_id: body.id, reason: cleanText(body.reason || "Azione manuale") });
       return json({ ok: true, status });
     }
     if (body.type === "suspend_community_user" || body.type === "restore_community_user") {
       const status = body.type === "suspend_community_user" ? "suspended" : "active";
-      await sb(env, "/community_profiles?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status, updated_at: new Date().toISOString() } });
+      const reason = cleanText(body.reason || "Violazione delle regole della Community").slice(0, 300);
+      const days = Math.min(365, Math.max(1, Number(body.days) || 7));
+      const suspendedUntil = status === "suspended" ? new Date(Date.now() + days * 86400000).toISOString() : null;
+      await sb(env, "/community_profiles?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status, suspension_reason: status === "suspended" ? reason : null, suspended_until: suspendedUntil, updated_at: new Date().toISOString() } });
       if (status === "suspended") await sb(env, "/community_posts?user_id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status: "hidden", updated_at: new Date().toISOString() } });
-      return json({ ok: true, status });
+      await recordCommunityModeration(env, { action: body.type, target_user_id: body.id, reason: status === "suspended" ? reason + " (" + days + " giorni)" : reason });
+      await createCommunityNotification(env, { user_id: body.id, type: "moderation", text: status === "suspended" ? "Il tuo profilo è stato sospeso: " + reason : "Il tuo profilo è stato riattivato" });
+      return json({ ok: true, status, suspended_until: suspendedUntil });
     }
 
     if (body.type === "discard_draft") {

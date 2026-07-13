@@ -394,6 +394,10 @@ async function communityRoute(request, env, url, route) {
     return json({ ok: true });
   }
   if (route === "saved" && method === "GET") return json(await communitySavedPosts(env, user.id));
+  if (route === "blocked" && method === "GET") {
+    const rows = await safeAdminRead(() => sb(env, "/community_blocks?blocker_id=eq." + encodeURIComponent(user.id) + "&select=blocked_id,created_at,profile:community_profiles!community_blocks_blocked_id_fkey(id,username,display_name,avatar_url)&order=created_at.desc"), []);
+    return json(rows);
+  }
 
   if (route === "me" && method === "PATCH") {
     const body = await readBody(request);
@@ -444,6 +448,7 @@ async function communityRoute(request, env, url, route) {
       }],
       prefer: "return=representation",
     });
+    await notifyCommunityMentions(env, user.id, text, { post_id: inserted[0] && inserted[0].id });
     return json({ post: inserted[0] }, 201);
   }
 
@@ -485,6 +490,23 @@ async function communityRoute(request, env, url, route) {
       body: [{ post_id: commentMatch[1], parent_id: body.parent_id || null, user_id: user.id, body: text, status: "published" }],
       prefer: "return=representation",
     });
+    const postRows = await safeAdminRead(() => sb(env, "/community_posts?id=eq." + encodeURIComponent(commentMatch[1]) + "&select=user_id&limit=1"), []);
+    let recipientId = postRows[0] && postRows[0].user_id;
+    let type = "comment";
+    if (body.parent_id) {
+      const parentRows = await safeAdminRead(() => sb(env, "/community_comments?id=eq." + encodeURIComponent(body.parent_id) + "&select=user_id&limit=1"), []);
+      if (parentRows[0] && parentRows[0].user_id) recipientId = parentRows[0].user_id;
+      type = "reply";
+    }
+    await createCommunityNotification(env, {
+      user_id: recipientId,
+      actor_id: user.id,
+      type,
+      post_id: commentMatch[1],
+      comment_id: inserted[0] && inserted[0].id,
+      text: type === "reply" ? "ha risposto al tuo commento" : "ha commentato il tuo post",
+    });
+    await notifyCommunityMentions(env, user.id, text, { post_id: commentMatch[1], comment_id: inserted[0] && inserted[0].id }, [recipientId]);
     return json({ comment: inserted[0] }, 201);
   }
 
@@ -498,9 +520,16 @@ async function communityRoute(request, env, url, route) {
     if (!text) throw communityError("Il commento è vuoto", 400);
     const inserted = await sb(env, "/community_comments", {
       method: "POST",
-      body: [{ news_id: newsId, user_id: user.id, body: text, status: "published" }],
+      body: [{ news_id: newsId, parent_id: body.parent_id || null, user_id: user.id, body: text, status: "published" }],
       prefer: "return=representation",
     });
+    let newsReplyRecipient = null;
+    if (body.parent_id) {
+      const parentRows = await safeAdminRead(() => sb(env, "/community_comments?id=eq." + encodeURIComponent(body.parent_id) + "&select=user_id&limit=1"), []);
+      newsReplyRecipient = parentRows[0] && parentRows[0].user_id;
+      await createCommunityNotification(env, { user_id: newsReplyRecipient, actor_id: user.id, type: "reply", news_id: newsId, comment_id: inserted[0] && inserted[0].id, text: "ha risposto al tuo commento" });
+    }
+    await notifyCommunityMentions(env, user.id, text, { news_id: newsId, comment_id: inserted[0] && inserted[0].id }, [newsReplyRecipient]);
     return json({ comment: inserted[0] }, 201);
   }
 
@@ -530,6 +559,8 @@ async function communityRoute(request, env, url, route) {
       return json({ active: false });
     }
     await sb(env, "/community_reactions", { method: "POST", body: [{ post_id: postId, user_id: user.id, type: "like" }] });
+    const likedPost = await safeAdminRead(() => sb(env, "/community_posts?id=eq." + encodeURIComponent(postId) + "&select=user_id&limit=1"), []);
+    await createCommunityNotification(env, { user_id: likedPost[0] && likedPost[0].user_id, actor_id: user.id, type: "like", post_id: postId, text: "ha messo Mi piace al tuo post" });
     return json({ active: true });
   }
 
@@ -554,6 +585,21 @@ async function communityRoute(request, env, url, route) {
       return json({ active: false });
     }
     await sb(env, "/community_follows", { method: "POST", body: [{ follower_id: user.id, following_id: followMatch[1] }] });
+    await createCommunityNotification(env, { user_id: followMatch[1], actor_id: user.id, type: "follow", text: "ha iniziato a seguirti" });
+    return json({ active: true });
+  }
+
+  const blockMatch = route.match(/^profiles\/([0-9a-f-]{36})\/block$/i);
+  if (blockMatch && method === "POST") {
+    const blockedId = blockMatch[1];
+    if (blockedId === user.id) throw communityError("Non puoi bloccare te stesso", 400);
+    const existing = await sb(env, "/community_blocks?blocker_id=eq." + encodeURIComponent(user.id) + "&blocked_id=eq." + encodeURIComponent(blockedId) + "&limit=1");
+    if (existing.length) {
+      await sb(env, "/community_blocks?blocker_id=eq." + encodeURIComponent(user.id) + "&blocked_id=eq." + encodeURIComponent(blockedId), { method: "DELETE" });
+      return json({ active: false });
+    }
+    await sb(env, "/community_blocks", { method: "POST", body: [{ blocker_id: user.id, blocked_id: blockedId }] });
+    await safeAdminRead(() => sb(env, "/community_follows?or=(and(follower_id.eq." + encodeURIComponent(user.id) + ",following_id.eq." + encodeURIComponent(blockedId) + "),and(follower_id.eq." + encodeURIComponent(blockedId) + ",following_id.eq." + encodeURIComponent(user.id) + "))", { method: "DELETE" }), null);
     return json({ active: true });
   }
 
@@ -650,6 +696,36 @@ async function communityPublicProfile(env, username) {
   return { profile, posts, follower_count: followers.length, following_count: following.length };
 }
 
+async function createCommunityNotification(env, notification) {
+  if (!notification.user_id || notification.user_id === notification.actor_id) return;
+  const row = {
+    user_id: notification.user_id,
+    actor_id: notification.actor_id || null,
+    type: notification.type,
+    post_id: notification.post_id || null,
+    comment_id: notification.comment_id || null,
+    news_id: notification.news_id || null,
+    text: cleanText(notification.text || "").slice(0, 180),
+  };
+  await safeAdminRead(() => sb(env, "/community_notifications", { method: "POST", body: [row] }), null);
+}
+
+async function notifyCommunityMentions(env, actorId, text, target, excludedIds = []) {
+  const usernames = [...new Set(Array.from(String(text || "").matchAll(/(?:^|\s)@([a-z0-9._]{3,24})\b/gi), match => match[1].toLowerCase()))];
+  if (!usernames.length) return;
+  const rows = await safeAdminRead(() => sb(env, "/community_profiles?username=in.(" + usernames.map(encodeURIComponent).join(",") + ")&status=eq.active&select=id"), []);
+  const excluded = new Set([actorId, ...excludedIds].filter(Boolean));
+  await Promise.all(rows.filter(row => !excluded.has(row.id)).map(row => createCommunityNotification(env, {
+    user_id: row.id,
+    actor_id: actorId,
+    type: "mention",
+    post_id: target.post_id,
+    comment_id: target.comment_id,
+    news_id: target.news_id,
+    text: target.comment_id ? "ti ha menzionato in un commento" : "ti ha menzionato in un post",
+  })));
+}
+
 async function communityNotifications(env, userId) {
   const stored = await safeAdminRead(() => sb(env, "/community_notifications?user_id=eq." + encodeURIComponent(userId) + "&select=id,type,text,read_at,created_at,post_id,comment_id,news_id,actor:community_profiles!community_notifications_actor_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=40"), null);
   if (Array.isArray(stored)) return { items: stored, unread_count: stored.filter(row => !row.read_at).length };
@@ -709,12 +785,12 @@ function communityText(value, maxLength) {
 }
 
 async function communityComments(env, postId) {
-  const select = "id,post_id,user_id,body,created_at,author:community_profiles!community_comments_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)";
+  const select = "id,post_id,parent_id,user_id,body,created_at,author:community_profiles!community_comments_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)";
   return sb(env, "/community_comments?post_id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=" + select + "&order=created_at.asc&limit=80");
 }
 
 async function communityNewsComments(env, newsId) {
-  const select = "id,news_id,user_id,body,created_at,author:community_profiles!community_comments_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)";
+  const select = "id,news_id,parent_id,user_id,body,created_at,author:community_profiles!community_comments_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)";
   return sb(env, "/community_comments?news_id=eq." + encodeURIComponent(newsId) + "&status=eq.published&select=" + select + "&order=created_at.asc&limit=80");
 }
 

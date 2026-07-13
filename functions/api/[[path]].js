@@ -402,9 +402,19 @@ async function communityRoute(request, env, url, route) {
   if (route === "me" && method === "PATCH") {
     const body = await readBody(request);
     const quizScore = Number(body.quiz_score);
+    const nextUsername = normalizeCommunityUsername(body.username || profile.username);
+    const usernameChanged = nextUsername !== profile.username;
+    if (usernameChanged) {
+      const changes = await safeAdminRead(() => sb(env, "/community_activity?user_id=eq." + encodeURIComponent(user.id) + "&action=eq.username_change&select=created_at&order=created_at.desc&limit=1"), []);
+      const lastChange = changes[0] && new Date(changes[0].created_at);
+      const nextAllowedAt = lastChange && new Date(lastChange.getTime() + 40 * 24 * 60 * 60 * 1000);
+      if (nextAllowedAt && nextAllowedAt > new Date()) {
+        throw communityError("Potrai cambiare nuovamente username dal " + new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Rome" }).format(nextAllowedAt) + ".", 429);
+      }
+    }
     const patch = {
       display_name: cleanText(body.display_name || profile.display_name).slice(0, 60),
-      username: normalizeCommunityUsername(body.username || profile.username),
+      username: nextUsername,
       bio: cleanText(body.bio || "").slice(0, 180),
       avatar_url: body.avatar_url === undefined ? profile.avatar_url : safeCommunityImageUrl(body.avatar_url),
       quiz_badge: Number.isFinite(quizScore) && quizScore >= 10 && quizScore <= 40
@@ -417,6 +427,9 @@ async function communityRoute(request, env, url, route) {
       body: patch,
       prefer: "return=representation",
     });
+    if (usernameChanged) {
+      await safeAdminRead(() => sb(env, "/community_activity", { method: "POST", body: [{ user_id: user.id, action: "username_change" }] }), null);
+    }
     return json(updated[0] || { ...profile, ...patch });
   }
 

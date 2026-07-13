@@ -367,6 +367,12 @@ async function communityRoute(request, env, url, route) {
   const publicProfileMatch = route.match(/^profiles\/([a-z0-9._]{3,24})$/i);
   if (publicProfileMatch && method === "GET") return json(await communityPublicProfile(env, publicProfileMatch[1]));
 
+  const publicPostMatch = route.match(/^posts\/([0-9a-f-]{36})$/i);
+  if (publicPostMatch && method === "GET") return json(await communitySinglePost(env, publicPostMatch[1]));
+
+  const publicNewsMatch = route.match(/^news\/(\d+)$/i);
+  if (publicNewsMatch && method === "GET") return json(await communitySingleNews(env, Number(publicNewsMatch[1])));
+
   if (route === "suggestions" && method === "GET") {
     const profiles = await sb(env, "/community_profiles?status=eq.active&select=id,username,display_name,avatar_url,quiz_badge,role&order=created_at.desc&limit=5");
     return json(profiles);
@@ -396,6 +402,30 @@ async function communityRoute(request, env, url, route) {
   }
 
   if (route === "me" && method === "GET") return json(profile);
+
+  if (route === "me" && method === "DELETE") {
+    const body = await readBody(request);
+    if (cleanText(body.confirmation || "").toUpperCase() !== "ELIMINA") {
+      throw communityError("Scrivi ELIMINA per confermare", 400);
+    }
+    const base = env.SUPABASE_URL.replace(/\/$/, "");
+    const key = env.SUPABASE_SERVICE_ROLE_KEY;
+    const imageRows = await safeAdminRead(() => sb(env, "/community_posts?user_id=eq." + encodeURIComponent(user.id) + "&select=image_url"), []);
+    const storagePaths = [profile.avatar_url, ...imageRows.map(row => row.image_url)].map(communityStoragePath).filter(Boolean);
+    if (storagePaths.length) {
+      await fetch(base + "/storage/v1/object/" + COMMUNITY_BUCKET, {
+        method: "DELETE",
+        headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json" },
+        body: JSON.stringify({ prefixes: [...new Set(storagePaths)] }),
+      });
+    }
+    const response = await fetch(base + "/auth/v1/admin/users/" + encodeURIComponent(user.id), {
+      method: "DELETE",
+      headers: { apikey: key, Authorization: "Bearer " + key },
+    });
+    if (!response.ok) throw communityError("Non è stato possibile eliminare l'account", 502);
+    return json({ ok: true });
+  }
 
   if (route === "notifications" && method === "GET") return json(await communityNotifications(env, user.id));
   if (route === "notifications/read" && method === "POST") {
@@ -694,6 +724,38 @@ async function communityFeed(env, category, before) {
   return { posts: merged, trending: communityTrending(merged), next_cursor: nextCursor };
 }
 
+async function communitySinglePost(env, postId) {
+  const select = "id,user_id,category,body,image_url,is_official,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role)";
+  const rows = await safeAdminRead(() => sb(env, "/community_posts?id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=" + select + "&limit=1"), []);
+  if (!rows.length) throw communityError("Post non trovato", 404);
+  const [reactions, comments] = await Promise.all([
+    safeAdminRead(() => sb(env, "/community_reactions?post_id=eq." + encodeURIComponent(postId) + "&type=eq.like&select=id"), []),
+    safeAdminRead(() => sb(env, "/community_comments?post_id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=id"), []),
+  ]);
+  return { ...rows[0], reaction_count: reactions.length, comment_count: comments.length, source: "community" };
+}
+
+async function communitySingleNews(env, newsId) {
+  const rows = await safeAdminRead(() => sb(env, "/news?id=eq." + encodeURIComponent(newsId) + "&visible=eq.true&limit=1"), []);
+  if (!rows.length) throw communityError("News non trovata", 404);
+  const item = publicNewsRows(rows)[0];
+  const comments = await safeAdminRead(() => sb(env, "/community_comments?news_id=eq." + encodeURIComponent(newsId) + "&status=eq.published&select=id"), []);
+  return {
+    id: "news-" + item.id,
+    news_id: item.id,
+    category: item.category === "calciomercato" ? "mercato" : "per_te",
+    body: officialNewsBody(item),
+    image_url: "",
+    is_official: true,
+    created_at: item.created_at,
+    reaction_count: 0,
+    comment_count: comments.length,
+    source: "news",
+    source_url: item.source_url,
+    author: { username: "icv_scout", display_name: "ICV Scout", quiz_badge: "Ufficiale", role: "admin" },
+  };
+}
+
 async function communitySearch(env, query) {
   const q = cleanText(query || "").slice(0, 60);
   if (q.length < 2) return { profiles: [], posts: [], news: [] };
@@ -969,6 +1031,14 @@ function safeCommunityImageUrl(value) {
   if (!url) return null;
   if (!/^https:\/\//i.test(url)) throw communityError("Usa un URL immagine HTTPS", 400);
   return url;
+}
+
+function communityStoragePath(value) {
+  const url = cleanText(value || "");
+  const marker = "/storage/v1/object/public/" + COMMUNITY_BUCKET + "/";
+  const index = url.indexOf(marker);
+  if (index < 0) return "";
+  try { return decodeURIComponent(url.slice(index + marker.length)); } catch { return ""; }
 }
 
 function countCommunityRows(rows) {

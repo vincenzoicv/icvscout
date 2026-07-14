@@ -75,6 +75,7 @@
     footer a{color:var(--muted);text-decoration:none}
     @media(max-width:720px){.platforms,.features{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}}
   </style>
+  <script defer src="/assets/turnstile.js"></script>
 </head>
 <body>
   <header>
@@ -212,8 +213,10 @@
       const status = document.getElementById('subscribeStatus');
       const button = form.querySelector('button');
       button.disabled = true;
-      status.textContent = 'Iscrizione in corso...';
+      status.textContent = 'Verifica in corso...';
       try {
+        await ICVTurnstile.verify('newsletter_subscribe');
+        status.textContent = 'Iscrizione in corso...';
         const payload = Object.fromEntries(new FormData(form).entries());
         const response = await fetch('/api/subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
         const result = await response.json();

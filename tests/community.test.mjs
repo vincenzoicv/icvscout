@@ -117,3 +117,16 @@ test("la Community completa feed, profili, notifiche e Match Room", async () => 
   assert.match(migration, /community_match_messages/);
   assert.match(redirects, /\/community\/post\/\* \/community 200/);
 });
+
+test("Turnstile protegge tutti i flussi pubblici di scrittura", async () => {
+  const [community, quiz, agenda, helper] = await Promise.all([
+    read("community.html"), read("quiz.html"), read("agenda.html"), read("assets/turnstile.js"),
+  ]);
+  for (const action of ["community_post", "community_comment", "match_room", "community_report"]) {
+    assert.ok(community.includes(`ICVTurnstile.verify("${action}")`), `manca ${action}`);
+  }
+  assert.match(quiz, /ICVTurnstile\.verify\("quiz_result"\)/);
+  assert.match(agenda, /ICVTurnstile\.verify\('newsletter_subscribe'\)/);
+  assert.match(helper, /data-action="turnstile-spin-v1"/);
+  assert.match(helper, /result\.success !== true/);
+});

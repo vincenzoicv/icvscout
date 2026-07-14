@@ -9,6 +9,7 @@
 <meta property="og:description" content="10 domande, un profilo bianconero e i link ICV per seguire news, mercato e Mondiali.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://ilcalciodivince.com/quiz">
+<script defer src="/assets/turnstile.js"></script>
 <meta property="og:image" content="https://ilcalciodivince.com/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Quanto sei juventino? · ICV Scout">
@@ -599,11 +600,13 @@ document.getElementById("restartBtn").addEventListener("click",()=>{
 document.getElementById("leadForm").addEventListener("submit",async(event)=>{
   event.preventDefault();
   formStatus.style.color = "var(--muted)";
-  formStatus.textContent = "Invio in corso...";
+  formStatus.textContent = "Verifica in corso...";
   const form = event.currentTarget;
   const email = form.email.value.trim();
   const website = form.website.value.trim();
   try{
+    await ICVTurnstile.verify("quiz_result");
+    formStatus.textContent = "Invio in corso...";
     const res = await fetch("/api/quiz-result",{
       method:"POST",
       headers:{"Content-Type":"application/json"},

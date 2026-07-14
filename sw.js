@@ -1,6 +1,6 @@
 // ICV Scout — Service Worker
 // Strategia: cache-first per risorse statiche, network-only per API/Supabase
-const CACHE = 'icv-v10';
+const CACHE = 'icv-v11';
 const STATIC = [
   '/',
   '/index.html',
@@ -23,8 +23,8 @@ const STATIC = [
   '/splash-1290x2796.png',
   '/splash-2048x2732.png',
   '/og-image.png',
-  '/assets/icv-logo.jpg',
-  '/assets/hero-yildiz.jpg',
+  '/assets/icv-logo-160.jpg',
+  '/assets/hero-yildiz-1400.jpg',
   '/assets/community-stadium.jpg'
 ];
 

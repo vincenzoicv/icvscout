@@ -739,6 +739,19 @@ async function communityRoute(request, env, url, route) {
     return json({ active: true });
   }
 
+
+  const newsSaveMatch = route.match(/^news\/(\d+)\/save$/i);
+  if (newsSaveMatch && method === "POST") {
+    const newsId = Number(newsSaveMatch[1]);
+    const existing = await sb(env, "/community_saves?news_id=eq." + newsId + "&user_id=eq." + encodeURIComponent(user.id) + "&limit=1");
+    if (existing.length) {
+      await sb(env, "/community_saves?news_id=eq." + newsId + "&user_id=eq." + encodeURIComponent(user.id), { method: "DELETE" });
+      return json({ active: false });
+    }
+    await sb(env, "/community_saves", { method: "POST", body: [{ news_id: newsId, user_id: user.id }] });
+    return json({ active: true });
+  }
+
   const followMatch = route.match(/^profiles\/([0-9a-f-]{36})\/follow$/i);
   if (followMatch && method === "POST") {
     if (followMatch[1] === user.id) throw communityError("Non puoi seguire te stesso", 400);
@@ -1081,7 +1094,7 @@ async function communityNotifications(env, userId, filterName) {
 }
 
 async function communitySavedPosts(env, userId) {
-  return safeAdminRead(() => sb(env, "/community_saves?user_id=eq." + encodeURIComponent(userId) + "&select=created_at,post:community_posts!community_saves_post_id_fkey(id,user_id,category,body,image_url,is_official,status,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role))&order=created_at.desc&limit=60"), []);
+  return safeAdminRead(() => sb(env, "/community_saves?user_id=eq." + encodeURIComponent(userId) + "&select=created_at,post:community_posts!community_saves_post_id_fkey(id,user_id,category,body,image_url,is_official,status,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role)),news:news!community_saves_news_id_fkey(id,title,body,source_url,category,created_at)&order=created_at.desc&limit=60"), []);
 }
 
 async function enforceCommunityRate(env, userId, action, maxCount, seconds) {

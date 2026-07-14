@@ -130,3 +130,17 @@ test("Turnstile protegge tutti i flussi pubblici di scrittura", async () => {
   assert.match(helper, /data-action="turnstile-spin-v1"/);
   assert.match(helper, /result\.success !== true/);
 });
+
+
+test("i segnalibri includono post e notizie ufficiali", async () => {
+  const [html, api, migration] = await Promise.all([
+    read("community.html"),
+    read("functions/api/[[path]].js"),
+    read("supabase/migrations/20260714190000_community_news_bookmarks.sql"),
+  ]);
+  assert.match(html, /aria-label='Salva notizia'/);
+  assert.match(html, /openSavedNews/);
+  assert.match(api, /newsSaveMatch/);
+  assert.match(api, /news:news!community_saves_news_id_fkey/);
+  assert.match(migration, /community_saves_news_user_unique/);
+});

@@ -188,11 +188,15 @@ create table if not exists public.community_reactions (
 );
 
 create table if not exists public.community_saves (
-  post_id uuid not null references public.community_posts(id) on delete cascade,
+  id bigserial primary key,
+  post_id uuid references public.community_posts(id) on delete cascade,
+  news_id bigint references public.news(id) on delete cascade,
   user_id uuid not null references public.community_profiles(id) on delete cascade,
   created_at timestamptz not null default now(),
-  primary key (post_id, user_id)
+  check ((post_id is not null)::integer + (news_id is not null)::integer = 1)
 );
+create unique index if not exists community_saves_post_user_unique on public.community_saves(post_id, user_id) where post_id is not null;
+create unique index if not exists community_saves_news_user_unique on public.community_saves(news_id, user_id) where news_id is not null;
 
 create table if not exists public.community_follows (
   follower_id uuid not null references public.community_profiles(id) on delete cascade,

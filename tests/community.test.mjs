@@ -163,3 +163,20 @@ test("ICV Analytics raccoglie dati anonimi e li mostra nell'admin", async () => 
   assert.match(migration, /create table if not exists public\.analytics_events/);
   assert.match(migration, /enable row level security/);
 });
+
+test("le notifiche sono paginate e i rate limit spiegano quando riprovare", async () => {
+  const [html, api] = await Promise.all([
+    read("community.html"),
+    read("functions/api/[[path]].js"),
+  ]);
+  for (const marker of ["notificationCursor", "loadMoreNotifications", "maybeLoadMoreNotifications", "notificationGroupLabel", "notificationBadgeMobile"]) {
+    assert.ok(html.includes(marker), `manca ${marker}`);
+  }
+  assert.match(api, /url\.searchParams\.get\("before"\)/);
+  assert.match(api, /next_cursor/);
+  assert.match(api, /retry_after_seconds/);
+  assert.match(api, /"Retry-After"/);
+  assert.match(api, /code: "RATE_LIMIT"/);
+  assert.match(html, /registerRateLimit/);
+  assert.match(html, /rateLimitNotice/);
+});

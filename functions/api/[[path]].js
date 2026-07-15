@@ -140,7 +140,15 @@ export async function onRequest(context) {
     if (path.startsWith("football-data/")) return footballDataProxy(path, url, env);
     return apiSportsProxy(path, url, env);
   } catch (err) {
-    return json({ error: err.message || "Errore API" }, Number(err.status) || 500);
+    const status = Number(err.status) || 500;
+    const payload = { error: err.message || "Errore API", ...(err.details || {}) };
+    if (status === 429 && payload.retry_after_seconds) {
+      return new Response(JSON.stringify(payload), {
+        status,
+        headers: { ...JSON_HEADERS, "Retry-After": String(payload.retry_after_seconds) },
+      });
+    }
+    return json(payload, status);
   }
 }
 
@@ -443,7 +451,7 @@ async function communityRoute(request, env, url, route) {
     return json({ ok: true });
   }
 
-  if (route === "notifications" && method === "GET") return json(await communityNotifications(env, user.id, url.searchParams.get("filter")));
+  if (route === "notifications" && method === "GET") return json(await communityNotifications(env, user.id, url.searchParams.get("filter"), url.searchParams.get("before")));
   if (route === "preferences" && method === "GET") return json(await communityPreferences(env, user.id));
   if (route === "preferences" && method === "PATCH") {
     const body = await readBody(request);
@@ -1062,14 +1070,17 @@ async function notifyCommunityMentions(env, actorId, text, target, excludedIds =
   })));
 }
 
-async function communityNotifications(env, userId, filterName) {
+async function communityNotifications(env, userId, filterName, before) {
   const filter = cleanText(filterName || "all").toLowerCase();
   const typeFilter = filter === "mentions" ? "&type=eq.mention" : "";
   const readFilter = filter === "unread" ? "&read_at=is.null" : "";
-  const stored = await safeAdminRead(() => sb(env, "/community_notifications?user_id=eq." + encodeURIComponent(userId) + typeFilter + readFilter + "&select=id,type,text,read_at,created_at,post_id,comment_id,news_id,actor:community_profiles!community_notifications_actor_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=60"), null);
+  const cursorFilter = before && !Number.isNaN(new Date(before).getTime()) ? "&created_at=lt." + encodeURIComponent(new Date(before).toISOString()) : "";
+  const pageSize = 20;
+  const stored = await safeAdminRead(() => sb(env, "/community_notifications?user_id=eq." + encodeURIComponent(userId) + typeFilter + readFilter + cursorFilter + "&select=id,type,text,read_at,created_at,post_id,comment_id,news_id,actor:community_profiles!community_notifications_actor_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=" + (pageSize + 1)), null);
   if (Array.isArray(stored)) {
     const unreadRows = await safeAdminRead(() => sb(env, "/community_notifications?user_id=eq." + encodeURIComponent(userId) + "&read_at=is.null&select=id&limit=100"), []);
-    return { items: stored, unread_count: unreadRows.length, filter };
+    const items = stored.slice(0, pageSize);
+    return { items, unread_count: unreadRows.length, filter, next_cursor: stored.length > pageSize && items.length ? items[items.length - 1].created_at : null };
   }
   const profileRows = await safeAdminRead(() => sb(env, "/community_profiles?id=eq." + encodeURIComponent(userId) + "&select=username&limit=1"), []);
   const username = cleanText(profileRows[0] && profileRows[0].username).toLowerCase();
@@ -1091,8 +1102,8 @@ async function communityNotifications(env, userId, filterName) {
     ...follows.map(row => ({ type: "follow", created_at: row.created_at, actor: row.actor, text: "ha iniziato a seguirti" })),
     ...mentionedPosts.map(row => ({ type: "mention", created_at: row.created_at, actor: row.actor, text: "ti ha menzionato in un post", post_id: row.id })),
     ...mentionedComments.map(row => ({ type: "mention", created_at: row.created_at, actor: row.actor, text: "ti ha menzionato in un commento", post_id: row.post_id, news_id: row.news_id })),
-  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 30);
-  return { items, unread_count: 0 };
+  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, pageSize);
+  return { items, unread_count: 0, filter, next_cursor: null };
 }
 
 async function communitySavedPosts(env, userId) {
@@ -1101,9 +1112,24 @@ async function communitySavedPosts(env, userId) {
 
 async function enforceCommunityRate(env, userId, action, maxCount, seconds) {
   const since = new Date(Date.now() - seconds * 1000).toISOString();
-  const rows = await safeAdminRead(() => sb(env, "/community_activity?user_id=eq." + encodeURIComponent(userId) + "&action=eq." + encodeURIComponent(action) + "&created_at=gte." + encodeURIComponent(since) + "&select=id&limit=" + maxCount), []);
-  if (rows.length >= maxCount) throw communityError("Stai effettuando troppe operazioni. Attendi qualche minuto e riprova.", 429);
+  const rows = await safeAdminRead(() => sb(env, "/community_activity?user_id=eq." + encodeURIComponent(userId) + "&action=eq." + encodeURIComponent(action) + "&created_at=gte." + encodeURIComponent(since) + "&select=id,created_at&order=created_at.asc&limit=" + maxCount), []);
+  if (rows.length >= maxCount) {
+    const oldest = new Date(rows[0].created_at).getTime();
+    const retryAfter = Math.max(1, Math.ceil((oldest + seconds * 1000 - Date.now()) / 1000));
+    const labels = { post: "post", comment: "commenti", match_message: "messaggi Match Room", report: "segnalazioni" };
+    throw communityError(
+      "Hai raggiunto il limite di " + maxCount + " " + (labels[action] || "operazioni") + " ogni " + communityDuration(seconds) + ". Riprova tra " + communityDuration(retryAfter) + ".",
+      429,
+      { code: "RATE_LIMIT", action, limit: maxCount, window_seconds: seconds, retry_after_seconds: retryAfter }
+    );
+  }
   await safeAdminRead(() => sb(env, "/community_activity", { method: "POST", body: [{ user_id: userId, action }] }), []);
+}
+
+function communityDuration(seconds) {
+  if (seconds < 60) return seconds + " secondi";
+  if (seconds < 3600) return Math.ceil(seconds / 60) + " minuti";
+  return Math.ceil(seconds / 3600) + " ore";
 }
 
 async function assertCommunityUniqueContent(env, userId, kind, value) {
@@ -1271,9 +1297,10 @@ async function communityStorageError(response) {
   return communityError(detail ? "Caricamento immagine non riuscito: " + detail.slice(0, 160) : "Caricamento immagine non riuscito", 502);
 }
 
-function communityError(message, status) {
+function communityError(message, status, details) {
   const error = new Error(message);
   error.status = status;
+  error.details = details || null;
   return error;
 }
 

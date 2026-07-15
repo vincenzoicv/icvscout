@@ -29,8 +29,9 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 .visibility-btn{border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.08);color:var(--green)}
 .visibility-btn.visible{border-color:rgba(245,158,11,.38);background:rgba(245,158,11,.1);color:var(--orange)}
 .order-btn{min-width:36px;text-align:center}
+.analytics-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.analytics-kpi{padding:14px;border:1px solid var(--bdr);border-radius:8px;background:rgba(255,255,255,.025)}.analytics-kpi strong{display:block;font-family:"Bebas Neue";font-size:32px;color:var(--gold-l)}.analytics-kpi span{font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.6px;color:var(--t3);text-transform:uppercase}.analytics-delta{font-size:11px;margin-top:4px;color:var(--t3)}.analytics-delta.up{color:var(--green)}.analytics-delta.down{color:var(--red)}.analytics-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:12px}.analytics-chart{height:180px;display:flex;align-items:flex-end;gap:4px;padding:16px 4px 0;border-bottom:1px solid var(--bdr2)}.analytics-bar{flex:1;min-width:4px;background:linear-gradient(180deg,var(--gold-l),rgba(196,150,42,.25));border-radius:3px 3px 0 0;position:relative}.analytics-bar:hover:after{content:attr(data-label);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#050505;border:1px solid var(--bdr);padding:5px 7px;border-radius:4px;font-size:11px;color:var(--white);z-index:3}.analytics-list{display:grid;gap:8px}.analytics-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding-bottom:7px;border-bottom:1px solid var(--bdr2)}.analytics-row span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t2)}.analytics-row strong{color:var(--gold-l)}
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
-@media(max-width:620px){.graphic-admin-card{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}}
+@media(max-width:900px){.analytics-kpis,.analytics-grid{grid-template-columns:1fr 1fr}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}}
 </style>
 </head>
 <body>
@@ -81,6 +82,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
       <button data-tab="social" onclick="setAdminTab('social',this)">Social</button>
       <button data-tab="graphics" onclick="setAdminTab('graphics',this)">Grafiche</button>
       <button data-tab="community" onclick="setAdminTab('community',this)">Community</button>
+      <button data-tab="analytics" onclick="setAdminTab('analytics',this)">Analytics</button>
       <button data-tab="sources" onclick="setAdminTab('sources',this)">Fonti</button>
       <button data-tab="advanced" onclick="setAdminTab('advanced',this)">Avanzate</button>
     </nav>
@@ -109,6 +111,20 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <div id="communityNoteList"></div>
           <div id="communityReportList"></div>
           <div id="communityPostList"></div>
+        </div>
+
+        <div class="card admin-panel" data-panel="analytics">
+          <div class="item-head"><div><h2>ICV Analytics</h2><div class="meta">Dati proprietari anonimi · nessun indirizzo IP</div></div><select id="analyticsDays" onchange="loadAnalytics()" style="width:auto"><option value="7">7 giorni</option><option value="30" selected>30 giorni</option><option value="90">90 giorni</option></select></div>
+          <div id="analyticsKpis" class="analytics-kpis"></div>
+          <div class="analytics-grid">
+            <div class="item"><h3>Andamento</h3><div id="analyticsChart" class="analytics-chart"></div></div>
+            <div class="item"><h3>Provenienze</h3><div id="analyticsSources" class="analytics-list"></div></div>
+            <div class="item"><h3>Pagine più viste</h3><div id="analyticsPaths" class="analytics-list"></div></div>
+            <div class="item"><h3>Azioni Community e sito</h3><div id="analyticsEvents" class="analytics-list"></div></div>
+            <div class="item"><h3>Sezioni</h3><div id="analyticsPages" class="analytics-list"></div></div>
+            <div class="item"><h3>Dispositivi</h3><div id="analyticsDevices" class="analytics-list"></div></div>
+          </div>
+          <p id="analyticsNotice" class="meta" style="margin-top:12px"></p>
         </div>
       </div>
 
@@ -180,7 +196,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 <div class="toast" id="toast"></div>
 
 <script>
-var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], filter: "all", adminTab: "drafts" };
+var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], analytics: null, filter: "all", adminTab: "drafts" };
 var OFFICIAL_SERIE_A_CALENDAR = {
   season: "Serie A 2026/27",
   title: "Calendario Juventus 2026/27 ufficiale",
@@ -255,7 +271,38 @@ function setAdminTab(tab, btn){
   document.querySelectorAll(".admin-panel").forEach(function(el){
     el.classList.toggle("active", el.getAttribute("data-panel") === tab);
   });
+  if(tab === "analytics") loadAnalytics();
   window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function loadAnalytics(){
+  var select=document.getElementById("analyticsDays"),days=select?select.value:"30";
+  return api("/api/admin/analytics?days="+encodeURIComponent(days)).then(function(data){state.analytics=data;renderAnalytics()}).catch(function(err){showToast(err.message)});
+}
+function analyticsDelta(current,previous){
+  current=Number(current||0);previous=Number(previous||0);
+  if(!previous)return current?"Nuovi dati":"Nessun dato";
+  var value=Math.round((current-previous)/previous*100);return(value>0?"+":"")+value+"% sul periodo precedente";
+}
+function analyticsKpi(label,key,suffix){
+  var data=state.analytics||{},current=data.totals||{},previous=data.previous||{},delta=analyticsDelta(current[key],previous[key]),tone=Number(current[key])>=Number(previous[key])?"up":"down";
+  return "<div class='analytics-kpi'><strong>"+Number(current[key]||0)+(suffix||"")+"</strong><span>"+esc(label)+"</span><div class='analytics-delta "+tone+"'>"+esc(delta)+"</div></div>";
+}
+function analyticsRows(rows,empty){
+  if(!rows||!rows.length)return"<div class='empty'>"+esc(empty||"Dati in raccolta")+"</div>";
+  return rows.map(function(row){return"<div class='analytics-row'><span title='"+escAttr(row.label)+"'>"+esc(row.label)+"</span><strong>"+Number(row.count||0)+"</strong></div>"}).join("");
+}
+function renderAnalytics(){
+  var data=state.analytics;if(!data)return;
+  document.getElementById("analyticsKpis").innerHTML=analyticsKpi("Visualizzazioni","page_views")+analyticsKpi("Sessioni","sessions")+analyticsKpi("Azioni","actions")+analyticsKpi("Coinvolgimento","engagement_rate","%");
+  var daily=data.daily||[],max=Math.max.apply(null,daily.map(function(row){return Number(row.page_views||0)}).concat([1]));
+  document.getElementById("analyticsChart").innerHTML=daily.map(function(row){var height=Math.max(2,Math.round(Number(row.page_views||0)/max*100));return"<div class='analytics-bar' style='height:"+height+"%' data-label='"+escAttr(row.date+" · "+row.page_views+" viste · "+row.sessions+" sessioni")+"'></div>"}).join("");
+  document.getElementById("analyticsSources").innerHTML=analyticsRows(data.top_sources,"Nessuna provenienza registrata");
+  document.getElementById("analyticsPaths").innerHTML=analyticsRows(data.top_paths,"Nessuna pagina registrata");
+  document.getElementById("analyticsEvents").innerHTML=analyticsRows(data.events,"Le azioni appariranno con l'uso del sito");
+  document.getElementById("analyticsPages").innerHTML=analyticsRows(data.top_pages,"Nessuna sezione registrata");
+  document.getElementById("analyticsDevices").innerHTML=analyticsRows(data.devices,"Nessun dispositivo registrato");
+  document.getElementById("analyticsNotice").textContent=(data.capped?"Intervallo limitato agli ultimi 10.000 eventi. ":"")+"La raccolta parte dal momento del deploy e non ricostruisce visite precedenti.";
 }
 function publishManual(){
   var title = val("manualTitle"), body = val("manualBody");

@@ -144,3 +144,22 @@ test("i segnalibri includono post e notizie ufficiali", async () => {
   assert.match(api, /news:news!community_saves_news_id_fkey/);
   assert.match(migration, /community_saves_news_user_unique/);
 });
+
+test("ICV Analytics raccoglie dati anonimi e li mostra nell'admin", async () => {
+  const [tracker, api, admin, migration] = await Promise.all([
+    read("assets/analytics.js"),
+    read("functions/api/[[path]].js"),
+    read("icv_admin.html"),
+    read("supabase/migrations/20260715150000_icv_analytics.sql"),
+  ]);
+  assert.match(tracker, /sessionStorage/);
+  assert.doesNotMatch(tracker, /localStorage/);
+  assert.match(tracker, /navigator\.doNotTrack/);
+  assert.match(api, /path === "analytics"/);
+  assert.match(api, /path === "admin\/analytics"/);
+  assert.match(api, /analyticsSummary/);
+  assert.match(admin, /ICV Analytics/);
+  assert.match(admin, /loadAnalytics/);
+  assert.match(migration, /create table if not exists public\.analytics_events/);
+  assert.match(migration, /enable row level security/);
+});

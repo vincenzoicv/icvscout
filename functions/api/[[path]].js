@@ -130,6 +130,8 @@ export async function onRequest(context) {
     if (path === "world-cup/calendar.ics") return worldCupCalendar(request, env);
     if (path === "subscribe") return subscribeWorldCup(request, env);
     if (path === "quiz-result") return sendQuizResult(request, env);
+    if (path === "analytics") return analyticsRoute(request, env, url);
+    if (path === "admin/analytics") return adminAnalytics(request, env, url);
     if (path === "community/config") return communityConfig(env);
     if (path === "community/feed" || path.startsWith("community/")) return await communityRoute(request, env, url, path.replace(/^community\/?/, ""));
     if (path === "admin/news") return adminNews(request, env);
@@ -1325,6 +1327,118 @@ function communityTrending(posts) {
   const fallback = [["#Juventus", 0], ["#MercatoJuve", 0], ["#SerieA", 0]];
   const rows = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 4);
   return (rows.length ? rows : fallback).map(item => ({ tag: item[0], count: item[1] }));
+}
+
+const ANALYTICS_EVENTS = new Set([
+  "page_view", "navigation", "outbound_click",
+  "community_post", "community_comment", "community_reaction",
+  "community_repost", "community_save", "community_follow",
+  "community_report", "community_match_message",
+  "quiz_result", "newsletter_subscribe",
+]);
+
+async function analyticsRoute(request, env) {
+  if (request.method !== "POST") return json({ error: "Metodo non consentito" }, 405);
+  if (!hasSupabase(env)) return json({ accepted: false }, 202);
+  const agent = cleanText(request.headers.get("User-Agent") || "");
+  if (/bot|crawler|spider|headless|lighthouse|pagespeed|preview/i.test(agent)) return json({ accepted: false }, 202);
+  const body = await readBody(request);
+  const eventName = cleanText(body.event_name || "").toLowerCase();
+  const sessionId = cleanText(body.session_id || "").replace(/[^a-zA-Z0-9._-]/g, "").slice(0, 80);
+  if (!ANALYTICS_EVENTS.has(eventName) || sessionId.length < 12) return json({ error: "Evento analytics non valido" }, 400);
+  const path = normalizeAnalyticsPath(body.path);
+  const pageType = normalizeAnalyticsLabel(body.page_type, 30, "site");
+  const source = normalizeAnalyticsLabel(body.source, 60, "direct");
+  const referrerHost = normalizeAnalyticsHost(body.referrer_host);
+  const campaign = normalizeAnalyticsLabel(body.campaign, 100, "") || null;
+  const deviceType = analyticsDeviceType(agent);
+  const metadata = normalizeAnalyticsMetadata(body.metadata);
+  await sb(env, "/analytics_events", {
+    method: "POST",
+    body: [{ event_name: eventName, session_id: sessionId, path, page_type: pageType, source, referrer_host: referrerHost, campaign, device_type: deviceType, metadata }],
+    prefer: "return=minimal",
+  });
+  return json({ accepted: true }, 202);
+}
+
+async function adminAnalytics(request, env, url) {
+  requireAdmin(request, env);
+  if (request.method !== "GET") return json({ error: "Metodo non consentito" }, 405);
+  if (!hasSupabase(env)) return json(emptyAnalyticsSummary(30));
+  const days = Math.max(1, Math.min(90, Number(url.searchParams.get("days") || 30)));
+  const end = new Date();
+  const start = new Date(end.getTime() - days * 86400000);
+  const previousStart = new Date(start.getTime() - days * 86400000);
+  const rows = await safeAdminRead(() => sb(env, "/analytics_events?created_at=gte." + encodeURIComponent(previousStart.toISOString()) + "&select=event_name,session_id,path,page_type,source,referrer_host,campaign,device_type,created_at&order=created_at.desc&limit=10000"), []);
+  const current = rows.filter(row => new Date(row.created_at) >= start);
+  const previous = rows.filter(row => new Date(row.created_at) < start);
+  return json({
+    ...analyticsSummary(current, days, start, end),
+    previous: analyticsSummary(previous, days, previousStart, start).totals,
+    range: { days, start: start.toISOString(), end: end.toISOString() },
+    capped: rows.length >= 10000,
+  });
+}
+
+function analyticsSummary(rows, days, start, end) {
+  const pageViews = rows.filter(row => row.event_name === "page_view");
+  const sessions = new Set(rows.map(row => row.session_id));
+  const engagedSessions = new Set(rows.filter(row => row.event_name !== "page_view").map(row => row.session_id));
+  const daily = [];
+  for (let index = 0; index < days; index += 1) {
+    const day = new Date(start.getTime() + index * 86400000).toISOString().slice(0, 10);
+    const dayRows = rows.filter(row => String(row.created_at || "").slice(0, 10) === day);
+    daily.push({ date: day, page_views: dayRows.filter(row => row.event_name === "page_view").length, sessions: new Set(dayRows.map(row => row.session_id)).size, actions: dayRows.filter(row => row.event_name !== "page_view").length });
+  }
+  return {
+    totals: { page_views: pageViews.length, sessions: sessions.size, actions: rows.length - pageViews.length, engagement_rate: sessions.size ? Math.round(engagedSessions.size / sessions.size * 100) : 0 },
+    daily,
+    top_paths: analyticsTop(pageViews, "path", 10),
+    top_sources: analyticsTop(pageViews, "source", 10),
+    top_pages: analyticsTop(pageViews, "page_type", 8),
+    devices: analyticsTop(pageViews, "device_type", 6),
+    events: analyticsTop(rows.filter(row => row.event_name !== "page_view"), "event_name", 12),
+    campaigns: analyticsTop(pageViews.filter(row => row.campaign), "campaign", 8),
+  };
+}
+
+function analyticsTop(rows, field, limit) {
+  const counts = new Map();
+  rows.forEach(row => {
+    const value = cleanText(row[field] || "unknown").slice(0, 240) || "unknown";
+    counts.set(value, (counts.get(value) || 0) + 1);
+  });
+  return [...counts.entries()].sort((left, right) => right[1] - left[1]).slice(0, limit).map(([label, count]) => ({ label, count }));
+}
+
+function emptyAnalyticsSummary(days) {
+  return { totals: { page_views: 0, sessions: 0, actions: 0, engagement_rate: 0 }, previous: { page_views: 0, sessions: 0, actions: 0, engagement_rate: 0 }, daily: [], top_paths: [], top_sources: [], top_pages: [], devices: [], events: [], campaigns: [], range: { days }, capped: false };
+}
+
+function normalizeAnalyticsPath(value) {
+  const path = cleanText(value || "/").split(/[?#]/)[0].slice(0, 240);
+  return path.startsWith("/") ? path : "/";
+}
+
+function normalizeAnalyticsLabel(value, length, fallback) {
+  const label = cleanText(value || "").toLowerCase().replace(/[^a-z0-9._:/-]/g, "-").replace(/-+/g, "-").slice(0, length);
+  return label || fallback;
+}
+
+function normalizeAnalyticsHost(value) {
+  const host = cleanText(value || "").toLowerCase().replace(/[^a-z0-9.-]/g, "").slice(0, 120);
+  return host || null;
+}
+
+function normalizeAnalyticsMetadata(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(Object.entries(value).slice(0, 6).map(([key, item]) => [normalizeAnalyticsLabel(key, 40, "detail"), cleanText(item == null ? "" : item).slice(0, 180)]));
+}
+
+function analyticsDeviceType(agent) {
+  if (/ipad|tablet/i.test(agent)) return "tablet";
+  if (/mobile|iphone|android/i.test(agent)) return "mobile";
+  return "desktop";
 }
 
 async function adminNews(request, env) {

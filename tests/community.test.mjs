@@ -103,6 +103,15 @@ test("gli script esterni non bloccano il parsing", async () => {
   assert.match(html, /window\.addEventListener\("DOMContentLoaded",init\)/);
 });
 
+test("l'autenticazione torna sempre alla Community pubblica", async () => {
+  const html = await read("community.html");
+  assert.match(html, /function authRedirectUrl\(\)/);
+  assert.match(html, /https:\/\/ilcalciodivince\.com\/community/);
+  assert.match(html, /emailRedirectTo:authRedirectUrl\(\)/);
+  assert.match(html, /redirectTo:authRedirectUrl\(\)/);
+  assert.doesNotMatch(html, /redirectTo:location\.origin\+"\/community"/);
+});
+
 test("la Community completa feed, profili, notifiche e Match Room", async () => {
   const [html, api, admin, migration, redirects] = await Promise.all([
     read("community.html"),

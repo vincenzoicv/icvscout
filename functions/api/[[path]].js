@@ -7,7 +7,13 @@ const JSON_HEADERS = {
 
 const DEFAULT_SOURCES = [
   {
-    name: "Juventus ufficiale",
+    name: "Juventus.com diretto",
+    url: "https://www.juventus.com/it/",
+    category: "juventus",
+    reliability: "official",
+  },
+  {
+    name: "Juventus ufficiale - Google News",
     url: "https://news.google.com/rss/search?q=site%3Ajuventus.com%2Fit%2Fnews%20Juventus&hl=it&gl=IT&ceid=IT:it",
     category: "juventus",
     reliability: "official",
@@ -3504,6 +3510,7 @@ function isBadYoutubeTopic(value) {
 async function fetchSourceItems(source) {
   const text = await fetchText(source.url);
   if (isTelegramWebSource(source.url)) return parseTelegramWeb(text, source);
+  if (isJuventusOfficialHomepage(source.url)) return parseJuventusOfficialPage(text);
   return parseRss(text);
 }
 
@@ -3511,9 +3518,69 @@ function isTelegramWebSource(url) {
   return /:\/\/t\.me\/s\//i.test(String(url || ""));
 }
 
+function isJuventusOfficialHomepage(url) {
+  try {
+    const parsed = new URL(String(url || ""));
+    return /(^|\.)juventus\.com$/i.test(parsed.hostname) && /^\/it\/?$/i.test(parsed.pathname);
+  } catch {
+    return false;
+  }
+}
+
 function itemScanLimitForSource(source) {
   if (isTelegramWebSource(source && source.url)) return 32;
+  if (isJuventusOfficialHomepage(source && source.url)) return 10;
   return 18;
+}
+
+function parseJuventusOfficialPage(html) {
+  const scripts = String(html || "").match(/<script[^>]*type=["']application\/ld(?:\+|&#x2B;)json["'][^>]*>[\s\S]*?<\/script>/gi) || [];
+  const seen = new Set();
+  const items = [];
+
+  for (const script of scripts) {
+    const raw = script.replace(/^<script[^>]*>/i, "").replace(/<\/script>$/i, "").trim();
+    let data;
+    try {
+      data = JSON.parse(decodeXml(raw));
+    } catch {
+      continue;
+    }
+
+    const list = data && data["@type"] === "ItemList" && Array.isArray(data.itemListElement)
+      ? data.itemListElement
+      : [];
+    for (const entry of list) {
+      const link = normalizeJuventusArticleUrl(entry && entry.url);
+      const title = cleanText(entry && entry.name);
+      if (!link || !title || seen.has(link)) continue;
+      seen.add(link);
+      items.push({
+        title,
+        link,
+        description: title,
+        pubDate: "",
+        source: "Juventus.com",
+      });
+    }
+  }
+
+  return items;
+}
+
+function normalizeJuventusArticleUrl(value) {
+  try {
+    const url = new URL(String(value || ""), "https://www.juventus.com");
+    if (!/(^|\.)juventus\.com$/i.test(url.hostname)) return "";
+    url.protocol = "https:";
+    url.hostname = "www.juventus.com";
+    url.pathname = url.pathname.replace(/^\/it\/it\//i, "/it/");
+    url.search = "";
+    url.hash = "";
+    return /^\/it\/news\/articoli\//i.test(url.pathname) ? url.toString() : "";
+  } catch {
+    return "";
+  }
 }
 
 function parseTelegramWeb(html, source) {
@@ -3653,7 +3720,18 @@ function decodeXml(value) {
     .replace(/&nbsp;|&#160;|\u00a0/gi, " ")
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => decodeCodePoint(code, 16))
+    .replace(/&#([0-9]+);/g, (_, code) => decodeCodePoint(code, 10))
     .trim();
+}
+
+function decodeCodePoint(value, radix) {
+  const code = Number.parseInt(value, radix);
+  try {
+    return Number.isFinite(code) ? String.fromCodePoint(code) : "";
+  } catch {
+    return "";
+  }
 }
 
 function cleanText(value) {
@@ -4733,3 +4811,5 @@ async function logRun(env, type, result) {
     // Logging non deve bloccare la pubblicazione.
   }
 }
+
+export { parseJuventusOfficialPage };

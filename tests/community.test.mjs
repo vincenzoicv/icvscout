@@ -189,3 +189,23 @@ test("le notifiche sono paginate e i rate limit spiegano quando riprovare", asyn
   assert.match(html, /registerRateLimit/);
   assert.match(html, /rateLimitNotice/);
 });
+
+test("le notizie ufficiali Juventus usano anche una fonte diretta", async () => {
+  const api = await read("functions/api/[[path]].js");
+  assert.match(api, /name: "Juventus\.com diretto"/);
+  assert.match(api, /url: "https:\/\/www\.juventus\.com\/it\/"/);
+  assert.match(api, /isJuventusOfficialHomepage/);
+  assert.match(api, /parseJuventusOfficialPage/);
+  assert.match(api, /normalizeJuventusArticleUrl/);
+  assert.match(api, /shouldAutoPublishCandidate/);
+
+  const { parseJuventusOfficialPage } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  const fixture = `<script type="application/ld&#x2B;json">{"@type":"ItemList","itemListElement":[{"url":"https://www.juventus.com/it/it/news/articoli/amichevole-basilea-juventus","name":"Basilea-Juventus | Le scelte degli allenatori"},{"url":"https://www.juventus.com/it/it/biglietti/partita","name":"Biglietti"}]}</script>`;
+  assert.deepEqual(parseJuventusOfficialPage(fixture), [{
+    title: "Basilea-Juventus | Le scelte degli allenatori",
+    link: "https://www.juventus.com/it/news/articoli/amichevole-basilea-juventus",
+    description: "Basilea-Juventus | Le scelte degli allenatori",
+    pubDate: "",
+    source: "Juventus.com",
+  }]);
+});

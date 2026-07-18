@@ -5,6 +5,18 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
+test("la home distingue risultati e prossime amichevoli", async () => {
+  const html = await read("index.html");
+  for (const marker of [
+    "Risultati e prossime",
+    "Basilea-Juventus",
+    "Risultato zero a zero",
+    "Standard Liegi-Juventus",
+    "Juventus-Nizza",
+  ]) assert.ok(html.includes(marker), `manca ${marker}`);
+  assert.match(html, /friendly-item is-final[\s\S]*?FINALE[\s\S]*?0-0/);
+});
+
 test("gli script delle pagine principali hanno sintassi valida", async () => {
   for (const file of ["community.html", "icv_admin.html"]) {
     const html = await read(file);

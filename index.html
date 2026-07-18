@@ -96,11 +96,22 @@ main{padding-top:58px;position:relative;z-index:1;}
 .manifesto{font-family:"Playfair Display",serif;font-style:italic;font-size:clamp(16px,3.5vw,21px);color:rgba(196,150,42,0.72);margin-bottom:26px;animation:fadeUp 0.6s ease 0.35s both;}
 .alert-banner{display:inline-flex;align-items:center;gap:10px;background:rgba(196,150,42,0.07);border:1px solid rgba(196,150,42,0.28);border-radius:6px;padding:9px 18px;font-family:"Barlow Condensed";font-size:13px;font-weight:700;letter-spacing:1.5px;color:rgba(196,150,42,0.95);text-transform:uppercase;margin-bottom:16px;animation:fadeUp 0.6s ease 0.4s both;}
 .alert-dot{width:6px;height:6px;border-radius:50%;background:#C4962A;animation:pulse 1.5s ease infinite;flex-shrink:0;}
-.friendly-strip{flex-wrap:wrap;justify-content:center;max-width:min(940px,calc(100vw - 36px));padding:10px 14px;gap:8px 10px;}
-.friendly-label{display:inline-flex;align-items:center;gap:8px;margin-right:2px;white-space:nowrap;}
-.friendly-item{display:inline-flex;align-items:center;gap:7px;padding:4px 10px;border:1px solid rgba(196,150,42,0.20);border-radius:999px;background:rgba(255,255,255,0.035);color:rgba(255,255,255,0.82);letter-spacing:1.2px;white-space:nowrap;}
-.friendly-item strong{font-weight:900;color:var(--gold-l);}
-.friendly-item span{color:rgba(255,255,255,0.58);}
+.friendly-strip{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:stretch;width:min(1000px,calc(100vw - 36px));max-width:none;padding:0;gap:0;overflow:hidden;text-align:left;}
+.friendly-label{display:flex;align-items:center;gap:9px;padding:11px 15px;border-right:1px solid rgba(196,150,42,.20);white-space:nowrap;}
+.friendly-label-copy{display:flex;flex-direction:column;gap:2px;line-height:1;}
+.friendly-label-copy strong{color:var(--gold-l);font-size:12px;letter-spacing:1.7px;}
+.friendly-label-copy span{color:rgba(255,255,255,.45);font-size:9px;letter-spacing:1.3px;}
+.friendly-fixtures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));min-width:0;}
+.friendly-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px;min-width:0;padding:9px 13px;border-left:1px solid rgba(196,150,42,.14);background:rgba(255,255,255,.018);color:rgba(255,255,255,.84);}
+.friendly-item:first-child{border-left:0;}
+.friendly-meta{display:flex;flex-direction:column;gap:2px;line-height:1;}
+.friendly-meta strong{font-size:12px;font-weight:900;color:var(--gold-l);}
+.friendly-status{font-size:8px;letter-spacing:1.2px;color:rgba(255,255,255,.48);}
+.friendly-match{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12px;letter-spacing:1px;white-space:nowrap;}
+.friendly-result{font-family:"Bebas Neue";font-size:22px;line-height:1;letter-spacing:1.5px;color:var(--white);white-space:nowrap;}
+.friendly-item.is-final{background:linear-gradient(110deg,rgba(196,150,42,.13),rgba(255,255,255,.025));box-shadow:inset 3px 0 0 var(--gold);}
+.friendly-item.is-final .friendly-status{color:#79d99a;}
+.friendly-item.is-final .friendly-result{color:var(--gold-l);}
 .match-banner{display:inline-flex;align-items:center;gap:18px;background:rgba(196,150,42,0.06);border:1px solid rgba(196,150,42,0.22);border-radius:8px;padding:14px 26px;animation:fadeUp 0.6s ease 0.5s both;transition:all 0.3s;}
 .match-banner:hover{border-color:rgba(196,150,42,0.40);box-shadow:0 0 20px rgba(196,150,42,0.07);}
 .mb-team{font-family:"Bebas Neue";font-size:24px;letter-spacing:2px;color:var(--white);}
@@ -421,10 +432,15 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .st-num{font-size:12px;}
 
 /* HERO MOBILE */
-.friendly-strip{display:flex;width:100%;padding:10px;gap:7px;}
-.friendly-label{width:100%;justify-content:center;margin-right:0;font-size:12px;letter-spacing:1.3px;}
-.friendly-item{width:100%;justify-content:space-between;gap:6px;padding:7px 10px;font-size:12px;letter-spacing:1px;}
-.friendly-item span{margin-left:auto;}
+.friendly-strip{display:block;width:100%;}
+.friendly-label{justify-content:center;border-right:0;border-bottom:1px solid rgba(196,150,42,.20);padding:10px;}
+.friendly-label-copy{flex-direction:row;align-items:center;gap:7px;}
+.friendly-label-copy span{font-size:8px;}
+.friendly-fixtures{grid-template-columns:1fr;}
+.friendly-item{grid-template-columns:58px minmax(0,1fr) auto;border-left:0;border-top:1px solid rgba(196,150,42,.12);padding:9px 11px;}
+.friendly-item:first-child{border-top:0;}
+.friendly-match{font-size:12px;}
+.friendly-result{font-size:21px;}
 .match-banner{flex-direction:column;gap:10px;text-align:center;width:100%;}
 .mb-info{border-left:none;padding-left:0;border-top:1px solid rgba(196,150,42,0.15);padding-top:10px;text-align:center;}
 .hero-sil{opacity:0.08;right:-20px;}
@@ -555,11 +571,28 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
     <h1>ICV<br><em>SCOUT</em></h1>
     <p class="hero-desc">Formazioni, analisi tattiche e statistiche della Juventus.</p>
     <p class="manifesto">Il calcio vissuto da chi lo vive davvero.</p>
-    <div class="alert-banner friendly-strip">
-      <div class="friendly-label"><div class="alert-dot"></div>Amichevoli estive luglio 2026</div>
-      <div class="friendly-item"><strong>18/07</strong><span>15.30</span>Basilea-Juventus</div>
-      <div class="friendly-item"><strong>25/07</strong><span>20.00</span>Standard Liegi-Juventus</div>
-      <div class="friendly-item"><strong>31/07</strong><span>18.00</span>Juventus-Nizza · JTC</div>
+    <div class="alert-banner friendly-strip" role="region" aria-label="Risultati e calendario delle amichevoli estive della Juventus">
+      <div class="friendly-label">
+        <div class="alert-dot"></div>
+        <div class="friendly-label-copy"><strong>Amichevoli luglio</strong><span>Risultati e prossime</span></div>
+      </div>
+      <div class="friendly-fixtures">
+        <div class="friendly-item is-final">
+          <div class="friendly-meta"><strong>18 LUG</strong><span class="friendly-status">FINALE</span></div>
+          <span class="friendly-match">Basilea-Juventus</span>
+          <strong class="friendly-result" aria-label="Risultato zero a zero">0-0</strong>
+        </div>
+        <div class="friendly-item">
+          <div class="friendly-meta"><strong>25 LUG</strong><span class="friendly-status">PROSSIMA</span></div>
+          <span class="friendly-match">Standard Liegi-Juventus</span>
+          <strong class="friendly-result">20:00</strong>
+        </div>
+        <div class="friendly-item">
+          <div class="friendly-meta"><strong>31 LUG</strong><span class="friendly-status">JTC</span></div>
+          <span class="friendly-match">Juventus-Nizza</span>
+          <strong class="friendly-result">18:00</strong>
+        </div>
+      </div>
     </div>
     <br>
     <div class="match-banner">

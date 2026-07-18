@@ -4183,11 +4183,37 @@ async function updateExistingNewsFromCandidate(env, existing, candidate) {
   }
 
   if (!Object.keys(patch).length) return false;
-  await sb(env, "/news?id=eq." + encodeURIComponent(existing.id), {
-    method: "PATCH",
-    body: patch,
-  });
+  await patchNewsRow(env, existing.id, patch);
   return true;
+}
+
+async function patchNewsRow(env, id, patch) {
+  const path = "/news?id=eq." + encodeURIComponent(id);
+  try {
+    return await sb(env, path, {
+      method: "PATCH",
+      body: patch,
+    });
+  } catch (err) {
+    if (!isSupabaseCheckConstraintError(err)) throw err;
+    return sb(env, path, {
+      method: "PATCH",
+      body: compatNewsUpdatePayload(patch),
+    });
+  }
+}
+
+function compatNewsUpdatePayload(patch) {
+  const compatible = { ...patch };
+  if (Object.prototype.hasOwnProperty.call(compatible, "urgency")) {
+    compatible.urgency = compatible.urgency === "breaking" || compatible.urgency === "rumor"
+      ? compatible.urgency
+      : "normal";
+  }
+  if (Object.prototype.hasOwnProperty.call(compatible, "category")) {
+    compatible.category = normalizeNewsCategoryForDb(compatible.category);
+  }
+  return compatible;
 }
 
 function isFabrizioCandidate(candidate) {

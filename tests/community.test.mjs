@@ -222,6 +222,13 @@ test("le notizie ufficiali Juventus usano anche una fonte diretta", async () => 
   }]);
 });
 
+test("gli aggiornamenti news ripiegano sulle priorita compatibili", async () => {
+  const api = await read("functions/api/[[path]].js");
+  assert.match(api, /async function patchNewsRow/);
+  assert.match(api, /compatNewsUpdatePayload\(patch\)/);
+  assert.match(api, /compatible\.urgency === "breaking" \|\| compatible\.urgency === "rumor"/);
+});
+
 test("la sezione News viene popolata anche aprendo direttamente il deep link", async () => {
   const html = await read("index.html");
   assert.match(html, /fetch\("\/api\/public\/news\?limit=10"\)/);

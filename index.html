@@ -1496,7 +1496,8 @@ function renderGraphics(rows) {
 
 function loadAndRenderNews() {
   var grid = document.getElementById("newsGrid");
-  if (!grid) return;
+  if (!grid || grid.dataset.loading === "true") return;
+  grid.dataset.loading = "true";
   grid.innerHTML = "<div class='news-empty-state' style='grid-column:1/-1'><div style='font-family:Barlow Condensed;font-size:13px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;'>Caricamento notizie...</div></div>";
 
   fetch("/api/public/news?limit=10")
@@ -1533,6 +1534,9 @@ function loadAndRenderNews() {
   })
   .catch(function(e) {
     grid.innerHTML = "<div class='news-empty-state' style='grid-column:1/-1'>Errore caricamento notizie. Riprova.</div>";
+  })
+  .finally(function() {
+    delete grid.dataset.loading;
   });
 }
 
@@ -1638,6 +1642,7 @@ function setupHomeMotion() {
 setupHomeMotion();
 loadHomeDashboard();
 loadHomeGraphics();
+loadAndRenderNews();
 
 var deferredInstallPrompt = null;
 function isStandaloneApp(){

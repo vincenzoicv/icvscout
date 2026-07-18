@@ -209,3 +209,10 @@ test("le notizie ufficiali Juventus usano anche una fonte diretta", async () => 
     source: "Juventus.com",
   }]);
 });
+
+test("la sezione News viene popolata anche aprendo direttamente il deep link", async () => {
+  const html = await read("index.html");
+  assert.match(html, /fetch\("\/api\/public\/news\?limit=10"\)/);
+  assert.match(html, /loadHomeGraphics\(\);\s*loadAndRenderNews\(\);/);
+  assert.match(html, /grid\.dataset\.loading === "true"/);
+});

@@ -258,4 +258,42 @@ test("il Live Desk unifica automaticamente news, mercato e Match Center", async 
   });
   assert.deepEqual(rows.map(row => row.kind).sort(), ["market", "match", "official"]);
   assert.equal(rows.find(row => row.kind === "official").label, "Ufficiale");
+
+  const officialNames = ["Celik", "Rossi", "Bianchi", "Verdi", "Neri"];
+  const marketNames = ["Obiettivo Alfa", "Obiettivo Beta"];
+  const matchNames = ["Basilea", "Liegi", "Nizza"];
+  const balancedRows = buildLiveDeskEntries({
+    news: officialNames.map((name, index) => ({
+      id: `official-${index}`,
+      title: `Ufficiale | ${name} firma con la Juventus`,
+      source: "Juventus.com",
+      reliability: "official",
+      visible: true,
+      created_at: new Date(Date.now() - index * 1000).toISOString(),
+    })),
+    market: marketNames.map((name, index) => ({
+      id: `market-${index}`,
+      player_name: name,
+      note: `Contatti avviati per ${name}`,
+      source_name: "Sky Sport",
+      reliability: "trusted",
+      updated_at: new Date(Date.now() - (index + 10) * 1000).toISOString(),
+    })),
+    matches: matchNames.map((name, index) => ({
+      id: `match-${index}`,
+      title: `Juventus-${name}`,
+      status: "finished",
+      summary: "Finale",
+      competition: "Amichevole",
+      updated_at: new Date(Date.now() - (index + 5) * 1000).toISOString(),
+    })),
+  }, 6);
+  const kindCounts = balancedRows.reduce((counts, row) => ({
+    ...counts,
+    [row.kind]: (counts[row.kind] || 0) + 1,
+  }), {});
+  assert.equal(balancedRows.length, 6);
+  assert.ok(kindCounts.official <= 2);
+  assert.ok(kindCounts.match <= 2);
+  assert.ok(kindCounts.market >= 1);
 });

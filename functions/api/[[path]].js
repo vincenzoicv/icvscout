@@ -256,7 +256,7 @@ async function publicHome(env) {
     news: cleanNews,
     market: aggregatedMarket,
     matches,
-    live_desk: buildLiveDeskEntries({ news: publicNewsRows(news), market: aggregatedMarket, matches }),
+    live_desk: buildLiveDeskEntries({ news: publicNewsRows(news), market: aggregatedMarket, matches }, 6),
     social: publicSocialRows(social),
     graphics: [],
     radar,
@@ -4585,14 +4585,15 @@ function buildLiveDeskEntries({ news = [], market = [], matches = [] } = {}, lim
     const editorial = cleanText(row.editorial_status);
     const category = cleanText(row.category).toLowerCase();
     const text = cleanText([title, row.body].join(" ")).toLowerCase();
+    if (isLowValueLiveDeskText(text)) return;
     const official = reliability === "official" || /^ufficiale$/i.test(editorial) || /juventus\.com|sito ufficiale/i.test(cleanText(row.source));
     const matchNews = /formazioni|convocati|partita|risultato|finale|pagelle|infortun|allenamento|amichevole|match/i.test(text);
     const quote = /conferenza|dichiara|ha detto|spalletti:|carnevali:|«|”|"/i.test(title);
-    const kind = official ? "official" : (category === "calciomercato" ? "market" : (matchNews ? "match" : (quote ? "quote" : "news")));
+    const kind = matchNews ? "match" : (official ? "official" : (category === "calciomercato" ? "market" : (quote ? "quote" : "news")));
     entries.push({
       id: "news-" + row.id,
       kind,
-      label: official ? "Ufficiale" : (kind === "market" ? "Mercato" : (kind === "match" ? "Campo" : (kind === "quote" ? "Hanno detto" : "Ultimissima"))),
+      label: kind === "match" ? "Campo" : (official ? "Ufficiale" : (kind === "market" ? "Mercato" : (kind === "quote" ? "Hanno detto" : "Ultimissima"))),
       title,
       summary: cleanText(row.body).slice(0, 180),
       reliability,
@@ -4643,6 +4644,15 @@ function buildLiveDeskEntries({ news = [], market = [], matches = [] } = {}, lim
   });
 
   const seen = new Set();
+  const coreKindLimit = Math.max(2, Math.ceil(limit / 3));
+  const kindLimits = {
+    official: coreKindLimit,
+    match: coreKindLimit,
+    market: coreKindLimit,
+    quote: Math.max(1, Math.ceil(limit / 5)),
+    news: coreKindLimit
+  };
+  const kindCounts = {};
   return entries
     .filter(item => {
       const timestamp = new Date(item.occurred_at || 0).getTime();
@@ -4655,10 +4665,17 @@ function buildLiveDeskEntries({ news = [], market = [], matches = [] } = {}, lim
     .filter(item => {
       const key = liveDeskKey(item.title);
       if (!key || seen.has(key)) return false;
+      const used = kindCounts[item.kind] || 0;
+      if (used >= (kindLimits[item.kind] || 3)) return false;
       seen.add(key);
+      kindCounts[item.kind] = used + 1;
       return true;
     })
     .slice(0, Math.min(Math.max(Number(limit) || 10, 1), 30));
+}
+
+function isLowValueLiveDeskText(value) {
+  return /membership|abbonament|creator lab|documentario|partnership|cygames|juventus play|lg tv|casa juventus|gallery|bigliett|museum|store|academy|women|femminile|next gen|under [0-9]|u[0-9]{2}/i.test(cleanText(value));
 }
 
 function liveDeskKey(value) {

@@ -223,6 +223,7 @@ async function publicHome(env) {
       news: [],
       market: [],
       matches: [],
+      live_desk: [],
       social: [],
       graphics: DEFAULT_GRAPHICS,
       radar: DEFAULT_RADAR,
@@ -250,10 +251,12 @@ async function publicHome(env) {
     ...publicMarketFromNews(cleanMarketNews),
     ...(market || []),
   ]);
+  const aggregatedMarket = aggregateMarketItems(cleanMarket);
   return json({
     news: cleanNews,
-    market: aggregateMarketItems(cleanMarket),
+    market: aggregatedMarket,
     matches,
+    live_desk: buildLiveDeskEntries({ news: publicNewsRows(news), market: aggregatedMarket, matches }),
     social: publicSocialRows(social),
     graphics: [],
     radar,
@@ -1486,6 +1489,7 @@ async function adminNews(request, env) {
       graphics: DEFAULT_GRAPHICS,
       market: [],
       matches: [],
+      live_desk: [],
       runs: [],
       community_posts: [],
       community_reports: [],
@@ -1515,7 +1519,9 @@ async function adminNews(request, env) {
       safeAdminRead(() => sb(env, "/community_moderation_actions?select=id,action,reason,created_at,target_user_id,post_id,comment_id&order=created_at.desc&limit=100"), []),
       safeAdminRead(() => sb(env, "/community_context_notes?select=id,post_id,news_id,body,source_url,reliability,status,created_at&order=created_at.desc&limit=100"), []),
     ]);
-    return json({ drafts, news, sources, social, market, matches, runs, radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
+    const visibleNews = publicNewsRows(news).filter(item => item.visible !== false);
+    const publicMarket = aggregateMarketItems(publicMarketRows(market));
+    return json({ drafts, news, sources, social, market, matches, live_desk: buildLiveDeskEntries({ news: visibleNews, market: publicMarket, matches }, 20), runs, radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
   }
 
   const body = await readBody(request);
@@ -4568,6 +4574,97 @@ function publicMarketRows(rows) {
   }));
 }
 
+function buildLiveDeskEntries({ news = [], market = [], matches = [] } = {}, limit = 10) {
+  const now = Date.now();
+  const entries = [];
+
+  (news || []).forEach(row => {
+    const title = cleanText(row && row.title);
+    if (!title || row.visible === false) return;
+    const reliability = cleanText(row.reliability).toLowerCase() || "trusted";
+    const editorial = cleanText(row.editorial_status);
+    const category = cleanText(row.category).toLowerCase();
+    const text = cleanText([title, row.body].join(" ")).toLowerCase();
+    const official = reliability === "official" || /^ufficiale$/i.test(editorial) || /juventus\.com|sito ufficiale/i.test(cleanText(row.source));
+    const matchNews = /formazioni|convocati|partita|risultato|finale|pagelle|infortun|allenamento|amichevole|match/i.test(text);
+    const quote = /conferenza|dichiara|ha detto|spalletti:|carnevali:|«|”|"/i.test(title);
+    const kind = official ? "official" : (category === "calciomercato" ? "market" : (matchNews ? "match" : (quote ? "quote" : "news")));
+    entries.push({
+      id: "news-" + row.id,
+      kind,
+      label: official ? "Ufficiale" : (kind === "market" ? "Mercato" : (kind === "match" ? "Campo" : (kind === "quote" ? "Hanno detto" : "Ultimissima"))),
+      title,
+      summary: cleanText(row.body).slice(0, 180),
+      reliability,
+      source: cleanText(row.source || "ICV Scout"),
+      source_url: row.source_url || null,
+      occurred_at: row.created_at || row.updated_at || null,
+      priority: (official ? 100 : 50) + (normalizeUrgency(row.urgency) === "breaking" ? 30 : 0),
+    });
+  });
+
+  (market || []).forEach(row => {
+    const title = cleanText(row.note || row.player_name);
+    if (!title) return;
+    entries.push({
+      id: "market-" + (row.id || liveDeskKey(title)),
+      kind: "market",
+      label: "Mercato",
+      title,
+      summary: cleanText(row.player_name && row.note ? row.player_name : ""),
+      reliability: cleanText(row.reliability).toLowerCase() || "trusted",
+      source: cleanText(row.source_name || "ICV Scout"),
+      source_url: row.source_url || null,
+      occurred_at: row.updated_at || row.created_at || null,
+      priority: 60,
+    });
+  });
+
+  (matches || []).forEach(row => {
+    const status = cleanText(row.status).toLowerCase();
+    const matchTime = new Date(row.match_date || 0).getTime();
+    const closeToKickoff = Number.isFinite(matchTime) && Math.abs(matchTime - now) <= 48 * 3600000;
+    if (!/live|finished|final|in_play|paused/i.test(status) && !closeToKickoff) return;
+    const title = cleanText(row.title || row.opponent || "Match Center");
+    if (!title) return;
+    entries.push({
+      id: "match-" + (row.id || row.match_id || liveDeskKey(title)),
+      kind: "match",
+      label: /live|in_play|paused/i.test(status) ? "Live" : (/finished|final/i.test(status) ? "Finale" : "Match"),
+      title,
+      summary: cleanText(row.summary).slice(0, 180),
+      reliability: "official",
+      source: cleanText(row.competition || "Match Center ICV"),
+      source_url: null,
+      occurred_at: row.updated_at || row.match_date || row.created_at || null,
+      priority: /live|in_play|paused/i.test(status) ? 140 : 110,
+      status,
+    });
+  });
+
+  const seen = new Set();
+  return entries
+    .filter(item => {
+      const timestamp = new Date(item.occurred_at || 0).getTime();
+      return !timestamp || timestamp >= now - 10 * 86400000 || item.kind === "match";
+    })
+    .sort((a, b) => {
+      const dateDiff = new Date(b.occurred_at || 0) - new Date(a.occurred_at || 0);
+      return dateDiff || b.priority - a.priority;
+    })
+    .filter(item => {
+      const key = liveDeskKey(item.title);
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, Math.min(Math.max(Number(limit) || 10, 1), 30));
+}
+
+function liveDeskKey(value) {
+  return cleanText(value).toLowerCase().replace(/[^a-z0-9à-ÿ]+/gi, " ").trim().split(" ").filter(word => word.length > 2).slice(0, 10).join(" ");
+}
+
 function publicSocialRows(rows) {
   const seen = new Set();
   const realPosts = (rows || []).filter(s => /instagram\.com\/(p|reel)\//.test(String(s.post_url || "")));
@@ -4838,4 +4935,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { parseJuventusOfficialPage };
+export { buildLiveDeskEntries, parseJuventusOfficialPage };

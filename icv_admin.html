@@ -21,6 +21,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 .grid{display:block}.grid>div,.grid>aside{display:contents}.card{background:var(--d2);border:1px solid var(--bdr);border-radius:10px;padding:16px;margin-bottom:14px}.card h2{font-family:"Bebas Neue";font-size:28px;letter-spacing:2px;margin-bottom:12px}.admin-panel{display:none}.admin-panel.active{display:block}.form{display:grid;gap:10px}.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}label{font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:2px;color:var(--gold-l);text-transform:uppercase}input,textarea,select{width:100%;background:var(--d3);border:1px solid var(--bdr2);border-radius:7px;color:var(--white);padding:11px 12px;font-family:Barlow,sans-serif;font-size:14px;outline:none}textarea{min-height:96px;resize:vertical;line-height:1.55}
 .tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}.tab{background:transparent;border:1px solid var(--bdr2);color:var(--t3);font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:8px 10px;border-radius:5px;cursor:pointer}.tab.active{color:var(--gold-l);border-color:rgba(196,150,42,.4);background:rgba(196,150,42,.08)}
 .item{border:1px solid var(--bdr2);border-radius:8px;padding:13px;margin-bottom:10px;background:rgba(255,255,255,.025)}.item-head{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px}.item h3{font-family:"Barlow Condensed";font-size:18px;line-height:1.2}.item p{color:var(--t2);font-size:14px;line-height:1.55;margin:8px 0}.meta{font-family:"Barlow Condensed";font-size:11px;letter-spacing:1.5px;color:var(--t3);text-transform:uppercase}.econ-context{display:inline-flex;gap:6px;align-items:center;margin-top:8px;border:1px solid rgba(196,150,42,.24);border-radius:999px;background:rgba(196,150,42,.08);padding:5px 8px;font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold-l)}.pill{display:inline-block;border-radius:3px;padding:3px 7px;font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;margin-right:5px}.official{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.25)}.trusted{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.25)}.rumor{background:rgba(245,158,11,.1);color:var(--orange);border:1px solid rgba(245,158,11,.25)}.aggregator{background:rgba(248,113,113,.08);color:var(--red);border:1px solid rgba(248,113,113,.22)}.blacklist{background:rgba(148,163,184,.08);color:var(--t3);border:1px solid rgba(148,163,184,.22)}
+.live-admin-row{display:grid;grid-template-columns:90px minmax(0,1fr);gap:14px;align-items:start}.live-admin-time{font-family:"Bebas Neue";font-size:20px;color:var(--gold-l);letter-spacing:1px}.live-admin-row h3 a{color:inherit;text-decoration:none}.live-admin-row h3 a:hover{color:var(--gold-l)}
 .item-actions{display:flex;gap:6px;flex-wrap:wrap}.small{padding:7px 9px;font-size:11px}.empty{padding:24px;text-align:center;color:var(--t3);font-family:"Barlow Condensed";letter-spacing:1px;border:1px dashed var(--bdr2);border-radius:8px}.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);opacity:0;z-index:50;background:rgba(196,150,42,.96);color:#050505;border-radius:7px;padding:11px 18px;font-family:"Barlow Condensed";font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;transition:.2s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .graphic-preview{min-height:190px;border:1px dashed var(--bdr);border-radius:9px;background:rgba(255,255,255,.025);display:flex;align-items:center;justify-content:center;color:var(--t3);font-family:"Barlow Condensed";font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;overflow:hidden}
 .graphic-preview img{display:block;width:100%;max-height:320px;object-fit:contain;background:#0b0b0b}
@@ -77,6 +78,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 
     <nav class="admin-nav" id="adminNav">
       <button class="active" data-tab="drafts" onclick="setAdminTab('drafts',this)">Da approvare</button>
+      <button data-tab="live" onclick="setAdminTab('live',this)">Live Desk</button>
       <button data-tab="published" onclick="setAdminTab('published',this)">Pubblicate</button>
       <button data-tab="market" onclick="setAdminTab('market',this)">Mercato</button>
       <button data-tab="social" onclick="setAdminTab('social',this)">Social</button>
@@ -103,6 +105,11 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         <div class="card admin-panel" data-panel="published">
           <h2>News Pubblicate</h2>
           <div id="newsList"></div>
+        </div>
+
+        <div class="card admin-panel" data-panel="live">
+          <div class="item-head"><div><h2>ICV Live Desk</h2><div class="meta">Timeline generata automaticamente da news, mercato e Match Center</div></div><button class="ghost small" onclick="runAutomation('fetch_news')">Aggiorna</button></div>
+          <div id="liveDeskList"></div>
         </div>
 
         <div class="card admin-panel" data-panel="community">
@@ -196,7 +203,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 <div class="toast" id="toast"></div>
 
 <script>
-var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], runs: [], communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], analytics: null, filter: "all", adminTab: "drafts" };
+var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], liveDesk: [], runs: [], communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], analytics: null, filter: "all", adminTab: "drafts" };
 var OFFICIAL_SERIE_A_CALENDAR = {
   season: "Serie A 2026/27",
   title: "Calendario Juventus 2026/27 ufficiale",
@@ -249,6 +256,7 @@ function load(){
     state.graphics = data.graphics || [];
     state.market = data.market || [];
     state.matches = data.matches || [];
+    state.liveDesk = data.live_desk || [];
     state.runs = data.runs || [];
     state.communityPosts = data.community_posts || [];
     state.communityReports = data.community_reports || [];
@@ -418,7 +426,7 @@ function render(){
   document.getElementById("stNews").textContent = state.news.filter(function(n){ return n.visible; }).length;
   document.getElementById("stMarket").textContent = state.market.length;
   document.getElementById("stSocial").textContent = state.social.length;
-  renderAutomationStatus(); renderAdminAlerts(); renderDrafts(); renderNews(); renderSources(); renderMarket(); renderMatches(); renderSocial(); renderGraphics(); renderCommunity();
+  renderAutomationStatus(); renderAdminAlerts(); renderLiveDesk(); renderDrafts(); renderNews(); renderSources(); renderMarket(); renderMatches(); renderSocial(); renderGraphics(); renderCommunity();
 }
 function renderAutomationStatus(){
   var box = document.getElementById("automationStatus");
@@ -565,6 +573,21 @@ function capologyHtml(title){
   var ctx = capologyContext(title);
   if(!ctx) return "";
   return "<span class='econ-context'>Capology · "+esc(ctx)+" · dato stimato</span>";
+}
+function renderLiveDesk(){
+  var list = document.getElementById("liveDeskList");
+  if(!list) return;
+  if(!state.liveDesk.length){ list.innerHTML = "<div class='empty'>Il Live Desk si popola al prossimo aggiornamento automatico.</div>"; return; }
+  list.innerHTML = state.liveDesk.map(function(item){
+    var link = /^https?:\/\//i.test(item.source_url || "") ? "<a href='"+escAttr(item.source_url)+"' target='_blank' rel='noopener'>"+esc(item.title || "Aggiornamento ICV")+"</a>" : esc(item.title || "Aggiornamento ICV");
+    var tone = item.kind === "official" ? "official" : (item.reliability === "rumor" ? "rumor" : "trusted");
+    return "<div class='item live-admin-row'><div><div class='live-admin-time'>"+esc(liveDeskAdminTime(item.occurred_at))+"</div><span class='pill "+tone+"'>"+esc(item.label || "News")+"</span></div><div><h3>"+link+"</h3>"+(item.summary ? "<p>"+esc(item.summary)+"</p>" : "")+"<div class='meta'>"+esc(item.source || "ICV Scout")+" · "+esc(item.reliability || "trusted")+"</div></div></div>";
+  }).join("");
+}
+function liveDeskAdminTime(value){
+  if(!value) return "ORA";
+  var d = new Date(value);
+  return isNaN(d.getTime()) ? "ORA" : d.toLocaleDateString("it-IT",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
 }
 function renderMarket(){
   var list = document.getElementById("marketList");

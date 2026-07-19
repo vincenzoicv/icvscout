@@ -238,3 +238,24 @@ test("la sezione News viene popolata anche aprendo direttamente il deep link", a
   assert.match(html, /loadHomeGraphics\(\);\s*loadAndRenderNews\(\);/);
   assert.match(html, /grid\.dataset\.loading === "true"/);
 });
+
+test("il Live Desk unifica automaticamente news, mercato e Match Center", async () => {
+  const [home, admin, api] = await Promise.all([
+    read("index.html"), read("icv_admin.html"), read("functions/api/[[path]].js"),
+  ]);
+  assert.match(home, /id="homeLiveDesk"/);
+  assert.match(home, /function renderLiveDesk/);
+  assert.match(admin, /data-tab="live"/);
+  assert.match(admin, /function renderLiveDesk/);
+  assert.match(api, /live_desk: buildLiveDeskEntries/);
+
+  const { buildLiveDeskEntries } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  const now = new Date().toISOString();
+  const rows = buildLiveDeskEntries({
+    news: [{ id: 1, title: "Ufficiale | Nuovo giocatore della Juventus", source: "Juventus.com", reliability: "official", visible: true, created_at: now }],
+    market: [{ id: 2, player_name: "Mario Rossi", note: "Contatti avviati per Mario Rossi", source_name: "Sky Sport", reliability: "trusted", updated_at: now }],
+    matches: [{ id: 3, title: "Basilea-Juventus 0-0", status: "finished", summary: "Finale", competition: "Amichevole", updated_at: now }],
+  });
+  assert.deepEqual(rows.map(row => row.kind).sort(), ["market", "match", "official"]);
+  assert.equal(rows.find(row => row.kind === "official").label, "Ufficiale");
+});

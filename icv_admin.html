@@ -206,6 +206,12 @@ var OFFICIAL_SERIE_A_CALENDAR = {
 };
 
 function token(){ return sessionStorage.getItem("icv_admin_token") || ""; }
+function markInternalTraffic(){
+  var cookie = "icv_internal_traffic=1; Path=/; Max-Age=31536000; SameSite=Lax";
+  if(location.protocol === "https:") cookie += "; Secure";
+  if(/(^|\.)ilcalciodivince\.com$/i.test(location.hostname)) cookie += "; Domain=.ilcalciodivince.com";
+  document.cookie = cookie;
+}
 function api(path, options){
   options = options || {};
   return fetch(path, {
@@ -225,6 +231,7 @@ function login(){
   var typedToken = document.getElementById("tokenInput").value.trim();
   if (typedToken) sessionStorage.setItem("icv_admin_token", typedToken);
   load().then(function(){
+    markInternalTraffic();
     document.getElementById("login").style.display = "none";
     document.getElementById("panel").style.display = "block";
   }).catch(function(err){

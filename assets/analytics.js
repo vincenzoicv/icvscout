@@ -1,6 +1,7 @@
 (function(){
   "use strict";
   var endpoint = "/api/analytics";
+  var internalTrafficCookie = "icv_internal_traffic";
   var allowed = new Set(["page_view","navigation","outbound_click","community_post","community_comment","community_reaction","community_repost","community_save","community_follow","community_report","community_match_message","quiz_result","newsletter_subscribe"]);
   var routeEvents = [
     [/^\/api\/community\/posts$/,"community_post"],
@@ -49,13 +50,16 @@
     try{ ref=document.referrer?new URL(document.referrer).hostname.replace(/^www\./,"").slice(0,120):""; }catch(e){}
     return {event_name:name,session_id:sessionId(),path:location.pathname.slice(0,240)||"/",page_type:pageType(location.pathname),source:source(),referrer_host:ref,campaign:(query.get("utm_campaign")||"").slice(0,100),metadata:meta||{}};
   }
+  function isInternalTraffic(){
+    return document.cookie.split(";").some(function(part){ return part.trim()===internalTrafficCookie+"=1"; });
+  }
   function track(name,meta){
-    if(!allowed.has(name)||navigator.doNotTrack==="1") return;
+    if(!allowed.has(name)||navigator.doNotTrack==="1"||isInternalTraffic()) return;
     var body=JSON.stringify(payload(name,meta));
     if(navigator.sendBeacon){ navigator.sendBeacon(endpoint,new Blob([body],{type:"application/json"})); return; }
     fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:body,keepalive:true}).catch(function(){});
   }
-  window.ICVAnalytics={track:track};
+  window.ICVAnalytics={track:track,isInternalTraffic:isInternalTraffic};
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){track("page_view")},{once:true}); else track("page_view");
   document.addEventListener("click",function(event){
     var el=event.target.closest("a[href],[data-analytics-event]"); if(!el) return;

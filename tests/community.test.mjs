@@ -176,6 +176,9 @@ test("ICV Analytics raccoglie dati anonimi e li mostra nell'admin", async () => 
   assert.match(tracker, /sessionStorage/);
   assert.doesNotMatch(tracker, /localStorage/);
   assert.match(tracker, /navigator\.doNotTrack/);
+  assert.match(tracker, /icv_internal_traffic/);
+  assert.match(tracker, /isInternalTraffic\(\)/);
+  assert.match(admin, /markInternalTraffic/);
   assert.match(api, /path === "analytics"/);
   assert.match(api, /path === "admin\/analytics"/);
   assert.match(api, /analyticsSummary/);

@@ -25,7 +25,6 @@
   function pageType(path){
     if(/^\/community(?:\/|$)/.test(path)) return "community";
     if(/^\/quiz/.test(path)) return "quiz";
-    if(/^\/mondiali|^\/agenda/.test(path)) return "mondiali";
     if(/^\/mercato/.test(path)) return "mercato";
     if(/^\/grafiche/.test(path)) return "grafiche";
     return path==="/"||path==="/index.html"?"home":"site";

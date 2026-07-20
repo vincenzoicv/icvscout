@@ -313,3 +313,22 @@ test("Fetch News mostra cosa ha trovato e usa una fonte Juventus aggiornata", as
   assert.match(admin, /Gia pubblicata/);
   assert.match(admin, /state\.latestFetch = res/);
 });
+
+test("la sezione Mondiali conclusa non compare piu nel sito pubblico", async () => {
+  const [home, mercato, grafiche, quiz, sitemap, redirects, worker] = await Promise.all([
+    read("index.html"),
+    read("mercato.html"),
+    read("grafiche.html"),
+    read("quiz.html"),
+    read("sitemap.xml"),
+    read("_redirects"),
+    read("sw.js"),
+  ]);
+  for (const page of [home, mercato, grafiche, quiz]) {
+    assert.doesNotMatch(page, /href=["']\/mondiali|location\.href=["']\/mondiali/);
+  }
+  assert.doesNotMatch(sitemap, /\/mondiali|\/agenda/);
+  assert.match(redirects, /^\/mondiali \/ 301$/m);
+  assert.match(redirects, /^\/agenda \/ 301$/m);
+  assert.doesNotMatch(worker, /mondiali\.html|mondiali\.js|agenda\.html/);
+});

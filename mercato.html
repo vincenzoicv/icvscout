@@ -48,12 +48,13 @@ body.light nav a,body.light button.mode{background:rgba(255,255,255,.52);color:r
 body.light nav a:hover,body.light nav a.active,body.light button.mode:hover{color:#8B6520;background:rgba(255,255,255,.78)}
 main{max-width:1180px;margin:0 auto;padding:58px 20px 80px}
 .hero{margin-bottom:26px}.eyebrow{font-family:"Barlow Condensed";font-size:13px;font-weight:900;letter-spacing:4px;text-transform:uppercase;color:var(--gold-l);margin-bottom:10px}.hero h1{font-family:"Bebas Neue";font-size:clamp(72px,12vw,150px);letter-spacing:4px;line-height:.82}.bar{width:54px;height:2px;background:var(--gold-l);margin-top:22px}
-.grid{display:grid;grid-template-columns:1fr;gap:14px}
-.group{background:var(--d2);border:1px solid var(--bdr);border-radius:14px;padding:16px;min-height:180px}.group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid var(--bdr2);padding-bottom:12px;margin-bottom:8px}.group-title{font-family:"Barlow Condensed";font-size:13px;font-weight:900;letter-spacing:3px;text-transform:uppercase;color:var(--gold-l)}.group-count{font-family:"Bebas Neue";font-size:34px;color:var(--gold-l);line-height:1}
-.item{display:grid;grid-template-columns:36px 1fr;gap:11px;align-items:start;padding:14px 0;border-bottom:1px solid var(--bdr2)}.item:last-child{border-bottom:none}.avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--d3);border:1px solid var(--bdr2);font-family:"Bebas Neue";font-size:13px;color:var(--t2)}.item h3{font-family:"Barlow Condensed";font-size:20px;font-weight:900;line-height:1.05;color:var(--white);margin-bottom:4px}.item p{font-size:14px;line-height:1.42;color:var(--t2);max-width:760px}.meta{font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-top:6px}.econ-context{display:inline-flex;gap:6px;align-items:center;margin-top:8px;border:1px solid rgba(196,150,42,.24);border-radius:999px;background:rgba(196,150,42,.08);padding:5px 8px;font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold-l)}
+.board-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px}.board-title{font-family:"Bebas Neue";font-size:34px;letter-spacing:2px}.board-updated{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)}
+.board-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.filter-btn{display:inline-flex;align-items:center;gap:8px;min-height:38px;border:1px solid var(--bdr2);border-radius:6px;background:rgba(255,255,255,.04);color:var(--t2);padding:8px 12px;font-family:"Barlow Condensed";font-size:12px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer}.filter-btn span{min-width:20px;border-radius:999px;background:var(--d3);padding:2px 6px;color:var(--t3);text-align:center}.filter-btn:hover,.filter-btn.active{border-color:rgba(196,150,42,.45);background:rgba(196,150,42,.12);color:var(--gold-l)}.filter-btn.active span{background:var(--gold);color:#080808}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.deal-card{position:relative;min-height:240px;background:linear-gradient(145deg,rgba(255,255,255,.035),transparent 50%),var(--d2);border:1px solid var(--bdr2);border-top:2px solid var(--stage,var(--gold));border-radius:8px;padding:16px;display:flex;flex-direction:column;transition:transform .2s ease,border-color .2s ease}.deal-card:hover{transform:translateY(-2px);border-color:rgba(196,150,42,.34)}.deal-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px}.direction{font-family:"Barlow Condensed";font-size:11px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase;color:var(--t3)}.stage{border:1px solid var(--stage);border-radius:999px;background:rgba(255,255,255,.04);padding:5px 8px;color:var(--stage);font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase}.deal-main{display:grid;grid-template-columns:42px 1fr;gap:12px}.avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--d3);border:1px solid var(--bdr2);font-family:"Bebas Neue";font-size:16px;color:var(--gold-l)}.deal-card h3{font-family:"Barlow Condensed";font-size:25px;font-weight:900;line-height:1;color:var(--white);margin:1px 0 6px}.deal-card p{font-size:13px;line-height:1.45;color:var(--t2);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.deal-meta{margin-top:auto;padding-top:16px}.source-line{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--bdr2);padding-top:12px;font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--t3)}.source-line a{color:var(--gold-l);text-decoration:none}.confidence{display:flex;gap:3px}.confidence i{display:block;width:12px;height:3px;border-radius:2px;background:var(--bdr2)}.confidence i.on{background:var(--stage)}.econ-context{display:inline-flex;margin-top:9px;border:1px solid rgba(196,150,42,.24);border-radius:999px;background:rgba(196,150,42,.08);padding:5px 8px;font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:var(--gold-l)}
 .empty{border:1px dashed var(--bdr2);border-radius:12px;background:rgba(255,255,255,.025);padding:34px 20px;text-align:center;color:var(--t3);font-family:"Barlow Condensed";font-size:15px;letter-spacing:2px;text-transform:uppercase}
 footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-family:"Barlow Condensed";font-size:11px;letter-spacing:2px;text-transform:uppercase;display:flex;justify-content:space-between;gap:12px}
-@media(max-width:840px){header{height:auto;min-height:62px;padding:12px 14px;gap:12px;align-items:flex-start}nav{flex-wrap:wrap;justify-content:flex-end}.grid{grid-template-columns:1fr}main{padding:36px 14px 64px}.item{grid-template-columns:34px 1fr}.hero h1{font-size:76px}footer{flex-direction:column}}
+@media(max-width:940px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){header{height:auto;min-height:62px;padding:12px 14px;gap:12px;align-items:flex-start}nav{flex-wrap:wrap;justify-content:flex-end}.grid{grid-template-columns:1fr}main{padding:36px 14px 64px}.hero h1{font-size:76px}.board-head{align-items:flex-start;flex-direction:column;gap:5px}.filter-btn{flex:1;justify-content:center;min-width:calc(50% - 4px)}footer{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -76,7 +77,12 @@ footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-fa
     <div class="bar"></div>
   </section>
 
-  <section class="grid" id="marketGroups">
+  <div class="board-head">
+    <div><div class="eyebrow">ICV Market Intelligence</div><h2 class="board-title">Mercato Board</h2></div>
+    <div class="board-updated" id="boardUpdated">Aggiornamento in corso</div>
+  </div>
+  <div class="board-filters" id="boardFilters" aria-label="Filtra trattative"></div>
+  <section class="grid" id="marketGroups" aria-live="polite">
     <div class="empty" style="grid-column:1/-1">Caricamento mercato</div>
   </section>
 </main>
@@ -118,12 +124,34 @@ function capologyHtml(title){
   if(!ctx) return "";
   return "<span class='econ-context'>Capology · "+esc(ctx)+" · dato stimato</span>";
 }
+var DIRECTION_LABELS={all:"Tutte",incoming:"Entrata",outgoing:"Uscita",renewal:"Rinnovi",scenario:"Scenario"};
+var STAGE_LABELS={official:"Ufficiale",advanced:"Fase avanzata",negotiation:"Trattativa",interest:"Interesse",stalled:"Frenata"};
+var STAGE_COLORS={official:"#4ade80",advanced:"#e8b84b",negotiation:"#60a5fa",interest:"#a78bfa",stalled:"#f87171"};
+var activeDirection="all";
+function dealDirection(item){
+  if(item.direction) return item.direction;
+  var text=textOf(item);
+  if(/rinnovo|prolungamento|nuovo contratto/.test(text)) return "renewal";
+  if(/cessione|partenza|in uscita|addio|trasfer|va al |vendita/.test(text)) return "outgoing";
+  return "incoming";
+}
+function dealStage(item){return item.deal_stage || (String(item.status||"").toLowerCase().indexOf("ufficial")>=0?"official":"interest");}
+function confidenceBars(item){
+  var level={low:1,medium:2,high:3,official:3}[item.confidence] || (item.reliability==="trusted"?2:1);
+  return "<span class='confidence' title='Affidabilita della trattativa'>"+[1,2,3].map(function(n){return "<i class='"+(n<=level?"on":"")+"'></i>";}).join("")+"</span>";
+}
+function shortDate(value){
+  var d=new Date(value||0); if(isNaN(d.getTime())) return "Ora";
+  return d.toLocaleDateString("it-IT",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+}
 function itemHtml(item){
   var title = displayTitle(item);
   var note = item.note || title;
   var source = item.source_name || "ICV";
-  var sourceLabel = Number(item.source_count || 0) > 1 ? item.source_count + " fonti: " + source : source;
-  return "<article class='item'><div class='avatar'>"+esc(initials(title))+"</div><div><h3>"+esc(title)+"</h3><p>"+esc(note)+"</p><div class='meta'>"+esc(sourceLabel)+"</div>"+capologyHtml(title)+"</div></article>";
+  var sourceLabel = Number(item.source_count || 0) > 1 ? item.source_count + " fonti" : source;
+  var direction=dealDirection(item),stage=dealStage(item),color=STAGE_COLORS[stage]||STAGE_COLORS.interest;
+  var sourceLink=item.source_url?"<a href='"+esc(item.source_url)+"' target='_blank' rel='noopener'>"+esc(sourceLabel)+"</a>":esc(sourceLabel);
+  return "<article class='deal-card' style='--stage:"+color+"' data-direction='"+esc(direction)+"'><div class='deal-top'><span class='direction'>"+esc(DIRECTION_LABELS[direction]||"Scenario")+"</span><span class='stage'>"+esc(STAGE_LABELS[stage]||"Monitorata")+"</span></div><div class='deal-main'><div class='avatar'>"+esc(initials(title))+"</div><div><h3>"+esc(title)+"</h3><p>"+esc(note)+"</p></div></div><div class='deal-meta'>"+capologyHtml(title)+"<div class='source-line'><span>"+sourceLink+" · "+esc(shortDate(item.updated_at))+"</span>"+confidenceBars(item)+"</div></div></article>";
 }
 function displayTitle(item){
   var raw = String(item.player_name || "").trim();
@@ -135,9 +163,21 @@ function displayTitle(item){
   if (/^marzio$|^di marzio$/i.test(raw)) return "Punto mercato";
   return raw || "Mercato Juve";
 }
+function renderFilters(rows){
+  var keys=["all","incoming","outgoing","renewal","scenario"];
+  document.getElementById("boardFilters").innerHTML=keys.map(function(key){
+    var count=key==="all"?rows.length:rows.filter(function(row){return dealDirection(row)===key;}).length;
+    if(key!=="all"&&!count) return "";
+    return "<button class='filter-btn "+(activeDirection===key?"active":"")+"' type='button' onclick=\"setDirection('"+key+"')\">"+DIRECTION_LABELS[key]+" <span>"+count+"</span></button>";
+  }).join("");
+}
+function setDirection(direction){activeDirection=direction;renderTopics(allRows);}
 function renderTopics(rows){
-  var body = rows.length ? rows.slice(0,12).map(itemHtml).join("") : "<div class='empty'>Nessun tema mercato disponibile</div>";
-  document.getElementById("marketGroups").innerHTML = "<section class='group'><div class='group-head'><div class='group-title'>Temi mercato</div><div class='group-count'>"+rows.length+"</div></div>"+body+"</section>";
+  renderFilters(rows);
+  var filtered=activeDirection==="all"?rows:rows.filter(function(row){return dealDirection(row)===activeDirection;});
+  document.getElementById("marketGroups").innerHTML = filtered.length ? filtered.slice(0,18).map(itemHtml).join("") : "<div class='empty' style='grid-column:1/-1'>Nessuna trattativa in questa categoria</div>";
+  var latest=rows.reduce(function(value,row){return new Date(row.updated_at||0)>new Date(value||0)?row.updated_at:value;},null);
+  document.getElementById("boardUpdated").textContent=rows.length?(rows.length+" trattative · aggiornato "+shortDate(latest)):"Nessuna trattativa disponibile";
 }
 var allRows = [];
 function loadMarket(){

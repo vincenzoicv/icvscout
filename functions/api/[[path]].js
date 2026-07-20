@@ -3855,7 +3855,41 @@ function aggregateMarketItems(rows) {
       existing.updated_at = row.updated_at;
     }
   }
-  return Array.from(byTopic.values()).sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0));
+  return Array.from(byTopic.values())
+    .map(row => ({ ...row, ...marketDealMetadata(row) }))
+    .sort((a, b) => {
+      const stageDiff = marketStageRank(b.deal_stage) - marketStageRank(a.deal_stage);
+      if (stageDiff) return stageDiff;
+      return new Date(b.updated_at || 0) - new Date(a.updated_at || 0);
+    });
+}
+
+function marketDealMetadata(row) {
+  const text = cleanText([row && row.player_name, row && row.note, row && row.status].join(" ")).toLowerCase();
+  const reliability = cleanText(row && row.reliability).toLowerCase();
+  let direction = "incoming";
+  if (/rinnovo|prolungamento|adeguamento|nuovo contratto/.test(text)) direction = "renewal";
+  else if (/cessione|cedut|partenza|in uscita|lascia la juve|addio|trasfer(?:imento|isce)|va al |vendita|plusvalenza/.test(text)) direction = "outgoing";
+  else if (/alternativ|scenario|piano b|possibili nomi|lista dei nomi|opzione per il futuro/.test(text)) direction = "scenario";
+
+  let dealStage = "interest";
+  if (/ufficial|comunicato|depositato|firma(?:to|ta)?|e un nuovo giocatore|è un nuovo giocatore/.test(text) || reliability === "official") dealStage = "official";
+  else if (/saltat|tramont|sfumat|stop alla pista|non convince|rifiutat|lontan|frenata|bloccata/.test(text)) dealStage = "stalled";
+  else if (/visite mediche|accordo (?:trovato|totale)|fatta|chiusura|in dirittura|ultimi dettagli|ore decisive|vicinissimo/.test(text)) dealStage = "advanced";
+  else if (/offerta|trattativa|negoziat|rilancio|contatti? (?:avviati|in corso)|dialogo aperto/.test(text)) dealStage = "negotiation";
+  else if (/sondaggio|monitor|interesse|nel mirino|obiettivo|idea|ipotesi|profilo/.test(text)) dealStage = "interest";
+
+  const sourceCount = Math.max(Number(row && row.source_count || 0), splitSourceNames(row && row.source_name).length, 1);
+  let confidence = "low";
+  if (dealStage === "official" || reliability === "official") confidence = "official";
+  else if (reliability === "trusted" && sourceCount > 1) confidence = "high";
+  else if (reliability === "trusted" || sourceCount > 1) confidence = "medium";
+
+  return { direction, deal_stage: dealStage, confidence, source_count: sourceCount };
+}
+
+function marketStageRank(stage) {
+  return { official: 6, advanced: 5, negotiation: 4, interest: 3, stalled: 2 }[stage] || 1;
 }
 
 function marketTopicName(row) {
@@ -4980,4 +5014,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { buildLiveDeskEntries, parseJuventusOfficialPage };
+export { buildLiveDeskEntries, marketDealMetadata, parseJuventusOfficialPage };

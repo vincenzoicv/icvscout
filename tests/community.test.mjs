@@ -18,12 +18,45 @@ test("la home distingue risultati e prossime amichevoli", async () => {
 });
 
 test("gli script delle pagine principali hanno sintassi valida", async () => {
-  for (const file of ["community.html", "icv_admin.html"]) {
+  for (const file of ["community.html", "icv_admin.html", "mercato.html"]) {
     const html = await read(file);
     const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(match => match[1]).filter(Boolean);
     assert.ok(scripts.length, `${file} deve contenere JavaScript inline`);
     for (const script of scripts) new Function(script);
   }
+});
+
+test("Mercato Board classifica e filtra le trattative raccolte", async () => {
+  const [page, api] = await Promise.all([
+    read("mercato.html"),
+    read("functions/api/[[path]].js"),
+  ]);
+  for (const marker of ["Mercato Board", "boardFilters", "setDirection", "deal-card", "Fase avanzata"]) {
+    assert.ok(page.includes(marker), `manca ${marker}`);
+  }
+  for (const marker of ["marketDealMetadata", "deal_stage", "confidence", "marketStageRank"]) {
+    assert.ok(api.includes(marker), `manca ${marker}`);
+  }
+
+  const { marketDealMetadata } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  assert.deepEqual(marketDealMetadata({
+    player_name: "Vicario",
+    note: "Juventus, per la porta risalgono le quotazioni di Vicario",
+    reliability: "trusted",
+    source_name: "Gianluca Di Marzio",
+  }), { direction: "incoming", deal_stage: "interest", confidence: "medium", source_count: 1 });
+  assert.equal(marketDealMetadata({
+    player_name: "Muharemovic",
+    note: "Muharemovic va al Leeds e porta una plusvalenza",
+    reliability: "trusted",
+    source_name: "La Gazzetta dello Sport",
+  }).direction, "outgoing");
+  assert.equal(marketDealMetadata({
+    player_name: "Kolo Muani",
+    note: "Tre possibili alternative a Kolo Muani",
+    reliability: "trusted",
+    source_name: "Sky Sport, Gianluca Di Marzio",
+  }).direction, "scenario");
 });
 
 test("la Community espone le funzioni finali di lancio", async () => {

@@ -49,6 +49,12 @@ const DEFAULT_SOURCES = [
     reliability: "trusted",
   },
   {
+    name: "JuventusNews24",
+    url: "https://www.juventusnews24.com/feed/",
+    category: "juventus",
+    reliability: "aggregator",
+  },
+  {
     name: "Google News mercato",
     url: "https://news.google.com/rss/search?q=Juventus%20calciomercato&hl=it&gl=IT&ceid=IT:it",
     category: "calciomercato",
@@ -1909,6 +1915,7 @@ async function fetchNewsDrafts(env, sources) {
   let skippedBlacklisted = 0;
   const errors = [];
   const sourcesReport = [];
+  const discoveries = [];
   const recentNews = await recentNewsRows(env);
   const recentDrafts = await recentDraftRows(env);
   const romanoCleanup = await cleanupFabrizioRows(env, recentNews, recentDrafts);
@@ -1956,7 +1963,8 @@ async function fetchNewsDrafts(env, sources) {
 
         const existingNews = findExistingNewsInRows(recentNews, candidate);
         if (existingNews) {
-          if (await updateExistingNewsFromCandidate(env, existingNews, candidate)) {
+          const wasUpdated = await updateExistingNewsFromCandidate(env, existingNews, candidate);
+          if (wasUpdated) {
             Object.assign(existingNews, {
               body: candidate.body && candidate.body.length > String(existingNews.body || "").length ? candidate.body : existingNews.body,
               source: mergeSourceNames(existingNews.source, candidate.sourceName),
@@ -1968,6 +1976,7 @@ async function fetchNewsDrafts(env, sources) {
             updated++;
             report.updated++;
           }
+          addFetchDiscovery(discoveries, candidate, wasUpdated ? "updated" : "published_duplicate");
           skippedDuplicates++;
           report.skipped_duplicates++;
           continue;
@@ -1990,6 +1999,7 @@ async function fetchNewsDrafts(env, sources) {
             updated++;
             report.updated++;
           }
+          addFetchDiscovery(discoveries, candidate, existingDraft.review_status === "approved" ? "auto_published" : (promotedDraft.review_status === "ready" ? "draft_ready" : "draft_duplicate"));
           skippedDuplicates++;
           report.skipped_duplicates++;
           continue;
@@ -2000,6 +2010,7 @@ async function fetchNewsDrafts(env, sources) {
         const reviewStatus = shouldPublish ? "ready" : reviewStatusForReliability(reliability, trustedConfirmation);
         const existingDraftByHash = await sb(env, "/news_drafts?content_hash=eq." + encodeURIComponent(hash) + "&select=id&limit=1");
         if (existingDraftByHash.length) {
+          addFetchDiscovery(discoveries, candidate, "draft_duplicate");
           skippedDuplicates++;
           report.skipped_duplicates++;
           continue;
@@ -2042,6 +2053,7 @@ async function fetchNewsDrafts(env, sources) {
         if (draft) recentDrafts.unshift(draft);
         inserted++;
         report.inserted++;
+        let autoPublished = false;
         if (shouldPublish) {
           const news = await publishDraftAsNews(env, draft, { skipExistingCheck: true });
           if (news) {
@@ -2050,8 +2062,10 @@ async function fetchNewsDrafts(env, sources) {
             draft.review_status = "approved";
             published++;
             report.published++;
+            autoPublished = true;
           }
         }
+        addFetchDiscovery(discoveries, candidate, autoPublished ? "auto_published" : "new_draft");
       }
     } catch (err) {
       if (isTransientFetchError(err)) {
@@ -2065,7 +2079,24 @@ async function fetchNewsDrafts(env, sources) {
     }
   }
 
-  return { ok: true, scanned, inserted, published, updated, skipped_duplicates: skippedDuplicates, skipped_blacklisted: skippedBlacklisted, errors, sources_report: sourcesReport, romano_cleanup: romanoCleanup };
+  return { ok: true, scanned, inserted, published, updated, skipped_duplicates: skippedDuplicates, skipped_blacklisted: skippedBlacklisted, errors, sources_report: sourcesReport, discoveries, romano_cleanup: romanoCleanup };
+}
+
+function addFetchDiscovery(rows, candidate, outcome) {
+  if (!Array.isArray(rows) || !candidate) return;
+  if (rows.length >= 30) {
+    if (outcome === "published_duplicate" || outcome === "draft_duplicate") return;
+    const duplicateIndex = rows.findIndex(row => row.outcome === "published_duplicate" || row.outcome === "draft_duplicate");
+    if (duplicateIndex < 0) return;
+    rows.splice(duplicateIndex, 1);
+  }
+  rows.push({
+    title: cleanText(candidate.title),
+    source: cleanText(candidate.sourceName),
+    source_url: candidate.sourceUrl || null,
+    reliability: cleanText(candidate.reliability) || "aggregator",
+    outcome,
+  });
 }
 
 async function generateMarketDrafts(env, sources, options = {}) {
@@ -3536,6 +3567,7 @@ function isJuventusOfficialHomepage(url) {
 function itemScanLimitForSource(source) {
   if (isTelegramWebSource(source && source.url)) return 32;
   if (isJuventusOfficialHomepage(source && source.url)) return 10;
+  if (/juventusnews24\.com/i.test(String(source && source.url || ""))) return 8;
   return 18;
 }
 

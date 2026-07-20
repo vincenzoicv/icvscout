@@ -100,6 +100,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
             <button class="tab" onclick="setFilter('aggregator',this)">Aggregatori</button>
           </div>
           <div id="draftList"></div>
+          <div id="fetchResults" style="margin-top:16px"></div>
         </div>
 
         <div class="card admin-panel" data-panel="published">
@@ -203,7 +204,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 <div class="toast" id="toast"></div>
 
 <script>
-var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], liveDesk: [], runs: [], communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], analytics: null, filter: "all", adminTab: "drafts" };
+var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], liveDesk: [], runs: [], communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], analytics: null, latestFetch: null, filter: "all", adminTab: "drafts" };
 var OFFICIAL_SERIE_A_CALENDAR = {
   season: "Serie A 2026/27",
   title: "Calendario Juventus 2026/27 ufficiale",
@@ -270,7 +271,11 @@ function load(){
 function runAutomation(action){
   showToast("Automazione in corso");
   return api("/api/admin/automate", {method:"POST", body:{action:action}})
-    .then(function(res){ showToast(automationResultMessage(action, res)); return load(); })
+    .then(function(res){
+      if(action === "fetch_news") state.latestFetch = res;
+      showToast(automationResultMessage(action, res));
+      return load();
+    })
     .catch(function(err){ showToast(err.message); });
 }
 function setFilter(filter, btn){
@@ -426,7 +431,7 @@ function render(){
   document.getElementById("stNews").textContent = state.news.filter(function(n){ return n.visible; }).length;
   document.getElementById("stMarket").textContent = state.market.length;
   document.getElementById("stSocial").textContent = state.social.length;
-  renderAutomationStatus(); renderAdminAlerts(); renderLiveDesk(); renderDrafts(); renderNews(); renderSources(); renderMarket(); renderMatches(); renderSocial(); renderGraphics(); renderCommunity();
+  renderAutomationStatus(); renderAdminAlerts(); renderLiveDesk(); renderDrafts(); renderFetchResults(); renderNews(); renderSources(); renderMarket(); renderMatches(); renderSocial(); renderGraphics(); renderCommunity();
 }
 function renderAutomationStatus(){
   var box = document.getElementById("automationStatus");
@@ -521,6 +526,31 @@ function renderDrafts(){
   list.innerHTML = drafts.map(function(d){
     return "<div class='item'><div class='item-head'><div><span class='pill "+esc(d.reliability)+"'>"+labelRel(d.reliability)+"</span><h3>"+esc(d.title)+"</h3></div><div class='meta'>"+date(d.created_at)+"</div></div><p>"+esc(d.body)+"</p><div class='meta'>"+esc(d.source_name || "")+(d.source_url?" · <a href='"+escAttr(d.source_url)+"' target='_blank' style='color:var(--gold-l)'>fonte</a>":"")+"</div><div class='item-actions' style='margin-top:10px'><button class='primary small' onclick='approveDraft("+d.id+")'>Approva</button><button class='danger small' onclick='discardDraft("+d.id+")'>Scarta</button></div></div>";
   }).join("");
+}
+function renderFetchResults(){
+  var box = document.getElementById("fetchResults");
+  if(!box) return;
+  var result = state.latestFetch;
+  if(!result){ box.innerHTML = ""; return; }
+  var rows = Array.isArray(result.discoveries) ? result.discoveries : [];
+  var labels = {
+    new_draft:"Nuova bozza",
+    auto_published:"Pubblicata automaticamente",
+    updated:"News aggiornata",
+    draft_ready:"Bozza pronta",
+    draft_duplicate:"Gia presente nelle bozze",
+    published_duplicate:"Gia pubblicata"
+  };
+  var useful = rows.filter(function(row){ return row.outcome !== "published_duplicate" && row.outcome !== "draft_duplicate"; });
+  var shown = (useful.length ? useful : rows).slice(0,12);
+  var changed = Number(result.inserted || 0) + Number(result.published || 0) + Number(result.updated || 0);
+  var summary = changed
+    ? "Il fetch ha aggiornato i contenuti disponibili."
+    : "Nessuna novita da aggiungere: gli articoli trovati erano gia presenti.";
+  box.innerHTML = "<div class='item'><div class='item-head'><div><h3>Ultimo controllo fonti</h3><div class='meta'>"+esc(summary)+"</div></div><span class='pill trusted'>"+Number(result.scanned || 0)+" letti</span></div>"+
+    (shown.length ? shown.map(function(row){
+      return "<div style='padding:10px 0;border-top:1px solid var(--bdr)'><div class='meta'>"+esc(labels[row.outcome] || row.outcome)+" · "+esc(row.source || "Fonte")+"</div><strong>"+esc(row.title || "Senza titolo")+"</strong></div>";
+    }).join("") : "<div class='empty' style='margin-top:10px'>Le fonti non hanno restituito articoli utilizzabili.</div>")+"</div>";
 }
 function visibleDrafts(){
   return state.drafts.filter(function(d){ return !isYoutubeDraft(d); });

@@ -297,3 +297,19 @@ test("il Live Desk unifica automaticamente news, mercato e Match Center", async 
   assert.ok(kindCounts.match <= 2);
   assert.ok(kindCounts.market >= 1);
 });
+
+test("Fetch News mostra cosa ha trovato e usa una fonte Juventus aggiornata", async () => {
+  const [admin, api] = await Promise.all([
+    read("icv_admin.html"),
+    read("functions/api/[[path]].js"),
+  ]);
+  assert.match(api, /name: "JuventusNews24"/);
+  assert.match(api, /url: "https:\/\/www\.juventusnews24\.com\/feed\/"/);
+  assert.match(api, /reliability: "aggregator"/);
+  assert.match(api, /discoveries/);
+  assert.match(api, /addFetchDiscovery/);
+  assert.match(admin, /id="fetchResults"/);
+  assert.match(admin, /function renderFetchResults/);
+  assert.match(admin, /Gia pubblicata/);
+  assert.match(admin, /state\.latestFetch = res/);
+});

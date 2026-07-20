@@ -18,12 +18,38 @@ test("la home distingue risultati e prossime amichevoli", async () => {
 });
 
 test("gli script delle pagine principali hanno sintassi valida", async () => {
-  for (const file of ["community.html", "icv_admin.html", "mercato.html"]) {
+  for (const file of ["community.html", "icv_admin.html", "mercato.html", "giocatore.html"]) {
     const html = await read(file);
     const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(match => match[1]).filter(Boolean);
     assert.ok(scripts.length, `${file} deve contenere JavaScript inline`);
     for (const script of scripts) new Function(script);
   }
+});
+
+test("i collegamenti intelligenti uniscono giocatori, news, mercato e Community", async () => {
+  const [page, market, community, home, redirects] = await Promise.all([
+    read("giocatore.html"),
+    read("mercato.html"),
+    read("community.html"),
+    read("index.html"),
+    read("_redirects"),
+  ]);
+  for (const marker of ["ICV Player Hub", "Ultime notizie", "Mercato Board", "Discussioni"]) {
+    assert.ok(page.includes(marker), `manca ${marker}`);
+  }
+  assert.ok(market.includes("/giocatore?slug="));
+  assert.ok(community.includes("loadPlayerEntities"));
+  assert.ok(community.includes("player-mention"));
+  assert.ok(home.includes("related_players"));
+  assert.ok(!redirects.includes("/giocatori/*"));
+
+  const { playerEntitySlug, playerEntityMatches, buildPlayerIndex } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  assert.equal(playerEntitySlug("Dušan Vlahović"), "dusan-vlahovic");
+  const index = buildPlayerIndex([{ player_name: "Kolo Muani", updated_at: "2026-07-20T12:00:00Z" }], [
+    { title: "La Juventus torna su Randal Kolo Muani", body: "" },
+  ]);
+  assert.equal(index[0].news_count, 1);
+  assert.equal(playerEntityMatches("Discussione su Muani", index[0]), true);
 });
 
 test("Mercato Board classifica e filtra le trattative raccolte", async () => {

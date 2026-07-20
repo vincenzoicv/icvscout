@@ -1325,12 +1325,13 @@ function loadHomeDashboard() {
     document.getElementById("homeFocusTitle").textContent = focus.title;
     renderHomeMatch(matches[0]);
     renderHomeList("homeNewsList", focus.skipNewsId ? news.filter(function(n){ return n.id !== focus.skipNewsId; }) : news, function(n) {
-      return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : "")};
+      var player=n.related_players&&n.related_players[0];
+      return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : ""), url:player?"/giocatore?slug="+player.slug:""};
     }, "Nessuna news approvata al momento.");
     renderHomeList("homeMarketList", market, function(m) {
       var title = m.note || m.player_name || "Mercato Juve";
       var player = m.note && m.player_name ? " · " + m.player_name : "";
-      return {title:title, meta:(m.source_name || "ICV") + player};
+      return {title:title, meta:(m.source_name || "ICV") + player, url:m.player_slug?"/giocatore?slug="+m.player_slug:""};
     }, "Nessun tema mercato pubblicato al momento.");
     renderHomeLinks("homeInstagramList", uniqueSocialRows(social), function(s) {
       return {title:s.hook || "Post Instagram", meta:(s.media_type || s.platform || "instagram") + (s.status ? " · " + s.status : ""), url:s.post_url || "https://www.instagram.com/ilcalciodivince_/"};
@@ -1548,7 +1549,9 @@ function renderHomeList(id, rows, map, emptyText) {
   }
   el.innerHTML = rows.slice(0, 3).map(function(row) {
     var item = map(row);
-    return "<div class='home-mini'><strong>" + icvEsc(item.title) + "</strong><span>" + icvEsc(item.meta) + "</span></div>";
+    var content="<strong>" + icvEsc(item.title) + "</strong><span>" + icvEsc(item.meta) + "</span>";
+    if(item.url)content="<a href='"+icvEsc(item.url)+"'>"+content+"</a>";
+    return "<div class='home-mini'>" + content + "</div>";
   }).join("");
 }
 

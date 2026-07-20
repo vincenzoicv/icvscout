@@ -135,6 +135,8 @@ export async function onRequest(context) {
 
   try {
     if (path === "public/home") return publicHome(env);
+    if (path === "public/players") return publicPlayers(env, url);
+    if (/^public\/players\/[a-z0-9-]+$/i.test(path)) return publicPlayer(env, path.split("/").pop());
     if (path === "public/graphics") return publicGraphics(env, url);
     if (path === "public/news") return publicNews(env, url);
     if (path === "world-cup/overview") return worldCupOverview(request, env, context);
@@ -258,8 +260,10 @@ async function publicHome(env) {
     ...(market || []),
   ]);
   const aggregatedMarket = aggregateMarketItems(cleanMarket);
+  const playerIndex = buildPlayerIndex(aggregatedMarket, cleanNews);
+  const linkedNews = cleanNews.map(row => ({ ...row, related_players: playerEntitiesInText([row.title, row.body].join(" "), playerIndex) }));
   return json({
-    news: cleanNews,
+    news: linkedNews,
     market: aggregatedMarket,
     matches,
     live_desk: buildLiveDeskEntries({ news: publicNewsRows(news), market: aggregatedMarket, matches }, 6),
@@ -268,6 +272,50 @@ async function publicHome(env) {
     radar,
     auto: { enabled: true, interval_hours: Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1), last_run_at: auto && auto.created_at },
   });
+}
+
+async function publicPlayers(env, url) {
+  const query = cleanText(url.searchParams.get("q") || "").toLowerCase();
+  const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 40), 1), 80);
+  const rows = await publicPlayerIndexData(env);
+  return json(rows.filter(row => !query || normalizeEntityText([row.name, ...(row.aliases || [])].join(" ")).includes(normalizeEntityText(query))).slice(0, limit));
+}
+
+async function publicPlayer(env, slug) {
+  if (!hasSupabase(env)) return json({ error: "Profilo giocatore non disponibile" }, 404);
+  const [index, newsRows, posts] = await Promise.all([
+    publicPlayerIndexData(env),
+    sb(env, "/news?visible=eq.true&order=created_at.desc&limit=160"),
+    safeAdminRead(() => sb(env, "/community_posts?status=eq.published&select=id,body,category,created_at,author:community_profiles!community_posts_user_id_fkey(username,display_name,avatar_url,quiz_badge)&order=created_at.desc&limit=120"), []),
+  ]);
+  const player = index.find(row => row.slug === cleanText(slug).toLowerCase());
+  if (!player) return json({ error: "Giocatore non trovato" }, 404);
+  const news = publicNewsRows(newsRows).filter(row => playerEntityMatches([row.title, row.body].join(" "), player)).slice(0, 12);
+  const discussions = posts.filter(row => playerEntityMatches(row.body, player)).slice(0, 12);
+  const related = index.filter(row => row.slug !== player.slug && news.some(item => playerEntityMatches([item.title, item.body].join(" "), row))).slice(0, 6);
+  return json({
+    player: { ...player, updated_at: newestEntityDate(player.market, news, discussions) },
+    market: player.market || [],
+    news,
+    discussions,
+    related,
+    counts: { market: (player.market || []).length, news: news.length, discussions: discussions.length },
+  });
+}
+
+async function publicPlayerIndexData(env) {
+  if (!hasSupabase(env)) return [];
+  const [market, marketNews, news] = await Promise.all([
+    sb(env, "/market_items?order=updated_at.desc&limit=80"),
+    sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=80"),
+    sb(env, "/news?visible=eq.true&order=created_at.desc&limit=120"),
+  ]);
+  const cleanNews = publicNewsRows(news);
+  const marketRows = aggregateMarketItems(publicMarketRows([
+    ...publicMarketFromNews(publicNewsRows(marketNews)),
+    ...(market || []),
+  ]));
+  return buildPlayerIndex(marketRows, cleanNews);
 }
 
 async function publicGraphics(env, url) {
@@ -953,14 +1001,15 @@ async function communitySingleNews(env, newsId) {
 
 async function communitySearch(env, query) {
   const q = cleanText(query || "").slice(0, 60);
-  if (q.length < 2) return { profiles: [], posts: [], news: [] };
+  if (q.length < 2) return { players: [], profiles: [], posts: [], news: [] };
   const like = encodeURIComponent("*" + q.replace(/[%,]/g, "") + "*");
-  const [profiles, posts, news] = await Promise.all([
+  const [players, profiles, posts, news] = await Promise.all([
+    publicPlayerIndexData(env).then(rows => rows.filter(row => normalizeEntityText([row.name, ...(row.aliases || [])].join(" ")).includes(normalizeEntityText(q))).slice(0, 8)),
     safeAdminRead(() => sb(env, "/community_profiles?status=eq.active&or=(username.ilike." + like + ",display_name.ilike." + like + ")&select=id,username,display_name,avatar_url,quiz_badge,bio&limit=8"), []),
     safeAdminRead(() => sb(env, "/community_posts?status=eq.published&body=ilike." + like + "&select=id,body,category,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)&order=created_at.desc&limit=12"), []),
     safeAdminRead(() => sb(env, "/news?visible=eq.true&or=(title.ilike." + like + ",body.ilike." + like + ")&select=id,title,body,category,created_at,source_url&order=created_at.desc&limit=8"), []),
   ]);
-  return { profiles, posts, news };
+  return { players, profiles, posts, news };
 }
 
 async function communityPublicProfile(env, username) {
@@ -3856,7 +3905,7 @@ function aggregateMarketItems(rows) {
     }
   }
   return Array.from(byTopic.values())
-    .map(row => ({ ...row, ...marketDealMetadata(row) }))
+    .map(row => ({ ...row, player_slug: playerEntitySlug(row.player_name), ...marketDealMetadata(row) }))
     .sort((a, b) => {
       const stageDiff = marketStageRank(b.deal_stage) - marketStageRank(a.deal_stage);
       if (stageDiff) return stageDiff;
@@ -4523,6 +4572,75 @@ function extractPlayer(title) {
   }) || "";
 }
 
+const PLAYER_ENTITY_ALIASES = {
+  "kolo-muani": ["Kolo Muani", "Randal Kolo Muani", "Muani"],
+  "dibu-martinez": ["Dibu Martinez", "Emiliano Martinez"],
+  "nico-gonzalez": ["Nico Gonzalez", "Nico González"],
+  "douglas-luiz": ["Douglas Luiz"],
+  "brahim-diaz": ["Brahim Diaz", "Brahim Díaz"],
+  "jonathan-david": ["Jonathan David"],
+  "conceicao": ["Conceicao", "Conceição"],
+  "vlahovic": ["Vlahovic", "Dušan Vlahović", "Dusan Vlahovic"],
+  "kessie": ["Kessie", "Kessié"],
+  "sorloth": ["Sorloth", "Sørloth"],
+};
+
+function playerEntitySlug(value) {
+  return normalizeEntityText(value).replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function normalizeEntityText(value) {
+  return cleanText(value).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ø/g, "o");
+}
+
+function playerEntityAliases(name, slug) {
+  const aliases = [name, ...(PLAYER_ENTITY_ALIASES[slug] || [])].map(cleanText).filter(Boolean);
+  return [...new Map(aliases.map(alias => [normalizeEntityText(alias), alias])).values()];
+}
+
+function isValidPlayerEntityName(value) {
+  const name = cleanText(value);
+  if (!name || name.length < 4 || name.length > 42 || isBadMarketTopic(name)) return false;
+  return !/punto mercato|mercato juve|alisson-juve|comolli|spalletti|carnevali|giuntoli|juventus|juve|scenario/i.test(name);
+}
+
+function buildPlayerIndex(marketRows, newsRows) {
+  const bySlug = new Map();
+  for (const market of marketRows || []) {
+    const name = cleanText(market.player_name);
+    if (!isValidPlayerEntityName(name)) continue;
+    const slug = playerEntitySlug(name);
+    if (!slug) continue;
+    const existing = bySlug.get(slug) || { name, slug, aliases: playerEntityAliases(name, slug), market: [], news_count: 0, discussion_count: 0 };
+    existing.market.push(market);
+    bySlug.set(slug, existing);
+  }
+  const rows = Array.from(bySlug.values());
+  for (const player of rows) {
+    player.news_count = (newsRows || []).filter(row => playerEntityMatches([row.title, row.body].join(" "), player)).length;
+  }
+  return rows.sort((a, b) => {
+    const freshness = new Date(b.market[0] && b.market[0].updated_at || 0) - new Date(a.market[0] && a.market[0].updated_at || 0);
+    return freshness || b.news_count - a.news_count || a.name.localeCompare(b.name, "it");
+  });
+}
+
+function playerEntityMatches(text, player) {
+  const normalized = " " + normalizeEntityText(text).replace(/[^a-z0-9]+/g, " ") + " ";
+  return (player.aliases || [player.name]).some(alias => normalized.includes(" " + normalizeEntityText(alias).replace(/[^a-z0-9]+/g, " ").trim() + " "));
+}
+
+function playerEntitiesInText(text, players) {
+  return (players || []).filter(player => playerEntityMatches(text, player)).slice(0, 4).map(({ name, slug }) => ({ name, slug }));
+}
+
+function newestEntityDate(...groups) {
+  return groups.flat().reduce((latest, row) => {
+    const value = row && (row.updated_at || row.created_at);
+    return value && new Date(value) > new Date(latest || 0) ? value : latest;
+  }, null);
+}
+
 function hookFromTitle(title) {
   return "Occhio a questa notizia: " + title;
 }
@@ -5014,4 +5132,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { buildLiveDeskEntries, marketDealMetadata, parseJuventusOfficialPage };
+export { buildLiveDeskEntries, marketDealMetadata, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches };

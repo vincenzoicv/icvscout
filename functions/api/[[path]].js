@@ -1136,7 +1136,12 @@ async function notifyCommunityMentions(env, actorId, text, target, excludedIds =
 
 async function communityNotifications(env, userId, filterName, before) {
   const filter = cleanText(filterName || "all").toLowerCase();
-  const typeFilter = filter === "mentions" ? "&type=eq.mention" : "";
+  const typeFilters = {
+    mentions: "&type=eq.mention",
+    interactions: "&type=in.(comment,reply,like,repost,quote,follow)",
+    updates: "&type=in.(official_news,match_room)",
+  };
+  const typeFilter = typeFilters[filter] || "";
   const readFilter = filter === "unread" ? "&read_at=is.null" : "";
   const cursorFilter = before && !Number.isNaN(new Date(before).getTime()) ? "&created_at=lt." + encodeURIComponent(new Date(before).toISOString()) : "";
   const pageSize = 20;
@@ -1160,13 +1165,18 @@ async function communityNotifications(env, userId, filterName, before) {
     safeAdminRead(() => sb(env, "/community_posts?user_id=neq." + encodeURIComponent(userId) + "&status=eq.published&body=ilike." + mentionPattern + "&select=id,body,created_at,actor:community_profiles!community_posts_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
     safeAdminRead(() => sb(env, "/community_comments?user_id=neq." + encodeURIComponent(userId) + "&status=eq.published&body=ilike." + mentionPattern + "&select=id,post_id,news_id,body,created_at,actor:community_profiles!community_comments_user_id_fkey(username,display_name,avatar_url)&order=created_at.desc&limit=20"), []),
   ]);
-  const items = [
+  let items = [
     ...comments.filter(row => !username || !cleanText(row.body).toLowerCase().includes("@" + username)).map(row => ({ type: "comment", created_at: row.created_at, actor: row.actor, text: "ha commentato: " + cleanText(row.body).slice(0, 90), post_id: row.post_id, post: postMap[row.post_id] })),
     ...reactions.map(row => ({ type: "like", created_at: row.created_at, actor: row.actor, text: "ha messo Mi piace al tuo post", post_id: row.post_id, post: postMap[row.post_id] })),
     ...follows.map(row => ({ type: "follow", created_at: row.created_at, actor: row.actor, text: "ha iniziato a seguirti" })),
     ...mentionedPosts.map(row => ({ type: "mention", created_at: row.created_at, actor: row.actor, text: "ti ha menzionato in un post", post_id: row.id })),
     ...mentionedComments.map(row => ({ type: "mention", created_at: row.created_at, actor: row.actor, text: "ti ha menzionato in un commento", post_id: row.post_id, news_id: row.news_id })),
-  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, pageSize);
+  ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  if (filter === "mentions") items = items.filter(item => item.type === "mention");
+  if (filter === "interactions") items = items.filter(item => ["comment", "reply", "like", "repost", "quote", "follow"].includes(item.type));
+  if (filter === "updates") items = items.filter(item => ["official_news", "match_room"].includes(item.type));
+  if (filter === "unread") items = [];
+  items = items.slice(0, pageSize);
   return { items, unread_count: 0, filter, next_cursor: null };
 }
 
@@ -1546,6 +1556,7 @@ async function adminNews(request, env) {
       matches: [],
       live_desk: [],
       runs: [],
+      automation_monitor: buildAutomationMonitor([]),
       community_posts: [],
       community_reports: [],
       radar: DEFAULT_RADAR,
@@ -1564,7 +1575,7 @@ async function adminNews(request, env) {
       safeAdminRead(() => sb(env, "/social_drafts?order=created_at.desc&limit=40"), []),
       safeAdminRead(() => sb(env, "/market_items?order=updated_at.desc&limit=60"), []),
       safeAdminRead(() => sb(env, "/match_reports?order=match_date.desc&limit=20"), []),
-      safeAdminRead(() => sb(env, "/automation_runs?order=created_at.desc&limit=12"), []),
+      safeAdminRead(() => sb(env, "/automation_runs?order=created_at.desc&limit=60"), []),
       safeAdminRead(() => getSiteSetting(env, "radar_home", DEFAULT_RADAR), DEFAULT_RADAR),
       safeAdminRead(() => getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS), DEFAULT_GRAPHICS),
       safeAdminRead(() => sb(env, "/community_posts?select=id,user_id,category,body,image_url,is_official,status,created_at,author:community_profiles!community_posts_user_id_fkey(display_name,username)&order=created_at.desc&limit=80"), []),
@@ -1576,7 +1587,7 @@ async function adminNews(request, env) {
     ]);
     const visibleNews = publicNewsRows(news).filter(item => item.visible !== false);
     const publicMarket = aggregateMarketItems(publicMarketRows(market));
-    return json({ drafts, news, sources, social, market, matches, live_desk: buildLiveDeskEntries({ news: visibleNews, market: publicMarket, matches }, 20), runs, radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
+    return json({ drafts, news, sources, social, market, matches, live_desk: buildLiveDeskEntries({ news: visibleNews, market: publicMarket, matches }, 20), runs, automation_monitor: buildAutomationMonitor(runs, { cadences: { home_autopilot: Math.max(1, Number(env.HOME_AUTO_INTERVAL_HOURS || 6)) } }), radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
   }
 
   const body = await readBody(request);
@@ -5121,6 +5132,107 @@ function pick(obj, keys) {
   }, {});
 }
 
+function automationRunPayload(run) {
+  if (!run) return {};
+  if (run.payload && typeof run.payload === "object") return run.payload;
+  if (typeof run.payload === "string") {
+    try {
+      const parsed = JSON.parse(run.payload);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
+function automationRunProblems(payload) {
+  const problems = [];
+  if (payload.error) problems.push(cleanText(payload.error));
+  if (Array.isArray(payload.errors)) {
+    payload.errors.forEach(item => problems.push(cleanText(typeof item === "string" ? item : item && (item.error || item.warning))));
+  }
+  if (Array.isArray(payload.tasks)) {
+    payload.tasks.forEach(item => {
+      if (item && item.error) problems.push(cleanText(item.type ? item.type + ": " + item.error : item.error));
+    });
+  }
+  if (Array.isArray(payload.sources_report)) {
+    payload.sources_report.forEach(item => {
+      if (item && (item.error || item.warning)) problems.push(cleanText((item.source ? item.source + ": " : "") + (item.error || item.warning)));
+    });
+  }
+  return problems.filter(Boolean);
+}
+
+function buildAutomationMonitor(runs, options = {}) {
+  const now = new Date(options.now || Date.now());
+  const cadenceOverrides = options.cadences || {};
+  const definitions = [
+    { key: "home_autopilot", label: "Home autopilot", cadence_hours: 6 },
+    { key: "news", label: "Bozze news", cadence_hours: 6 },
+    { key: "market", label: "Mercato", cadence_hours: 6 },
+    { key: "match_center", label: "Match Center", cadence_hours: 12 },
+    { key: "instagram_import", label: "Instagram", cadence_hours: 24 },
+    { key: "youtube_scout", label: "YouTube Scout", cadence_hours: 24 },
+  ].map(item => ({ ...item, cadence_hours: Number(cadenceOverrides[item.key] || item.cadence_hours) }));
+  const orderedRuns = (Array.isArray(runs) ? runs : []).filter(run => run && run.type && run.created_at).slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const jobs = definitions.map(definition => {
+    const history = orderedRuns.filter(run => run.type === definition.key);
+    const latest = history[0] || null;
+    if (!latest) return { ...definition, status: "idle", age_hours: null, last_run_at: null, last_error: null, success_streak: 0, warning_count: 0 };
+    const payload = automationRunPayload(latest);
+    const problems = automationRunProblems(payload);
+    const ageHours = Math.max(0, (now.getTime() - new Date(latest.created_at).getTime()) / 3600000);
+    const failed = latest.status === "error" || payload.ok === false;
+    const delayed = ageHours > definition.cadence_hours * 1.75;
+    const status = failed ? "error" : delayed ? "delayed" : problems.length ? "degraded" : "healthy";
+    let successStreak = 0;
+    for (const run of history) {
+      const runPayload = automationRunPayload(run);
+      if (run.status === "error" || runPayload.ok === false) break;
+      successStreak += 1;
+    }
+    return {
+      ...definition,
+      status,
+      age_hours: Math.round(ageHours * 10) / 10,
+      last_run_at: latest.created_at,
+      last_error: problems[0] || null,
+      warning_count: problems.length,
+      success_streak: successStreak,
+      last_run_status: latest.status,
+    };
+  });
+  const latestNewsRun = orderedRuns.find(run => run.type === "news");
+  const newsPayload = automationRunPayload(latestNewsRun);
+  const sources = (Array.isArray(newsPayload.sources_report) ? newsPayload.sources_report : []).map(item => ({
+    source: cleanText(item.source || "Fonte"),
+    status: item.error ? "error" : item.warning ? "degraded" : "healthy",
+    scanned: Number(item.scanned || 0),
+    relevant: Number(item.relevant || 0),
+    changed: Number(item.published || 0) + Number(item.updated || 0) + Number(item.inserted || 0),
+    detail: cleanText(item.error || item.warning || "Fonte operativa"),
+  }));
+  const counts = jobs.reduce((acc, job) => {
+    acc[job.status] = (acc[job.status] || 0) + 1;
+    return acc;
+  }, { healthy: 0, degraded: 0, delayed: 0, error: 0, idle: 0 });
+  return {
+    generated_at: now.toISOString(),
+    counts,
+    jobs,
+    sources,
+    recent_runs: orderedRuns.slice(0, 30).map(run => ({
+      id: run.id,
+      type: run.type,
+      status: run.status,
+      created_at: run.created_at,
+      warning_count: automationRunProblems(automationRunPayload(run)).length,
+    })),
+  };
+}
+
 async function logRun(env, type, result) {
   try {
     await sb(env, "/automation_runs", {
@@ -5132,4 +5244,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { buildLiveDeskEntries, marketDealMetadata, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches };
+export { buildLiveDeskEntries, marketDealMetadata, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor };

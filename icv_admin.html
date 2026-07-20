@@ -31,8 +31,10 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 .visibility-btn.visible{border-color:rgba(245,158,11,.38);background:rgba(245,158,11,.1);color:var(--orange)}
 .order-btn{min-width:36px;text-align:center}
 .analytics-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}.analytics-kpi{padding:14px;border:1px solid var(--bdr);border-radius:8px;background:rgba(255,255,255,.025)}.analytics-kpi strong{display:block;font-family:"Bebas Neue";font-size:32px;color:var(--gold-l)}.analytics-kpi span{font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.6px;color:var(--t3);text-transform:uppercase}.analytics-delta{font-size:11px;margin-top:4px;color:var(--t3)}.analytics-delta.up{color:var(--green)}.analytics-delta.down{color:var(--red)}.analytics-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:12px}.analytics-chart{height:180px;display:flex;align-items:flex-end;gap:4px;padding:16px 4px 0;border-bottom:1px solid var(--bdr2)}.analytics-bar{flex:1;min-width:4px;background:linear-gradient(180deg,var(--gold-l),rgba(196,150,42,.25));border-radius:3px 3px 0 0;position:relative}.analytics-bar:hover:after{content:attr(data-label);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#050505;border:1px solid var(--bdr);padding:5px 7px;border-radius:4px;font-size:11px;color:var(--white);z-index:3}.analytics-list{display:grid;gap:8px}.analytics-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding-bottom:7px;border-bottom:1px solid var(--bdr2)}.analytics-row span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t2)}.analytics-row strong{color:var(--gold-l)}
+.filter-toolbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:12px}.filter-toolbar input,.filter-toolbar select{min-width:0}.reliability-guide{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:14px}.reliability-level{padding:9px;border:1px solid var(--bdr2);border-radius:7px;background:rgba(255,255,255,.02)}.reliability-level strong{display:flex;align-items:center;justify-content:space-between;gap:6px;font-family:"Barlow Condensed";font-size:12px;text-transform:uppercase}.reliability-level small{display:block;color:var(--t3);font-size:11px;line-height:1.3;margin-top:5px}.reliability-score{color:var(--gold-l)}
+.monitor-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:14px}.monitor-kpi{padding:12px;border:1px solid var(--bdr2);border-radius:8px;background:rgba(255,255,255,.025)}.monitor-kpi strong{display:block;font-family:"Bebas Neue";font-size:30px}.monitor-kpi span{font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)}.monitor-kpi.healthy strong{color:var(--green)}.monitor-kpi.degraded strong,.monitor-kpi.delayed strong{color:var(--orange)}.monitor-kpi.error strong{color:var(--red)}.monitor-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px}.monitor-job{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:11px;align-items:start;padding:12px 0;border-bottom:1px solid var(--bdr2)}.health-dot{width:10px;height:10px;margin-top:5px;border-radius:50%;background:var(--t3);box-shadow:0 0 0 4px rgba(255,255,255,.03)}.health-dot.healthy{background:var(--green)}.health-dot.degraded,.health-dot.delayed{background:var(--orange)}.health-dot.error{background:var(--red)}.monitor-job h3{font-size:16px}.monitor-job p{margin:3px 0;color:var(--t2);font-size:12px}.health-badge{border:1px solid var(--bdr2);border-radius:999px;padding:4px 7px;font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:1.2px;text-transform:uppercase}.health-badge.healthy{color:var(--green);border-color:rgba(74,222,128,.28)}.health-badge.degraded,.health-badge.delayed{color:var(--orange);border-color:rgba(245,158,11,.3)}.health-badge.error{color:var(--red);border-color:rgba(248,113,113,.3)}.monitor-source{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px 0;border-bottom:1px solid var(--bdr2)}.monitor-source small{color:var(--t3)}.monitor-history{margin-top:12px}.monitor-history-row{display:grid;grid-template-columns:minmax(120px,1fr) 110px 100px;gap:10px;padding:9px 0;border-bottom:1px solid var(--bdr2);align-items:center}.monitor-history-row time{color:var(--t3);font-size:11px;text-align:right}
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
-@media(max-width:900px){.analytics-kpis,.analytics-grid{grid-template-columns:1fr 1fr}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}}
+@media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
 </head>
 <body>
@@ -85,6 +87,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
       <button data-tab="graphics" onclick="setAdminTab('graphics',this)">Grafiche</button>
       <button data-tab="community" onclick="setAdminTab('community',this)">Community</button>
       <button data-tab="analytics" onclick="setAdminTab('analytics',this)">Analytics</button>
+      <button data-tab="monitor" onclick="setAdminTab('monitor',this)">Monitor</button>
       <button data-tab="sources" onclick="setAdminTab('sources',this)">Fonti</button>
       <button data-tab="advanced" onclick="setAdminTab('advanced',this)">Avanzate</button>
     </nav>
@@ -93,18 +96,16 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
       <div>
         <div class="card admin-panel active" data-panel="drafts">
           <h2>Bozze Automatiche</h2>
-          <div class="tabs">
-            <button class="tab active" onclick="setFilter('all',this)">Tutte</button>
-            <button class="tab" onclick="setFilter('official',this)">Fonti ufficiali</button>
-            <button class="tab" onclick="setFilter('trusted',this)">Fonti affidabili</button>
-            <button class="tab" onclick="setFilter('aggregator',this)">Aggregatori</button>
-          </div>
+          <div id="reliabilityGuideDrafts"></div>
+          <div class="filter-toolbar"><select id="draftReliability" aria-label="Filtra bozze per affidabilità" onchange="updateContentFilters()"><option value="all">Tutte le affidabilità</option><option value="official">Fonti ufficiali</option><option value="trusted">Fonti affidabili</option><option value="rumor">Voci</option><option value="aggregator">Aggregatori</option></select><select id="draftStatus" aria-label="Filtra bozze per stato" onchange="updateContentFilters()"><option value="all">Tutti gli stati</option><option value="ready">Pronte</option><option value="pending">Da verificare</option></select><input id="draftQuery" aria-label="Cerca bozze" placeholder="Cerca titolo o fonte" oninput="updateContentFilters()"></div>
           <div id="draftList"></div>
           <div id="fetchResults" style="margin-top:16px"></div>
         </div>
 
         <div class="card admin-panel" data-panel="published">
           <h2>News Pubblicate</h2>
+          <div id="reliabilityGuideNews"></div>
+          <div class="filter-toolbar"><select id="newsReliability" aria-label="Filtra news per affidabilità" onchange="updateContentFilters()"><option value="all">Tutte le affidabilità</option><option value="official">Fonti ufficiali</option><option value="trusted">Fonti affidabili</option><option value="rumor">Voci</option><option value="aggregator">Aggregatori</option></select><select id="newsVisibility" aria-label="Filtra news per visibilità" onchange="updateContentFilters()"><option value="all">Visibili e nascoste</option><option value="visible">Visibili</option><option value="hidden">Nascoste</option></select><input id="newsQuery" aria-label="Cerca news" placeholder="Cerca news o fonte" oninput="updateContentFilters()"></div>
           <div id="newsList"></div>
         </div>
 
@@ -134,6 +135,13 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           </div>
           <p id="analyticsNotice" class="meta" style="margin-top:12px"></p>
         </div>
+
+        <div class="card admin-panel" data-panel="monitor">
+          <div class="item-head"><div><h2>Salute Automazioni</h2><div class="meta">Ritardi, errori, continuità e disponibilità delle fonti</div><div id="monitorUpdatedAt" class="meta"></div></div><button class="ghost small" onclick="load()">Aggiorna stato</button></div>
+          <div id="monitorKpis" class="monitor-kpis"></div>
+          <div class="monitor-grid"><div class="item"><h3>Processi automatici</h3><div id="monitorJobs"></div></div><div class="item"><h3>Salute fonti ultimo fetch</h3><div id="monitorSources"></div></div></div>
+          <div class="item monitor-history"><h3>Ultime esecuzioni</h3><div id="monitorHistory"></div></div>
+        </div>
       </div>
 
       <aside>
@@ -150,6 +158,8 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 
         <div class="card admin-panel" data-panel="sources">
           <h2>Fonti</h2>
+          <div id="reliabilityGuideSources"></div>
+          <div class="filter-toolbar" style="grid-template-columns:1fr 1fr"><select id="sourceReliabilityFilter" aria-label="Filtra fonti per affidabilità" onchange="updateContentFilters()"><option value="all">Tutte le affidabilità</option><option value="official">Fonti ufficiali</option><option value="trusted">Fonti affidabili</option><option value="rumor">Voci</option><option value="aggregator">Aggregatori</option><option value="blacklist">Ignorate</option></select><input id="sourceQuery" aria-label="Cerca fonte" placeholder="Cerca fonte" oninput="updateContentFilters()"></div>
           <div id="sourceList"></div>
           <div class="form" style="margin-top:12px">
             <input id="sourceName" placeholder="Nome fonte">
@@ -204,7 +214,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 <div class="toast" id="toast"></div>
 
 <script>
-var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], liveDesk: [], runs: [], communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], analytics: null, latestFetch: null, filter: "all", adminTab: "drafts" };
+var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], liveDesk: [], runs: [], automationMonitor: null, communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], analytics: null, latestFetch: null, adminTab: "drafts", filters: { draftReliability:"all", draftStatus:"all", draftQuery:"", newsReliability:"all", newsVisibility:"all", newsQuery:"", sourceReliability:"all", sourceQuery:"" } };
 var OFFICIAL_SERIE_A_CALENDAR = {
   season: "Serie A 2026/27",
   title: "Calendario Juventus 2026/27 ufficiale",
@@ -259,12 +269,14 @@ function load(){
     state.matches = data.matches || [];
     state.liveDesk = data.live_desk || [];
     state.runs = data.runs || [];
+    state.automationMonitor = data.automation_monitor || null;
     state.communityPosts = data.community_posts || [];
     state.communityReports = data.community_reports || [];
     state.communityProfiles = data.community_profiles || [];
     state.communityComments = data.community_comments || [];
     state.communityModerationActions = data.community_moderation_actions || [];
     state.communityNotes = data.community_context_notes || [];
+    restoreContentFilters();
     render();
   });
 }
@@ -278,11 +290,23 @@ function runAutomation(action){
     })
     .catch(function(err){ showToast(err.message); });
 }
-function setFilter(filter, btn){
-  state.filter = filter;
-  document.querySelectorAll(".tab").forEach(function(el){ el.classList.remove("active"); });
-  btn.classList.add("active");
-  renderDrafts();
+function filterValue(id, fallback){var el=document.getElementById(id);return el?el.value:fallback}
+function updateContentFilters(){
+  state.filters.draftReliability=filterValue("draftReliability","all");
+  state.filters.draftStatus=filterValue("draftStatus","all");
+  state.filters.draftQuery=filterValue("draftQuery","").trim().toLowerCase();
+  state.filters.newsReliability=filterValue("newsReliability","all");
+  state.filters.newsVisibility=filterValue("newsVisibility","all");
+  state.filters.newsQuery=filterValue("newsQuery","").trim().toLowerCase();
+  state.filters.sourceReliability=filterValue("sourceReliabilityFilter","all");
+  state.filters.sourceQuery=filterValue("sourceQuery","").trim().toLowerCase();
+  try{localStorage.setItem("icv_admin_filters",JSON.stringify(state.filters))}catch(error){}
+  renderDrafts();renderNews();renderSources();
+}
+function restoreContentFilters(){
+  try{var saved=JSON.parse(localStorage.getItem("icv_admin_filters")||"{}");Object.assign(state.filters,saved||{})}catch(error){}
+  var mapping={draftReliability:"draftReliability",draftStatus:"draftStatus",draftQuery:"draftQuery",newsReliability:"newsReliability",newsVisibility:"newsVisibility",newsQuery:"newsQuery",sourceReliability:"sourceReliabilityFilter",sourceQuery:"sourceQuery"};
+  Object.keys(mapping).forEach(function(key){var el=document.getElementById(mapping[key]);if(el&&state.filters[key]!=null)el.value=state.filters[key]});
 }
 function setAdminTab(tab, btn){
   state.adminTab = tab;
@@ -292,6 +316,7 @@ function setAdminTab(tab, btn){
     el.classList.toggle("active", el.getAttribute("data-panel") === tab);
   });
   if(tab === "analytics") loadAnalytics();
+  if(tab === "monitor") renderAutomationMonitor();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -431,13 +456,15 @@ function render(){
   document.getElementById("stNews").textContent = state.news.filter(function(n){ return n.visible; }).length;
   document.getElementById("stMarket").textContent = state.market.length;
   document.getElementById("stSocial").textContent = state.social.length;
-  renderAutomationStatus(); renderAdminAlerts(); renderLiveDesk(); renderDrafts(); renderFetchResults(); renderNews(); renderSources(); renderMarket(); renderMatches(); renderSocial(); renderGraphics(); renderCommunity();
+  renderReliabilityGuides(); renderAutomationStatus(); renderAutomationMonitor(); renderAdminAlerts(); renderLiveDesk(); renderDrafts(); renderFetchResults(); renderNews(); renderSources(); renderMarket(); renderMatches(); renderSocial(); renderGraphics(); renderCommunity();
 }
 function renderAutomationStatus(){
   var box = document.getElementById("automationStatus");
   if(!box) return;
   var lookup = {};
   state.runs.forEach(function(run){ if(!lookup[run.type]) lookup[run.type] = run; });
+  var monitorLookup={};
+  if(state.automationMonitor&&Array.isArray(state.automationMonitor.jobs))state.automationMonitor.jobs.forEach(function(job){monitorLookup[job.key]=job});
   var items = [
     {key:"home_autopilot", label:"Home autopilot", fallback:"Attivo ogni 6 ore"},
     {key:"news", label:"Bozze news", fallback:"In attesa fetch"},
@@ -447,8 +474,12 @@ function renderAutomationStatus(){
   ];
   box.innerHTML = items.map(function(item){
     var run = lookup[item.key];
-    var cls = run ? (run.status === "error" ? "status-warn" : "status-ok") : "status-idle";
+    var health=monitorLookup[item.key],status=health&&health.status;
+    var cls = status === "healthy" ? "status-ok" : (status === "error" || status === "degraded" || status === "delayed") ? "status-warn" : run ? (run.status === "error" ? "status-warn" : "status-ok") : "status-idle";
     var detail = automationStatusDetail(item, run);
+    if(health&&health.status==="delayed")detail="In ritardo · ultimo giro: "+date(health.last_run_at);
+    if(health&&health.status==="degraded")detail="Degradata · "+(health.last_error||("ultimo giro: "+date(health.last_run_at)));
+    if(health&&health.status==="error")detail="Errore · "+(health.last_error||("ultimo giro: "+date(health.last_run_at)));
     return "<div class='status-card "+cls+"'><strong>"+esc(item.label)+"</strong><span>"+esc(detail)+"</span></div>";
   }).join("");
 }
@@ -518,13 +549,42 @@ function renderAdminAlerts(){
     return "<div class='admin-alert admin-alert-"+esc(alert.tone)+"'><div class='alert-kicker'>"+esc(alert.kicker)+"</div><strong>"+esc(alert.title)+"</strong><span>"+esc(alert.text)+"</span></div>";
   }).join("");
 }
+function reliabilityMeta(value){
+  return {
+    official:{label:"Fonte ufficiale",score:100,description:"Comunicazione diretta del club o ente."},
+    trusted:{label:"Fonte affidabile",score:80,description:"Testata o giornalista con verifica editoriale."},
+    rumor:{label:"Voce",score:50,description:"Informazione da confermare prima di pubblicare."},
+    aggregator:{label:"Aggregatore",score:30,description:"Segnale utile, ma richiede una fonte primaria."},
+    blacklist:{label:"Ignorata",score:0,description:"Fonte esclusa dalle automazioni."}
+  }[value]||{label:"Fonte affidabile",score:80,description:"Controllo editoriale consigliato."};
+}
+function reliabilityBadge(value){var meta=reliabilityMeta(value);return"<span class='pill "+esc(value||"trusted")+"' title='"+escAttr(meta.description)+"'>"+esc(meta.label)+" · "+meta.score+"</span>"}
+function renderReliabilityGuides(){
+  var html="<div class='reliability-guide'>"+["official","trusted","rumor","aggregator","blacklist"].map(function(value){var meta=reliabilityMeta(value);return"<div class='reliability-level'><strong><span>"+esc(meta.label)+"</span><span class='reliability-score'>"+meta.score+"</span></strong><small>"+esc(meta.description)+"</small></div>"}).join("")+"</div>";
+  ["reliabilityGuideDrafts","reliabilityGuideNews","reliabilityGuideSources"].forEach(function(id){var box=document.getElementById(id);if(box)box.innerHTML=html});
+}
+function monitorStatusLabel(status){return{healthy:"Operativa",degraded:"Degradata",delayed:"In ritardo",error:"Errore",idle:"Mai eseguita"}[status]||status}
+function renderAutomationMonitor(){
+  var monitor=state.automationMonitor,kpis=document.getElementById("monitorKpis"),jobs=document.getElementById("monitorJobs"),sources=document.getElementById("monitorSources"),history=document.getElementById("monitorHistory"),updatedAt=document.getElementById("monitorUpdatedAt");
+  if(!kpis||!jobs||!sources||!history)return;
+  if(!monitor){if(updatedAt)updatedAt.textContent="";kpis.innerHTML="";jobs.innerHTML=sources.innerHTML=history.innerHTML="<div class='empty'>Dati di monitoraggio non ancora disponibili.</div>";return}
+  if(updatedAt)updatedAt.textContent=monitor.generated_at?"Aggiornato "+date(monitor.generated_at):"";
+  var counts=monitor.counts||{};
+  kpis.innerHTML=[["healthy","Operative"],["degraded","Degradate"],["delayed","In ritardo"],["error","Errori"],["idle","Mai eseguite"]].map(function(item){return"<div class='monitor-kpi "+item[0]+"'><strong>"+Number(counts[item[0]]||0)+"</strong><span>"+item[1]+"</span></div>"}).join("");
+  jobs.innerHTML=(monitor.jobs||[]).map(function(job){var detail=job.last_run_at?("Ultimo giro "+date(job.last_run_at)+" · cadenza "+job.cadence_hours+"h · serie positiva "+job.success_streak):"Nessuna esecuzione registrata";return"<div class='monitor-job'><span class='health-dot "+esc(job.status)+"'></span><div><h3>"+esc(job.label)+"</h3><p>"+esc(detail)+"</p>"+(job.last_error?"<p style='color:var(--orange)'>"+esc(job.last_error)+"</p>":"")+"</div><span class='health-badge "+esc(job.status)+"'>"+esc(monitorStatusLabel(job.status))+"</span></div>"}).join("")||"<div class='empty'>Nessun processo registrato.</div>";
+  sources.innerHTML=(monitor.sources||[]).map(function(source){return"<div class='monitor-source'><span class='health-dot "+esc(source.status)+"'></span><div><strong>"+esc(source.source)+"</strong><small>"+source.scanned+" letti · "+source.relevant+" rilevanti · "+source.changed+" aggiornati</small></div><span class='health-badge "+esc(source.status)+"' title='"+escAttr(source.detail)+"'>"+esc(monitorStatusLabel(source.status))+"</span></div>"}).join("")||"<div class='empty'>Il prossimo Fetch News mostrerà lo stato delle singole fonti.</div>";
+  history.innerHTML=(monitor.recent_runs||[]).slice(0,20).map(function(run){var status=run.status==="error"?"error":run.warning_count?"degraded":"healthy";return"<div class='monitor-history-row'><strong>"+esc(run.type.replaceAll("_"," "))+"</strong><span class='health-badge "+status+"'>"+esc(status==="healthy"?"Completata":monitorStatusLabel(status))+"</span><time>"+esc(date(run.created_at))+"</time></div>"}).join("")||"<div class='empty'>Nessuna esecuzione disponibile.</div>";
+}
 function renderDrafts(){
   var list = document.getElementById("draftList");
   var drafts = visibleDrafts().filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; });
-  if(state.filter !== "all") drafts = drafts.filter(function(d){ return d.reliability === state.filter; });
+  var filters=state.filters||{};
+  if(filters.draftReliability!=="all")drafts=drafts.filter(function(d){return d.reliability===filters.draftReliability});
+  if(filters.draftStatus!=="all")drafts=drafts.filter(function(d){return filters.draftStatus==="pending"?d.review_status!=="ready":d.review_status===filters.draftStatus});
+  if(filters.draftQuery)drafts=drafts.filter(function(d){return[d.title,d.body,d.source_name].join(" ").toLowerCase().includes(filters.draftQuery)});
   if(!drafts.length){ list.innerHTML = "<div class='empty'>Nessuna bozza in questa vista.</div>"; return; }
   list.innerHTML = drafts.map(function(d){
-    return "<div class='item'><div class='item-head'><div><span class='pill "+esc(d.reliability)+"'>"+labelRel(d.reliability)+"</span><h3>"+esc(d.title)+"</h3></div><div class='meta'>"+date(d.created_at)+"</div></div><p>"+esc(d.body)+"</p><div class='meta'>"+esc(d.source_name || "")+(d.source_url?" · <a href='"+escAttr(d.source_url)+"' target='_blank' style='color:var(--gold-l)'>fonte</a>":"")+"</div><div class='item-actions' style='margin-top:10px'><button class='primary small' onclick='approveDraft("+d.id+")'>Approva</button><button class='danger small' onclick='discardDraft("+d.id+")'>Scarta</button></div></div>";
+    return "<div class='item'><div class='item-head'><div>"+reliabilityBadge(d.reliability)+"<span class='pill blacklist'>"+esc(d.review_status||"pending")+"</span><h3>"+esc(d.title)+"</h3></div><div class='meta'>"+date(d.created_at)+"</div></div><p>"+esc(d.body)+"</p><div class='meta'>"+esc(d.source_name || "")+(d.source_url?" · <a href='"+escAttr(d.source_url)+"' target='_blank' style='color:var(--gold-l)'>fonte</a>":"")+"</div><div class='item-actions' style='margin-top:10px'><button class='primary small' onclick='approveDraft("+d.id+")'>Approva</button><button class='danger small' onclick='discardDraft("+d.id+")'>Scarta</button></div></div>";
   }).join("");
 }
 function renderFetchResults(){
@@ -563,16 +623,24 @@ function isYoutubeDraft(d){
 }
 function renderNews(){
   var list = document.getElementById("newsList");
-  if(!state.news.length){ list.innerHTML = "<div class='empty'>Nessuna news pubblicata.</div>"; return; }
-  list.innerHTML = state.news.slice(0,20).map(function(n){
-    return "<div class='item'><div class='item-head'><div><span class='pill "+esc(n.reliability || "trusted")+"'>"+labelRel(n.reliability)+"</span><h3>"+esc(n.title)+"</h3></div><div class='meta'>"+(n.visible?"visibile":"nascosta")+"</div></div><p>"+esc(n.body || "")+"</p><div class='meta'>"+date(n.created_at)+" · "+esc(n.source || "ICV")+"</div><div class='item-actions' style='margin-top:10px'><button class='ghost small' onclick='toggleNews("+n.id+","+!!n.visible+")'>"+(n.visible?"Nascondi":"Mostra")+"</button><button class='danger small' onclick='deleteNews("+n.id+")'>Elimina</button></div></div>";
+  var rows=state.news.slice(),filters=state.filters||{};
+  if(filters.newsReliability!=="all")rows=rows.filter(function(n){return(n.reliability||"trusted")===filters.newsReliability});
+  if(filters.newsVisibility!=="all")rows=rows.filter(function(n){return filters.newsVisibility==="visible"?n.visible!==false:n.visible===false});
+  if(filters.newsQuery)rows=rows.filter(function(n){return[n.title,n.body,n.source].join(" ").toLowerCase().includes(filters.newsQuery)});
+  if(!rows.length){ list.innerHTML = "<div class='empty'>Nessuna news corrisponde ai filtri selezionati.</div>"; return; }
+  list.innerHTML = rows.slice(0,40).map(function(n){
+    return "<div class='item'><div class='item-head'><div>"+reliabilityBadge(n.reliability||"trusted")+"<h3>"+esc(n.title)+"</h3></div><div class='meta'>"+(n.visible!==false?"visibile":"nascosta")+"</div></div><p>"+esc(n.body || "")+"</p><div class='meta'>"+date(n.created_at)+" · "+esc(n.source || "ICV")+"</div><div class='item-actions' style='margin-top:10px'><button class='ghost small' onclick='toggleNews("+n.id+","+(n.visible!==false)+")'>"+(n.visible!==false?"Nascondi":"Mostra")+"</button><button class='danger small' onclick='deleteNews("+n.id+")'>Elimina</button></div></div>";
   }).join("");
 }
 function renderSources(){
   var list = document.getElementById("sourceList");
-  if(!state.sources.length){ list.innerHTML = "<div class='empty'>Usando fonti fallback della funzione.</div>"; return; }
-  list.innerHTML = state.sources.map(function(s){ return "<div class='item'><span class='pill "+esc(s.reliability)+"'>"+labelRel(s.reliability)+"</span><h3>"+esc(s.name)+"</h3><div class='meta'>"+esc(s.category)+"</div></div>"; }).join("");
+  var rows=state.sources.slice(),filters=state.filters||{};
+  if(filters.sourceReliability!=="all")rows=rows.filter(function(s){return s.reliability===filters.sourceReliability});
+  if(filters.sourceQuery)rows=rows.filter(function(s){return[s.name,s.category,s.url].join(" ").toLowerCase().includes(filters.sourceQuery)});
+  if(!rows.length){ list.innerHTML = "<div class='empty'>Nessuna fonte corrisponde ai filtri selezionati.</div>"; return; }
+  list.innerHTML = rows.map(function(s){ var health=sourceMonitorStatus(s.name);return "<div class='item'><div class='item-head'><div>"+reliabilityBadge(s.reliability)+"<h3>"+esc(s.name)+"</h3></div>"+(health?"<span class='health-badge "+esc(health.status)+"' title='"+escAttr(health.detail)+"'>"+esc(monitorStatusLabel(health.status))+"</span>":"")+"</div><div class='meta'>"+esc(s.category)+(s.active===false?" · disattivata":" · attiva")+"</div></div>"; }).join("");
 }
+function sourceMonitorStatus(name){var sources=state.automationMonitor&&state.automationMonitor.sources||[],needle=String(name||"").toLowerCase();return sources.find(function(item){return String(item.source||"").toLowerCase()===needle})||sources.find(function(item){var value=String(item.source||"").toLowerCase();return value.includes(needle)||needle.includes(value)})||null}
 function marketTextOf(item){return [item.player_name,item.note,item.source_name].join(" ").toLowerCase();}
 function isNoiseMarketItem(item){
   var name = String(item.player_name || "").toLowerCase();

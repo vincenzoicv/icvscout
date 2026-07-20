@@ -391,3 +391,30 @@ test("la sezione Mondiali conclusa non compare piu nel sito pubblico", async () 
   assert.match(redirects, /^\/agenda \/ 301$/m);
   assert.doesNotMatch(worker, /mondiali\.html|mondiali\.js|agenda\.html/);
 });
+
+test("la rifinitura segmenta notifiche, spiega le fonti e monitora le automazioni", async () => {
+  const [community, admin, api] = await Promise.all([
+    read("community.html"),
+    read("icv_admin.html"),
+    read("functions/api/[[path]].js"),
+  ]);
+  for (const marker of ["Interazioni", "Aggiornamenti ICV", "icv_notification_filter", "notificationTypeMeta"]) {
+    assert.ok(community.includes(marker), `manca ${marker}`);
+  }
+  for (const marker of ["Salute Automazioni", "reliability-guide", "updateContentFilters", "renderAutomationMonitor"]) {
+    assert.ok(admin.includes(marker), `manca ${marker}`);
+  }
+  assert.match(api, /type=in\.\(comment,reply,like,repost,quote,follow\)/);
+  assert.match(api, /automation_monitor: buildAutomationMonitor/);
+
+  const { buildAutomationMonitor } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  const monitor = buildAutomationMonitor([
+    { id: 1, type: "news", status: "ok", created_at: "2026-07-20T11:00:00Z", payload: { sources_report: [{ source: "Juventus.com", scanned: 5, relevant: 3, warning: "Risposta lenta" }] } },
+    { id: 2, type: "market", status: "error", created_at: "2026-07-20T10:30:00Z", payload: { ok: false, error: "Fonte non disponibile" } },
+    { id: 3, type: "home_autopilot", status: "ok", created_at: "2026-07-20T02:00:00Z", payload: { ok: true } },
+  ], { now: "2026-07-20T12:00:00Z", cadences: { home_autopilot: 2 } });
+  assert.equal(monitor.jobs.find(job => job.key === "news").status, "degraded");
+  assert.equal(monitor.jobs.find(job => job.key === "market").status, "error");
+  assert.equal(monitor.jobs.find(job => job.key === "home_autopilot").status, "delayed");
+  assert.equal(monitor.sources[0].status, "degraded");
+});

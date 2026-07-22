@@ -373,6 +373,32 @@ test("Fetch News mostra cosa ha trovato e usa una fonte Juventus aggiornata", as
   assert.match(admin, /state\.latestFetch = res/);
 });
 
+test("le fonti Google News recuperano dai 503 con retry e fallback RSS", async () => {
+  const { fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  const googleUrl = "https://news.google.com/rss/search?q=Juventus%20calciomercato&hl=it&gl=IT&ceid=IT:it";
+  const fallbackUrl = googleNewsFallbackUrl(googleUrl);
+  assert.match(fallbackUrl, /^https:\/\/www\.bing\.com\/news\/search\?/);
+  assert.equal(new URL(fallbackUrl).searchParams.get("q"), "Juventus calciomercato");
+  assert.equal(new URL(fallbackUrl).searchParams.get("format"), "rss");
+  assert.match(fetchHeadersForUrl(googleUrl).Accept, /application\/rss\+xml/);
+
+  const originalFetch = globalThis.fetch;
+  const requested = [];
+  globalThis.fetch = async url => {
+    requested.push(String(url));
+    if (String(url).startsWith("https://news.google.com/")) return new Response("", { status: 503 });
+    return new Response(`<?xml version="1.0"?><rss><channel><item><title>Juventus, nuova offerta per il mercato</title><link>https://example.com/news</link><description>Ultime sul calciomercato Juventus</description></item></channel></rss>`, { status: 200 });
+  };
+  try {
+    const items = await fetchSourceItems({ name: "Google News mercato", url: googleUrl, category: "calciomercato" });
+    assert.equal(requested.filter(url => url.startsWith("https://news.google.com/")).length, 3);
+    assert.ok(requested.some(url => url.startsWith("https://www.bing.com/news/search")));
+    assert.equal(items[0].title, "Juventus, nuova offerta per il mercato");
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("la sezione Mondiali conclusa non compare piu nel sito pubblico", async () => {
   const [home, mercato, grafiche, quiz, sitemap, redirects, worker] = await Promise.all([
     read("index.html"),

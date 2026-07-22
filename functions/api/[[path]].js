@@ -3309,25 +3309,31 @@ function json(data, status = 200) {
 
 async function fetchText(url) {
   let lastStatus = 0;
-  for (let attempt = 0; attempt < 2; attempt++) {
+  const retryDelays = [350, 900];
+  for (let attempt = 0; attempt < 3; attempt++) {
     const response = await fetch(url, { headers: fetchHeadersForUrl(url) });
     if (response.ok) return response.text();
     lastStatus = response.status;
-    if (!isTransientHttpStatus(response.status) || attempt === 1) break;
-    await delay(300);
+    if (response.body) await response.body.cancel();
+    if (!isTransientHttpStatus(response.status) || attempt === 2) break;
+    await delay(retryDelays[attempt]);
   }
   throw new Error("HTTP " + lastStatus);
 }
 
 function fetchHeadersForUrl(url) {
-  if (isTelegramWebSource(url)) {
+  if (isTelegramWebSource(url) || isNewsRssSource(url)) {
     return {
-      "User-Agent": "Mozilla/5.0 (compatible; ICV Scout/1.0; +https://ilcalciodivince.com)",
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0 Safari/537.36 ICVScout/1.0",
+      "Accept": isNewsRssSource(url) ? "application/rss+xml,application/xml;q=0.9,text/xml;q=0.8,*/*;q=0.7" : "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
       "Accept-Language": "it-IT,it;q=0.9,en;q=0.8",
     };
   }
   return { "User-Agent": "ICV Scout/1.0" };
+}
+
+function isNewsRssSource(url) {
+  return /:\/\/(?:news\.google\.com|www\.bing\.com)\/(?:rss\/search|news\/search)/i.test(String(url || ""));
 }
 
 async function fetchJson(url, headers) {
@@ -3601,10 +3607,33 @@ function isBadYoutubeTopic(value) {
 }
 
 async function fetchSourceItems(source) {
-  const text = await fetchText(source.url);
+  let text;
+  try {
+    text = await fetchText(source.url);
+  } catch (err) {
+    const fallbackUrl = googleNewsFallbackUrl(source.url);
+    if (!fallbackUrl || !isTransientFetchError(err)) throw err;
+    text = await fetchText(fallbackUrl);
+  }
   if (isTelegramWebSource(source.url)) return parseTelegramWeb(text, source);
   if (isJuventusOfficialHomepage(source.url)) return parseJuventusOfficialPage(text);
   return parseRss(text);
+}
+
+function googleNewsFallbackUrl(value) {
+  try {
+    const url = new URL(String(value || ""));
+    if (url.hostname !== "news.google.com" || url.pathname !== "/rss/search") return "";
+    const query = cleanText(url.searchParams.get("q"));
+    if (!query) return "";
+    const fallback = new URL("https://www.bing.com/news/search");
+    fallback.searchParams.set("q", query);
+    fallback.searchParams.set("format", "rss");
+    fallback.searchParams.set("setlang", "it-it");
+    return fallback.toString();
+  } catch {
+    return "";
+  }
 }
 
 function isTelegramWebSource(url) {
@@ -5244,4 +5273,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { buildLiveDeskEntries, marketDealMetadata, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor };
+export { buildLiveDeskEntries, marketDealMetadata, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl };

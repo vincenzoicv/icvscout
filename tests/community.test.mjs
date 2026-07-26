@@ -113,6 +113,18 @@ test("Mercato Board classifica e filtra le trattative raccolte", async () => {
     reliability: "trusted",
     source_name: "Sky Sport, Gianluca Di Marzio",
   }).direction, "scenario");
+
+  const { marketTopicName, isIgnoredMarketSignal } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  assert.equal(marketTopicName({
+    player_name: "Fiorentina",
+    note: "La Fiorentina insiste per Joao Mario: ecco quanto chiede la Juventus",
+  }), "Joao Mario");
+  assert.equal(marketTopicName({
+    player_name: "Romano",
+    note: "Romano: Per Alajbegovic si è mosso il Chelsea, ma Napoli e Juve hanno telefonato",
+  }), "Alajbegovic");
+  assert.equal(isIgnoredMarketSignal({ player_name: "Pagina", note: "Pagina 1 articolo" }), true);
+  assert.equal(isIgnoredMarketSignal({ player_name: "Punto mercato", note: "Riepilogo generico" }), true);
 });
 
 test("la Community espone le funzioni finali di lancio", async () => {

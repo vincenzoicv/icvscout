@@ -3992,6 +3992,8 @@ function marketTopicName(row) {
   const direct = [
     ["Sorloth", /s[øo]rloth|sorlot|solot/i],
     ["Kolo Muani", /kolo\s+muani|muani/i],
+    ["Joao Mario", /\bjoao\s+mario\b/i],
+    ["Alajbegovic", /\balajbegovic\b/i],
     ["Openda", /\bopenda\b/i],
     ["Goretzka", /\bgoretzka\b/i],
     ["Dibu Martinez", /\bdibu\s+martinez\b|\bjuve\s+su\s+martinez\b|\bmartinez\b.*\b(porta|portiere|juve|juventus)\b/i],
@@ -4029,6 +4031,7 @@ function isIgnoredMarketSignal(row) {
   const text = cleanText([name, row && row.note, row && row.source_name].join(" ")).toLowerCase();
   const createdAt = new Date(row && row.created_at || 0).getTime();
   if (createdAt && Date.now() - createdAt > 72 * 3600000) return true;
+  if (/^(pagina(?:\s+\d+)?|punto mercato|mercato juve)$/i.test(name)) return true;
   if (/^(pap|papa|marzio|di marzio|luca toselli|romeo agresti|gianni balzarini)$/i.test(name)) return true;
   if (/youtube/.test(text) && isBadMarketTopic(name)) return true;
   if (/youtube scout:/.test(text)) return true;
@@ -4037,7 +4040,7 @@ function isIgnoredMarketSignal(row) {
 }
 
 function isBadMarketTopic(value) {
-  return /^(youtube\s+)?scout$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^siamo$|^buonasera$|^buongiorno$|^adesso$|^oggi$|^perch$|^pap$|^papa$|^inter$|^milan$|^roma$|^napoli$|^udinese$|^solet$|^atta$|^greenwood$|^luca\s+toselli$|^romeo\s+agresti$|^gianni\s+balzarini$/i.test(cleanText(value));
+  return /^(youtube\s+)?scout$|^pagina(?:\s+\d+)?$|^punto\s+mercato$|^mercato\s+juve$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^siamo$|^buonasera$|^buongiorno$|^adesso$|^oggi$|^perch$|^pap$|^papa$|^inter$|^milan$|^roma$|^napoli$|^udinese$|^solet$|^atta$|^greenwood$|^luca\s+toselli$|^romeo\s+agresti$|^gianni\s+balzarini$/i.test(cleanText(value));
 }
 
 function normalizeTopicKey(value) {
@@ -5278,4 +5281,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { buildLiveDeskEntries, marketDealMetadata, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl };
+export { buildLiveDeskEntries, marketDealMetadata, marketTopicName, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl };

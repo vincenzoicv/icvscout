@@ -3918,6 +3918,7 @@ function aggregateMarketItems(rows) {
   for (const row of rows || []) {
     if (isIgnoredMarketSignal(row)) continue;
     const topic = marketTopicName(row);
+    if (isIgnoredMarketSignal({ ...row, player_name: topic })) continue;
     const key = normalizeTopicKey(topic);
     if (!key) continue;
     const existing = byTopic.get(key);

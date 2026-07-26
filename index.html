@@ -107,7 +107,9 @@ main{padding-top:58px;position:relative;z-index:1;}
 .friendly-meta{display:flex;flex-direction:column;gap:2px;line-height:1;}
 .friendly-meta strong{font-size:12px;font-weight:900;color:var(--gold-l);}
 .friendly-status{font-size:8px;letter-spacing:1.2px;color:rgba(255,255,255,.48);}
-.friendly-match{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12px;letter-spacing:1px;white-space:nowrap;}
+.friendly-match{display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden;font-size:12px;letter-spacing:1px;white-space:nowrap;}
+.friendly-match-name{overflow:hidden;text-overflow:ellipsis;}
+.friendly-scorer{overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,.52);font-size:8px;font-weight:700;letter-spacing:1.1px;}
 .friendly-result{font-family:"Bebas Neue";font-size:22px;line-height:1;letter-spacing:1.5px;color:var(--white);white-space:nowrap;}
 .friendly-item.is-final{background:linear-gradient(110deg,rgba(196,150,42,.13),rgba(255,255,255,.025));box-shadow:inset 3px 0 0 var(--gold);}
 .friendly-item.is-final .friendly-status{color:#79d99a;}
@@ -601,17 +603,20 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
       <div class="friendly-fixtures">
         <div class="friendly-item is-final">
           <div class="friendly-meta"><strong>18 LUG</strong><span class="friendly-status">FINALE</span></div>
-          <span class="friendly-match">Basilea-Juventus</span>
+          <span class="friendly-match"><span class="friendly-match-name">Basilea-Juventus</span></span>
           <strong class="friendly-result" aria-label="Risultato zero a zero">0-0</strong>
         </div>
-        <div class="friendly-item">
-          <div class="friendly-meta"><strong>25 LUG</strong><span class="friendly-status">PROSSIMA</span></div>
-          <span class="friendly-match">Standard Liegi-Juventus</span>
-          <strong class="friendly-result">20:00</strong>
+        <div class="friendly-item is-final">
+          <div class="friendly-meta"><strong>25 LUG</strong><span class="friendly-status">FINALE</span></div>
+          <span class="friendly-match">
+            <span class="friendly-match-name">Standard Liegi-Juventus</span>
+            <span class="friendly-scorer">Gol Miretti</span>
+          </span>
+          <strong class="friendly-result" aria-label="Risultato zero a uno per la Juventus">0-1</strong>
         </div>
         <div class="friendly-item">
           <div class="friendly-meta"><strong>31 LUG</strong><span class="friendly-status">JTC</span></div>
-          <span class="friendly-match">Juventus-Nizza</span>
+          <span class="friendly-match"><span class="friendly-match-name">Juventus-Nizza</span></span>
           <strong class="friendly-result">18:00</strong>
         </div>
       </div>

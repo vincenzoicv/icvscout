@@ -12,9 +12,12 @@ test("la home distingue risultati e prossime amichevoli", async () => {
     "Basilea-Juventus",
     "Risultato zero a zero",
     "Standard Liegi-Juventus",
+    "Risultato zero a uno per la Juventus",
+    "Gol Miretti",
     "Juventus-Nizza",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.match(html, /friendly-item is-final[\s\S]*?FINALE[\s\S]*?0-0/);
+  assert.match(html, /25 LUG[\s\S]*?FINALE[\s\S]*?Standard Liegi-Juventus[\s\S]*?Gol Miretti[\s\S]*?0-1/);
 });
 
 test("gli script delle pagine principali hanno sintassi valida", async () => {

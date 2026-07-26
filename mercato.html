@@ -132,7 +132,10 @@ function dealDirection(item){
   if(item.direction) return item.direction;
   var text=textOf(item);
   if(/rinnovo|prolungamento|nuovo contratto/.test(text)) return "renewal";
-  if(/cessione|partenza|in uscita|addio|trasfer|va al |vendita/.test(text)) return "outgoing";
+  if(/cessione|cedut|partenza|in uscita|lascia (?:la )?juve|lascer[aà] (?:la )?(?:juve|juventus|torino)|addio|ai saluti|trasfer|va al |vendita|plusvalenza|passaggio (?:al|alla|all )/.test(text)
+    || /verso (?:il|la|lo|l |i|gli|le) (?!juve(?:ntus)?\b)/.test(text)
+    || /offerta (?:presentata|arrivata|recapitata) alla juve(?:ntus)?\b/.test(text)
+    || /quanto chiede la juve(?:ntus)?\b/.test(text)) return "outgoing";
   return "incoming";
 }
 function dealStage(item){return item.deal_stage || (String(item.status||"").toLowerCase().indexOf("ufficial")>=0?"official":"interest");}

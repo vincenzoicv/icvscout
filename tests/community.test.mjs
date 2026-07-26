@@ -90,6 +90,24 @@ test("Mercato Board classifica e filtra le trattative raccolte", async () => {
     source_name: "La Gazzetta dello Sport",
   }).direction, "outgoing");
   assert.equal(marketDealMetadata({
+    player_name: "Openda",
+    note: "Juventus, Loïs Openda verso il Lione: da definire gli ultimi dettagli economici",
+    reliability: "trusted",
+    source_name: "Google News mercato",
+  }).direction, "outgoing");
+  assert.equal(marketDealMetadata({
+    player_name: "Joao Mario",
+    note: "Di Marzio: Joao Mario, offerta presentata alla Juve. Ecco quando si chiude",
+    reliability: "trusted",
+    source_name: "Di Marzio Juventus",
+  }).direction, "outgoing");
+  assert.equal(marketDealMetadata({
+    player_name: "Kolo Muani",
+    note: "La Juventus presenta una nuova offerta al PSG per Kolo Muani",
+    reliability: "trusted",
+    source_name: "Sky Sport",
+  }).direction, "incoming");
+  assert.equal(marketDealMetadata({
     player_name: "Kolo Muani",
     note: "Tre possibili alternative a Kolo Muani",
     reliability: "trusted",

@@ -3958,7 +3958,12 @@ function marketDealMetadata(row) {
   const reliability = cleanText(row && row.reliability).toLowerCase();
   let direction = "incoming";
   if (/rinnovo|prolungamento|adeguamento|nuovo contratto/.test(text)) direction = "renewal";
-  else if (/cessione|cedut|partenza|in uscita|lascia la juve|addio|trasfer(?:imento|isce)|va al |vendita|plusvalenza/.test(text)) direction = "outgoing";
+  else if (
+    /cessione|cedut|partenza|in uscita|lascia (?:la )?juve|lascer[aà] (?:la )?(?:juve|juventus|torino)|addio|ai saluti|trasfer(?:imento|isce)|va al |vendita|plusvalenza|passaggio (?:al|alla|all )/.test(text)
+    || /verso (?:il|la|lo|l |i|gli|le) (?!juve(?:ntus)?\b)/.test(text)
+    || /offerta (?:presentata|arrivata|recapitata) alla juve(?:ntus)?\b/.test(text)
+    || /quanto chiede la juve(?:ntus)?\b/.test(text)
+  ) direction = "outgoing";
   else if (/alternativ|scenario|piano b|possibili nomi|lista dei nomi|opzione per il futuro/.test(text)) direction = "scenario";
 
   let dealStage = "interest";

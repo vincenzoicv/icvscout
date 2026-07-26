@@ -20,6 +20,15 @@ test("la home distingue risultati e prossime amichevoli", async () => {
   assert.match(html, /25 LUG[\s\S]*?FINALE[\s\S]*?Standard Liegi-Juventus[\s\S]*?Gol Miretti[\s\S]*?0-1/);
 });
 
+test("News e Statistiche scorrono alla sezione richiesta", async () => {
+  const html = await read("index.html");
+  assert.match(html, /function scrollSectionIntoView\(section, behavior\)/);
+  assert.match(html, /scrollSectionIntoView\(el, scrollBehavior \|\| "smooth"\)/);
+  assert.match(html, /showSection\(id, button \|\| null, "auto"\)/);
+  assert.match(html, /renderHomeLinks\("homeInstagramList"[\s\S]*?alignHashedSection\(\)/);
+  assert.doesNotMatch(html, /function showSec\(id,btn\)\{[\s\S]*?window\.scrollTo\(\{top:0/);
+});
+
 test("gli script delle pagine principali hanno sintassi valida", async () => {
   for (const file of ["community.html", "icv_admin.html", "mercato.html", "giocatore.html"]) {
     const html = await read(file);

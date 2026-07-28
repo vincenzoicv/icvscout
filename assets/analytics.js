@@ -52,13 +52,21 @@
   function isInternalTraffic(){
     return document.cookie.split(";").some(function(part){ return part.trim()===internalTrafficCookie+"=1"; });
   }
+  function isAnalyticsEnabled(){
+    if(navigator.doNotTrack==="1") return false;
+    if(window.ICVPrivacy&&typeof window.ICVPrivacy.enabled==="function") return window.ICVPrivacy.enabled("analytics");
+    try{
+      var stored=JSON.parse(localStorage.getItem("icv_privacy_preferences")||"null");
+      return !stored||stored.analytics!==false;
+    }catch(e){ return true; }
+  }
   function track(name,meta){
-    if(!allowed.has(name)||navigator.doNotTrack==="1"||isInternalTraffic()) return;
+    if(!allowed.has(name)||!isAnalyticsEnabled()||isInternalTraffic()) return;
     var body=JSON.stringify(payload(name,meta));
     if(navigator.sendBeacon){ navigator.sendBeacon(endpoint,new Blob([body],{type:"application/json"})); return; }
     fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:body,keepalive:true}).catch(function(){});
   }
-  window.ICVAnalytics={track:track,isInternalTraffic:isInternalTraffic};
+  window.ICVAnalytics={track:track,isInternalTraffic:isInternalTraffic,isEnabled:isAnalyticsEnabled};
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){track("page_view")},{once:true}); else track("page_view");
   document.addEventListener("click",function(event){
     var el=event.target.closest("a[href],[data-analytics-event]"); if(!el) return;

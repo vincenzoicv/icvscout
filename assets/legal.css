@@ -1,0 +1,141 @@
+:root {
+  color-scheme: dark;
+  --gold: #e1b94e;
+  --text: #f5f1e8;
+  --muted: #aaa49a;
+  --line: #332c1c;
+  --panel: #11100d;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #080807;
+  color: var(--text);
+  font: 17px/1.7 Barlow, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  border-bottom: 1px solid var(--line);
+  background: rgba(13, 12, 9, .96);
+  backdrop-filter: blur(14px);
+}
+header div,
+main,
+footer div {
+  width: min(880px, calc(100% - 32px));
+  margin: auto;
+}
+header div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 0;
+}
+header nav,
+footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+a { color: var(--gold); }
+.brand {
+  color: var(--text);
+  font: 900 23px/1 "Barlow Condensed", sans-serif;
+  letter-spacing: 2px;
+  text-decoration: none;
+}
+main { padding: 52px 0 80px; }
+h1 {
+  margin: 0 0 16px;
+  font: 400 clamp(48px, 8vw, 78px)/.95 "Bebas Neue", sans-serif;
+  letter-spacing: 1px;
+}
+h2 {
+  margin: 42px 0 10px;
+  color: var(--gold);
+  font: 800 27px/1.1 "Barlow Condensed", sans-serif;
+}
+h3 { margin: 24px 0 8px; font-size: 18px; }
+p, li { color: var(--muted); }
+strong { color: var(--text); }
+.legal-address {
+  padding: 16px;
+  border-left: 3px solid var(--gold);
+  background: rgba(17, 16, 13, .54);
+  color: var(--muted);
+  font-style: normal;
+}
+.date { color: var(--gold); font-weight: 700; }
+.note,
+.summary {
+  padding: 16px;
+  border: 1px solid #44381b;
+  border-radius: 8px;
+  background: #141109;
+}
+.data-table {
+  width: 100%;
+  margin: 18px 0;
+  border-collapse: collapse;
+  color: var(--muted);
+}
+.data-table th,
+.data-table td {
+  padding: 12px;
+  border: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.data-table th { color: var(--text); background: var(--panel); }
+footer {
+  border-top: 1px solid var(--line);
+  padding: 24px 0 32px;
+  color: var(--muted);
+  font-size: 13px;
+}
+footer div { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+button.link-button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--gold);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+@media (max-width: 620px) {
+  header div { align-items: flex-start; flex-direction: column; }
+  .data-table,
+  .data-table tbody,
+  .data-table tr,
+  .data-table td { display: block; width: 100%; }
+  .data-table thead { display: none; }
+  .data-table tr {
+    margin: 0 0 12px;
+    border: 1px solid var(--line);
+    background: rgba(17, 16, 13, .54);
+  }
+  .data-table td {
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .data-table td:last-child { border-bottom: 0; }
+  .data-table td:nth-child(2)::before,
+  .data-table td:nth-child(3)::before {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--gold);
+    font: 800 12px/1 "Barlow Condensed", sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .data-table td:nth-child(2)::before { content: "Finalità"; }
+  .data-table td:nth-child(3)::before { content: "Durata indicativa"; }
+}

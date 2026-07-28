@@ -192,13 +192,17 @@ test("l'API protegge cancellazione account e deep link", async () => {
 });
 
 test("privacy, regolamento e sitemap sono pubblicabili", async () => {
-  const [privacy, rules, sitemap, redirects] = await Promise.all([
-    read("privacy.html"), read("regolamento-community.html"), read("sitemap.xml"), read("_redirects"),
+  const [privacy, cookies, rules, sitemap, redirects] = await Promise.all([
+    read("privacy.html"), read("cookie-policy.html"), read("regolamento-community.html"), read("sitemap.xml"), read("_redirects"),
   ]);
-  assert.match(privacy, /cancellare definitivamente account e dati/);
+  assert.match(privacy, /cancellare definitivamente account e dati/i);
   assert.match(privacy, /Supabase/);
+  assert.match(cookies, /Analytics anonimo ICV/);
+  assert.match(cookies, /data-privacy-settings/);
   assert.match(rules, /Moderazione/);
   assert.match(sitemap, /<loc>https:\/\/ilcalciodivince\.com\/privacy<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/ilcalciodivince\.com\/cookie-policy<\/loc>/);
+  assert.match(redirects, /\/cookie-policy\.html \/cookie-policy 301/);
   assert.match(redirects, /\/regolamento-community\.html \/regolamento-community 301/);
 });
 
@@ -209,10 +213,11 @@ test("la cancellazione rimuove file Storage e utente Auth", async () => {
   assert.match(api, /prefixes: \[\.\.\.new Set\(storagePaths\)\]/);
 });
 
-test("gli script esterni non bloccano il parsing", async () => {
+test("le librerie Community sono locali e non bloccano il parsing", async () => {
   const html = await read("community.html");
-  assert.match(html, /<script defer src="https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase/);
-  assert.match(html, /<script defer src="https:\/\/unpkg\.com\/lucide/);
+  assert.match(html, /<script defer src="\/assets\/supabase\.min\.js/);
+  assert.match(html, /<script defer src="\/assets\/lucide\.min\.js/);
+  assert.doesNotMatch(html, /cdn\.jsdelivr|unpkg\.com/);
   assert.match(html, /window\.addEventListener\("DOMContentLoaded",init\)/);
 });
 
@@ -275,7 +280,8 @@ test("ICV Analytics raccoglie dati anonimi e li mostra nell'admin", async () => 
     read("supabase/migrations/20260715150000_icv_analytics.sql"),
   ]);
   assert.match(tracker, /sessionStorage/);
-  assert.doesNotMatch(tracker, /localStorage/);
+  assert.match(tracker, /icv_privacy_preferences/);
+  assert.match(tracker, /isAnalyticsEnabled/);
   assert.match(tracker, /navigator\.doNotTrack/);
   assert.match(tracker, /icv_internal_traffic/);
   assert.match(tracker, /isInternalTraffic\(\)/);

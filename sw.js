@@ -49,8 +49,6 @@ self.addEventListener('fetch', e => {
     url.includes('/api/') ||
     url.includes('supabase.co') ||
     url.includes('rss2json') ||
-    url.includes('fonts.googleapis') ||
-    url.includes('fonts.gstatic') ||
     url.includes('api-football') ||
     url.includes('football-data')
   ) return;

@@ -14,13 +14,9 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#080704">
   <link rel="manifest" href="/manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="preconnect" href="https://unpkg.com" crossorigin>
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <link rel="stylesheet" href="/assets/fonts.css?v=20260728-1">
+  <script defer src="/assets/supabase.min.js?v=2.89.0"></script>
+  <script defer src="/assets/lucide.min.js?v=0.468.0"></script>
   <script defer src="/assets/turnstile.js"></script>
   <style>
     :root{--gold:#d3a536;--gold2:#f3cd68;--ink:#070706;--glass:rgba(10,9,7,.66);--glass2:rgba(20,17,11,.72);--line:rgba(255,255,255,.1);--goldline:rgba(211,165,54,.3);--text:#f6f2e8;--muted:rgba(246,242,232,.58);--faint:rgba(246,242,232,.34);--green:#4ade80;--red:#ff7474}
@@ -74,7 +70,7 @@
           <button class="icon-btn" title="Notifiche" aria-label="Notifiche" onclick="openNotifications()"><i data-lucide="bell"></i><span class="hidden" id="notificationBadge"></span></button>
           <a class="icon-btn" href="/" title="ICV Scout" aria-label="Torna a ICV Scout"><i data-lucide="chart-no-axes-combined"></i></a>
         </nav>
-        <div class="rail-bottom"><button class="icon-btn" title="Profilo" aria-label="Profilo" onclick="openProfile()"><i data-lucide="user-round"></i></button></div>
+        <div class="rail-bottom"><button class="icon-btn" title="Privacy" aria-label="Preferenze privacy" data-privacy-settings><i data-lucide="shield-check"></i></button><button class="icon-btn" title="Profilo" aria-label="Profilo" onclick="openProfile()"><i data-lucide="user-round"></i></button></div>
       </aside>
 
       <main class="center">
@@ -146,7 +142,7 @@
   <div class="modal-wrap hidden" id="authModal">
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
       <div class="modal-head"><div><h2 id="authTitle">Entra in ICV</h2><p>Accedi alla community bianconera con un link sicuro via email oppure con Google.</p></div><button class="close" title="Chiudi" onclick="closeAuth()"><i data-lucide="x"></i></button></div>
-      <form class="auth-form" id="emailForm"><input type="email" id="authEmail" aria-label="Indirizzo email" placeholder="La tua email" autocomplete="email" required><button class="auth-submit" type="submit">Ricevi link di accesso</button><div class="divider">oppure</div><button class="google-btn" id="googleBtn" type="button"><i data-lucide="log-in"></i> Continua con Google</button><div class="auth-status" id="authStatus" aria-live="polite"></div><p class="legal">Accedendo accetti il <a href="/regolamento-community" target="_blank"><u>Regolamento Community</u></a> e la <a href="/privacy" target="_blank"><u>Privacy Policy</u></a>.</p></form>
+      <form class="auth-form" id="emailForm"><input type="email" id="authEmail" aria-label="Indirizzo email" placeholder="La tua email" autocomplete="email" required><button class="auth-submit" type="submit">Ricevi link di accesso</button><div class="divider">oppure</div><button class="google-btn" id="googleBtn" type="button"><i data-lucide="log-in"></i> Continua con Google</button><div class="auth-status" id="authStatus" aria-live="polite"></div><p class="legal">Accedendo accetti il <a href="/regolamento-community" target="_blank"><u>Regolamento Community</u></a> e la <a href="/privacy" target="_blank"><u>Privacy Policy</u></a>. Consulta anche la <a href="/cookie-policy" target="_blank"><u>Cookie Policy</u></a>.</p></form>
     </section>
   </div>
   <div class="modal-wrap hidden" id="profileModal">
@@ -344,6 +340,7 @@
     async function blockUser(btn,id){if(!session)return openAuth();try{var data=await communityApi("profiles/"+id+"/block",{method:"POST"});btn.textContent=data.active?"Sblocca":"Blocca";await loadBlockedUsers();await loadFeed();showToast(data.active?"Utente bloccato":"Utente sbloccato")}catch(error){showToast(error.message)}}
     window.addEventListener("DOMContentLoaded",init);
   </script>
-  <script defer src="/assets/analytics.js?v=20260719-1"></script>
+  <script defer src="/assets/privacy-controls.js?v=20260728-1"></script>
+  <script defer src="/assets/analytics.js?v=20260728-1"></script>
 </body>
 </html>

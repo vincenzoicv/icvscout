@@ -288,7 +288,10 @@ function runAutomation(action){
       showToast(automationResultMessage(action, res));
       return load();
     })
-    .catch(function(err){ showToast(err.message); });
+    .catch(function(err){
+      showToast(action === "instagram_import" ? friendlyAutomationError(err.message) : err.message);
+      return load().catch(function(){});
+    });
 }
 function filterValue(id, fallback){var el=document.getElementById(id);return el?el.value:fallback}
 function updateContentFilters(){
@@ -909,6 +912,9 @@ function automationResultMessage(action, res){
     social:"Social",
     instagram_import:"Instagram"
   };
+  if(action === "instagram_import"){
+    return "Instagram: " + Number(res && res.imported || 0) + " contenuti controllati, " + Number(res && res.inserted || 0) + " nuovi importati";
+  }
   return (labels[action] || action) + " completata";
 }
 function sourceReportFor(res, name){
@@ -932,6 +938,10 @@ function isIgnorableAutomationError(message){
 function friendlyAutomationError(message){
   var text = String(message || "");
   if(isIgnorableAutomationError(text)) return "alcuni elementi senza dati utili sono stati saltati";
+  if(/token instagram scaduto|access token|oauth|session has expired|token.*expired/i.test(text)) return "Token Instagram scaduto o revocato. Genera un nuovo token Meta e aggiorna IG_ACCESS_TOKEN in Cloudflare.";
+  if(/permessi instagram insufficienti|permission|not authorized/i.test(text)) return "Permessi Instagram insufficienti. Ricollega l'account Meta e verifica i permessi.";
+  if(/temporaneamente limitato|rate limit|too many requests/i.test(text)) return "Instagram ha limitato temporaneamente le richieste. Attendi qualche minuto e riprova.";
+  if(/instagram non (e|è) disponibile/i.test(text)) return "Instagram non è disponibile in questo momento. Riprova tra qualche minuto.";
   return text.length > 160 ? text.slice(0, 157) + "..." : text;
 }
 function youtubeScoutAlert(run){

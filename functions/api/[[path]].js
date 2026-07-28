@@ -363,10 +363,14 @@ async function runHomeAutopilot(env, options = {}) {
 
   if (env.IG_ACCESS_TOKEN) {
     try {
-      result.tasks.push({ type: "instagram_import", result: await importInstagramMedia(env) });
+      const instagramResult = await importInstagramMedia(env);
+      result.tasks.push({ type: "instagram_import", result: instagramResult });
+      await logRun(env, "instagram_import", instagramResult);
     } catch (err) {
+      const instagramFailure = automationFailure(err, "Errore Instagram");
       result.ok = false;
-      result.tasks.push({ type: "instagram_import", error: err.message || "Errore Instagram" });
+      result.tasks.push({ type: "instagram_import", error: instagramFailure.error });
+      await logRun(env, "instagram_import", instagramFailure);
     }
   }
 
@@ -1905,9 +1909,14 @@ async function adminAutomate(request, env) {
   }
 
   if (action === "instagram_import") {
-    const result = await importInstagramMedia(env);
-    await logRun(env, "instagram_import", result);
-    return json(result);
+    try {
+      const result = await importInstagramMedia(env);
+      await logRun(env, "instagram_import", result);
+      return json(result);
+    } catch (err) {
+      await logRun(env, "instagram_import", automationFailure(err, "Errore Instagram"));
+      throw err;
+    }
   }
 
   if (action === "youtube_scout") {
@@ -2361,7 +2370,7 @@ async function importInstagramMedia(env) {
   if (!env.IG_ACCESS_TOKEN) throw new Error("Configura IG_ACCESS_TOKEN per importare Instagram");
   const fields = "id,caption,media_type,media_url,permalink,timestamp,thumbnail_url";
   const url = "https://graph.instagram.com/me/media?fields=" + encodeURIComponent(fields) + "&limit=8&access_token=" + encodeURIComponent(env.IG_ACCESS_TOKEN);
-  const data = await fetchJson(url);
+  const data = await fetchInstagramJson(url);
   const media = Array.isArray(data.data) ? data.data : [];
   let inserted = 0;
 
@@ -2393,6 +2402,75 @@ async function importInstagramMedia(env) {
   }
 
   return { ok: true, imported: media.length, inserted };
+}
+
+async function fetchInstagramJson(url) {
+  const response = await fetch(url, {
+    headers: {
+      "Accept": "application/json",
+      "User-Agent": "ICV Scout/1.0",
+    },
+  });
+  const text = await response.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = {};
+  }
+  if (!response.ok) {
+    const failure = instagramFailureDetails(response.status, data);
+    const error = new Error(failure.message);
+    error.status = failure.status;
+    error.details = failure.details;
+    throw error;
+  }
+  return data;
+}
+
+function instagramFailureDetails(httpStatus, payload) {
+  const meta = payload && typeof payload.error === "object" ? payload.error : {};
+  const providerMessage = cleanText(meta.message || "");
+  const code = Number(meta.code || 0);
+  const subcode = Number(meta.error_subcode || 0);
+  let message = providerMessage
+    ? "Instagram non ha completato l'importazione: " + providerMessage
+    : "Instagram non ha completato l'importazione (HTTP " + Number(httpStatus || 500) + ")";
+  let action = "retry";
+
+  if (Number(httpStatus) === 401 || code === 190 || /access token|oauth|session has expired|token.*expired/i.test(providerMessage)) {
+    message = "Token Instagram scaduto o revocato. Genera un nuovo token Meta e aggiorna IG_ACCESS_TOKEN in Cloudflare.";
+    action = "refresh_token";
+  } else if ([10, 200].includes(code) || /permission|permissions|not authorized/i.test(providerMessage)) {
+    message = "Permessi Instagram insufficienti. Ricollega l'account Meta e verifica i permessi per leggere i contenuti.";
+    action = "check_permissions";
+  } else if (Number(httpStatus) === 429 || [4, 17, 32, 613].includes(code)) {
+    message = "Instagram ha temporaneamente limitato le richieste. Attendi qualche minuto e riprova.";
+    action = "retry_later";
+  } else if ([500, 502, 503, 504].includes(Number(httpStatus))) {
+    message = "Instagram non è disponibile in questo momento. Riprova tra qualche minuto.";
+    action = "retry_later";
+  }
+
+  return {
+    message,
+    status: 502,
+    details: {
+      provider: "instagram",
+      provider_status: Number(httpStatus || 0),
+      provider_code: code || undefined,
+      provider_subcode: subcode || undefined,
+      action,
+    },
+  };
+}
+
+function automationFailure(err, fallback) {
+  return {
+    ok: false,
+    error: cleanText(err && err.message || fallback || "Errore automazione"),
+    ...(err && err.details || {}),
+  };
 }
 
 async function footballDataProxy(path, url, env) {
@@ -5282,4 +5360,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { buildLiveDeskEntries, marketDealMetadata, marketTopicName, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl };
+export { buildLiveDeskEntries, marketDealMetadata, marketTopicName, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl, instagramFailureDetails };

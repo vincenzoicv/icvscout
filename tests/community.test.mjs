@@ -492,3 +492,27 @@ test("la rifinitura segmenta notifiche, spiega le fonti e monitora le automazion
   assert.equal(monitor.jobs.find(job => job.key === "home_autopilot").status, "delayed");
   assert.equal(monitor.sources[0].status, "degraded");
 });
+
+test("l'import Instagram spiega gli errori Meta e registra i fallimenti", async () => {
+  const [admin, api] = await Promise.all([
+    read("icv_admin.html"),
+    read("functions/api/[[path]].js"),
+  ]);
+  const { instagramFailureDetails } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+
+  const expired = instagramFailureDetails(400, {
+    error: { message: "Error validating access token: Session has expired", type: "OAuthException", code: 190, error_subcode: 463 },
+  });
+  assert.equal(expired.details.action, "refresh_token");
+  assert.match(expired.message, /Token Instagram scaduto o revocato/);
+  assert.equal(expired.details.provider_code, 190);
+  assert.doesNotMatch(expired.message, /EA[A-Za-z0-9]+/);
+
+  const rateLimited = instagramFailureDetails(429, { error: { message: "Application request limit reached", code: 4 } });
+  assert.equal(rateLimited.details.action, "retry_later");
+  assert.match(rateLimited.message, /temporaneamente limitato/);
+
+  assert.match(api, /logRun\(env, "instagram_import", automationFailure/);
+  assert.match(admin, /Token Instagram scaduto o revocato/);
+  assert.match(admin, /contenuti controllati/);
+});

@@ -516,3 +516,8 @@ test("l'import Instagram spiega gli errori Meta e registra i fallimenti", async 
   assert.match(admin, /Token Instagram scaduto o revocato/);
   assert.match(admin, /contenuti controllati/);
 });
+
+test("il router traduce gli errori asincroni delle automazioni in risposte JSON", async () => {
+  const api = await read("functions/api/[[path]].js");
+  assert.match(api, /path === "admin\/automate"\) return await adminAutomate\(request, env\)/);
+});

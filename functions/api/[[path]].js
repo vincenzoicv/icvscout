@@ -149,7 +149,7 @@ export async function onRequest(context) {
     if (path === "community/config") return communityConfig(env);
     if (path === "community/feed" || path.startsWith("community/")) return await communityRoute(request, env, url, path.replace(/^community\/?/, ""));
     if (path === "admin/news") return adminNews(request, env);
-    if (path === "admin/automate") return adminAutomate(request, env);
+    if (path === "admin/automate") return await adminAutomate(request, env);
     if (path === "cron/autopilot") return cronAutopilot(request, env);
     if (path.startsWith("football-data/")) return footballDataProxy(path, url, env);
     return apiSportsProxy(path, url, env);

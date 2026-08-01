@@ -44,11 +44,60 @@ test("News e Statistiche scorrono alla sezione richiesta", async () => {
 });
 
 test("gli script delle pagine principali hanno sintassi valida", async () => {
-  for (const file of ["community.html", "icv_admin.html", "mercato.html", "giocatore.html"]) {
+  for (const file of ["community.html", "icv_admin.html", "mercato.html", "giocatore.html", "calendario-juventus.html"]) {
     const html = await read(file);
     const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(match => match[1]).filter(Boolean);
     assert.ok(scripts.length, `${file} deve contenere JavaScript inline`);
     for (const script of scripts) new Function(script);
+  }
+});
+
+test("il calendario Juventus si aggiorna su Apple e Google con i risultati", async () => {
+  const [home, page, api, redirects, sitemap, worker] = await Promise.all([
+    read("index.html"),
+    read("calendario-juventus.html"),
+    read("functions/api/[[path]].js"),
+    read("_redirects"),
+    read("sitemap.xml"),
+    read("sw.js"),
+  ]);
+  assert.match(home, /href=["']\/calendario-juventus["']/);
+  for (const marker of ["Apple Calendar", "Google Calendar", "/api/juventus/calendar.ics", "Risultati automatici", "season=2026"]) {
+    assert.ok(page.includes(marker), `manca ${marker}`);
+  }
+  for (const marker of ['path === "juventus/calendar.ics"', "juventus-serie-a-", "Risultato finale:", "LAST-MODIFIED", "SEQUENCE:"]) {
+    assert.ok(api.includes(marker), `manca ${marker}`);
+  }
+  assert.match(redirects, /^\/calendario-juventus\.html \/calendario-juventus 301$/m);
+  assert.match(sitemap, /https:\/\/ilcalciodivince\.com\/calendario-juventus/);
+  assert.match(worker, /\/calendario-juventus\.html/);
+
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({ matches: [{
+    id: 2601,
+    utcDate: "2026-08-23T16:30:00Z",
+    lastUpdated: "2026-08-24T08:00:00Z",
+    status: "FINISHED",
+    matchday: 1,
+    homeTeam: { name: "Frosinone Calcio" },
+    awayTeam: { name: "Juventus FC" },
+    score: { fullTime: { home: 0, away: 2 } },
+  }] }), { status: 200, headers: { "Content-Type": "application/json" } });
+  try {
+    const { onRequest } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+    const response = await onRequest({
+      request: new Request("https://ilcalciodivince.com/api/juventus/calendar.ics"),
+      env: { FOOTBALL_DATA_KEY: "test" },
+    });
+    const calendar = await response.text();
+    const unfoldedCalendar = calendar.replace(/\r\n /g, "");
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("content-type"), /text\/calendar/);
+    assert.match(unfoldedCalendar, /UID:juventus-serie-a-2601@ilcalciodivince\.com/);
+    assert.match(unfoldedCalendar, /SUMMARY:Juventus: Frosinone Calcio 0-2 Juventus FC/);
+    assert.match(unfoldedCalendar, /Risultato finale: Frosinone Calcio 0-2 Juventus FC/);
+  } finally {
+    globalThis.fetch = originalFetch;
   }
 });
 

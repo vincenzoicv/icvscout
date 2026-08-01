@@ -142,6 +142,7 @@ export async function onRequest(context) {
     if (path === "world-cup/overview") return worldCupOverview(request, env, context);
     if (path === "world-cup/live") return worldCupLive(request, env);
     if (path === "world-cup/calendar.ics") return worldCupCalendar(request, env);
+    if (path === "juventus/calendar.ics") return juventusCalendar(request, env);
     if (path === "subscribe") return subscribeWorldCup(request, env);
     if (path === "quiz-result") return sendQuizResult(request, env);
     if (path === "analytics") return analyticsRoute(request, env, url);
@@ -2661,6 +2662,82 @@ async function worldCupCalendar(request, env) {
       "Cache-Control": "no-store, max-age=0, must-revalidate",
       "Pragma": "no-cache",
       "Expires": "0",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+}
+
+async function juventusCalendar(request, env) {
+  if (request.method !== "GET") return json({ error: "Metodo non consentito" }, 405);
+  if (!env.FOOTBALL_DATA_KEY) return json({ error: "FOOTBALL_DATA_KEY non configurata" }, 500);
+
+  const headers = { "X-Auth-Token": env.FOOTBALL_DATA_KEY };
+  const data = await fetchJson("https://api.football-data.org/v4/teams/109/matches?competitions=SA&season=2026", headers);
+  const now = new Date();
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//ICV Scout//Juventus Serie A 2026-27//IT",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "X-WR-CALNAME:ICV Juventus Serie A 2026/27",
+    "X-WR-CALDESC:Calendario Juventus con orari e risultati aggiornati automaticamente",
+    "X-APPLE-CALENDAR-COLOR:#C99837",
+    "REFRESH-INTERVAL;VALUE=DURATION:PT1H",
+    "X-PUBLISHED-TTL:PT1H",
+  ];
+
+  for (const match of data.matches || []) {
+    const kickoff = new Date(match.utcDate);
+    if (!Number.isFinite(kickoff.getTime())) continue;
+    const end = new Date(kickoff.getTime() + 2 * 60 * 60 * 1000);
+    const home = worldCupTeamName(match.homeTeam, "Squadra da definire");
+    const away = worldCupTeamName(match.awayTeam, "Squadra da definire");
+    const score = match.score && match.score.fullTime || {};
+    const finished = ["FINISHED", "AWARDED"].includes(match.status)
+      && Number.isFinite(score.home)
+      && Number.isFinite(score.away);
+    const result = finished ? `${home} ${score.home}-${score.away} ${away}` : "";
+    const summary = finished ? `Juventus: ${result}` : `Serie A: ${home} - ${away}`;
+    const description = [
+      match.matchday ? `${match.matchday}ª giornata di Serie A 2026/27` : "Serie A 2026/27",
+      finished ? `Risultato finale: ${result}` : "Orario aggiornato automaticamente da ICV Scout.",
+      "https://ilcalciodivince.com/",
+    ].join("\n");
+    const modified = new Date(match.lastUpdated || now);
+    const validModified = Number.isFinite(modified.getTime()) ? modified : now;
+    const sequence = Math.floor(validModified.getTime() / 1000);
+
+    lines.push(
+      "BEGIN:VEVENT",
+      `UID:juventus-serie-a-${match.id || formatIcsDate(kickoff)}@ilcalciodivince.com`,
+      `DTSTAMP:${formatIcsDate(now)}`,
+      `LAST-MODIFIED:${formatIcsDate(validModified)}`,
+      `SEQUENCE:${sequence}`,
+      `DTSTART:${formatIcsDate(kickoff)}`,
+      `DTEND:${formatIcsDate(end)}`,
+      `SUMMARY:${escapeIcsText(summary)}`,
+      `DESCRIPTION:${escapeIcsText(description)}`,
+      "URL:https://ilcalciodivince.com/",
+      "CATEGORIES:Serie A,Juventus",
+      `STATUS:${match.status === "CANCELLED" ? "CANCELLED" : "CONFIRMED"}`,
+      "TRANSP:TRANSPARENT",
+      "BEGIN:VALARM",
+      "TRIGGER:-PT30M",
+      "ACTION:DISPLAY",
+      `DESCRIPTION:${escapeIcsText(summary)}`,
+      "END:VALARM",
+      "END:VEVENT",
+    );
+  }
+
+  lines.push("END:VCALENDAR");
+  const calendar = lines.map(foldIcsLine).join("\r\n") + "\r\n";
+  return new Response(calendar, {
+    headers: {
+      "Content-Type": "text/calendar; charset=utf-8",
+      "Content-Disposition": 'attachment; filename="ICV-Juventus-Serie-A-2026-27.ics"',
+      "Cache-Control": "public, max-age=900, stale-while-revalidate=3600",
       "Access-Control-Allow-Origin": "*",
     },
   });

@@ -123,6 +123,8 @@ main{padding-top:58px;position:relative;z-index:1;}
 .mb-info{text-align:left;border-left:1px solid rgba(196,150,42,0.15);padding-left:16px;}
 .mb-info span{display:block;font-family:"Barlow Condensed";font-size:12px;font-weight:600;letter-spacing:2px;color:rgba(255,255,255,0.52);text-transform:uppercase;}
 .mb-info strong{font-family:"Barlow Condensed";font-size:16px;font-weight:700;color:rgba(255,255,255,0.88);letter-spacing:1px;}
+.calendar-link{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 12px;border:1px solid rgba(196,150,42,.34);border-radius:6px;background:rgba(196,150,42,.08);color:var(--gold-l);font-family:"Barlow Condensed";font-size:11px;font-weight:900;letter-spacing:1.2px;text-decoration:none;text-transform:uppercase;white-space:nowrap;}
+.calendar-link:hover{border-color:var(--gold);background:rgba(196,150,42,.15);}
 .home-dash{max-width:1100px;margin:-28px auto 18px;padding:0 20px;position:relative;z-index:2;display:grid;grid-template-columns:1.25fr .85fr .85fr;gap:12px;}
 .home-panel{background:var(--surface);border:1px solid var(--bdr);border-radius:10px;padding:20px;min-height:136px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.035),0 16px 36px rgba(0,0,0,0.16);}
 .home-panel{position:relative;overflow:hidden;transition:transform .32s cubic-bezier(.2,.8,.2,1),border-color .32s ease,box-shadow .32s ease;}
@@ -470,6 +472,7 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .friendly-result{font-size:21px;}
 .match-banner{flex-direction:column;gap:10px;text-align:center;width:100%;}
 .mb-info{border-left:none;padding-left:0;border-top:1px solid rgba(196,150,42,0.15);padding-top:10px;text-align:center;}
+.calendar-link{width:100%;}
 .hero-sil{opacity:0.08;right:-20px;}
 .section{padding:24px 12px 40px;}
 .sec-head{margin-bottom:24px;}
@@ -666,6 +669,7 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
     <div class="match-banner">
       <span class="mb-team juve">1ª GIORNATA</span><span class="mb-vs">&middot;</span><span class="mb-team">SERIE A 2026/27</span>
       <div class="mb-info"><span>Domenica 23 agosto &middot; 18.30 &middot; DAZN</span><strong>Frosinone-Juventus</strong></div>
+      <a class="calendar-link" href="/calendario-juventus">Aggiungi al calendario</a>
     </div>
   </div>
 </div>
@@ -1065,7 +1069,8 @@ function renderNoNextMatch() {
       "<div class='mb-team juve'>1ª GIORNATA</div>" +
       "<div class='mb-vs'>·</div>" +
       "<div class='mb-team'>SERIE A 2026/27</div>" +
-      "<div class='mb-info'><span>Domenica 23 agosto · 18.30 · DAZN</span><strong>Frosinone-Juventus</strong></div>";
+      "<div class='mb-info'><span>Domenica 23 agosto · 18.30 · DAZN</span><strong>Frosinone-Juventus</strong></div>" +
+      "<a class='calendar-link' href='/calendario-juventus'>Aggiungi al calendario</a>";
   }
   var ctx = document.getElementById("tatticaCtx");
   if (ctx) ctx.innerHTML = "Calendario <strong>Serie A 2026/27</strong> ufficiale pubblicato: la Juventus parte in trasferta contro il Frosinone domenica 23 agosto alle <strong>18.30</strong>.";

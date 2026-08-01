@@ -102,6 +102,7 @@ main{padding-top:58px;position:relative;z-index:1;}
 .friendly-label-copy strong{color:var(--gold-l);font-size:12px;letter-spacing:1.7px;}
 .friendly-label-copy span{color:rgba(255,255,255,.45);font-size:9px;letter-spacing:1.3px;}
 .friendly-fixtures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));min-width:0;}
+.friendly-fixtures.is-four{grid-template-columns:repeat(4,minmax(0,1fr));}
 .friendly-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px;min-width:0;padding:9px 13px;border-left:1px solid rgba(196,150,42,.14);background:rgba(255,255,255,.018);color:rgba(255,255,255,.84);}
 .friendly-item:first-child{border-left:0;}
 .friendly-meta{display:flex;flex-direction:column;gap:2px;line-height:1;}
@@ -462,6 +463,7 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .friendly-label-copy{flex-direction:row;align-items:center;gap:7px;}
 .friendly-label-copy span{font-size:8px;}
 .friendly-fixtures{grid-template-columns:1fr;}
+.friendly-fixtures.is-four{grid-template-columns:1fr;}
 .friendly-item{grid-template-columns:58px minmax(0,1fr) auto;border-left:0;border-top:1px solid rgba(196,150,42,.12);padding:9px 11px;}
 .friendly-item:first-child{border-top:0;}
 .friendly-match{font-size:12px;}
@@ -614,10 +616,49 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
           </span>
           <strong class="friendly-result" aria-label="Risultato zero a uno per la Juventus">0-1</strong>
         </div>
+        <div class="friendly-item is-final">
+          <div class="friendly-meta"><strong>31 LUG</strong><span class="friendly-status">FINALE</span></div>
+          <span class="friendly-match">
+            <span class="friendly-match-name">Juventus-Nizza</span>
+            <span class="friendly-scorer">Douglas Luiz 10' · Oboavwoduo 89'</span>
+          </span>
+          <strong class="friendly-result" aria-label="Risultato due a zero per la Juventus">2-0</strong>
+        </div>
+      </div>
+    </div>
+    <div class="alert-banner friendly-strip" role="region" aria-label="Calendario delle amichevoli di agosto della Juventus">
+      <div class="friendly-label">
+        <div class="alert-dot"></div>
+        <div class="friendly-label-copy"><strong>Amichevoli agosto</strong><span>Calendario</span></div>
+      </div>
+      <div class="friendly-fixtures is-four">
         <div class="friendly-item">
-          <div class="friendly-meta"><strong>31 LUG</strong><span class="friendly-status">JTC</span></div>
-          <span class="friendly-match"><span class="friendly-match-name">Juventus-Nizza</span></span>
-          <strong class="friendly-result">18:00</strong>
+          <div class="friendly-meta"><strong>5 AGO</strong><span class="friendly-status">AMICHEVOLE</span></div>
+          <span class="friendly-match">
+            <span class="friendly-match-name">Juventus-Chelsea</span>
+            <span class="friendly-scorer">Hong Kong</span>
+          </span>
+        </div>
+        <div class="friendly-item">
+          <div class="friendly-meta"><strong>8 AGO</strong><span class="friendly-status">AMICHEVOLE</span></div>
+          <span class="friendly-match">
+            <span class="friendly-match-name">Juventus-Inter</span>
+            <span class="friendly-scorer">Perth</span>
+          </span>
+        </div>
+        <div class="friendly-item">
+          <div class="friendly-meta"><strong>11 AGO</strong><span class="friendly-status">AMICHEVOLE</span></div>
+          <span class="friendly-match">
+            <span class="friendly-match-name">Juventus-Palermo</span>
+            <span class="friendly-scorer">Perth</span>
+          </span>
+        </div>
+        <div class="friendly-item">
+          <div class="friendly-meta"><strong>17 AGO</strong><span class="friendly-status">AMICHEVOLE</span></div>
+          <span class="friendly-match">
+            <span class="friendly-match-name">Juventus-Next Gen</span>
+            <span class="friendly-scorer">Allianz Stadium</span>
+          </span>
         </div>
       </div>
     </div>

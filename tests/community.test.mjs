@@ -15,9 +15,23 @@ test("la home distingue risultati e prossime amichevoli", async () => {
     "Risultato zero a uno per la Juventus",
     "Gol Miretti",
     "Juventus-Nizza",
+    "Risultato due a zero per la Juventus",
+    "Douglas Luiz 10'",
+    "Oboavwoduo 89'",
+    "Amichevoli agosto",
+    "Juventus-Chelsea",
+    "Hong Kong",
+    "Juventus-Inter",
+    "Juventus-Palermo",
+    "Juventus-Next Gen",
+    "Allianz Stadium",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.match(html, /friendly-item is-final[\s\S]*?FINALE[\s\S]*?0-0/);
   assert.match(html, /25 LUG[\s\S]*?FINALE[\s\S]*?Standard Liegi-Juventus[\s\S]*?Gol Miretti[\s\S]*?0-1/);
+  assert.match(html, /31 LUG[\s\S]*?FINALE[\s\S]*?Juventus-Nizza[\s\S]*?Douglas Luiz 10'[\s\S]*?Oboavwoduo 89'[\s\S]*?2-0/);
+  assert.match(html, /Amichevoli agosto[\s\S]*?5 AGO[\s\S]*?Juventus-Chelsea[\s\S]*?Hong Kong/);
+  assert.match(html, /8 AGO[\s\S]*?Juventus-Inter[\s\S]*?Perth[\s\S]*?11 AGO[\s\S]*?Juventus-Palermo[\s\S]*?Perth/);
+  assert.match(html, /17 AGO[\s\S]*?Juventus-Next Gen[\s\S]*?Allianz Stadium/);
 });
 
 test("News e Statistiche scorrono alla sezione richiesta", async () => {

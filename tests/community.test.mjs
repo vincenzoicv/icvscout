@@ -62,27 +62,40 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     read("sw.js"),
   ]);
   assert.match(home, /href=["']\/calendario-juventus["']/);
-  for (const marker of ["Apple Calendar", "Google Calendar", "/api/juventus/calendar.ics", "Risultati automatici", "season=2026"]) {
+  for (const marker of ["Apple Calendar", "Google Calendar", "/api/juventus/calendar.ics", "Risultati automatici", ">38<"]) {
     assert.ok(page.includes(marker), `manca ${marker}`);
   }
-  for (const marker of ['path === "juventus/calendar.ics"', "juventus-serie-a-", "Risultato finale:", "LAST-MODIFIED", "SEQUENCE:"]) {
+  for (const marker of ['path === "juventus/calendar.ics"', "JUVENTUS_SERIE_A_2026_27", "Risultato finale:", "LAST-MODIFIED", "SEQUENCE:"]) {
     assert.ok(api.includes(marker), `manca ${marker}`);
   }
+  assert.doesNotMatch(page, /api\/football-data\/teams\/109\/matches/);
   assert.match(redirects, /^\/calendario-juventus\.html \/calendario-juventus 301$/m);
   assert.match(sitemap, /https:\/\/ilcalciodivince\.com\/calendario-juventus/);
   assert.match(worker, /\/calendario-juventus\.html/);
 
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async () => new Response(JSON.stringify({ matches: [{
-    id: 2601,
-    utcDate: "2026-08-23T16:30:00Z",
-    lastUpdated: "2026-08-24T08:00:00Z",
-    status: "FINISHED",
-    matchday: 1,
-    homeTeam: { name: "Frosinone Calcio" },
-    awayTeam: { name: "Juventus FC" },
-    score: { fullTime: { home: 0, away: 2 } },
-  }] }), { status: 200, headers: { "Content-Type": "application/json" } });
+  globalThis.fetch = async () => new Response(JSON.stringify({ matches: [
+    {
+      id: 2601,
+      utcDate: "2026-08-23T16:30:00Z",
+      lastUpdated: "2026-08-24T08:00:00Z",
+      status: "FINISHED",
+      matchday: 1,
+      homeTeam: { name: "Frosinone Calcio" },
+      awayTeam: { name: "Juventus FC" },
+      score: { fullTime: { home: 0, away: 2 } },
+    },
+    {
+      id: 2602,
+      utcDate: "2026-08-29T18:45:00Z",
+      lastUpdated: "2026-06-24T08:00:00Z",
+      status: "SCHEDULED",
+      matchday: 2,
+      homeTeam: { name: "Inter" },
+      awayTeam: { name: "Juventus" },
+      score: { fullTime: { home: null, away: null } },
+    },
+  ] }), { status: 200, headers: { "Content-Type": "application/json" } });
   try {
     const { onRequest } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
     const response = await onRequest({
@@ -93,9 +106,22 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     const unfoldedCalendar = calendar.replace(/\r\n /g, "");
     assert.equal(response.status, 200);
     assert.match(response.headers.get("content-type"), /text\/calendar/);
-    assert.match(unfoldedCalendar, /UID:juventus-serie-a-2601@ilcalciodivince\.com/);
-    assert.match(unfoldedCalendar, /SUMMARY:Juventus: Frosinone Calcio 0-2 Juventus FC/);
-    assert.match(unfoldedCalendar, /Risultato finale: Frosinone Calcio 0-2 Juventus FC/);
+    assert.equal((unfoldedCalendar.match(/BEGIN:VEVENT/g) || []).length, 38);
+    assert.match(unfoldedCalendar, /UID:juventus-serie-a-2026-27-g1@ilcalciodivince\.com/);
+    assert.match(unfoldedCalendar, /SUMMARY:Juventus: Frosinone 0-2 Juventus/);
+    assert.match(unfoldedCalendar, /Risultato finale: Frosinone 0-2 Juventus/);
+    assert.match(unfoldedCalendar, /SUMMARY:Serie A: Juventus - Parma/);
+    const secondRound = unfoldedCalendar.match(/UID:juventus-serie-a-2026-27-g2@[\s\S]*?END:VEVENT/)[0];
+    assert.doesNotMatch(secondRound, /Inter - Juventus/);
+    assert.match(unfoldedCalendar, /SUMMARY:Serie A: Juventus - Frosinone/);
+
+    const fallbackResponse = await onRequest({
+      request: new Request("https://ilcalciodivince.com/api/juventus/calendar.ics"),
+      env: {},
+    });
+    const fallbackCalendar = (await fallbackResponse.text()).replace(/\r\n /g, "");
+    assert.equal(fallbackResponse.status, 200);
+    assert.equal((fallbackCalendar.match(/BEGIN:VEVENT/g) || []).length, 38);
   } finally {
     globalThis.fetch = originalFetch;
   }

@@ -157,18 +157,6 @@
       window.location.href = calendarPath;
     }
 
-    function matchLabel(match) {
-      const score = match && match.score && match.score.fullTime;
-      if ((match.status === 'FINISHED' || match.status === 'AWARDED') && Number.isFinite(score && score.home) && Number.isFinite(score && score.away)) {
-        return score.home + '-' + score.away;
-      }
-      return match.matchday ? match.matchday + 'ª giornata' : 'Serie A';
-    }
-
-    function teamName(team) {
-      return team && (team.shortName || team.name || team.tla) || 'Da definire';
-    }
-
     function escapeHtml(value) {
       return String(value).replace(/[&<>"']/g, character => ({
         '&': '&amp;',
@@ -182,17 +170,40 @@
     async function loadPreview() {
       const container = document.getElementById('matchPreview');
       try {
-        const response = await fetch('/api/football-data/teams/109/matches?competitions=SA&season=2026');
+        const response = await fetch(calendarPath, { cache: 'no-store' });
         if (!response.ok) throw new Error('HTTP ' + response.status);
-        const data = await response.json();
-        const matches = data.matches || [];
-        if (!matches.length) throw new Error('Nessuna partita disponibile');
-        const now = Date.now();
-        const nextIndex = matches.findIndex(match => Date.parse(match.utcDate) >= now || !['FINISHED','AWARDED'].includes(match.status));
-        const start = Math.max(0, (nextIndex < 0 ? matches.length : nextIndex) - 2);
-        container.innerHTML = matches.slice(start, start + 8).map(match => {
-          const date = new Intl.DateTimeFormat('it-IT',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(match.utcDate));
-          return `<article class="match"><time>${escapeHtml(date)}</time><strong>${escapeHtml(teamName(match.homeTeam))} - ${escapeHtml(teamName(match.awayTeam))}</strong><span>${escapeHtml(matchLabel(match))}</span></article>`;
+        const calendar = (await response.text()).replace(/\r?\n[ \t]/g, '');
+        const events = [...calendar.matchAll(/BEGIN:VEVENT\r?\n([\s\S]*?)\r?\nEND:VEVENT/g)].map(match => {
+          const fields = Object.fromEntries(match[1].split(/\r?\n/).map(line => {
+            const separator = line.indexOf(':');
+            return separator < 0 ? ['', ''] : [line.slice(0, separator), line.slice(separator + 1)];
+          }));
+          const dateKey = Object.keys(fields).find(key => key.startsWith('DTSTART'));
+          const rawDate = fields[dateKey] || '';
+          const allDay = dateKey && dateKey.includes('VALUE=DATE');
+          const date = allDay
+            ? new Date(rawDate.slice(0,4) + '-' + rawDate.slice(4,6) + '-' + rawDate.slice(6,8) + 'T12:00:00')
+            : new Date(rawDate.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/, '$1-$2-$3T$4:$5:$6Z'));
+          const description = String(fields.DESCRIPTION || '').replace(/\\n/g, ' ');
+          return {
+            date,
+            allDay,
+            title: String(fields.SUMMARY || '').replace(/^Serie A: /, '').replace(/^Juventus: /, ''),
+            round: (description.match(/\d+ª giornata/) || ['Serie A'])[0],
+          };
+        }).filter(event => Number.isFinite(event.date.getTime()));
+        if (!events.length) throw new Error('Nessuna partita disponibile');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const nextIndex = events.findIndex(event => event.date >= today);
+        const start = Math.max(0, (nextIndex < 0 ? events.length : nextIndex) - 2);
+        container.innerHTML = events.slice(start, start + 8).map(event => {
+          const options = event.allDay
+            ? {day:'2-digit',month:'short'}
+            : {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'};
+          const date = new Intl.DateTimeFormat('it-IT', options).format(event.date);
+          const label = event.allDay ? event.round + ' · orario da confermare' : event.round;
+          return `<article class="match"><time>${escapeHtml(date)}</time><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(label)}</span></article>`;
         }).join('');
       } catch {
         container.innerHTML = '<div class="loading">Il calendario resta disponibile. L’anteprima live tornerà al prossimo aggiornamento.</div>';

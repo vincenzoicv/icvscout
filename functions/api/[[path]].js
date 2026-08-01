@@ -2667,12 +2667,93 @@ async function worldCupCalendar(request, env) {
   });
 }
 
+const JUVENTUS_SERIE_A_2026_27 = [
+  [1, "2026-08-23", "Frosinone", "Juventus", "2026-08-23T16:30:00Z"],
+  [2, "2026-08-30", "Juventus", "Parma", "2026-08-29T18:45:00Z"],
+  [3, "2026-09-06", "Juventus", "Milan", "2026-09-06T18:45:00Z"],
+  [4, "2026-09-13", "Sassuolo", "Juventus", null],
+  [5, "2026-09-20", "Juventus", "Atalanta", "2026-09-20T16:00:00Z"],
+  [6, "2026-10-11", "Cagliari", "Juventus", null],
+  [7, "2026-10-18", "Juventus", "Lazio", null],
+  [8, "2026-10-25", "Lecce", "Juventus", null],
+  [9, "2026-10-28", "Genoa", "Juventus", null],
+  [10, "2026-11-01", "Juventus", "Napoli", null],
+  [11, "2026-11-08", "Fiorentina", "Juventus", null],
+  [12, "2026-11-22", "Juventus", "Venezia", null],
+  [13, "2026-11-29", "Como", "Juventus", null],
+  [14, "2026-12-06", "Juventus", "Udinese", null],
+  [15, "2026-12-13", "Juventus", "Monza", null],
+  [16, "2026-12-20", "Roma", "Juventus", null],
+  [17, "2027-01-03", "Bologna", "Juventus", null],
+  [18, "2027-01-06", "Juventus", "Torino", null],
+  [19, "2027-01-10", "Inter", "Juventus", null],
+  [20, "2027-01-17", "Juventus", "Genoa", null],
+  [21, "2027-01-24", "Juventus", "Cagliari", null],
+  [22, "2027-01-31", "Milan", "Juventus", null],
+  [23, "2027-02-07", "Juventus", "Sassuolo", null],
+  [24, "2027-02-14", "Napoli", "Juventus", null],
+  [25, "2027-02-21", "Juventus", "Bologna", null],
+  [26, "2027-02-28", "Monza", "Juventus", null],
+  [27, "2027-03-07", "Juventus", "Roma", null],
+  [28, "2027-03-14", "Lazio", "Juventus", null],
+  [29, "2027-03-21", "Juventus", "Como", null],
+  [30, "2027-04-04", "Torino", "Juventus", null],
+  [31, "2027-04-11", "Juventus", "Lecce", null],
+  [32, "2027-04-18", "Venezia", "Juventus", null],
+  [33, "2027-04-25", "Juventus", "Fiorentina", null],
+  [34, "2027-05-02", "Atalanta", "Juventus", null],
+  [35, "2027-05-09", "Udinese", "Juventus", null],
+  [36, "2027-05-16", "Juventus", "Inter", null],
+  [37, "2027-05-23", "Parma", "Juventus", null],
+  [38, "2027-05-30", "Juventus", "Frosinone", null],
+].map(([matchday, date, home, away, kickoff]) => ({ matchday, date, home, away, kickoff }));
+
+function normalizedClubName(value) {
+  const normalized = String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\b(fc|calcio|football club)\b/g, "")
+    .replace(/[^a-z0-9]/g, "");
+  const clubs = [
+    "juventus", "frosinone", "parma", "milan", "sassuolo", "atalanta", "cagliari",
+    "lazio", "lecce", "genoa", "napoli", "fiorentina", "venezia", "como", "udinese",
+    "monza", "roma", "bologna", "torino", "inter",
+  ];
+  return clubs.find(club => normalized.includes(club)) || normalized;
+}
+
+function officialFixtureMatch(match, fixture) {
+  if (Number(match && match.matchday) !== fixture.matchday) return false;
+  const home = worldCupTeamName(match && match.homeTeam, "");
+  const away = worldCupTeamName(match && match.awayTeam, "");
+  return normalizedClubName(home) === normalizedClubName(fixture.home)
+    && normalizedClubName(away) === normalizedClubName(fixture.away);
+}
+
+function compactIcsDate(date) {
+  return String(date || "").replace(/-/g, "");
+}
+
+function nextCalendarDate(date) {
+  const value = new Date(`${date}T12:00:00Z`);
+  value.setUTCDate(value.getUTCDate() + 1);
+  return value.toISOString().slice(0, 10);
+}
+
 async function juventusCalendar(request, env) {
   if (request.method !== "GET") return json({ error: "Metodo non consentito" }, 405);
-  if (!env.FOOTBALL_DATA_KEY) return json({ error: "FOOTBALL_DATA_KEY non configurata" }, 500);
 
-  const headers = { "X-Auth-Token": env.FOOTBALL_DATA_KEY };
-  const data = await fetchJson("https://api.football-data.org/v4/teams/109/matches?competitions=SA&season=2026", headers);
+  let providerMatches = [];
+  if (env.FOOTBALL_DATA_KEY) {
+    try {
+      const headers = { "X-Auth-Token": env.FOOTBALL_DATA_KEY };
+      const data = await fetchJson("https://api.football-data.org/v4/teams/109/matches?competitions=SA&season=2026", headers);
+      providerMatches = Array.isArray(data.matches) ? data.matches : [];
+    } catch (error) {
+      console.warn("Calendario Juventus: aggiornamento esterno non disponibile", error);
+    }
+  }
   const now = new Date();
   const lines = [
     "BEGIN:VCALENDAR",
@@ -2687,40 +2768,44 @@ async function juventusCalendar(request, env) {
     "X-PUBLISHED-TTL:PT1H",
   ];
 
-  for (const match of data.matches || []) {
-    const kickoff = new Date(match.utcDate);
-    if (!Number.isFinite(kickoff.getTime())) continue;
-    const end = new Date(kickoff.getTime() + 2 * 60 * 60 * 1000);
-    const home = worldCupTeamName(match.homeTeam, "Squadra da definire");
-    const away = worldCupTeamName(match.awayTeam, "Squadra da definire");
-    const score = match.score && match.score.fullTime || {};
-    const finished = ["FINISHED", "AWARDED"].includes(match.status)
+  for (const fixture of JUVENTUS_SERIE_A_2026_27) {
+    const match = providerMatches.find(candidate => officialFixtureMatch(candidate, fixture));
+    const providerKickoff = match && new Date(match.utcDate);
+    const officialKickoff = fixture.kickoff && new Date(fixture.kickoff);
+    const kickoff = providerKickoff && Number.isFinite(providerKickoff.getTime())
+      ? providerKickoff
+      : officialKickoff && Number.isFinite(officialKickoff.getTime()) ? officialKickoff : null;
+    const end = kickoff ? new Date(kickoff.getTime() + 2 * 60 * 60 * 1000) : null;
+    const home = fixture.home;
+    const away = fixture.away;
+    const score = match && match.score && match.score.fullTime || {};
+    const finished = match && ["FINISHED", "AWARDED"].includes(match.status)
       && Number.isFinite(score.home)
       && Number.isFinite(score.away);
     const result = finished ? `${home} ${score.home}-${score.away} ${away}` : "";
     const summary = finished ? `Juventus: ${result}` : `Serie A: ${home} - ${away}`;
     const description = [
-      match.matchday ? `${match.matchday}ª giornata di Serie A 2026/27` : "Serie A 2026/27",
-      finished ? `Risultato finale: ${result}` : "Orario aggiornato automaticamente da ICV Scout.",
-      "https://ilcalciodivince.com/",
+      `${fixture.matchday}ª giornata di Serie A 2026/27`,
+      finished ? `Risultato finale: ${result}` : kickoff ? "Data e orario confermati." : "Data del turno; giorno e orario da confermare.",
+      "Calendario ufficiale: https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27",
     ].join("\n");
-    const modified = new Date(match.lastUpdated || now);
-    const validModified = Number.isFinite(modified.getTime()) ? modified : now;
-    const sequence = Math.floor(validModified.getTime() / 1000);
+    const modified = match && new Date(match.lastUpdated || now);
+    const validModified = modified && Number.isFinite(modified.getTime()) ? modified : new Date("2026-06-05T00:00:00Z");
+    const sequence = match ? Math.floor(validModified.getTime() / 1000) : 0;
 
     lines.push(
       "BEGIN:VEVENT",
-      `UID:juventus-serie-a-${match.id || formatIcsDate(kickoff)}@ilcalciodivince.com`,
+      `UID:juventus-serie-a-2026-27-g${fixture.matchday}@ilcalciodivince.com`,
       `DTSTAMP:${formatIcsDate(now)}`,
       `LAST-MODIFIED:${formatIcsDate(validModified)}`,
       `SEQUENCE:${sequence}`,
-      `DTSTART:${formatIcsDate(kickoff)}`,
-      `DTEND:${formatIcsDate(end)}`,
+      kickoff ? `DTSTART:${formatIcsDate(kickoff)}` : `DTSTART;VALUE=DATE:${compactIcsDate(fixture.date)}`,
+      kickoff ? `DTEND:${formatIcsDate(end)}` : `DTEND;VALUE=DATE:${compactIcsDate(nextCalendarDate(fixture.date))}`,
       `SUMMARY:${escapeIcsText(summary)}`,
       `DESCRIPTION:${escapeIcsText(description)}`,
-      "URL:https://ilcalciodivince.com/",
+      "URL:https://ilcalciodivince.com/calendario-juventus",
       "CATEGORIES:Serie A,Juventus",
-      `STATUS:${match.status === "CANCELLED" ? "CANCELLED" : "CONFIRMED"}`,
+      `STATUS:${match && match.status === "CANCELLED" ? "CANCELLED" : "CONFIRMED"}`,
       "TRANSP:TRANSPARENT",
       "BEGIN:VALARM",
       "TRIGGER:-PT30M",

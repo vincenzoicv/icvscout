@@ -132,11 +132,15 @@ var activeDirection="all";
 function dealDirection(item){
   if(item.direction) return item.direction;
   var text=textOf(item);
+  var player=String(item.player_name||"").toLowerCase();
+  var current=/^(openda|gatti|joao mario|vlahovic|bremer|cambiaso|douglas luiz|nico gonzalez|locatelli|conceicao|rouhi|adzic|perin|milik)$/.test(player);
   if(/rinnovo|prolungamento|nuovo contratto/.test(text)) return "renewal";
-  if(/cessione|cedut|partenza|in uscita|lascia (?:la )?juve|lascer[aà] (?:la )?(?:juve|juventus|torino)|addio|ai saluti|trasfer|va al |vendita|plusvalenza|passaggio (?:al|alla|all )/.test(text)
+  if(/cessione|cedut|partenza|in uscita|lascia (?:la )?juve|lascer[aà] (?:la )?(?:juve|juventus|torino)|saluta (?:la )?(?:juve|juventus)|addio|ai saluti|trasfer|va al |vendita|plusvalenza|passaggio (?:al|alla|all )/.test(text)
     || /verso (?:il|la|lo|l |i|gli|le) (?!juve(?:ntus)?\b)/.test(text)
     || /offerta (?:presentata|arrivata|recapitata) alla juve(?:ntus)?\b/.test(text)
-    || /quanto chiede la juve(?:ntus)?\b/.test(text)) return "outgoing";
+    || /quanto chiede la juve(?:ntus)?\b/.test(text)
+    || (current && /ufficiale (?:al|alla|all[' ]|in prestito)|in prestito (?:al|alla|all[' ])/.test(text))
+    || (current && /(?:napoli|inter|milan|roma|fiorentina|lazio|atalanta|bologna|lione|chelsea|arsenal|barcellona|psg|tottenham).{0,28}(?:avanza|insiste|accelera|punta|si muove|offerta|accordo).{0,24}per/.test(text))) return "outgoing";
   return "incoming";
 }
 function dealStage(item){return item.deal_stage || (String(item.status||"").toLowerCase().indexOf("ufficial")>=0?"official":"interest");}
@@ -155,7 +159,7 @@ function itemHtml(item){
   var sourceLabel = Number(item.source_count || 0) > 1 ? item.source_count + " fonti" : source;
   var direction=dealDirection(item),stage=dealStage(item),color=STAGE_COLORS[stage]||STAGE_COLORS.interest;
   var sourceLink=item.source_url?"<a href='"+esc(item.source_url)+"' target='_blank' rel='noopener'>"+esc(sourceLabel)+"</a>":esc(sourceLabel);
-  var playerUrl="/giocatore?slug="+esc(item.player_slug||slugifyPlayer(title));
+  var playerUrl="/giocatore?slug="+esc(slugifyPlayer(title));
   return "<article class='deal-card' style='--stage:"+color+"' data-direction='"+esc(direction)+"'><div class='deal-top'><span class='direction'>"+esc(DIRECTION_LABELS[direction]||"Scenario")+"</span><span class='stage'>"+esc(STAGE_LABELS[stage]||"Monitorata")+"</span></div><div class='deal-main'><a class='player-link' href='"+playerUrl+"'><div class='avatar'>"+esc(initials(title))+"</div></a><div><a class='player-link' href='"+playerUrl+"'><h3>"+esc(title)+"</h3></a><p>"+esc(note)+"</p></div></div><div class='deal-meta'>"+capologyHtml(title)+"<div class='source-line'><span>"+sourceLink+" · "+esc(shortDate(item.updated_at))+"</span>"+confidenceBars(item)+"</div></div></article>";
 }
 function slugifyPlayer(value){return String(value||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ø/g,"o").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"")}
@@ -167,6 +171,7 @@ function displayTitle(item){
   if (/youtube scout|^scout$/i.test(raw) && /vlahovic/i.test(text)) return "Vlahovic";
   if (/^perch/i.test(raw) && /alisson/i.test(note)) return "Alisson";
   if (/^marzio$|^di marzio$/i.test(raw)) return "Punto mercato";
+  if (/^lindstrom$/i.test(raw) && /juve.{0,20}vicario|vicario.{0,20}juve/i.test(text)) return "Vicario";
   return raw || "Mercato Juve";
 }
 function renderFilters(rows){

@@ -610,3 +610,76 @@ test("il router traduce gli errori asincroni delle automazioni in risposte JSON"
   const api = await read("functions/api/[[path]].js");
   assert.match(api, /path === "admin\/automate"\) return await adminAutomate\(request, env\)/);
 });
+
+test("Mercato Board distingue entrate e uscite senza inventare giocatori dai titoli rassegna", async () => {
+  const {
+    isMarketRelevantNewsRow,
+    marketDealMetadata,
+    marketTopicName,
+  } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+
+  assert.equal(marketDealMetadata({
+    player_name: "Openda",
+    note: "Openda saluta la Juventus, ufficiale al Lione: i dettagli",
+    reliability: "trusted",
+  }).direction, "outgoing");
+  assert.equal(marketDealMetadata({
+    player_name: "Gatti",
+    note: "Il Napoli avanza per Gatti, si lavora ad un prestito",
+    reliability: "trusted",
+  }).direction, "outgoing");
+  assert.equal(marketDealMetadata({
+    player_name: "Joao Mario",
+    note: "Juventus, Joao Mario ai saluti: accordo con la Fiorentina",
+    reliability: "trusted",
+  }).deal_stage, "advanced");
+
+  assert.equal(marketTopicName({
+    player_name: "Lindstrom",
+    note: "Lindstrom resta a Napoli, Juve c'e Vicario. Roma su Read",
+  }), "Vicario");
+  assert.equal(isMarketRelevantNewsRow({
+    title: "Lindstrom resta a Napoli",
+    source: "Napoli News",
+  }), false);
+});
+
+test("Mercato Board conserva le ufficialita Juventus anche davanti a rumor piu recenti", async () => {
+  const { aggregateMarketItems, publicMarketFromNews } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  const officialRows = publicMarketFromNews([
+    {
+      title: "Ufficiale | Kolo Muani e un nuovo giocatore della Juventus",
+      source: "Juventus.com",
+      source_url: "https://www.juventus.com/it/news/articoli/ufficiale-kolo-muani",
+      reliability: "official",
+      editorial_status: "Ufficiale",
+      created_at: "2026-08-03T10:00:00Z",
+    },
+    {
+      title: "Ufficiale | Alajbegovic e un nuovo giocatore della Juventus",
+      source: "Juventus.com",
+      source_url: "https://www.juventus.com/it/news/articoli/ufficiale-alajbegovic",
+      reliability: "official",
+      editorial_status: "Ufficiale",
+      created_at: "2026-08-03T09:00:00Z",
+    },
+  ]);
+  const rows = aggregateMarketItems([
+    ...officialRows,
+    {
+      player_name: "Kolo Muani",
+      note: "La Juventus valuta ancora il ritorno di Kolo Muani",
+      source_name: "Google News mercato",
+      reliability: "aggregator",
+      status: "Da verificare",
+      updated_at: "2026-08-03T12:00:00Z",
+    },
+  ]);
+
+  const kolo = rows.find(row => row.player_name === "Kolo Muani");
+  const alajbegovic = rows.find(row => row.player_name === "Alajbegovic");
+  assert.equal(kolo.deal_stage, "official");
+  assert.equal(kolo.reliability, "official");
+  assert.match(kolo.note, /Ufficiale/);
+  assert.equal(alajbegovic.deal_stage, "official");
+});

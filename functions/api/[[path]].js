@@ -254,10 +254,11 @@ async function publicHome(env) {
     latestAutomationRun(env, "home_autopilot"),
     getSiteSetting(env, "radar_home", DEFAULT_RADAR),
   ]);
-  const cleanNews = publicNewsRows(news).slice(0, 6);
+  const allCleanNews = publicNewsRows(news);
+  const cleanNews = allCleanNews.slice(0, 6);
   const cleanMarketNews = publicNewsRows(marketNews);
   const cleanMarket = publicMarketRows([
-    ...publicMarketFromNews(cleanMarketNews),
+    ...publicMarketFromNews([...allCleanNews, ...cleanMarketNews]),
     ...(market || []),
   ]);
   const aggregatedMarket = aggregateMarketItems(cleanMarket);
@@ -313,7 +314,7 @@ async function publicPlayerIndexData(env) {
   ]);
   const cleanNews = publicNewsRows(news);
   const marketRows = aggregateMarketItems(publicMarketRows([
-    ...publicMarketFromNews(publicNewsRows(marketNews)),
+    ...publicMarketFromNews([...cleanNews, ...publicNewsRows(marketNews)]),
     ...(market || []),
   ]));
   return buildPlayerIndex(marketRows, cleanNews);
@@ -339,7 +340,7 @@ async function publicGraphics(env, url) {
 }
 
 function publicMarketFromNews(rows) {
-  return (rows || []).slice(0, 8).map(row => ({
+  return (rows || []).filter(isMarketRelevantNewsRow).slice(0, 24).map(row => ({
     player_name: extractPlayer(cleanText(row.title || "")) || "Mercato Juve",
     status: cleanText(row.editorial_status || statusFromReliability(row.reliability)),
     category: "calciomercato",
@@ -349,6 +350,14 @@ function publicMarketFromNews(rows) {
     note: cleanText(row.title),
     updated_at: row.created_at,
   }));
+}
+
+function isMarketRelevantNewsRow(row) {
+  const text = normalizeTopicKey([row && row.title, row && row.body].join(" "));
+  const source = normalizeTopicKey(row && row.source);
+  const juventusContext = /\bjuve(?:ntus)?\b|bianconer/.test(text) || /juventus/.test(source);
+  if (!juventusContext) return false;
+  return /calciomercato|mercato|cessione|cedut|prestito|trasfer|accordo|offerta|trattativa|contatti|rinnovo|ai saluti|saluta|nuovo giocatore|ufficiale/.test(text);
 }
 
 async function runHomeAutopilot(env, options = {}) {
@@ -4174,13 +4183,18 @@ function aggregateMarketItems(rows) {
       continue;
     }
     const mergedSources = mergeSourceNames(existing.source_name, sourceName);
+    const existingEvidence = marketEvidenceRank(existing);
+    const nextEvidence = marketEvidenceRank(row);
     existing.source_name = mergedSources;
     existing.source_count = splitSourceNames(mergedSources).length;
     existing.related_count = Number(existing.related_count || 1) + 1;
     existing.reliability = bestReliability(existing.reliability, row.reliability);
     existing.status = mergedMarketStatus(existing.status, row.status, existing.reliability);
-    existing.source_url = existing.source_url || row.source_url;
-    if (new Date(row.updated_at || 0) > new Date(existing.updated_at || 0)) {
+    if (!existing.source_url || nextEvidence > existingEvidence) existing.source_url = row.source_url || existing.source_url;
+    if (nextEvidence > existingEvidence || (
+      nextEvidence === existingEvidence
+      && new Date(row.updated_at || 0) > new Date(existing.updated_at || 0)
+    )) {
       existing.note = row.note || existing.note;
       existing.updated_at = row.updated_at;
     }
@@ -4194,24 +4208,44 @@ function aggregateMarketItems(rows) {
     });
 }
 
+function marketEvidenceRank(row) {
+  const text = cleanText([row && row.note, row && row.status].join(" ")).toLowerCase();
+  const reliability = cleanText(row && row.reliability).toLowerCase();
+  if (reliability === "official" || /ufficial|comunicato|nuovo giocatore/.test(text)) return 5;
+  if (reliability === "trusted" && /accordo|visite mediche|fatta|chiusura|vicin/.test(text)) return 4;
+  if (reliability === "trusted") return 3;
+  if (reliability === "aggregator") return 2;
+  return 1;
+}
+
+const JUVENTUS_CURRENT_MARKET_PLAYERS = new Set([
+  "openda", "gatti", "joao mario", "vlahovic", "bremer", "cambiaso", "douglas luiz",
+  "nico gonzalez", "locatelli", "conceicao", "rouhi", "adzic", "perin", "milik",
+]);
+
 function marketDealMetadata(row) {
   const text = cleanText([row && row.player_name, row && row.note, row && row.status].join(" ")).toLowerCase();
   const reliability = cleanText(row && row.reliability).toLowerCase();
+  const playerKey = normalizeTopicKey(row && row.player_name);
+  const currentJuventusPlayer = JUVENTUS_CURRENT_MARKET_PLAYERS.has(playerKey);
+  const anotherClubPursuit = /\b(?:napoli|inter|milan|roma|fiorentina|lazio|atalanta|bologna|lione|lyon|chelsea|arsenal|barcellona|real madrid|psg|paris saint germain|tottenham|aston villa)\b.{0,28}\b(?:avanza|insiste|accelera|punta|si muove|offerta|accordo)\b.{0,24}\bper\b/.test(text);
   let direction = "incoming";
   if (/rinnovo|prolungamento|adeguamento|nuovo contratto/.test(text)) direction = "renewal";
   else if (
-    /cessione|cedut|partenza|in uscita|lascia (?:la )?juve|lascer[aà] (?:la )?(?:juve|juventus|torino)|addio|ai saluti|trasfer(?:imento|isce)|va al |vendita|plusvalenza|passaggio (?:al|alla|all )/.test(text)
+    /cessione|cedut|partenza|in uscita|lascia (?:la )?juve|lascer[aà] (?:la )?(?:juve|juventus|torino)|saluta (?:la )?(?:juve|juventus)|addio|ai saluti|trasfer(?:imento|isce)|va al |vendita|plusvalenza|passaggio (?:al|alla|all )/.test(text)
     || /verso (?:il|la|lo|l |i|gli|le) (?!juve(?:ntus)?\b)/.test(text)
     || /offerta (?:presentata|arrivata|recapitata) alla juve(?:ntus)?\b/.test(text)
     || /quanto chiede la juve(?:ntus)?\b/.test(text)
+    || (currentJuventusPlayer && /ufficiale (?:al|alla|all[' ]|in prestito)|in prestito (?:al|alla|all[' ])/.test(text))
+    || (currentJuventusPlayer && anotherClubPursuit)
   ) direction = "outgoing";
   else if (/alternativ|scenario|piano b|possibili nomi|lista dei nomi|opzione per il futuro/.test(text)) direction = "scenario";
 
   let dealStage = "interest";
   if (/ufficial|comunicato|depositato|firma(?:to|ta)?|e un nuovo giocatore|è un nuovo giocatore/.test(text) || reliability === "official") dealStage = "official";
   else if (/saltat|tramont|sfumat|stop alla pista|non convince|rifiutat|lontan|frenata|bloccata/.test(text)) dealStage = "stalled";
-  else if (/visite mediche|accordo (?:trovato|totale)|fatta|chiusura|in dirittura|ultimi dettagli|ore decisive|vicinissimo/.test(text)) dealStage = "advanced";
-  else if (/offerta|trattativa|negoziat|rilancio|contatti? (?:avviati|in corso)|dialogo aperto/.test(text)) dealStage = "negotiation";
+  else if (/visite mediche|accordo (?:trovato|totale|con)|fatta|chiusura|in dirittura|ultimi dettagli|ore decisive|vicinissimo|sempre piu vicino/.test(text)) dealStage = "advanced";
+  else if (/offerta|trattativa|negoziat|rilancio|contatti? (?:avviati|in corso)|dialogo aperto|si lavora (?:ad|a) un prestito/.test(text)) dealStage = "negotiation";
   else if (/sondaggio|monitor|interesse|nel mirino|obiettivo|idea|ipotesi|profilo/.test(text)) dealStage = "interest";
 
   const sourceCount = Math.max(Number(row && row.source_count || 0), splitSourceNames(row && row.source_name).length, 1);
@@ -4236,6 +4270,10 @@ function marketTopicName(row) {
     ["Joao Mario", /\bjoao\s+mario\b/i],
     ["Alajbegovic", /\balajbegovic\b/i],
     ["Openda", /\bopenda\b/i],
+    ["Gatti", /\bgatti\b/i],
+    ["Vicario", /\bvicario\b/i],
+    ["Rouhi", /\brouhi\b/i],
+    ["Adzic", /\bad[zž]i[cć]\b/i],
     ["Goretzka", /\bgoretzka\b/i],
     ["Dibu Martinez", /\bdibu\s+martinez\b|\bjuve\s+su\s+martinez\b|\bmartinez\b.*\b(porta|portiere|juve|juventus)\b/i],
     ["Kessie", /\bkessi(?:e|é)?\b/i],
@@ -5522,4 +5560,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { buildLiveDeskEntries, marketDealMetadata, marketTopicName, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl, instagramFailureDetails };
+export { aggregateMarketItems, buildLiveDeskEntries, isMarketRelevantNewsRow, marketDealMetadata, marketTopicName, publicMarketFromNews, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl, instagramFailureDetails };

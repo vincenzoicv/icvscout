@@ -357,6 +357,7 @@ function isMarketRelevantNewsRow(row) {
   const source = normalizeTopicKey(row && row.source);
   const juventusContext = /\bjuve(?:ntus)?\b|bianconer/.test(text) || /juventus/.test(source);
   if (!juventusContext) return false;
+  if (/mai incontrato|non rincorro nessuno|nessun contatto|non interessa|mercato i direttori sono/.test(text)) return false;
   return /calciomercato|mercato|cessione|cedut|prestito|trasfer|accordo|offerta|trattativa|contatti|rinnovo|ai saluti|saluta|nuovo giocatore|ufficiale/.test(text);
 }
 
@@ -4229,6 +4230,8 @@ function marketDealMetadata(row) {
   const playerKey = normalizeTopicKey(row && row.player_name);
   const currentJuventusPlayer = JUVENTUS_CURRENT_MARKET_PLAYERS.has(playerKey);
   const anotherClubPursuit = /\b(?:napoli|inter|milan|roma|fiorentina|lazio|atalanta|bologna|lione|lyon|chelsea|arsenal|barcellona|real madrid|psg|paris saint germain|tottenham|aston villa)\b.{0,28}\b(?:avanza|insiste|accelera|punta|si muove|offerta|accordo)\b.{0,24}\bper\b/.test(text);
+  const anotherClubDeal = /\b(?:napoli|inter|milan|roma|fiorentina|lazio|atalanta|bologna|sassuolo|lione|lyon|chelsea|arsenal|barcellona|real madrid|psg|paris saint germain|tottenham|aston villa|carrarese|sion)\b/.test(text)
+    && /accordo|prestito|cessione|cedut|trasfer|ai saluti|saluta|offerta/.test(text);
   let direction = "incoming";
   if (/rinnovo|prolungamento|adeguamento|nuovo contratto/.test(text)) direction = "renewal";
   else if (
@@ -4238,13 +4241,14 @@ function marketDealMetadata(row) {
     || /quanto chiede la juve(?:ntus)?\b/.test(text)
     || (currentJuventusPlayer && /ufficiale (?:al|alla|all[' ]|in prestito)|in prestito (?:al|alla|all[' ])/.test(text))
     || (currentJuventusPlayer && anotherClubPursuit)
+    || (currentJuventusPlayer && anotherClubDeal)
   ) direction = "outgoing";
   else if (/alternativ|scenario|piano b|possibili nomi|lista dei nomi|opzione per il futuro/.test(text)) direction = "scenario";
 
   let dealStage = "interest";
   if (/ufficial|comunicato|depositato|firma(?:to|ta)?|e un nuovo giocatore|è un nuovo giocatore/.test(text) || reliability === "official") dealStage = "official";
   else if (/saltat|tramont|sfumat|stop alla pista|non convince|rifiutat|lontan|frenata|bloccata/.test(text)) dealStage = "stalled";
-  else if (/visite mediche|accordo (?:trovato|totale|con)|fatta|chiusura|in dirittura|ultimi dettagli|ore decisive|vicinissimo|sempre piu vicino/.test(text)) dealStage = "advanced";
+  else if (/visite mediche|\baccordo\b|fatta|chiusura|in dirittura|ultimi dettagli|ore decisive|vicinissimo|sempre piu vicino/.test(text)) dealStage = "advanced";
   else if (/offerta|trattativa|negoziat|rilancio|contatti? (?:avviati|in corso)|dialogo aperto|si lavora (?:ad|a) un prestito/.test(text)) dealStage = "negotiation";
   else if (/sondaggio|monitor|interesse|nel mirino|obiettivo|idea|ipotesi|profilo/.test(text)) dealStage = "interest";
 
@@ -4268,12 +4272,13 @@ function marketTopicName(row) {
     ["Sorloth", /s[øo]rloth|sorlot|solot/i],
     ["Kolo Muani", /kolo\s+muani|muani/i],
     ["Joao Mario", /\bjoao\s+mario\b/i],
-    ["Alajbegovic", /\balajbegovic\b/i],
+    ["Alajbegovic", /\balajbegovi(?:c\b|ć(?=\s|$))/i],
     ["Openda", /\bopenda\b/i],
     ["Gatti", /\bgatti\b/i],
     ["Vicario", /\bvicario\b/i],
     ["Rouhi", /\brouhi\b/i],
     ["Adzic", /\bad[zž]i[cć]\b/i],
+    ["Lorenzo Villa", /\blorenzo\s+villa\b/i],
     ["Goretzka", /\bgoretzka\b/i],
     ["Dibu Martinez", /\bdibu\s+martinez\b|\bjuve\s+su\s+martinez\b|\bmartinez\b.*\b(porta|portiere|juve|juventus)\b/i],
     ["Kessie", /\bkessi(?:e|é)?\b/i],
@@ -4288,8 +4293,6 @@ function marketTopicName(row) {
     ["Cambiaso", /\bcambiaso\b/i],
     ["Douglas Luiz", /douglas\s+luiz/i],
     ["Nico Gonzalez", /nico\s+gonzalez/i],
-    ["Comolli", /\bcomolli\b/i],
-    ["Spalletti", /\bspalletti\b/i],
     ["Locatelli", /\blocatelli\b/i],
     ["Conceicao", /concei[cç]ao/i],
   ];
@@ -4310,16 +4313,17 @@ function isIgnoredMarketSignal(row) {
   const text = cleanText([name, row && row.note, row && row.source_name].join(" ")).toLowerCase();
   const createdAt = new Date(row && row.created_at || 0).getTime();
   if (createdAt && Date.now() - createdAt > 72 * 3600000) return true;
-  if (/^(pagina(?:\s+\d+)?|punto mercato|mercato juve)$/i.test(name)) return true;
+  if (/^(pagina(?:\s+\d+)?|punto mercato|mercato juve|spalletti|comolli)$/i.test(name)) return true;
   if (/^(pap|papa|marzio|di marzio|luca toselli|romeo agresti|gianni balzarini)$/i.test(name)) return true;
   if (/youtube/.test(text) && isBadMarketTopic(name)) return true;
   if (/youtube scout:/.test(text)) return true;
   if (/maradona|ferlaino|salas|cristiano ronaldo alla juventus sfumo|cristiano ronaldo alla juventus sfumò/.test(text)) return true;
+  if (/mai incontrato|non rincorro nessuno|nessun contatto|non interessa|mercato\??\s+i direttori sono/.test(text)) return true;
   return false;
 }
 
 function isBadMarketTopic(value) {
-  return /^(youtube\s+)?scout$|^pagina(?:\s+\d+)?$|^punto\s+mercato$|^mercato\s+juve$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^siamo$|^buonasera$|^buongiorno$|^adesso$|^oggi$|^perch$|^pap$|^papa$|^inter$|^milan$|^roma$|^napoli$|^udinese$|^solet$|^atta$|^greenwood$|^luca\s+toselli$|^romeo\s+agresti$|^gianni\s+balzarini$/i.test(cleanText(value));
+  return /^(youtube\s+)?scout$|^pagina(?:\s+\d+)?$|^punto\s+mercato$|^mercato\s+juve$|^ufficiale$|^spalletti$|^comolli$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^siamo$|^buonasera$|^buongiorno$|^adesso$|^oggi$|^perch$|^pap$|^papa$|^inter$|^milan$|^roma$|^napoli$|^udinese$|^solet$|^atta$|^greenwood$|^luca\s+toselli$|^romeo\s+agresti$|^gianni\s+balzarini$/i.test(cleanText(value));
 }
 
 function normalizeTopicKey(value) {

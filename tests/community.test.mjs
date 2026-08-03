@@ -683,3 +683,55 @@ test("Mercato Board conserva le ufficialita Juventus anche davanti a rumor piu r
   assert.match(kolo.note, /Ufficiale/);
   assert.equal(alajbegovic.deal_stage, "official");
 });
+
+test("Mercato Board scarta interviste e smentite e normalizza le ufficialita", async () => {
+  const {
+    aggregateMarketItems,
+    isMarketRelevantNewsRow,
+    marketDealMetadata,
+    marketTopicName,
+  } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+
+  assert.equal(isMarketRelevantNewsRow({
+    title: 'Juventus-Nizza, Spalletti: "Mi e piaciuto tutto. Mercato? I direttori sono perfetti"',
+    source: "Sky Sport Juventus",
+  }), false);
+  assert.equal(isMarketRelevantNewsRow({
+    title: "Juve: Carnevali, 'Vlahovic? Mai incontrato, non rincorro nessuno'",
+    source: "Google News mercato",
+  }), false);
+  assert.equal(marketTopicName({
+    player_name: "Ufficiale",
+    note: "Ufficiale | Kerim Alajbegović e un nuovo giocatore della Juventus",
+  }), "Alajbegovic");
+  assert.equal(marketTopicName({
+    player_name: "Ufficiale",
+    note: "Next Gen | Lorenzo Villa ceduto a titolo definitivo al Sion",
+  }), "Lorenzo Villa");
+  assert.equal(marketDealMetadata({
+    player_name: "Adzic",
+    note: "Sassuolo-Adzic, c'e l'accordo: mancano solo le firme",
+    reliability: "trusted",
+  }).direction, "outgoing");
+
+  const alajbegovicRows = aggregateMarketItems([
+    {
+      player_name: "Ufficiale",
+      note: "Ufficiale | Kerim Alajbegović e un nuovo giocatore della Juventus",
+      reliability: "official",
+      status: "Ufficiale",
+      source_name: "Juventus.com",
+      updated_at: "2026-08-02T20:28:00Z",
+    },
+    {
+      player_name: "Alajbegovic",
+      note: "Chi e Kerim Alajbegovic, il 18enne preso dalla Juve",
+      reliability: "aggregator",
+      source_name: "Google News mercato",
+      updated_at: "2026-07-30T14:45:00Z",
+    },
+  ]);
+  assert.equal(alajbegovicRows.length, 1);
+  assert.equal(alajbegovicRows[0].player_name, "Alajbegovic");
+  assert.equal(alajbegovicRows[0].deal_stage, "official");
+});

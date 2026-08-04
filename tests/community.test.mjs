@@ -334,6 +334,13 @@ test("la Community completa feed, profili, notifiche e Match Room", async () => 
   assert.match(redirects, /\/community\/post\/\* \/community 200/);
 });
 
+test("il feed Community non dipende dalla relazione self-reference dei post citati", async () => {
+  const api = await read("functions/api/[[path]].js");
+  assert.match(api, /function communityPostSelect\(\)/);
+  assert.match(api, /async function attachQuotedCommunityPosts\(env, posts\)/);
+  assert.doesNotMatch(api, /quoted_post:community_posts!community_posts_quote_post_id_fkey/);
+});
+
 test("Turnstile protegge tutti i flussi pubblici di scrittura", async () => {
   const [community, quiz, agenda, helper] = await Promise.all([
     read("community.html"), read("quiz.html"), read("agenda.html"), read("assets/turnstile.js"),

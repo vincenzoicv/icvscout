@@ -891,7 +891,7 @@ async function communityFeed(env, category, before, viewerId, topic) {
   if (viewerId && !followingIds.length) return { posts: [], trending: [], next_cursor: null };
   const followingFilter = viewerId ? "&user_id=in.(" + followingIds.join(",") + ")" : "";
   const topicQuery = topicFilter ? "&body=ilike." + encodeURIComponent("*#" + topicFilter + "*") : "";
-  const select = "id,user_id,category,body,image_url,is_official,quote_post_id,poll_question,poll_options,poll_ends_at,scheduled_at,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role),quoted_post:community_posts!community_posts_quote_post_id_fkey(id,body,image_url,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role))";
+  const select = communityPostSelect();
   let posts = await safeAdminRead(
     () => sb(env, "/community_posts?status=eq.published" + categoryFilter + cursorFilter + scheduledFilter + followingFilter + topicQuery + "&select=" + select + "&order=created_at.desc&limit=12"),
     []
@@ -914,6 +914,7 @@ async function communityFeed(env, category, before, viewerId, topic) {
       .filter((post, index, all) => all.findIndex(item => item.id === post.id) === index)
       .slice(0, 12);
   }
+  posts = await attachQuotedCommunityPosts(env, posts);
   const ids = posts.map(item => item.id).filter(Boolean);
   let reactions = [];
   let comments = [];
@@ -976,9 +977,10 @@ async function communityFeed(env, category, before, viewerId, topic) {
 }
 
 async function communitySinglePost(env, postId) {
-  const select = "id,user_id,category,body,image_url,is_official,quote_post_id,poll_question,poll_options,poll_ends_at,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role),quoted_post:community_posts!community_posts_quote_post_id_fkey(id,body,image_url,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role))";
+  const select = communityPostSelect();
   const rows = await safeAdminRead(() => sb(env, "/community_posts?id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=" + select + "&limit=1"), []);
   if (!rows.length) throw communityError("Post non trovato", 404);
+  const hydratedRows = await attachQuotedCommunityPosts(env, rows);
   const [reactions, comments, reposts, votes, notes] = await Promise.all([
     safeAdminRead(() => sb(env, "/community_reactions?post_id=eq." + encodeURIComponent(postId) + "&type=eq.like&select=id"), []),
     safeAdminRead(() => sb(env, "/community_comments?post_id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=id"), []),
@@ -986,7 +988,23 @@ async function communitySinglePost(env, postId) {
     safeAdminRead(() => sb(env, "/community_poll_votes?post_id=eq." + encodeURIComponent(postId) + "&select=option_index,user_id"), []),
     safeAdminRead(() => sb(env, "/community_context_notes?post_id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=id,body,source_url,reliability,created_at,author:community_profiles!community_context_notes_author_id_fkey(username,display_name,role)&limit=1"), []),
   ]);
-  return { ...rows[0], reaction_count: reactions.length, comment_count: comments.length, repost_count: reposts.length, poll: rows[0].poll_question ? communityPollData(rows[0], votes, null) : null, context_note: notes[0] || null, source: "community" };
+  const post = hydratedRows[0];
+  return { ...post, reaction_count: reactions.length, comment_count: comments.length, repost_count: reposts.length, poll: post.poll_question ? communityPollData(post, votes, null) : null, context_note: notes[0] || null, source: "community" };
+}
+
+function communityPostSelect() {
+  return "id,user_id,category,body,image_url,is_official,quote_post_id,poll_question,poll_options,poll_ends_at,scheduled_at,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role)";
+}
+
+async function attachQuotedCommunityPosts(env, posts) {
+  const quoteIds = [...new Set((posts || []).map(post => post.quote_post_id).filter(Boolean))];
+  if (!quoteIds.length) return posts || [];
+  const quoted = await safeAdminRead(
+    () => sb(env, "/community_posts?id=in.(" + quoteIds.join(",") + ")&status=eq.published&select=id,body,image_url,created_at,author:community_profiles!community_posts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge,role)"),
+    []
+  );
+  const quoteMap = Object.fromEntries(quoted.map(post => [post.id, post]));
+  return (posts || []).map(post => ({ ...post, quoted_post: quoteMap[post.quote_post_id] || null }));
 }
 
 async function communitySingleNews(env, newsId) {

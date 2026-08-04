@@ -892,10 +892,7 @@ async function communityFeed(env, category, before, viewerId, topic) {
   const followingFilter = viewerId ? "&user_id=in.(" + followingIds.join(",") + ")" : "";
   const topicQuery = topicFilter ? "&body=ilike." + encodeURIComponent("*#" + topicFilter + "*") : "";
   const select = communityPostSelect();
-  let posts = await safeAdminRead(
-    () => sb(env, "/community_posts?status=eq.published" + categoryFilter + cursorFilter + scheduledFilter + followingFilter + topicQuery + "&select=" + select + "&order=created_at.desc&limit=12"),
-    []
-  );
+  let posts = await sb(env, "/community_posts?status=eq.published" + categoryFilter + cursorFilter + scheduledFilter + followingFilter + topicQuery + "&select=" + select + "&order=created_at.desc&limit=12");
   if (viewerId) {
     const repostCursor = before ? "&created_at=lt." + encodeURIComponent(before) : "";
     const followedReposts = await safeAdminRead(() => sb(env, "/community_reposts?user_id=in.(" + followingIds.join(",") + ")" + repostCursor + "&select=post_id,user_id,created_at,reposter:community_profiles!community_reposts_user_id_fkey(id,username,display_name,avatar_url,quiz_badge)&order=created_at.desc&limit=18"), []);
@@ -978,7 +975,7 @@ async function communityFeed(env, category, before, viewerId, topic) {
 
 async function communitySinglePost(env, postId) {
   const select = communityPostSelect();
-  const rows = await safeAdminRead(() => sb(env, "/community_posts?id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=" + select + "&limit=1"), []);
+  const rows = await sb(env, "/community_posts?id=eq." + encodeURIComponent(postId) + "&status=eq.published&select=" + select + "&limit=1");
   if (!rows.length) throw communityError("Post non trovato", 404);
   const hydratedRows = await attachQuotedCommunityPosts(env, rows);
   const [reactions, comments, reposts, votes, notes] = await Promise.all([

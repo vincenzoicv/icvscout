@@ -280,6 +280,19 @@ test("l'API protegge cancellazione account e deep link", async () => {
   assert.match(api, /COMMUNITY_BLOCKED_LANGUAGE/);
 });
 
+test("il feed Community espone gli errori principali e conferma le pubblicazioni", async () => {
+  const [api, html] = await Promise.all([
+    read("functions/api/[[path]].js"),
+    read("community.html"),
+  ]);
+  assert.match(api, /let posts = await sb\(env, "\/community_posts\?status=eq\.published"/);
+  assert.match(api, /const rows = await sb\(env, "\/community_posts\?id=eq\." \+ encodeURIComponent\(postId\)/);
+  assert.doesNotMatch(api, /let posts = await safeAdminRead\([\s\S]{0,160}community_posts\?status=eq\.published/);
+  assert.match(html, /Post pubblicato\. Ricarica la pagina per vederlo nel feed\./);
+  assert.match(html, /onclick='loadFeed\(\)'>Riprova/);
+  assert.match(html, /raw=await response\.text\(\)/);
+});
+
 test("privacy, regolamento e sitemap sono pubblicabili", async () => {
   const [privacy, cookies, rules, sitemap, redirects] = await Promise.all([
     read("privacy.html"), read("cookie-policy.html"), read("regolamento-community.html"), read("sitemap.xml"), read("_redirects"),

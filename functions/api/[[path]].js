@@ -149,7 +149,7 @@ export async function onRequest(context) {
     if (path === "admin/analytics") return adminAnalytics(request, env, url);
     if (path === "community/config") return communityConfig(env);
     if (path === "community/feed" || path.startsWith("community/")) return await communityRoute(request, env, url, path.replace(/^community\/?/, ""));
-    if (path === "admin/news") return adminNews(request, env);
+    if (path === "admin/news") return await adminNews(request, env);
     if (path === "admin/automate") return await adminAutomate(request, env);
     if (path === "cron/autopilot") return cronAutopilot(request, env);
     if (path.startsWith("football-data/")) return footballDataProxy(path, url, env);
@@ -2097,7 +2097,7 @@ async function fetchNewsDrafts(env, sources) {
         }
         let draftRows = [];
         try {
-          draftRows = await sb(env, "/news_drafts", {
+          draftRows = await sb(env, "/news_drafts?on_conflict=content_hash", {
             method: "POST",
             body: [{
               title,
@@ -2119,15 +2119,21 @@ async function fetchNewsDrafts(env, sources) {
                 },
               },
             }],
-            prefer: "return=representation",
+            prefer: "resolution=ignore-duplicates,return=representation",
           });
         } catch (err) {
-          if (isSupabaseEmptyJsonError(err)) {
+          if (isSupabaseEmptyJsonError(err) || isSupabaseUniqueViolation(err)) {
             skippedDuplicates++;
             report.skipped_duplicates++;
             continue;
           }
           throw err;
+        }
+        if (!draftRows.length) {
+          addFetchDiscovery(discoveries, candidate, "draft_duplicate");
+          skippedDuplicates++;
+          report.skipped_duplicates++;
+          continue;
         }
         const draft = draftRows[0];
         if (draft) recentDrafts.unshift(draft);
@@ -2340,7 +2346,7 @@ async function generateYoutubeScoutDrafts(env) {
 
         const title = youtubeDraftTitle(video, transcriptText);
         const body = youtubeDraftBody(video, transcriptText, channel.name);
-        await sb(env, "/news_drafts", {
+        const insertedRows = await sb(env, "/news_drafts?on_conflict=content_hash", {
           method: "POST",
           body: [{
             title,
@@ -2362,7 +2368,12 @@ async function generateYoutubeScoutDrafts(env) {
               transcript_excerpt: transcriptText.slice(0, 1200),
             },
           }],
+          prefer: "resolution=ignore-duplicates,return=representation",
         });
+        if (!insertedRows.length) {
+          report.skipped++;
+          continue;
+        }
         inserted++;
         report.inserted++;
       }
@@ -3510,6 +3521,10 @@ function isSupabaseCheckConstraintError(err) {
   return /23514|violates check constraint|new row for relation .* violates check constraint/i.test(String(err && err.message || err || ""));
 }
 
+function isSupabaseUniqueViolation(err) {
+  return /23505|duplicate key value violates unique constraint/i.test(String(err && err.message || err || ""));
+}
+
 async function safeAdminRead(read, fallback) {
   try {
     return await read();
@@ -3530,9 +3545,17 @@ async function getOne(env, path) {
 
 function requireAdmin(request, env) {
   const expected = env.ADMIN_TOKEN;
-  if (!expected) throw new Error("Configura ADMIN_TOKEN nelle variabili ambiente");
+  if (!expected) {
+    const error = new Error("Configura ADMIN_TOKEN nelle variabili ambiente");
+    error.status = 503;
+    throw error;
+  }
   const token = request.headers.get("X-ICV-Admin-Token") || (request.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
-  if (token !== expected) throw new Error("Token admin non valido");
+  if (token !== expected) {
+    const error = new Error("Token admin non valido");
+    error.status = 401;
+    throw error;
+  }
 }
 
 async function readBody(request) {

@@ -735,3 +735,27 @@ test("Mercato Board scarta interviste e smentite e normalizza le ufficialita", a
   assert.equal(alajbegovicRows[0].player_name, "Alajbegovic");
   assert.equal(alajbegovicRows[0].deal_stage, "official");
 });
+
+test("le bozze duplicate sono ignorate atomicamente senza degradare Mercato", async () => {
+  const api = await read("functions/api/[[path]].js");
+  assert.match(api, /news_drafts\?on_conflict=content_hash/);
+  assert.match(api, /resolution=ignore-duplicates,return=representation/);
+  assert.match(api, /isSupabaseUniqueViolation\(err\)/);
+  assert.match(api, /23505\|duplicate key value violates unique constraint/);
+});
+
+test("il login admin riceve errori JSON gestiti invece del Cloudflare 1101", async () => {
+  const [admin, apiModule] = await Promise.all([
+    read("icv_admin.html"),
+    import(new URL("../functions/api/[[path]].js", import.meta.url)),
+  ]);
+  const response = await apiModule.onRequest({
+    request: new Request("https://ilcalciodivince.com/api/admin/news"),
+    env: { ADMIN_TOKEN: "segreto" },
+  });
+  assert.equal(response.status, 401);
+  assert.deepEqual(await response.json(), { error: "Token admin non valido" });
+  assert.match(admin, /normalizeAdminToken/);
+  assert.match(admin, /API admin non disponibile/);
+  assert.match(admin, /return r\.text\(\)/);
+});

@@ -34,6 +34,17 @@ test("la home distingue risultati e prossime amichevoli", async () => {
   assert.match(html, /17 AGO[\s\S]*?Juventus-Next Gen[\s\S]*?Allianz Stadium/);
 });
 
+test("Anime.js anima la home rispettando Riduci movimento", async () => {
+  const html = await read("index.html");
+  assert.match(html, /<script src="\/assets\/anime\.umd\.min\.js\?v=4\.5\.0"><\/script>/);
+  assert.match(html, /function setupIcvAnimations\(\)/);
+  assert.match(html, /function animateLiveDeskRows\(\)/);
+  assert.match(html, /prefers-reduced-motion: reduce/);
+  assert.match(html, /setupIcvAnimations\(\);[\s\S]*?setupHomeMotion\(\);/);
+  assert.match(html, /box\.innerHTML = rows\.map[\s\S]*?animateLiveDeskRows\(\);/);
+  assert.doesNotMatch(html, /https:\/\/cdn[^"']*anime/i);
+});
+
 test("News e Statistiche scorrono alla sezione richiesta", async () => {
   const html = await read("index.html");
   assert.match(html, /function scrollSectionIntoView\(section, behavior\)/);

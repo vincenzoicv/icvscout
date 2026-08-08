@@ -102,7 +102,9 @@ main{padding-top:58px;position:relative;z-index:1;}
 .friendly-label-copy strong{color:var(--gold-l);font-size:12px;letter-spacing:1.7px;}
 .friendly-label-copy span{color:rgba(255,255,255,.45);font-size:9px;letter-spacing:1.3px;}
 .friendly-fixtures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));min-width:0;}
-.friendly-fixtures.is-four{grid-template-columns:repeat(4,minmax(0,1fr));}
+.friendly-fixtures.is-four{grid-template-columns:repeat(2,minmax(0,1fr));}
+.friendly-fixtures.is-four .friendly-item:nth-child(odd){border-left:0;}
+.friendly-fixtures.is-four .friendly-item:nth-child(n+3){border-top:1px solid rgba(196,150,42,.14);}
 .friendly-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px;min-width:0;padding:9px 13px;border-left:1px solid rgba(196,150,42,.14);background:rgba(255,255,255,.018);color:rgba(255,255,255,.84);}
 .friendly-item:first-child{border-left:0;}
 .friendly-meta{display:flex;flex-direction:column;gap:2px;line-height:1;}
@@ -110,7 +112,8 @@ main{padding-top:58px;position:relative;z-index:1;}
 .friendly-status{font-size:8px;letter-spacing:1.2px;color:rgba(255,255,255,.48);}
 .friendly-match{display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden;font-size:12px;letter-spacing:1px;white-space:nowrap;}
 .friendly-match-name{overflow:hidden;text-overflow:ellipsis;}
-.friendly-scorer{overflow:hidden;text-overflow:ellipsis;color:rgba(255,255,255,.52);font-size:8px;font-weight:700;letter-spacing:1.1px;}
+.friendly-scorer{overflow:visible;text-overflow:clip;white-space:normal;color:rgba(255,255,255,.58);font-size:9px;font-weight:700;letter-spacing:.9px;line-height:1.25;}
+.friendly-scorer b{color:rgba(232,184,75,.9);font-weight:900;}
 .friendly-result{font-family:"Bebas Neue";font-size:22px;line-height:1;letter-spacing:1.5px;color:var(--white);white-space:nowrap;}
 .friendly-item.is-final{background:linear-gradient(110deg,rgba(196,150,42,.13),rgba(255,255,255,.025));box-shadow:inset 3px 0 0 var(--gold);}
 .friendly-item.is-final .friendly-status{color:#79d99a;}
@@ -466,6 +469,8 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .friendly-label-copy span{font-size:8px;}
 .friendly-fixtures{grid-template-columns:1fr;}
 .friendly-fixtures.is-four{grid-template-columns:1fr;}
+.friendly-fixtures.is-four .friendly-item{border-left:0;}
+.friendly-fixtures.is-four .friendly-item:nth-child(n+2){border-top:1px solid rgba(196,150,42,.12);}
 .friendly-item{grid-template-columns:58px minmax(0,1fr) auto;border-left:0;border-top:1px solid rgba(196,150,42,.12);padding:9px 11px;}
 .friendly-item:first-child{border-top:0;}
 .friendly-match{font-size:12px;}
@@ -647,7 +652,7 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
           <div class="friendly-meta"><strong>8 AGO</strong><span class="friendly-status">FINALE</span></div>
           <span class="friendly-match">
             <span class="friendly-match-name">Juventus-Inter</span>
-            <span class="friendly-scorer">Conceicao · Dimarco · Diouf</span>
+            <span class="friendly-scorer"><b>Juve</b>: Conceicao · <b>Inter</b>: Dimarco, Diouf</span>
           </span>
           <strong class="friendly-result" aria-label="Risultato uno a due per l'Inter">1-2</strong>
         </div>

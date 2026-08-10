@@ -134,13 +134,42 @@ main{padding-top:58px;position:relative;z-index:1;}
 .home-panel::after{content:"";position:absolute;inset:0;background:linear-gradient(108deg,transparent 28%,rgba(232,184,75,.075) 48%,transparent 68%);transform:translateX(-115%);pointer-events:none;}
 .home-panel:hover{transform:translateY(-3px);border-color:rgba(196,150,42,.32);box-shadow:0 20px 42px rgba(0,0,0,.28),0 0 24px rgba(196,150,42,.055),inset 0 1px 0 rgba(255,255,255,.06);}
 .home-panel:hover::after{animation:panelSheen .85s ease both;}
-.home-focus-panel{grid-column:span 2;min-height:168px;padding:24px 26px 22px;border-left:3px solid var(--gold);background:linear-gradient(145deg,rgba(28,28,28,.98),rgba(17,17,17,.96));box-shadow:0 22px 48px rgba(0,0,0,0.28),inset 0 1px 0 rgba(255,255,255,0.055);}
+.home-match-hub{grid-column:span 2;min-height:300px;padding:0;border-left:3px solid var(--gold);background:linear-gradient(145deg,rgba(27,27,27,.99),rgba(13,13,13,.98));box-shadow:0 22px 48px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.055);}
+.match-hub-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid var(--bdr2);}
+.match-hub-brand{display:flex;align-items:center;gap:10px;min-width:0;}
+.match-hub-brand h3{margin:0;}
+.match-hub-state{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(196,150,42,.3);border-radius:999px;padding:5px 9px;color:var(--gold-l);font-family:"Barlow Condensed";font-size:9px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;}
+.match-hub-state::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px rgba(232,184,75,.09);}
+.home-match-hub[data-state="live"] .match-hub-state{color:#65e294;border-color:rgba(101,226,148,.34);}
+.home-match-hub[data-state="live"] .match-hub-state::before{animation:pulse 1.2s ease infinite;}
+.match-hub-updated{font-family:"Barlow Condensed";font-size:9px;font-weight:800;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase;text-align:right;}
+.match-hub-main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(245px,.75fr);min-height:190px;}
+.match-hub-next,.match-hub-last{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:20px 24px;}
+.match-hub-last{border-left:1px solid var(--bdr2);background:rgba(255,255,255,.014);}
+.match-hub-kicker{font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:2px;color:var(--gold-l);text-transform:uppercase;margin-bottom:7px;}
+.match-hub-date{font-family:"Barlow Condensed";font-size:12px;font-weight:700;letter-spacing:1.3px;color:var(--t3);text-transform:uppercase;}
+.match-hub-teams{display:flex;align-items:center;gap:14px;min-width:0;margin:8px 0 7px;}
+.match-hub-team{font-family:"Bebas Neue";font-size:34px;line-height:.95;letter-spacing:1.2px;color:var(--white);overflow-wrap:anywhere;}
+.match-hub-vs{font-family:"Barlow Condensed";font-size:9px;font-weight:900;letter-spacing:2px;color:var(--gold);text-transform:uppercase;flex:0 0 auto;}
+.match-hub-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:"Barlow Condensed";font-size:11px;font-weight:700;letter-spacing:1.1px;color:var(--t2);text-transform:uppercase;}
+.match-hub-meta span+span::before{content:"·";margin-right:8px;color:var(--gold);}
+.match-hub-countdown{display:inline-flex;align-items:baseline;gap:6px;margin-top:14px;color:var(--gold-l);font-family:"Barlow Condensed";font-size:12px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;}
+.match-hub-countdown strong{font-family:"Bebas Neue";font-size:25px;line-height:1;letter-spacing:1px;}
+.match-hub-scoreline{display:flex;align-items:center;gap:10px;margin:7px 0 6px;min-width:0;}
+.match-hub-score-team{font-family:"Barlow Condensed";font-size:16px;font-weight:900;line-height:1;color:var(--white);min-width:0;}
+.match-hub-score{font-family:"Bebas Neue";font-size:42px;line-height:.8;letter-spacing:2px;color:var(--gold-l);white-space:nowrap;}
+.match-hub-scorers{font-family:"Barlow Condensed";font-size:11px;font-weight:700;line-height:1.35;color:var(--t2);}
+.match-hub-form{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:13px 20px;border-top:1px solid var(--bdr2);background:rgba(196,150,42,.035);}
+.match-hub-form-label{font-family:"Barlow Condensed";font-size:9px;font-weight:900;letter-spacing:1.6px;color:var(--t3);text-transform:uppercase;white-space:nowrap;}
+.match-hub-form-list{display:flex;align-items:center;gap:7px;min-width:0;}
+.match-hub-form-dot{display:inline-grid;place-items:center;width:25px;height:25px;border:1px solid rgba(255,255,255,.14);border-radius:50%;font-family:"Barlow Condensed";font-size:10px;font-weight:900;color:var(--t2);background:rgba(255,255,255,.025);}
+.match-hub-form-dot.win{color:#74df9b;border-color:rgba(116,223,155,.38);background:rgba(116,223,155,.09);}
+.match-hub-form-dot.draw{color:#f2cf73;border-color:rgba(242,207,115,.38);background:rgba(242,207,115,.08);}
+.match-hub-form-dot.loss{color:#ff7979;border-color:rgba(255,121,121,.36);background:rgba(255,121,121,.08);}
+.match-hub-record{font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:1.1px;color:var(--t2);text-transform:uppercase;text-align:right;white-space:nowrap;}
 .home-panel h3{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:3px;color:var(--gold-l);text-transform:uppercase;margin-bottom:10px;}
-.home-focus-panel h3{margin-bottom:12px;}
 .home-main-title{font-family:"Barlow Condensed";font-size:20px;font-weight:800;color:var(--white);line-height:1.15;margin-bottom:6px;}
-.home-focus-panel .home-main-title{font-family:"Bebas Neue";font-size:36px;letter-spacing:1.5px;line-height:0.98;margin-bottom:12px;max-width:760px;}
 .home-text{font-size:14px;color:var(--t2);line-height:1.45;}
-.home-focus-panel .home-text{font-size:16px;line-height:1.58;max-width:760px;}
 .live-desk-panel{grid-column:1/-1;padding:0;min-height:auto;border-color:rgba(196,150,42,.3);}
 .live-desk-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid var(--bdr2);}
 .live-desk-head h3{margin:0;display:flex;align-items:center;gap:9px;}
@@ -322,7 +351,12 @@ body.light .sec-title{background:linear-gradient(135deg,#111 0%,rgba(0,0,0,0.68)
 body.light .manifesto{color:rgba(196,150,42,0.75);}
 body.light .match-banner{background:rgba(196,150,42,0.06);}
 body.light .home-panel{background:var(--surface);border-color:rgba(196,150,42,.18);}
-body.light .home-focus-panel{background:linear-gradient(145deg,#f0ece3,#e2ddd2);box-shadow:0 18px 42px rgba(70,55,25,0.12),inset 0 1px 0 rgba(255,255,255,0.76);}
+body.light .home-match-hub{background:linear-gradient(145deg,#f0ece3,#e2ddd2);box-shadow:0 18px 42px rgba(70,55,25,.12),inset 0 1px 0 rgba(255,255,255,.76);}
+body.light .match-hub-last{background:rgba(255,255,255,.2);}
+body.light .match-hub-team,body.light .match-hub-score-team{color:#15120c;}
+body.light .match-hub-date,body.light .match-hub-updated,body.light .match-hub-form-label{color:rgba(0,0,0,.45);}
+body.light .match-hub-meta,body.light .match-hub-scorers,body.light .match-hub-record{color:rgba(0,0,0,.6);}
+body.light .match-hub-form-dot{border-color:rgba(0,0,0,.13);background:rgba(255,255,255,.32);}
 body.light .home-main-title,body.light .home-mini strong{color:#111;}
 body.light .home-text{color:rgba(0,0,0,.58);}
 body.light .home-auto{color:rgba(0,0,0,0.44);}
@@ -406,9 +440,19 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .hero{min-height:360px;padding:58px 18px 42px;}.hero h1{font-size:clamp(58px,18vw,92px);}
 .home-dash{grid-template-columns:1fr;margin-top:0;padding:0 14px;}
 .home-panel{min-height:auto;}
-.home-focus-panel{grid-column:auto;padding:22px 20px;}
-.home-focus-panel .home-main-title{font-size:31px;}
-.home-focus-panel .home-text{font-size:15px;}
+.home-match-hub{grid-column:auto;min-height:0;}
+.match-hub-head{align-items:flex-start;padding:14px 15px;}
+.match-hub-brand{align-items:flex-start;flex-direction:column;gap:7px;}
+.match-hub-updated{max-width:105px;line-height:1.3;}
+.match-hub-main{grid-template-columns:1fr;min-height:0;}
+.match-hub-next,.match-hub-last{padding:18px 16px;}
+.match-hub-last{border-left:0;border-top:1px solid var(--bdr2);}
+.match-hub-team{font-size:29px;}
+.match-hub-teams{gap:10px;}
+.match-hub-score{font-size:38px;}
+.match-hub-form{grid-template-columns:1fr auto;padding:13px 15px;gap:10px;}
+.match-hub-form-label{grid-column:1/-1;}
+.match-hub-record{font-size:9px;}
 .live-desk-list{grid-template-columns:1fr;}
 .live-desk-row,.live-desk-row:nth-child(odd){border-right:0;border-bottom:1px solid var(--bdr2);}
 .live-desk-row:last-child{border-bottom:0;}
@@ -681,15 +725,43 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
   </div>
 </div>
 <section class="home-dash" id="homeDash">
-  <div class="home-panel home-focus-panel" id="homeFocusPanel">
-    <h3>Focus ICV</h3>
-    <div class="home-main-title" id="homeFocusTitle">ICV Scout in aggiornamento</div>
-  </div>
-  <div class="home-panel" id="homeMatchPanel" hidden>
-    <h3>Match Center</h3>
-    <div class="home-main-title" id="homeMatchTitle"></div>
-    <div class="home-text" id="homeMatchText"></div>
-  </div>
+  <article class="home-panel home-match-hub" id="homeMatchHub" data-state="scheduled" aria-live="polite">
+    <div class="match-hub-head">
+      <div class="match-hub-brand">
+        <h3>ICV Match Hub</h3>
+        <span class="match-hub-state" id="matchHubState">Prossima sfida</span>
+      </div>
+      <span class="match-hub-updated" id="matchHubUpdated">Dati Match Center</span>
+    </div>
+    <div class="match-hub-main">
+      <section class="match-hub-next" aria-label="Prossima partita della Juventus">
+        <div class="match-hub-kicker">Prossimo incontro</div>
+        <div class="match-hub-date" id="matchHubNextDate">11 agosto 2026</div>
+        <div class="match-hub-teams">
+          <strong class="match-hub-team" id="matchHubNextHome">Juventus</strong>
+          <span class="match-hub-vs" id="matchHubVersus">VS</span>
+          <strong class="match-hub-team" id="matchHubNextAway">Palermo</strong>
+        </div>
+        <div class="match-hub-meta"><span id="matchHubCompetition">Amichevole</span><span id="matchHubVenue">Perth</span></div>
+        <div class="match-hub-countdown"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Domani</strong></div>
+      </section>
+      <section class="match-hub-last" aria-label="Ultimo risultato della Juventus">
+        <div class="match-hub-kicker">Ultimo risultato</div>
+        <div class="match-hub-date" id="matchHubLastDate">8 agosto 2026 · Finale</div>
+        <div class="match-hub-scoreline">
+          <span class="match-hub-score-team" id="matchHubLastHome">Juventus</span>
+          <strong class="match-hub-score" id="matchHubScore">1-2</strong>
+          <span class="match-hub-score-team" id="matchHubLastAway">Inter</span>
+        </div>
+        <div class="match-hub-scorers" id="matchHubScorers">Juve: Conceicao · Inter: Dimarco, Diouf</div>
+      </section>
+    </div>
+    <footer class="match-hub-form">
+      <span class="match-hub-form-label">Forma recente</span>
+      <div class="match-hub-form-list" id="matchHubForm" aria-label="Forma recente della Juventus"></div>
+      <span class="match-hub-record" id="matchHubRecord">3 vittorie · 1 pareggio · 1 sconfitta</span>
+    </footer>
+  </article>
   <div class="home-panel">
     <h3>Prime 5 di A</h3>
     <div class="fixture-list">
@@ -1347,17 +1419,167 @@ function icvEsc(value) {
     return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c];
   });
 }
-function renderHomeMatch(match) {
-  var panel = document.getElementById("homeMatchPanel");
-  var summary = match && String(match.summary || "").trim();
-  var isDraft = /bozza pre-partita|scheda pre-partita demo|da rifinire|da completare/i.test(summary);
-  if (!match || !summary || isDraft) {
-    panel.hidden = true;
-    return;
+var ICV_MATCH_FALLBACKS = [
+  {date:"2026-07-18T15:30:00+02:00",status:"finished",competition:"Amichevole",home:"Basilea",away:"Juventus",homeScore:0,awayScore:0,venue:"Basilea"},
+  {date:"2026-07-25T20:00:00+02:00",status:"finished",competition:"Amichevole",home:"Standard Liegi",away:"Juventus",homeScore:0,awayScore:1,venue:"Liegi",scorers:"Juve: Miretti"},
+  {date:"2026-07-31T18:00:00+02:00",status:"finished",competition:"Amichevole",home:"Juventus",away:"Nizza",homeScore:2,awayScore:0,venue:"JTC",scorers:"Juve: Douglas Luiz 10', Oboavwoduo 89'"},
+  {date:"2026-08-05T20:00:00+08:00",status:"finished",competition:"Amichevole",home:"Chelsea",away:"Juventus",homeScore:0,awayScore:1,venue:"Hong Kong",scorers:"Juve: Zhegrova"},
+  {date:"2026-08-08T20:00:00+08:00",status:"finished",competition:"Amichevole",home:"Juventus",away:"Inter",homeScore:1,awayScore:2,venue:"Perth",scorers:"Juve: Conceicao · Inter: Dimarco, Diouf"},
+  {date:"2026-08-11T23:59:00+08:00",dateOnly:true,status:"scheduled",competition:"Amichevole",home:"Juventus",away:"Palermo",venue:"Perth"},
+  {date:"2026-08-17T23:59:00+02:00",dateOnly:true,status:"scheduled",competition:"Amichevole",home:"Juventus",away:"Next Gen",venue:"Allianz Stadium"},
+  {date:"2026-08-23T18:30:00+02:00",status:"scheduled",competition:"Serie A",home:"Frosinone",away:"Juventus",venue:"Stadio Benito Stirpe"}
+];
+
+function matchHubPayload(row) {
+  var payload = row && row.source_payload || {};
+  if (typeof payload === "string") {
+    try { payload = JSON.parse(payload); } catch (e) { payload = {}; }
   }
-  document.getElementById("homeMatchTitle").textContent = match.title || match.opponent || "Match Center";
-  document.getElementById("homeMatchText").textContent = summary;
-  panel.hidden = false;
+  return payload || {};
+}
+
+function normalizeMatchHubRows(rows) {
+  return (Array.isArray(rows) ? rows : []).map(function(row) {
+    var payload = matchHubPayload(row);
+    var homeTeam = payload.homeTeam || {};
+    var awayTeam = payload.awayTeam || {};
+    var score = payload.score && (payload.score.fullTime || payload.score.regularTime) || {};
+    var status = String(payload.status || row.status || "scheduled").toLowerCase();
+    var home = String(homeTeam.name || "").trim();
+    var away = String(awayTeam.name || "").trim();
+    if (!home || !away) return null;
+    return {
+      date: row.match_date || payload.utcDate,
+      status: /finished|awarded|final/.test(status) ? "finished" : (/in_play|paused|live/.test(status) ? "live" : "scheduled"),
+      competition: row.competition || payload.competition && payload.competition.name || "Match Center",
+      home: home,
+      away: away,
+      homeScore: score.home != null && Number.isFinite(Number(score.home)) ? Number(score.home) : null,
+      awayScore: score.away != null && Number.isFinite(Number(score.away)) ? Number(score.away) : null,
+      venue: payload.venue || "",
+      scorers: String(row.summary || "").replace(/^Finale\s*[·:-]?\s*/i, "").trim(),
+      updatedAt: row.updated_at || null
+    };
+  }).filter(Boolean);
+}
+
+function matchHubKey(match) {
+  var day = String(match.date || "").slice(0, 10);
+  return [day, match.home, match.away].join("|").toLowerCase().replace(/\s+/g, " ");
+}
+
+function allMatchHubRows(apiRows) {
+  var merged = new Map();
+  ICV_MATCH_FALLBACKS.forEach(function(match) { merged.set(matchHubKey(match), match); });
+  normalizeMatchHubRows(apiRows).forEach(function(match) { merged.set(matchHubKey(match), match); });
+  return Array.from(merged.values()).filter(function(match) {
+    return match.date && !isNaN(new Date(match.date).getTime());
+  }).sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+}
+
+function matchHubIsJuve(name) {
+  return /juventus|juve/i.test(String(name || ""));
+}
+
+function matchHubOutcome(match) {
+  if (!match || match.status !== "finished" || match.homeScore == null || match.awayScore == null) return null;
+  if (match.homeScore === match.awayScore) return "draw";
+  var juveGoals = matchHubIsJuve(match.home) ? match.homeScore : match.awayScore;
+  var otherGoals = matchHubIsJuve(match.home) ? match.awayScore : match.homeScore;
+  return juveGoals > otherGoals ? "win" : "loss";
+}
+
+function matchHubDate(match, includeStatus) {
+  if (!match) return "Da programmare";
+  var date = new Date(match.date);
+  var options = {day:"numeric", month:"long", year:"numeric"};
+  if (!match.dateOnly) { options.hour = "2-digit"; options.minute = "2-digit"; }
+  var label = date.toLocaleDateString("it-IT", options);
+  return includeStatus ? label + " · Finale" : label;
+}
+
+function matchHubCountdown(match, live) {
+  if (live) return "In diretta";
+  if (!match) return "Da definire";
+  var now = new Date();
+  var kickoff = new Date(match.date);
+  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var matchDay = new Date(kickoff.getFullYear(), kickoff.getMonth(), kickoff.getDate());
+  var days = Math.round((matchDay - today) / 86400000);
+  if (days <= 0) return "Oggi";
+  if (days === 1) return "Domani";
+  return "Tra " + days + " giorni";
+}
+
+function setMatchHubText(id, value) {
+  var element = document.getElementById(id);
+  if (element) element.textContent = value || "";
+}
+
+function matchHubRecordLabel(count, singular, plural) {
+  return count + " " + (count === 1 ? singular : plural);
+}
+
+function renderMatchHub(apiRows) {
+  var hub = document.getElementById("homeMatchHub");
+  if (!hub) return;
+  var matches = allMatchHubRows(apiRows);
+  var now = Date.now();
+  var live = matches.find(function(match) { return match.status === "live"; });
+  var upcoming = live || matches.find(function(match) {
+    return match.status === "scheduled" && new Date(match.date).getTime() >= now;
+  });
+  var finished = matches.filter(function(match) {
+    return match.status === "finished" && new Date(match.date).getTime() <= now;
+  });
+  var latest = finished[finished.length - 1] || null;
+  var state = live ? "live" : (upcoming ? "scheduled" : "finished");
+  hub.dataset.state = state;
+  setMatchHubText("matchHubState", live ? "In diretta" : (upcoming ? "Prossima sfida" : "Ultimo finale"));
+  setMatchHubText("matchHubUpdated", "Automatico · Match Center");
+
+  if (upcoming) {
+    setMatchHubText("matchHubNextDate", matchHubDate(upcoming, false));
+    setMatchHubText("matchHubNextHome", upcoming.home);
+    setMatchHubText("matchHubNextAway", upcoming.away);
+    setMatchHubText("matchHubVersus", live && upcoming.homeScore != null && upcoming.awayScore != null ? upcoming.homeScore + "-" + upcoming.awayScore : (live ? "LIVE" : "VS"));
+    setMatchHubText("matchHubCompetition", upcoming.competition || "Match Center");
+    setMatchHubText("matchHubVenue", upcoming.venue || "Sede da confermare");
+    setMatchHubText("matchHubCountdown", matchHubCountdown(upcoming, !!live));
+  } else {
+    setMatchHubText("matchHubNextDate", "Calendario in aggiornamento");
+    setMatchHubText("matchHubNextHome", "Juventus");
+    setMatchHubText("matchHubNextAway", "Da definire");
+    setMatchHubText("matchHubVersus", "VS");
+    setMatchHubText("matchHubCompetition", "Prossimo incontro");
+    setMatchHubText("matchHubVenue", "Dati in arrivo");
+    setMatchHubText("matchHubCountdown", "Da definire");
+  }
+
+  if (latest) {
+    setMatchHubText("matchHubLastDate", matchHubDate(latest, true));
+    setMatchHubText("matchHubLastHome", latest.home);
+    setMatchHubText("matchHubLastAway", latest.away);
+    setMatchHubText("matchHubScore", latest.homeScore + "-" + latest.awayScore);
+    setMatchHubText("matchHubScorers", latest.scorers || "Marcatori non disponibili");
+  }
+
+  var recent = finished.slice(-5);
+  var counts = {win:0, draw:0, loss:0};
+  var form = document.getElementById("matchHubForm");
+  if (form) form.innerHTML = recent.map(function(match) {
+    var outcome = matchHubOutcome(match) || "draw";
+    counts[outcome] += 1;
+    var letter = outcome === "win" ? "V" : (outcome === "loss" ? "P" : "N");
+    var label = match.home + " " + match.homeScore + "-" + match.awayScore + " " + match.away;
+    return "<span class=\"match-hub-form-dot " + outcome + "\" title=\"" + icvEsc(label) + "\" aria-label=\"" + icvEsc(label) + "\">" + letter + "</span>";
+  }).join("");
+  setMatchHubText("matchHubRecord", [
+    matchHubRecordLabel(counts.win, "vittoria", "vittorie"),
+    matchHubRecordLabel(counts.draw, "pareggio", "pareggi"),
+    matchHubRecordLabel(counts.loss, "sconfitta", "sconfitte")
+  ].join(" · "));
+  animateMatchHub();
 }
 
 function liveDeskTime(value) {
@@ -1398,12 +1620,10 @@ function loadHomeDashboard() {
     var matches = Array.isArray(data.matches) ? data.matches : [];
     var social = Array.isArray(data.social) ? data.social : [];
     renderLiveDesk(data.live_desk);
+    renderMatchHub(matches);
     renderAutoStatus(data.auto);
     renderRadar(data.radar);
-    var focus = buildEditorialFocus(market, news);
-    document.getElementById("homeFocusTitle").textContent = focus.title;
-    renderHomeMatch(matches[0]);
-    renderHomeList("homeNewsList", focus.skipNewsId ? news.filter(function(n){ return n.id !== focus.skipNewsId; }) : news, function(n) {
+    renderHomeList("homeNewsList", news, function(n) {
       var player=n.related_players&&n.related_players[0];
       return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : ""), url:player?"/giocatore?slug="+player.slug:""};
     }, "Nessuna news approvata al momento.");
@@ -1419,149 +1639,12 @@ function loadHomeDashboard() {
   })
   .catch(function() {
     renderLiveDesk([]);
+    renderMatchHub([]);
     renderHomeList("homeNewsList", [], null, "News non disponibili in questo momento.");
     renderHomeList("homeMarketList", [], null, "Mercato non disponibile in questo momento.");
     renderHomeLinks("homeInstagramList", [], null, "Instagram non disponibile in questo momento.");
     alignHashedSection();
   });
-}
-
-function buildEditorialFocus(market, news) {
-  market = Array.isArray(market) ? market : [];
-  news = Array.isArray(news) ? news : [];
-  var focusNews = pickFocusNews(news);
-  if (focusNews) {
-    return {
-      title: focusNews.title || "Il tema del giorno",
-      text: editorializeNews(focusNews),
-      skipNewsId: focusNews.id
-    };
-  }
-
-  var exits = market.filter(function(m){ return marketHas(m, /vlahovic|bremer|cambiaso|douglas|nico gonzalez|uscita|cessione|addio/i); });
-  var arrivals = market.filter(function(m){ return marketHas(m, /alisson|icardi|robertson|mamardashvili|de gea|arrivo|attaccante|portiere/i); });
-  var staff = market.filter(function(m){ return marketHas(m, /spalletti|comolli|staff|rinnovo|dirigenza|continassa/i); });
-  var declarations = market.filter(function(m){ return marketHas(m, /locatelli|conceicao|conceição|dichiarazioni|tifosi|dolore|delusione/i); });
-
-  if (exits.some(function(m){ return marketHas(m, /vlahovic/i); })) {
-    return {
-      title: "Vlahovic-Juve, rottura economica e tecnica",
-      text: "Il caso Vlahovic non e solo una questione di ingaggio: il rapporto con la Juve sembra consumato anche sul piano tecnico e gestionale, con la cessione che diventa il nodo da cui puo partire il nuovo attacco."
-    };
-  }
-  if (arrivals.some(function(m){ return marketHas(m, /alisson/i); })) {
-    var alisson = arrivals.find(function(m){ return marketHas(m, /alisson/i); });
-    var sources = Number(alisson && alisson.source_count || 0);
-    return {
-      title: "Alisson-Juve, pista da verificare",
-      text: (sources > 1 ? sources + " fonti tengono vivo" : "Resta vivo") + " il tema Alisson-Juve: prima di parlare di trattativa, ICV lo legge come segnale da incrociare con uscite e margini economici."
-    };
-  }
-  if (exits.length && staff.length) {
-    return {
-      title: "La priorità è fare ordine",
-      text: "Le voci sulle possibili uscite si intrecciano con le scelte di staff e dirigenza: prima dei nomi, la Juve deve chiarire budget, gerarchie e direzione tecnica."
-    };
-  }
-  if (exits.length || arrivals.length) {
-    return {
-      title: "Mercato Juve, segnali da leggere insieme",
-      text: "Il mercato bianconero si muove per blocchi: possibili entrate, uscite e rinnovi vanno letti insieme, perché ogni scelta apre o chiude spazio alla successiva."
-    };
-  }
-  if (declarations.length) {
-    return {
-      title: "Parole da pesare, non solo da rilanciare",
-      text: "Le dichiarazioni dei protagonisti raccontano l'umore del gruppo: per ICV sono segnali editoriali, utili a capire che clima accompagna la ripartenza."
-    };
-  }
-  return {
-    title: "ICV Scout in aggiornamento",
-    text: "Le notizie approvate e il Match Center appariranno qui dopo la revisione admin."
-  };
-}
-
-function pickFocusNews(news) {
-  return news.slice().sort(function(a, b) {
-    var aScore = focusNewsScore(a);
-    var bScore = focusNewsScore(b);
-    if (aScore !== bScore) return bScore - aScore;
-    return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-  })[0] || null;
-}
-
-function focusNewsScore(item) {
-  var text = [item.title, item.body, item.category, item.editorial_status, item.reliability].join(" ");
-  var score = new Date(item.created_at || 0).getTime() / 1000000000000;
-  if (/breaking|urgente/i.test(item.urgency || "")) score += 8;
-  if (/important/i.test(item.urgency || "")) score += 5;
-  if (/low/i.test(item.urgency || "")) score -= 2;
-  if (/ufficiale|confermato|official/i.test(text)) score += 5;
-  if (/affidabile|trusted/i.test(text)) score += 3;
-  if (/mercato|calciomercato|vlahovic|spalletti|comolli|juventus/i.test(text)) score += 2;
-  if (/da verificare|rumor|aggregator/i.test(text)) score -= 2;
-  return score;
-}
-
-function marketHas(item, pattern) {
-  return pattern.test([item.player_name, item.note, item.source_name].join(" "));
-}
-
-function editorializeNews(item) {
-  var title = String(item.title || "Aggiornamento Juventus").replace(/\s+/g, " ").trim();
-  var body = String(item.body || "").replace(/\s+/g, " ").trim();
-  if (/calendario|stagione|date/i.test(title + " " + body)) {
-    return "Il calendario diventa il primo riferimento della ripartenza: date, competizioni e incastri aiutano a capire quando la Juve tornerà davvero al centro della scena.";
-  }
-  if (/europa league|coppa|sorteggio/i.test(title + " " + body)) {
-    return "L'Europa League cambia il peso della stagione: calendario, rotazioni e mercato dovranno essere letti dentro un percorso più lungo e meno scontato.";
-  }
-  var cleanBody = cleanFocusText(body, title, item.source);
-  return cleanBody ? cleanBody.slice(0, 190) : focusFallbackFromTitle(title);
-}
-
-function focusFallbackFromTitle(title) {
-  var text = String(title || "").replace(/\s+/g, " ").trim();
-  if (/archiviat|procedimento|bilancio|inchiesta|tribunale/i.test(text)) {
-    return "La vicenda si chiude con un passaggio significativo sul piano societario: per la Juve conta soprattutto lasciarsi alle spalle il tema e tornare al campo.";
-  }
-  if (/partnership|sponsor|accordo commerciale|wwe/i.test(text)) {
-    return "La notizia riguarda il lato business del club: meno campo, più identità e crescita del marchio Juventus fuori dalla partita.";
-  }
-  if (/portier|porta|martinez|vicario|dibu/i.test(text)) {
-    return "Il tema portiere resta uno snodo tecnico da monitorare: prima delle scelte di mercato, conta capire priorità e margini reali della Juve.";
-  }
-  if (/sorloth|attacco|attaccante/i.test(text)) {
-    return "Il nome di Sorloth resta legato al mercato bianconero: prima di alzare il tono, serve capire se l'interesse diventa una trattativa concreta.";
-  }
-  if (/del piero|dichiar|intervista|parole/i.test(text)) {
-    return "Le parole dei protagonisti vanno lette come segnale di clima: raccontano percezioni, aspettative e pressione intorno al mondo Juve.";
-  }
-  if (/mercato|calciomercato|trattativa|rinnovo|cessione|acquisto/i.test(text)) {
-    return "Il mercato va letto per incastri: ogni nome pesa davvero solo se torna con budget, ruolo scoperto e priorità tecniche.";
-  }
-  return "Aggiornamento Juventus da monitorare: il punto e capire se avra effetti concreti su campo, mercato o programmazione del club.";
-}
-
-function cleanFocusText(body, title, source) {
-  var text = String(body || "").replace(/\s+/g, " ").trim();
-  var cleanTitle = String(title || "").replace(/\s+/g, " ").trim();
-  var cleanSource = String(source || "").replace(/\s+/g, " ").trim();
-  if (cleanTitle && text.toLowerCase().indexOf(cleanTitle.toLowerCase()) === 0) {
-    text = text.slice(cleanTitle.length).replace(/^[\s:·–—-]+/, "").trim();
-  }
-  if (cleanSource) {
-    text = text.replace(new RegExp("\\s*(?:-|·|–|—)?\\s*" + escapeRegExp(cleanSource) + "\\s*$", "i"), "").trim();
-  }
-  text = text.replace(/\s*(?:-|·|–|—)?\s*Juventus Football Club\s*-\s*Sito Ufficiale\s*$/i, "").trim();
-  text = text.replace(/^(Juventus Football Club|Sito Ufficiale)$/i, "").trim();
-  text = text.replace(/\s*(?:-|·|–|—)?\s*(Gianluca Di Marzio|Di Marzio|Juventus\\.com|Lega Serie A|Il Bianconero|Tuttosport|Sky Sport)\s*$/i, "").trim();
-  if (cleanTitle && text.toLowerCase() === cleanTitle.toLowerCase()) return "";
-  return text;
-}
-
-function escapeRegExp(value) {
-  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function loadHomeGraphics() {
@@ -1800,6 +1883,37 @@ function animateLiveDeskRows() {
     onComplete: function() {
       rows.forEach(clearIcvMotionStyles);
     }
+  });
+}
+
+function animateMatchHub() {
+  if (icvReducedMotion() || !window.anime || typeof window.anime.animate !== "function") return;
+  var reveal = document.querySelectorAll("#homeMatchHub .match-hub-kicker, #homeMatchHub .match-hub-date, #homeMatchHub .match-hub-team, #homeMatchHub .match-hub-meta, #homeMatchHub .match-hub-countdown, #homeMatchHub .match-hub-score-team, #homeMatchHub .match-hub-scorers");
+  window.anime.animate(reveal, {
+    opacity: { from: 0 },
+    y: { from: 10 },
+    duration: 520,
+    delay: window.anime.stagger(45),
+    ease: "out(4)",
+    onComplete: function() { reveal.forEach(clearIcvMotionStyles); }
+  });
+  var score = document.getElementById("matchHubScore");
+  window.anime.animate(score, {
+    opacity: { from: 0 },
+    scale: { from: .72 },
+    duration: 620,
+    delay: 190,
+    ease: "outBack(1.6)",
+    onComplete: function() { clearIcvMotionStyles(score); }
+  });
+  var dots = document.querySelectorAll("#matchHubForm .match-hub-form-dot");
+  window.anime.animate(dots, {
+    opacity: { from: 0 },
+    scale: { from: .45 },
+    duration: 440,
+    delay: window.anime.stagger(70, { start: 290 }),
+    ease: "outBack(1.8)",
+    onComplete: function() { dots.forEach(clearIcvMotionStyles); }
   });
 }
 

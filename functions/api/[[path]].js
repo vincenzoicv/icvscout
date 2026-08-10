@@ -249,7 +249,7 @@ async function publicHome(env) {
     sb(env, "/news?visible=eq.true&order=created_at.desc&limit=48"),
     sb(env, "/market_items?order=updated_at.desc&limit=12"),
     sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=18"),
-    sb(env, "/match_reports?order=match_date.desc&limit=3"),
+    sb(env, "/match_reports?order=match_date.desc&limit=12"),
     sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&order=created_at.desc&limit=12"),
     latestAutomationRun(env, "home_autopilot"),
     getSiteSetting(env, "radar_home", DEFAULT_RADAR),
@@ -2253,34 +2253,54 @@ async function generateMatchCenter(env) {
   const key = env.FOOTBALL_DATA_KEY;
   if (!key) return { ok: false, error: "FOOTBALL_DATA_KEY non configurata" };
 
-  const matches = await fetchJson("https://api.football-data.org/v4/teams/109/matches?status=SCHEDULED&limit=1", {
-    "X-Auth-Token": key,
-  });
-  const match = matches.matches && matches.matches[0];
-  if (!match) return { ok: true, message: "Nessuna prossima partita trovata" };
+  const headers = { "X-Auth-Token": key };
+  const [scheduledData, finishedData] = await Promise.all([
+    fetchJson("https://api.football-data.org/v4/teams/109/matches?status=SCHEDULED&limit=3", headers),
+    fetchJson("https://api.football-data.org/v4/teams/109/matches?status=FINISHED&limit=5", headers),
+  ]);
+  const scheduled = (scheduledData.matches || []).map(match => matchReportFromFootballData(match, false));
+  const finished = (finishedData.matches || []).map(match => matchReportFromFootballData(match, true));
+  const reports = [...scheduled, ...finished].filter(Boolean);
+  await Promise.all(reports.map(report => upsertMatchReport(env, report)));
+  return {
+    ok: true,
+    matches: reports.length,
+    next_match: scheduled[0] ? scheduled[0].title : null,
+    final_results: finished.length,
+  };
+}
 
-  const opponent = match.homeTeam.id === 109 ? match.awayTeam.name : match.homeTeam.name;
-  const isHome = match.homeTeam.id === 109;
-  const report = {
+function matchReportFromFootballData(match, finished) {
+  if (!match || !match.id || !match.homeTeam || !match.awayTeam) return null;
+  const home = cleanText(match.homeTeam.name);
+  const away = cleanText(match.awayTeam.name);
+  const isHome = Number(match.homeTeam.id) === 109;
+  const opponent = isHome ? away : home;
+  const score = match.score && (match.score.fullTime || match.score.regularTime) || {};
+  const hasScore = score.home != null && score.away != null &&
+    Number.isFinite(Number(score.home)) && Number.isFinite(Number(score.away));
+  const scoreline = hasScore ? `${Number(score.home)}-${Number(score.away)}` : "";
+  return {
     match_id: String(match.id),
     opponent,
-    competition: match.competition && match.competition.name,
+    competition: cleanText(match.competition && match.competition.name),
     match_date: match.utcDate,
-    status: "pre_match",
-    title: "Verso " + (isHome ? "Juventus-" + opponent : opponent + "-Juventus"),
-    summary: "",
+    status: finished ? "finished" : "pre_match",
+    title: finished && scoreline ? `${home} ${scoreline} ${away}` : "Verso " + (isHome ? `Juventus-${opponent}` : `${opponent}-Juventus`),
+    summary: finished && scoreline ? `Finale · ${home} ${scoreline} ${away}` : "",
     tactical_key: "",
     source_payload: match,
     updated_at: new Date().toISOString(),
   };
+}
 
+async function upsertMatchReport(env, report) {
   const existing = await sb(env, "/match_reports?match_id=eq." + encodeURIComponent(report.match_id) + "&select=id&limit=1");
   if (existing.length) {
     await sb(env, "/match_reports?id=eq." + existing[0].id, { method: "PATCH", body: report });
-  } else {
-    await sb(env, "/match_reports", { method: "POST", body: [report] });
+    return;
   }
-  return { ok: true, match: report.title };
+  await sb(env, "/match_reports", { method: "POST", body: [report] });
 }
 
 async function generateSocialDrafts(env) {

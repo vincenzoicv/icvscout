@@ -49,6 +49,34 @@ test("Anime.js anima la home rispettando Riduci movimento", async () => {
   assert.doesNotMatch(html, /https:\/\/cdn[^"']*anime/i);
 });
 
+test("ICV Match Hub sostituisce il Focus e usa risultati automatici", async () => {
+  const [html, api] = await Promise.all([
+    read("index.html"),
+    read("functions/api/[[path]].js"),
+  ]);
+  for (const marker of [
+    'id="homeMatchHub"',
+    '<div class="match-hub-head">',
+    "ICV Match Hub",
+    "Prossimo incontro",
+    "Ultimo risultato",
+    "Forma recente",
+    "function renderMatchHub",
+    "function normalizeMatchHubRows",
+    "function matchHubRecordLabel",
+    "function animateMatchHub",
+    "Juve: Conceicao · Inter: Dimarco, Diouf",
+  ]) assert.ok(html.includes(marker), `manca ${marker}`);
+  assert.doesNotMatch(html, /Focus ICV|buildEditorialFocus|homeFocusTitle/);
+  assert.match(html, /renderLiveDesk\(data\.live_desk\);[\s\S]*?renderMatchHub\(matches\);/);
+  assert.match(html, /icvReducedMotion\(\)[\s\S]*?#homeMatchHub/);
+  assert.match(api, /match_reports\?order=match_date\.desc&limit=12/);
+  assert.match(api, /matches\?status=SCHEDULED&limit=3/);
+  assert.match(api, /matches\?status=FINISHED&limit=5/);
+  assert.match(api, /function matchReportFromFootballData/);
+  assert.match(api, /function upsertMatchReport/);
+});
+
 test("News e Statistiche scorrono alla sezione richiesta", async () => {
   const html = await read("index.html");
   assert.match(html, /function scrollSectionIntoView\(section, behavior\)/);

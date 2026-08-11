@@ -101,6 +101,22 @@ const BLOCKED_NEWS_TOPIC_PATTERNS = [
   /\bjuvestabia\b/,
 ];
 
+const NEWS_MAX_AGE_MS = 72 * 60 * 60 * 1000;
+const OFFICIAL_NEWS_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const NEWS_ROUNDUP_PATTERNS = [
+  /^pagina\s+\d+\b/i,
+  /\bcalciomercato\s+(?:juventus|juve)?\s*h24\b/i,
+  /^live\s+calciomercato\b/i,
+  /^le\s+notizie\s+(?:di\s+)?calciomercato\b/i,
+  /\bnews\s+di\s+oggi\s+in\s+diretta\b/i,
+  /\baffari\s+e\s+trattative\s+in\s+diretta\b/i,
+];
+
+const OTHER_CLUB_PATTERNS = [
+  /\binter\b/i, /\bmilan\b/i, /\bnapoli\b/i, /\broma\b/i, /\blazio\b/i,
+  /\bfiorentina\b/i, /\batalanta\b/i, /\bchelsea\b/i, /\barsenal\b/i,
+];
+
 const DEFAULT_RADAR = {
   kicker: "Centro di controllo",
   title: "Estate Juve",
@@ -2016,6 +2032,10 @@ async function fetchNewsDrafts(env, sources) {
   const romanoCleanup = await cleanupFabrizioRows(env, recentNews, recentDrafts);
   updated += romanoCleanup.updated;
   if (romanoCleanup.errors.length) errors.push(...romanoCleanup.errors);
+  const queueCleanup = await cleanupNewsDraftQueue(env, recentDrafts);
+  updated += queueCleanup.discarded;
+  if (queueCleanup.errors.length) errors.push(...queueCleanup.errors);
+  const activeRecentDrafts = recentDrafts.filter(row => row.review_status !== "discarded");
 
   for (const source of sources.filter(s => s.active !== false)) {
     const report = {
@@ -2026,6 +2046,9 @@ async function fetchNewsDrafts(env, sources) {
       published: 0,
       updated: 0,
       skipped_duplicates: 0,
+      skipped_stale: 0,
+      skipped_noise: 0,
+      skipped_off_topic: 0,
     };
     try {
       if (isBlacklistedSource(env, source)) {
@@ -2041,7 +2064,11 @@ async function fetchNewsDrafts(env, sources) {
         const normalized = normalizeGoogleTitle(item.title);
         const title = normalized.title;
         const sourceName = normalized.source || item.source || source.name;
-        if (!isRelevantNewsItem(title, item.description, source)) continue;
+        const rejection = newsItemRejectionReason(item, title, item.description, source, sourceName);
+        if (rejection) {
+          report["skipped_" + rejection] = (report["skipped_" + rejection] || 0) + 1;
+          continue;
+        }
         report.relevant++;
         const url = item.link || source.url;
         const body = cleanNewsDescription(item.description || title, sourceName, title).slice(0, 500);
@@ -2053,7 +2080,7 @@ async function fetchNewsDrafts(env, sources) {
         }
         const urgency = inferUrgency(title, body, category, reliability);
         const editorialStatus = statusFromReliability(reliability);
-        const hash = await digest(dedupeKey(title, sourceName, url));
+        const hash = await digest(dedupeKey(title, sourceName, item.pubDate));
         const candidate = { title, body, category, urgency, sourceName, sourceUrl: url, reliability, editorialStatus };
 
         const existingNews = findExistingNewsInRows(recentNews, candidate);
@@ -2077,9 +2104,9 @@ async function fetchNewsDrafts(env, sources) {
           continue;
         }
 
-        const existingDraft = findExistingDraftInRows(recentDrafts, candidate, hash);
+        const existingDraft = findExistingDraftInRows(activeRecentDrafts, candidate, hash);
         if (existingDraft) {
-          const promotedDraft = await promoteExistingDraftFromCandidate(env, existingDraft, candidate, recentDrafts);
+          const promotedDraft = await promoteExistingDraftFromCandidate(env, existingDraft, candidate, activeRecentDrafts);
           Object.assign(existingDraft, promotedDraft);
           if (shouldAutoPublishCandidate(env, source, candidate)) {
             const news = await publishDraftAsNews(env, promotedDraft, { skipExistingCheck: true });
@@ -2100,7 +2127,7 @@ async function fetchNewsDrafts(env, sources) {
           continue;
         }
 
-        const trustedConfirmation = reliability === "trusted" ? findTrustedConfirmationInRows(recentDrafts, candidate) : null;
+        const trustedConfirmation = reliability === "trusted" ? findTrustedConfirmationInRows(activeRecentDrafts, candidate) : null;
         const shouldPublish = shouldAutoPublishCandidate(env, source, candidate);
         const reviewStatus = shouldPublish ? "ready" : reviewStatusForReliability(reliability, trustedConfirmation);
         const existingDraftByHash = await sb(env, "/news_drafts?content_hash=eq." + encodeURIComponent(hash) + "&select=id&limit=1");
@@ -2151,7 +2178,7 @@ async function fetchNewsDrafts(env, sources) {
           continue;
         }
         const draft = draftRows[0];
-        if (draft) recentDrafts.unshift(draft);
+        if (draft) activeRecentDrafts.unshift(draft);
         inserted++;
         report.inserted++;
         let autoPublished = false;
@@ -2180,7 +2207,7 @@ async function fetchNewsDrafts(env, sources) {
     }
   }
 
-  return { ok: true, scanned, inserted, published, updated, skipped_duplicates: skippedDuplicates, skipped_blacklisted: skippedBlacklisted, errors, sources_report: sourcesReport, discoveries, romano_cleanup: romanoCleanup };
+  return { ok: true, scanned, inserted, published, updated, skipped_duplicates: skippedDuplicates, skipped_blacklisted: skippedBlacklisted, errors, sources_report: sourcesReport, discoveries, romano_cleanup: romanoCleanup, queue_cleanup: queueCleanup };
 }
 
 function addFetchDiscovery(rows, candidate, outcome) {
@@ -3779,6 +3806,52 @@ function isRelevantNewsItem(title, description, source) {
   return false;
 }
 
+function newsItemRejectionReason(item, title, description, source, sourceName = "", now = Date.now()) {
+  if (isStaleNewsItem(item, source, sourceName, now)) return "stale";
+  if (isEditorialNoiseStory(title, description, source, sourceName)) return "noise";
+  if (!isRelevantNewsItem(title, description, source) || !isJuventusPrimaryStory(title, description, source, sourceName)) return "off_topic";
+  return "";
+}
+
+function isStaleNewsItem(item, source, sourceName = "", now = Date.now()) {
+  const publishedAt = newsPublishedAt(item);
+  if (!publishedAt) return false;
+  const maxAge = isOfficialSource(source, sourceName, item && item.link) ? OFFICIAL_NEWS_MAX_AGE_MS : NEWS_MAX_AGE_MS;
+  return now - publishedAt > maxAge || publishedAt - now > 6 * 60 * 60 * 1000;
+}
+
+function newsPublishedAt(item) {
+  const raw = item && (item.pubDate || item.published_at || item.publishedAt || item.published || item.timestamp);
+  const value = raw ? Date.parse(raw) : NaN;
+  return Number.isFinite(value) ? value : 0;
+}
+
+function isEditorialNoiseStory(title, description, source, sourceName = "") {
+  const cleanTitle = cleanText(title);
+  const normalizedTitle = normalizeTopicKey(cleanTitle);
+  if (NEWS_ROUNDUP_PATTERNS.some(pattern => pattern.test(cleanTitle))) return true;
+  if (/\b(?:ex giocatore|ex portiere|ex bianconero)\b/.test(normalizeTopicKey([title, description].join(" ")))) return true;
+  if (!isOfficialSource(source, sourceName, source && source.url) && looksPredominantlyEnglish(title, description)) return true;
+  const otherClubs = OTHER_CLUB_PATTERNS.filter(pattern => pattern.test(cleanTitle)).length;
+  if (otherClubs >= 3 && !/^(?:juve|juventus)\b/.test(normalizedTitle)) return true;
+  return false;
+}
+
+function looksPredominantlyEnglish(title, description) {
+  const text = " " + cleanText([title, description].join(" ")).toLowerCase() + " ";
+  const english = (text.match(/\b(?:the|and|with|how|watch|stream|channel|match|scheduled|team|player|friendly)\b/g) || []).length;
+  const italian = (text.match(/\b(?:della|dello|dalla|contro|partita|squadra|giocatore|amichevole|mercato|juventus)\b/g) || []).length;
+  return english >= 4 && english > italian;
+}
+
+function isJuventusPrimaryStory(title, description, source, sourceName = "") {
+  if (isOfficialSource(source, sourceName, source && source.url)) return true;
+  const normalizedTitle = normalizeTopicKey(title);
+  const normalizedBody = normalizeTopicKey(description);
+  if (/\b(?:juve|juventus|bianconer)\b/.test(normalizedTitle)) return true;
+  return isJuventusNewsText(normalizedTitle) && /\b(?:juve|juventus|bianconer)\b/.test(normalizedBody);
+}
+
 function isBlockedNewsTopic(text) {
   return BLOCKED_NEWS_TOPIC_PATTERNS.some(pattern => pattern.test(text));
 }
@@ -4534,8 +4607,64 @@ async function recentNewsRows(env) {
 }
 
 async function recentDraftRows(env) {
-  const since = new Date(Date.now() - 7 * 86400000).toISOString();
-  return sb(env, "/news_drafts?created_at=gte." + encodeURIComponent(since) + "&order=created_at.desc&select=id,title,body,category,urgency,source_name,source_url,reliability,editorial_status,review_status,content_hash,created_at&limit=160");
+  const since = new Date(Date.now() - 14 * 86400000).toISOString();
+  return sb(env, "/news_drafts?created_at=gte." + encodeURIComponent(since) + "&order=created_at.desc&select=id,title,body,category,urgency,source_name,source_url,reliability,editorial_status,review_status,content_hash,raw_payload,created_at&limit=200");
+}
+
+async function cleanupNewsDraftQueue(env, recentDrafts) {
+  const plan = planNewsDraftCleanup(recentDrafts);
+  if (!plan.ids.length) return { discarded: 0, reasons: plan.reasons, errors: [] };
+  try {
+    await sb(env, "/news_drafts?id=in.(" + plan.ids.map(id => encodeURIComponent(id)).join(",") + ")", {
+      method: "PATCH",
+      body: { review_status: "discarded", updated_at: new Date().toISOString() },
+    });
+    const discardedIds = new Set(plan.ids.map(String));
+    for (const row of recentDrafts || []) {
+      if (discardedIds.has(String(row.id))) row.review_status = "discarded";
+    }
+    return { discarded: plan.ids.length, reasons: plan.reasons, errors: [] };
+  } catch (err) {
+    return { discarded: 0, reasons: plan.reasons, errors: [{ source: "Pulizia coda bozze", error: err.message || "Errore pulizia bozze" }] };
+  }
+}
+
+function planNewsDraftCleanup(rows, now = Date.now()) {
+  const pending = (rows || []).filter(row => row && ["needs_review", "ready"].includes(row.review_status));
+  const discarded = new Map();
+  const grouped = new Map();
+
+  for (const row of pending) {
+    const source = { category: row.category, reliability: row.reliability, name: row.source_name, url: row.source_url };
+    const raw = row.raw_payload && typeof row.raw_payload === "object" ? row.raw_payload : {};
+    const reason = newsItemRejectionReason(raw, row.title, row.body, source, row.source_name, now);
+    if (reason) {
+      discarded.set(String(row.id), reason);
+      continue;
+    }
+    const key = canonicalNewsTitle(row.title);
+    if (!key) continue;
+    const group = grouped.get(key) || [];
+    group.push(row);
+    grouped.set(key, group);
+  }
+
+  for (const group of grouped.values()) {
+    if (group.length < 2) continue;
+    const ordered = group.slice().sort((left, right) => draftKeepScore(right) - draftKeepScore(left));
+    for (const duplicate of ordered.slice(1)) discarded.set(String(duplicate.id), "duplicate");
+  }
+
+  const reasons = {};
+  for (const reason of discarded.values()) reasons[reason] = (reasons[reason] || 0) + 1;
+  return { ids: Array.from(discarded.keys()), reasons };
+}
+
+function draftKeepScore(row) {
+  const reliability = priorityForReliability(row && row.reliability) * 100;
+  const ready = row && row.review_status === "ready" ? 20 : 0;
+  const date = Date.parse(row && row.created_at || 0);
+  return reliability + ready + (Number.isFinite(date) ? date / 1e15 : 0);
 }
 
 async function cleanupFabrizioRows(env, recentNews, recentDrafts) {
@@ -4768,8 +4897,10 @@ async function promoteExistingDraftFromCandidate(env, existing, candidate, recen
   return rows[0] || { ...existing, ...patch };
 }
 
-function dedupeKey(title, sourceName, sourceUrl) {
-  return [canonicalNewsTitle(title), canonicalSourceName(sourceName), canonicalNewsUrl(sourceUrl)].filter(Boolean).join("|");
+function dedupeKey(title, sourceName, publishedAt) {
+  const parsed = publishedAt ? Date.parse(publishedAt) : NaN;
+  const dayBucket = new Date(Number.isFinite(parsed) ? parsed : Date.now()).toISOString().slice(0, 10);
+  return [canonicalNewsTitle(title), canonicalSourceName(sourceName), dayBucket].filter(Boolean).join("|");
 }
 
 function canonicalNewsUrl(value) {
@@ -4802,6 +4933,8 @@ function canonicalNewsTitle(value) {
     .replace(/\bfc\b/g, "")
     .replace(/\b(ufficiale|official|comunicato|comunica|annuncia|annuncio|news|live)\b/g, " ")
     .replace(/\b(calcio|sport|tuttosport|gazzetta|sky|di marzio)\b/g, " ")
+    .replace(/^pagina\s+\d+\s*/g, " ")
+    .replace(/\b(?:diretta|ultimissime|il punto|le ultime)\b/g, " ")
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -5622,4 +5755,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { aggregateMarketItems, buildLiveDeskEntries, isMarketRelevantNewsRow, marketDealMetadata, marketTopicName, publicMarketFromNews, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl, instagramFailureDetails };
+export { aggregateMarketItems, buildLiveDeskEntries, isMarketRelevantNewsRow, marketDealMetadata, marketTopicName, publicMarketFromNews, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl, instagramFailureDetails, newsItemRejectionReason, planNewsDraftCleanup, canonicalNewsTitle };

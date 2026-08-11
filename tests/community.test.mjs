@@ -810,6 +810,65 @@ test("le bozze duplicate sono ignorate atomicamente senza degradare Mercato", as
   assert.match(api, /23505\|duplicate key value violates unique constraint/);
 });
 
+test("la raccolta scarta rassegne miste, pagine interne e articoli vecchi", async () => {
+  const { newsItemRejectionReason } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  const now = Date.parse("2026-08-11T13:00:00Z");
+  const marketSource = { name: "Google News mercato", category: "calciomercato", reliability: "aggregator" };
+
+  assert.equal(newsItemRejectionReason(
+    { pubDate: "2026-08-11T12:30:00Z" },
+    "Le notizie di calciomercato del 6 agosto: Milan, Juve, Roma e Napoli",
+    "Tutte le trattative di Serie A",
+    marketSource,
+    marketSource.name,
+    now
+  ), "noise");
+  assert.equal(newsItemRejectionReason(
+    { pubDate: "2026-08-11T12:30:00Z" },
+    "Pagina 3 | Calciomercato Juve: Suzuki, Lucumi e Zirkzee",
+    "Le ultime operazioni bianconere",
+    marketSource,
+    marketSource.name,
+    now
+  ), "noise");
+  assert.equal(newsItemRejectionReason(
+    { pubDate: "2026-08-06T12:30:00Z" },
+    "Juve vicina a Zirkzee",
+    "La Juventus lavora all'attaccante",
+    marketSource,
+    marketSource.name,
+    now
+  ), "stale");
+  assert.equal(newsItemRejectionReason(
+    { pubDate: "2026-08-11T12:30:00Z" },
+    "Juventus-Palermo 2-0: Yildiz e Milik decidono l'amichevole",
+    "La squadra bianconera vince a Perth",
+    marketSource,
+    marketSource.name,
+    now
+  ), "");
+});
+
+test("la pulizia della coda conserva la bozza migliore e scarta i doppioni", async () => {
+  const { planNewsDraftCleanup } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  const now = Date.parse("2026-08-11T13:00:00Z");
+  const base = {
+    title: "Amichevole Juventus-Palermo 2-0: Yildiz prima e Milik poi",
+    body: "La Juventus batte il Palermo con i gol di Yildiz e Milik.",
+    category: "juventus",
+    source_url: "https://example.com/juventus-palermo",
+    raw_payload: { pubDate: "2026-08-11T12:30:00Z" },
+    created_at: "2026-08-11T12:45:00Z",
+  };
+  const result = planNewsDraftCleanup([
+    { ...base, id: "trusted", source_name: "Sky Sport Juventus", reliability: "trusted", review_status: "ready" },
+    { ...base, id: "copy", source_name: "Google News mercato", reliability: "aggregator", review_status: "needs_review" },
+    { ...base, id: "published", source_name: "Google News mercato", reliability: "aggregator", review_status: "approved" },
+  ], now);
+  assert.deepEqual(result.ids, ["copy"]);
+  assert.equal(result.reasons.duplicate, 1);
+});
+
 test("il login admin riceve errori JSON gestiti invece del Cloudflare 1101", async () => {
   const [admin, apiModule] = await Promise.all([
     read("icv_admin.html"),

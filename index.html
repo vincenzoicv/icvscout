@@ -700,12 +700,13 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
           </span>
           <strong class="friendly-result" aria-label="Risultato uno a due per l'Inter">1-2</strong>
         </div>
-        <div class="friendly-item">
-          <div class="friendly-meta"><strong>11 AGO</strong><span class="friendly-status">AMICHEVOLE</span></div>
+        <div class="friendly-item is-final">
+          <div class="friendly-meta"><strong>11 AGO</strong><span class="friendly-status">FINALE</span></div>
           <span class="friendly-match">
             <span class="friendly-match-name">Juventus-Palermo</span>
-            <span class="friendly-scorer">Perth</span>
+            <span class="friendly-scorer">Yildiz · Milik</span>
           </span>
+          <strong class="friendly-result" aria-label="Risultato due a zero per la Juventus">2-0</strong>
         </div>
         <div class="friendly-item">
           <div class="friendly-meta"><strong>17 AGO</strong><span class="friendly-status">AMICHEVOLE</span></div>
@@ -736,30 +737,30 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
     <div class="match-hub-main">
       <section class="match-hub-next" aria-label="Prossima partita della Juventus">
         <div class="match-hub-kicker">Prossimo incontro</div>
-        <div class="match-hub-date" id="matchHubNextDate">11 agosto 2026</div>
+        <div class="match-hub-date" id="matchHubNextDate">17 agosto 2026</div>
         <div class="match-hub-teams">
           <strong class="match-hub-team" id="matchHubNextHome">Juventus</strong>
           <span class="match-hub-vs" id="matchHubVersus">VS</span>
-          <strong class="match-hub-team" id="matchHubNextAway">Palermo</strong>
+          <strong class="match-hub-team" id="matchHubNextAway">Next Gen</strong>
         </div>
-        <div class="match-hub-meta"><span id="matchHubCompetition">Amichevole</span><span id="matchHubVenue">Perth</span></div>
-        <div class="match-hub-countdown"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Domani</strong></div>
+        <div class="match-hub-meta"><span id="matchHubCompetition">Amichevole</span><span id="matchHubVenue">Allianz Stadium</span></div>
+        <div class="match-hub-countdown"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Tra 6 giorni</strong></div>
       </section>
       <section class="match-hub-last" aria-label="Ultimo risultato della Juventus">
         <div class="match-hub-kicker">Ultimo risultato</div>
-        <div class="match-hub-date" id="matchHubLastDate">8 agosto 2026 · Finale</div>
+        <div class="match-hub-date" id="matchHubLastDate">11 agosto 2026 · Finale</div>
         <div class="match-hub-scoreline">
           <span class="match-hub-score-team" id="matchHubLastHome">Juventus</span>
-          <strong class="match-hub-score" id="matchHubScore">1-2</strong>
-          <span class="match-hub-score-team" id="matchHubLastAway">Inter</span>
+          <strong class="match-hub-score" id="matchHubScore">2-0</strong>
+          <span class="match-hub-score-team" id="matchHubLastAway">Palermo</span>
         </div>
-        <div class="match-hub-scorers" id="matchHubScorers">Juve: Conceicao · Inter: Dimarco, Diouf</div>
+        <div class="match-hub-scorers" id="matchHubScorers">Juve: Yildiz, Milik</div>
       </section>
     </div>
     <footer class="match-hub-form">
       <span class="match-hub-form-label">Forma recente</span>
       <div class="match-hub-form-list" id="matchHubForm" aria-label="Forma recente della Juventus"></div>
-      <span class="match-hub-record" id="matchHubRecord">3 vittorie · 1 pareggio · 1 sconfitta</span>
+      <span class="match-hub-record" id="matchHubRecord">4 vittorie · 0 pareggi · 1 sconfitta</span>
     </footer>
   </article>
   <div class="home-panel">
@@ -1425,7 +1426,7 @@ var ICV_MATCH_FALLBACKS = [
   {date:"2026-07-31T18:00:00+02:00",status:"finished",competition:"Amichevole",home:"Juventus",away:"Nizza",homeScore:2,awayScore:0,venue:"JTC",scorers:"Juve: Douglas Luiz 10', Oboavwoduo 89'"},
   {date:"2026-08-05T20:00:00+08:00",status:"finished",competition:"Amichevole",home:"Chelsea",away:"Juventus",homeScore:0,awayScore:1,venue:"Hong Kong",scorers:"Juve: Zhegrova"},
   {date:"2026-08-08T20:00:00+08:00",status:"finished",competition:"Amichevole",home:"Juventus",away:"Inter",homeScore:1,awayScore:2,venue:"Perth",scorers:"Juve: Conceicao · Inter: Dimarco, Diouf"},
-  {date:"2026-08-11T23:59:00+08:00",dateOnly:true,status:"scheduled",competition:"Amichevole",home:"Juventus",away:"Palermo",venue:"Perth"},
+  {date:"2026-08-11T00:00:00+02:00",dateOnly:true,status:"finished",competition:"Amichevole",home:"Juventus",away:"Palermo",homeScore:2,awayScore:0,venue:"Perth",scorers:"Juve: Yildiz, Milik"},
   {date:"2026-08-17T23:59:00+02:00",dateOnly:true,status:"scheduled",competition:"Amichevole",home:"Juventus",away:"Next Gen",venue:"Allianz Stadium"},
   {date:"2026-08-23T18:30:00+02:00",status:"scheduled",competition:"Serie A",home:"Frosinone",away:"Juventus",venue:"Stadio Benito Stirpe"}
 ];
@@ -1470,8 +1471,20 @@ function matchHubKey(match) {
 
 function allMatchHubRows(apiRows) {
   var merged = new Map();
-  ICV_MATCH_FALLBACKS.forEach(function(match) { merged.set(matchHubKey(match), match); });
-  normalizeMatchHubRows(apiRows).forEach(function(match) { merged.set(matchHubKey(match), match); });
+  function mergeMatch(match) {
+    var key = matchHubKey(match);
+    var previous = merged.get(key);
+    if (!previous) {
+      merged.set(key, match);
+      return;
+    }
+    if (previous.status === "finished" && match.status !== "finished") return;
+    var next = Object.assign({}, previous, match);
+    if (!match.scorers && previous.scorers) next.scorers = previous.scorers;
+    merged.set(key, next);
+  }
+  ICV_MATCH_FALLBACKS.forEach(mergeMatch);
+  normalizeMatchHubRows(apiRows).forEach(mergeMatch);
   return Array.from(merged.values()).filter(function(match) {
     return match.date && !isNaN(new Date(match.date).getTime());
   }).sort(function(a, b) { return new Date(a.date) - new Date(b.date); });

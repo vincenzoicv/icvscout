@@ -25,6 +25,7 @@ test("la home distingue risultati e prossime amichevoli", async () => {
     "<b>Juve</b>: Conceicao · <b>Inter</b>: Dimarco, Diouf",
     "Risultato uno a due per l'Inter",
     "Juventus-Palermo",
+    "Yildiz · Milik",
     "Juventus-Next Gen",
     "Allianz Stadium",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
@@ -32,7 +33,8 @@ test("la home distingue risultati e prossime amichevoli", async () => {
   assert.match(html, /25 LUG[\s\S]*?FINALE[\s\S]*?Standard Liegi-Juventus[\s\S]*?Gol Miretti[\s\S]*?0-1/);
   assert.match(html, /31 LUG[\s\S]*?FINALE[\s\S]*?Juventus-Nizza[\s\S]*?Douglas Luiz 10'[\s\S]*?Oboavwoduo 89'[\s\S]*?2-0/);
   assert.match(html, /Amichevoli agosto[\s\S]*?5 AGO[\s\S]*?FINALE[\s\S]*?Chelsea-Juventus[\s\S]*?Gol Zhegrova[\s\S]*?0-1/);
-  assert.match(html, /8 AGO[\s\S]*?FINALE[\s\S]*?Juventus-Inter[\s\S]*?<b>Juve<\/b>: Conceicao · <b>Inter<\/b>: Dimarco, Diouf[\s\S]*?1-2[\s\S]*?11 AGO[\s\S]*?Juventus-Palermo[\s\S]*?Perth/);
+  assert.match(html, /8 AGO[\s\S]*?FINALE[\s\S]*?Juventus-Inter[\s\S]*?<b>Juve<\/b>: Conceicao · <b>Inter<\/b>: Dimarco, Diouf[\s\S]*?1-2/);
+  assert.match(html, /11 AGO[\s\S]*?FINALE[\s\S]*?Juventus-Palermo[\s\S]*?Yildiz · Milik[\s\S]*?Risultato due a zero per la Juventus[\s\S]*?2-0/);
   assert.match(html, /\.friendly-fixtures\.is-four\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\);\}/);
   assert.match(html, /\.friendly-scorer\{[^}]*white-space:normal/);
   assert.match(html, /17 AGO[\s\S]*?Juventus-Next Gen[\s\S]*?Allianz Stadium/);
@@ -63,9 +65,10 @@ test("ICV Match Hub sostituisce il Focus e usa risultati automatici", async () =
     "Forma recente",
     "function renderMatchHub",
     "function normalizeMatchHubRows",
+    'previous.status === "finished" && match.status !== "finished"',
     "function matchHubRecordLabel",
     "function animateMatchHub",
-    "Juve: Conceicao · Inter: Dimarco, Diouf",
+    "Juve: Yildiz, Milik",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.doesNotMatch(html, /Focus ICV|buildEditorialFocus|homeFocusTitle/);
   assert.match(html, /renderLiveDesk\(data\.live_desk\);[\s\S]*?renderMatchHub\(matches\);/);

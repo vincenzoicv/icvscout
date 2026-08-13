@@ -73,11 +73,41 @@ test("ICV Match Hub sostituisce il Focus e usa risultati automatici", async () =
   assert.doesNotMatch(html, /Focus ICV|buildEditorialFocus|homeFocusTitle/);
   assert.match(html, /renderLiveDesk\(data\.live_desk\);[\s\S]*?renderMatchHub\(matches\);/);
   assert.match(html, /icvReducedMotion\(\)[\s\S]*?#homeMatchHub/);
-  assert.match(api, /match_reports\?order=match_date\.desc&limit=12/);
+  assert.match(api, /match_reports\?order=match_date\.asc&limit=80/);
   assert.match(api, /matches\?status=SCHEDULED&limit=3/);
   assert.match(api, /matches\?status=FINISHED&limit=5/);
   assert.match(api, /function matchReportFromFootballData/);
   assert.match(api, /function upsertMatchReport/);
+});
+
+test("Community e API mostrano la prossima partita, non una gara successiva", async () => {
+  const [community, api] = await Promise.all([
+    read("community.html"),
+    read("functions/api/[[path]].js"),
+  ]);
+  assert.match(community, /function selectCommunityMatch\(rows\)/);
+  assert.match(community, /var match=selectCommunityMatch\(data\.matches\)/);
+  assert.doesNotMatch(community, /var match=data\.matches&&data\.matches\[0\]/);
+  assert.match(api, /const orderedMatches = orderPublicMatches\(matches\)\.slice\(0, 12\)/);
+
+  const { orderPublicMatches } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  const matches = [
+    { match_id: "milan", match_date: "2026-09-06T18:45:00Z", status: "pre_match", title: "Verso Juventus-AC Milan" },
+    { match_id: "parma", match_date: "2026-08-29T18:45:00Z", status: "pre_match", title: "Verso Juventus-Parma" },
+    { match_id: "frosinone", match_date: "2026-08-23T16:30:00Z", status: "pre_match", title: "Verso Frosinone-Juventus" },
+    { match_id: "palermo", match_date: "2026-08-11T12:00:00Z", status: "pre_match", title: "Verso Juventus-Palermo" },
+  ];
+  const ordered = orderPublicMatches(matches, { now: "2026-08-13T12:00:00Z" });
+  assert.equal(ordered[0].match_id, "frosinone");
+  assert.equal(ordered[1].match_id, "parma");
+  assert.equal(ordered[2].match_id, "milan");
+  assert.equal(ordered[3].match_id, "palermo");
+
+  const live = orderPublicMatches([
+    ...matches,
+    { match_id: "live", match_date: "2026-08-13T11:45:00Z", status: "in_play", title: "Juventus in campo" },
+  ], { now: "2026-08-13T12:00:00Z" });
+  assert.equal(live[0].match_id, "live");
 });
 
 test("News e Statistiche scorrono alla sezione richiesta", async () => {

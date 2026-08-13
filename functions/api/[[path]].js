@@ -265,7 +265,7 @@ async function publicHome(env) {
     sb(env, "/news?visible=eq.true&order=created_at.desc&limit=48"),
     sb(env, "/market_items?order=updated_at.desc&limit=12"),
     sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=18"),
-    sb(env, "/match_reports?order=match_date.desc&limit=12"),
+    sb(env, "/match_reports?order=match_date.asc&limit=80"),
     sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&order=created_at.desc&limit=12"),
     latestAutomationRun(env, "home_autopilot"),
     getSiteSetting(env, "radar_home", DEFAULT_RADAR),
@@ -278,18 +278,40 @@ async function publicHome(env) {
     ...(market || []),
   ]);
   const aggregatedMarket = aggregateMarketItems(cleanMarket);
+  const orderedMatches = orderPublicMatches(matches).slice(0, 12);
   const playerIndex = buildPlayerIndex(aggregatedMarket, cleanNews);
   const linkedNews = cleanNews.map(row => ({ ...row, related_players: playerEntitiesInText([row.title, row.body].join(" "), playerIndex) }));
   return json({
     news: linkedNews,
     market: aggregatedMarket,
-    matches,
-    live_desk: buildLiveDeskEntries({ news: publicNewsRows(news), market: aggregatedMarket, matches }, 6),
+    matches: orderedMatches,
+    live_desk: buildLiveDeskEntries({ news: publicNewsRows(news), market: aggregatedMarket, matches: orderedMatches }, 6),
     social: publicSocialRows(social),
     graphics: [],
     radar,
     auto: { enabled: true, interval_hours: Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1), last_run_at: auto && auto.created_at },
   });
+}
+
+function orderPublicMatches(rows, options = {}) {
+  const now = new Date(options.now || Date.now()).getTime();
+  const liveStatuses = new Set(["live", "in_play", "paused", "halftime"]);
+  const finishedStatuses = new Set(["finished", "cancelled", "postponed"]);
+  return (Array.isArray(rows) ? rows : [])
+    .filter(row => row && row.match_date && Number.isFinite(new Date(row.match_date).getTime()))
+    .map((row, index) => {
+      const matchTime = new Date(row.match_date).getTime();
+      const status = cleanText(row.status).toLowerCase();
+      const isLive = liveStatuses.has(status);
+      const isUpcoming = !isLive && !finishedStatuses.has(status) && matchTime >= now;
+      return { row, index, matchTime, group: isLive ? 0 : isUpcoming ? 1 : 2 };
+    })
+    .sort((a, b) => {
+      if (a.group !== b.group) return a.group - b.group;
+      if (a.group === 2) return b.matchTime - a.matchTime || a.index - b.index;
+      return a.matchTime - b.matchTime || a.index - b.index;
+    })
+    .map(item => item.row);
 }
 
 async function publicPlayers(env, url) {
@@ -5755,4 +5777,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { aggregateMarketItems, buildLiveDeskEntries, isMarketRelevantNewsRow, marketDealMetadata, marketTopicName, publicMarketFromNews, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl, instagramFailureDetails, newsItemRejectionReason, planNewsDraftCleanup, canonicalNewsTitle };
+export { aggregateMarketItems, buildLiveDeskEntries, isMarketRelevantNewsRow, marketDealMetadata, marketTopicName, publicMarketFromNews, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl, instagramFailureDetails, newsItemRejectionReason, planNewsDraftCleanup, canonicalNewsTitle, orderPublicMatches };

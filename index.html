@@ -73,15 +73,22 @@ nav button::before,.hsocial a::before,.theme-toggle::before,.quick-actions butto
 .install-app-btn{height:34px;border:1px solid rgba(196,150,42,0.28);border-radius:999px;background:rgba(255,255,255,0.04);color:rgba(196,150,42,0.86);font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;padding:0 13px;cursor:pointer;transition:all .22s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,0.12),0 8px 18px rgba(0,0,0,0.18);}
 .install-app-btn:hover{color:var(--gold-l);border-color:rgba(196,150,42,0.58);background:rgba(196,150,42,0.13);transform:translateY(-1px);}
 .install-app-btn.is-hidden{display:none;}
-.install-card{position:fixed;right:20px;top:70px;z-index:180;width:min(340px,calc(100vw - 28px));background:rgba(12,12,12,.94);border:1px solid rgba(196,150,42,.24);border-radius:18px;padding:18px;box-shadow:0 24px 70px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.08);-webkit-backdrop-filter:blur(24px) saturate(1.2);backdrop-filter:blur(24px) saturate(1.2);display:none;}
-.install-card.show{display:block;animation:fadeUp .22s ease both;}
-.install-card h3{font-family:"Bebas Neue";font-size:30px;letter-spacing:2px;color:var(--white);line-height:1;margin-bottom:8px;}
-.install-card p{font-size:14px;line-height:1.45;color:var(--t2);margin-bottom:14px;}
-.install-steps{display:none;margin:0 0 14px 18px;color:var(--t2);font-size:13px;line-height:1.45;}
+.install-card{position:fixed;left:50%;bottom:24px;z-index:180;width:min(880px,calc(100vw - 40px));transform:translateX(-50%);background:rgba(12,12,12,.96);border:1px solid rgba(196,150,42,.42);border-radius:18px;padding:20px 58px 20px 20px;box-shadow:0 28px 90px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.10);-webkit-backdrop-filter:blur(24px) saturate(1.2);backdrop-filter:blur(24px) saturate(1.2);display:none;overflow:hidden;}
+.install-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(#E8B84B,#9D6B17);}
+.install-card.show{display:block;animation:installCardIn .34s cubic-bezier(.2,.8,.2,1) both;}
+.install-card-layout{display:grid;grid-template-columns:58px minmax(0,1fr) auto;align-items:center;gap:18px;}
+.install-card-logo{width:58px;height:58px;border-radius:12px;object-fit:cover;box-shadow:0 10px 28px rgba(0,0,0,.32);}
+.install-card-copy{min-width:0;}
+.install-eyebrow{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:2px;color:var(--gold-l);text-transform:uppercase;margin-bottom:5px;}
+.install-card h3{font-family:"Bebas Neue";font-size:30px;letter-spacing:2px;color:var(--white);line-height:1;margin-bottom:6px;}
+.install-card p{font-size:14px;line-height:1.45;color:var(--t2);margin:0;}
+.install-close{position:absolute;right:14px;top:12px;width:34px;height:34px;border:0;background:transparent;color:var(--t2);font-size:29px;line-height:1;cursor:pointer;transition:color .2s ease,transform .2s ease;}
+.install-close:hover{color:var(--white);transform:scale(1.08);}
+.install-steps{display:none;margin:10px 0 0 18px;color:var(--t2);font-size:13px;line-height:1.45;}
 .install-steps.show{display:block;}
 .install-steps li{padding:2px 0;}
-.install-actions{display:flex;gap:8px;}
-.install-actions button{border:1px solid rgba(196,150,42,.35);border-radius:999px;background:rgba(196,150,42,.13);color:var(--gold-l);font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;padding:10px 14px;cursor:pointer;}
+.install-actions{display:flex;align-items:center;gap:8px;}
+.install-actions button{min-height:42px;border:1px solid rgba(196,150,42,.45);border-radius:999px;background:rgba(196,150,42,.16);color:var(--gold-l);font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase;padding:10px 17px;cursor:pointer;white-space:nowrap;}
 .install-actions button.secondary{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10);color:var(--t2);}
 main{padding-top:58px;position:relative;z-index:1;}
 .hero{position:relative;min-height:460px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:68px 24px 52px;text-align:center;}
@@ -343,6 +350,8 @@ body.light .install-app-btn{color:#9a6c13;background:rgba(255,255,255,0.48);bord
 body.light .install-app-btn:hover{color:#8B6520;background:rgba(255,255,255,0.72);border-color:rgba(196,150,42,0.46);}
 body.light .install-card{background:rgba(246,244,238,.94);border-color:rgba(196,150,42,.24);box-shadow:0 24px 70px rgba(70,55,25,.18),inset 0 1px 0 rgba(255,255,255,.82);}
 body.light .install-card h3{color:#15120c;}
+body.light .install-close{color:rgba(0,0,0,.48);}
+body.light .install-close:hover{color:#15120c;}
 body.light .install-steps{color:rgba(0,0,0,.62);}
 body.light .install-actions button.secondary{background:rgba(255,255,255,.54);border-color:rgba(0,0,0,.08);color:rgba(0,0,0,.58);}
 body.light .hero h1{background:linear-gradient(135deg,#111 0%,#2b2418 35%,#C4962A 72%,#8B6520 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
@@ -412,6 +421,7 @@ body.light .mob-nav{background:rgba(244,242,236,0.97);}
 body.light .mob-btn{color:rgba(0,0,0,0.32);}
 body.light .mob-btn.active{color:var(--gold);background:rgba(196,150,42,0.10);box-shadow:inset 0 1px 0 rgba(255,255,255,0.70);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes installCardIn{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}
 @keyframes breathe{0%,100%{opacity:0.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.04)}}
 @keyframes scan{0%{top:0%;opacity:0}5%{opacity:1}95%{opacity:0.5}100%{top:100%;opacity:0}}
 @keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
@@ -431,8 +441,13 @@ body.is-standalone header{height:calc(54px + env(safe-area-inset-top,0px));paddi
 body.is-standalone main{padding-top:calc(54px + env(safe-area-inset-top,0px));}
 nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);}
 .install-app-btn{height:32px;padding:0 12px;}
-.install-card{left:14px;right:14px;top:auto;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:auto;border-radius:22px;padding:18px;}
-.install-actions{flex-direction:column;}
+.install-card{left:14px;right:14px;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:auto;transform:none;border-radius:16px;padding:18px 46px 18px 18px;}
+.install-card.show{animation-name:fadeUp;}
+.install-card-layout{grid-template-columns:46px minmax(0,1fr);gap:13px;}
+.install-card-logo{width:46px;height:46px;border-radius:10px;align-self:start;}
+.install-card h3{font-size:25px;line-height:1.02;}
+.install-eyebrow{font-size:10px;letter-spacing:1.6px;}
+.install-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;margin-top:2px;}
 .install-actions button{width:100%;}
 .theme-toggle{min-width:78px;height:32px;padding-right:9px;}
 .theme-toggle-label{font-size:10px;letter-spacing:1px;}
@@ -626,17 +641,24 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
     </button>
   </div>
 </header>
-<aside class="install-card" id="installCard" aria-live="polite" aria-hidden="true">
-  <h3>ICV come app</h3>
-  <p id="installText">Installa ICV Scout sulla schermata Home per aprirlo come una vera app.</p>
-  <ol class="install-steps" id="installSteps">
-    <li>Apri il pulsante Condividi di Safari.</li>
-    <li>Scegli Aggiungi alla schermata Home.</li>
-    <li>Conferma: ICV si aprira a schermo pieno.</li>
-  </ol>
-  <div class="install-actions">
-    <button id="installConfirmBtn" onclick="installApp()">Installa</button>
-    <button class="secondary" onclick="closeInstallCard()">Chiudi</button>
+<aside class="install-card" id="installCard" role="dialog" aria-labelledby="installTitle" aria-live="polite" aria-hidden="true">
+  <button class="install-close" onclick="closeInstallCard(true)" type="button" aria-label="Chiudi invito installazione" title="Chiudi">&times;</button>
+  <div class="install-card-layout">
+    <img class="install-card-logo" src="/icon-192.png" alt="" width="58" height="58">
+    <div class="install-card-copy">
+      <div class="install-eyebrow">Senza store · sempre con te</div>
+      <h3 id="installTitle">Porta ICV Scout nella Home</h3>
+      <p id="installText">Aprilo a schermo intero e ritrovalo subito, come una vera app.</p>
+      <ol class="install-steps" id="installSteps">
+        <li>Apri il pulsante Condividi di Safari.</li>
+        <li>Scegli Aggiungi alla schermata Home.</li>
+        <li>Conferma con Aggiungi.</li>
+      </ol>
+    </div>
+    <div class="install-actions">
+      <button id="installConfirmBtn" onclick="installApp()">Installa</button>
+      <button class="secondary" onclick="closeInstallCard(true)">Non ora</button>
+    </div>
   </div>
 </aside>
 <main>
@@ -2068,6 +2090,9 @@ loadHomeGraphics();
 loadAndRenderNews();
 
 var deferredInstallPrompt = null;
+var installPromptDismissKey = "icv_install_prompt_dismissed_v1";
+var installPromptDelay = 7000;
+var installPromptCooldown = 14 * 24 * 60 * 60 * 1000;
 function isStandaloneApp(){
   return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 }
@@ -2089,11 +2114,13 @@ function updateInstallCopy(){
   if (isIOSLike()) {
     text.textContent = "Su iPhone l'installazione passa da Safari: sono tre tocchi e poi ICV resta nella schermata Home.";
     if (steps) steps.classList.add("show");
-    confirm.style.display = "none";
+    confirm.textContent = "Ho capito";
+    confirm.style.display = "";
     return;
   }
   text.textContent = "Dal menu del browser scegli Installa app oppure Aggiungi alla schermata Home.";
-  confirm.style.display = "none";
+  confirm.textContent = "Ho capito";
+  confirm.style.display = "";
 }
 function openInstallCard(){
   updateInstallCopy();
@@ -2102,15 +2129,33 @@ function openInstallCard(){
   card.classList.add("show");
   card.setAttribute("aria-hidden", "false");
 }
-function closeInstallCard(){
+function closeInstallCard(remember){
   var card = document.getElementById("installCard");
   if (!card) return;
   card.classList.remove("show");
   card.setAttribute("aria-hidden", "true");
+  if (remember) {
+    try { localStorage.setItem(installPromptDismissKey, String(Date.now())); } catch (error) {}
+  }
+}
+function canAutoOpenInstallCard(){
+  if (isStandaloneApp()) return false;
+  try {
+    var dismissedAt = Number(localStorage.getItem(installPromptDismissKey) || 0);
+    return !dismissedAt || Date.now() - dismissedAt >= installPromptCooldown;
+  } catch (error) {
+    return true;
+  }
+}
+function scheduleInstallCard(){
+  if (!canAutoOpenInstallCard()) return;
+  window.setTimeout(function(){
+    if (document.visibilityState === "visible" && canAutoOpenInstallCard()) openInstallCard();
+  }, installPromptDelay);
 }
 function installApp(){
   if (!deferredInstallPrompt) {
-    updateInstallCopy();
+    closeInstallCard(true);
     return;
   }
   deferredInstallPrompt.prompt();
@@ -2130,7 +2175,7 @@ window.addEventListener("beforeinstallprompt", function(event){
   if (btn && !isStandaloneApp()) btn.classList.remove("is-hidden");
 });
 window.addEventListener("appinstalled", function(){
-  closeInstallCard();
+  closeInstallCard(false);
   var btn = document.getElementById("installAppBtn");
   if (btn) btn.classList.add("is-hidden");
 });
@@ -2139,6 +2184,7 @@ if (isStandaloneApp()) {
   var appBtn = document.getElementById("installAppBtn");
   if (appBtn) appBtn.classList.add("is-hidden");
 }
+window.addEventListener("load", scheduleInstallCard);
 
 // PWA — registra service worker
 if ('serviceWorker' in navigator) {

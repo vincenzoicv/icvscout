@@ -51,6 +51,28 @@ test("Anime.js anima la home rispettando Riduci movimento", async () => {
   assert.doesNotMatch(html, /https:\/\/cdn[^"']*anime/i);
 });
 
+test("la home propone l'installazione PWA senza essere invadente", async () => {
+  const [html, manifest, worker] = await Promise.all([
+    read("index.html"),
+    read("manifest.json"),
+    read("sw.js"),
+  ]);
+  for (const marker of [
+    "Porta ICV Scout nella Home",
+    "Senza store · sempre con te",
+    "function scheduleInstallCard()",
+    "icv_install_prompt_dismissed_v1",
+    "installPromptDelay = 7000",
+    "installPromptCooldown = 14 * 24 * 60 * 60 * 1000",
+    "beforeinstallprompt",
+    "display-mode: standalone",
+  ]) assert.ok(html.includes(marker), `manca ${marker}`);
+  assert.match(html, /onclick="closeInstallCard\(true\)"/);
+  assert.match(html, /window\.addEventListener\("load", scheduleInstallCard\)/);
+  assert.match(manifest, /"display": "standalone"/);
+  assert.match(worker, /const CACHE = 'icv-v14'/);
+});
+
 test("ICV Match Hub sostituisce il Focus e usa risultati automatici", async () => {
   const [html, api] = await Promise.all([
     read("index.html"),

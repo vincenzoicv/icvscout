@@ -256,9 +256,11 @@ test("Mercato Radar seleziona e divide le trattative raccolte", async () => {
     read("mercato.html"),
     read("functions/api/[[path]].js"),
   ]);
-  for (const marker of ["Mercato Radar", "Selezione automatica controllata", "Operazioni chiuse", "Radar acquisti", "Radar cessioni", "marketSectionHtml", "deal-card", "Fase avanzata"]) {
+  for (const marker of ["Mercato Radar", "Operazioni chiuse", "Radar acquisti", "Radar cessioni", "marketSectionHtml", "deal-card", "Fase avanzata"]) {
     assert.ok(page.includes(marker), `manca ${marker}`);
   }
+  assert.ok(!page.includes("Selezione automatica controllata"));
+  assert.ok(!page.includes("Mostriamo solo operazioni recenti"));
   for (const marker of ["marketDealMetadata", "deal_stage", "confidence", "marketStageRank"]) {
     assert.ok(api.includes(marker), `manca ${marker}`);
   }
@@ -905,6 +907,14 @@ test("Mercato Radar riconosce il calciatore reale e rimuove le schede generiche"
       reliability: "trusted",
       status: "Confermato",
       source_name: "Sportmediaset",
+      updated_at: updatedAt,
+    },
+    {
+      player_name: "Del Piero",
+      note: "Del Piero, la figlia Dorotea lascia la Juve: andra in prestito",
+      reliability: "aggregator",
+      status: "Da verificare",
+      source_name: "Google News mercato",
       updated_at: updatedAt,
     },
   ]);

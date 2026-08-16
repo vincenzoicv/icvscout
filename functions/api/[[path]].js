@@ -4487,6 +4487,7 @@ function isIgnoredMarketSignal(row) {
   if (/^(pap|papa|marzio|di marzio|luca toselli|romeo agresti|gianni balzarini)$/i.test(name)) return true;
   if (/youtube/.test(text) && isBadMarketTopic(name)) return true;
   if (/youtube scout:/.test(text)) return true;
+  if (/del piero.{0,24}(?:figlia|dorotea)|(?:figlia|dorotea).{0,24}del piero/.test(text)) return true;
   if (/maradona|ferlaino|salas|cristiano ronaldo alla juventus sfumo|cristiano ronaldo alla juventus sfumò/.test(text)) return true;
   if (/mai incontrato|non rincorro nessuno|nessun contatto|non interessa|mercato\??\s+i direttori sono/.test(text)) return true;
   return false;

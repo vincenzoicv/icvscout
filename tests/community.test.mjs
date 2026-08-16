@@ -251,12 +251,12 @@ test("i collegamenti intelligenti uniscono giocatori, news, mercato e Community"
   assert.equal(playerEntityMatches("Discussione su Muani", index[0]), true);
 });
 
-test("Mercato Board classifica e filtra le trattative raccolte", async () => {
+test("Mercato Radar seleziona e divide le trattative raccolte", async () => {
   const [page, api] = await Promise.all([
     read("mercato.html"),
     read("functions/api/[[path]].js"),
   ]);
-  for (const marker of ["Mercato Board", "boardFilters", "setDirection", "deal-card", "Fase avanzata"]) {
+  for (const marker of ["Mercato Radar", "Selezione automatica controllata", "Operazioni chiuse", "Radar acquisti", "Radar cessioni", "marketSectionHtml", "deal-card", "Fase avanzata"]) {
     assert.ok(page.includes(marker), `manca ${marker}`);
   }
   for (const marker of ["marketDealMetadata", "deal_stage", "confidence", "marketStageRank"]) {
@@ -312,6 +312,13 @@ test("Mercato Board classifica e filtra le trattative raccolte", async () => {
   }), "Alajbegovic");
   assert.equal(isIgnoredMarketSignal({ player_name: "Pagina", note: "Pagina 1 articolo" }), true);
   assert.equal(isIgnoredMarketSignal({ player_name: "Punto mercato", note: "Riepilogo generico" }), true);
+  for (const row of [
+    { player_name: "L'ultima", note: "L'ultima gara ufficiale fra Juventus e Palermo", reliability: "official" },
+    { player_name: "Domenica", note: "Di Marzio: Domenica le visite mediche di Lucumi con la Juventus" },
+    { player_name: "Nodo", note: "Nodo Di Gregorio, oltre i sondaggi il nulla" },
+    { player_name: "Colpo Juve", note: "Colpo Juve, preso Lucumi dal Bologna" },
+    { player_name: "Real Madrid", note: "La Juve cerca un portiere: spunta un nome dal Real Madrid" },
+  ]) assert.notEqual(marketTopicName(row), row.player_name);
 });
 
 test("la Community espone le funzioni finali di lancio", async () => {
@@ -764,6 +771,8 @@ test("Mercato Board distingue entrate e uscite senza inventare giocatori dai tit
 
 test("Mercato Board conserva le ufficialita Juventus anche davanti a rumor piu recenti", async () => {
   const { aggregateMarketItems, publicMarketFromNews } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  const now = Date.now();
+  const hoursAgo = hours => new Date(now - hours * 3600000).toISOString();
   const officialRows = publicMarketFromNews([
     {
       title: "Ufficiale | Kolo Muani e un nuovo giocatore della Juventus",
@@ -771,7 +780,7 @@ test("Mercato Board conserva le ufficialita Juventus anche davanti a rumor piu r
       source_url: "https://www.juventus.com/it/news/articoli/ufficiale-kolo-muani",
       reliability: "official",
       editorial_status: "Ufficiale",
-      created_at: "2026-08-03T10:00:00Z",
+      created_at: hoursAgo(2),
     },
     {
       title: "Ufficiale | Alajbegovic e un nuovo giocatore della Juventus",
@@ -779,7 +788,7 @@ test("Mercato Board conserva le ufficialita Juventus anche davanti a rumor piu r
       source_url: "https://www.juventus.com/it/news/articoli/ufficiale-alajbegovic",
       reliability: "official",
       editorial_status: "Ufficiale",
-      created_at: "2026-08-03T09:00:00Z",
+      created_at: hoursAgo(3),
     },
   ]);
   const rows = aggregateMarketItems([
@@ -790,7 +799,7 @@ test("Mercato Board conserva le ufficialita Juventus anche davanti a rumor piu r
       source_name: "Google News mercato",
       reliability: "aggregator",
       status: "Da verificare",
-      updated_at: "2026-08-03T12:00:00Z",
+      updated_at: hoursAgo(1),
     },
   ]);
 
@@ -839,19 +848,71 @@ test("Mercato Board scarta interviste e smentite e normalizza le ufficialita", a
       reliability: "official",
       status: "Ufficiale",
       source_name: "Juventus.com",
-      updated_at: "2026-08-02T20:28:00Z",
+      updated_at: new Date(Date.now() - 3600000).toISOString(),
     },
     {
       player_name: "Alajbegovic",
       note: "Chi e Kerim Alajbegovic, il 18enne preso dalla Juve",
       reliability: "aggregator",
       source_name: "Google News mercato",
-      updated_at: "2026-07-30T14:45:00Z",
+      updated_at: new Date(Date.now() - 2 * 3600000).toISOString(),
     },
   ]);
   assert.equal(alajbegovicRows.length, 1);
   assert.equal(alajbegovicRows[0].player_name, "Alajbegovic");
   assert.equal(alajbegovicRows[0].deal_stage, "official");
+});
+
+test("Mercato Radar riconosce il calciatore reale e rimuove le schede generiche", async () => {
+  const { aggregateMarketItems } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  const updatedAt = new Date().toISOString();
+  const rows = aggregateMarketItems([
+    {
+      player_name: "Next Gen",
+      note: "Next Gen | Tommaso Mancini rinnova fino al 2029 e passa in prestito al Livorno",
+      reliability: "official",
+      status: "Ufficiale",
+      source_name: "Juventus.com",
+      updated_at: updatedAt,
+    },
+    {
+      player_name: "Domenica",
+      note: "Di Marzio: Domenica le visite mediche di Lucumi con la Juventus",
+      reliability: "trusted",
+      status: "Confermato",
+      source_name: "Di Marzio Juventus",
+      updated_at: updatedAt,
+    },
+    {
+      player_name: "Nodo",
+      note: "Nodo Di Gregorio, oltre i sondaggi il nulla: la Juve non riceve nessuna offerta",
+      reliability: "trusted",
+      status: "Confermato",
+      source_name: "Tuttosport",
+      updated_at: updatedAt,
+    },
+    {
+      player_name: "L'ultima",
+      note: "L'ultima gara ufficiale fra Juventus e Palermo",
+      reliability: "official",
+      status: "Ufficiale",
+      source_name: "Juventus.com",
+      updated_at: updatedAt,
+    },
+    {
+      player_name: "Real Madrid",
+      note: "La Juve cerca un portiere: spunta un nome dal Real Madrid",
+      reliability: "trusted",
+      status: "Confermato",
+      source_name: "Sportmediaset",
+      updated_at: updatedAt,
+    },
+  ]);
+
+  assert.deepEqual(rows.map(row => row.player_name).sort(), ["Di Gregorio", "Lucumi", "Tommaso Mancini"]);
+  assert.equal(rows.find(row => row.player_name === "Tommaso Mancini").direction, "outgoing");
+  assert.equal(rows.find(row => row.player_name === "Tommaso Mancini").deal_stage, "official");
+  assert.equal(rows.find(row => row.player_name === "Di Gregorio").direction, "outgoing");
 });
 
 test("le bozze duplicate sono ignorate atomicamente senza degradare Mercato", async () => {

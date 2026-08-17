@@ -87,11 +87,18 @@ test("ICV Match Hub sostituisce il Focus e usa risultati automatici", async () =
     "Forma recente",
     "function renderMatchHub",
     "function normalizeMatchHubRows",
+    "function matchHubIsSerieA",
+    "var upcoming = live || nextSerieA",
     'previous.status === "finished" && match.status !== "finished"',
     "function matchHubRecordLabel",
     "function animateMatchHub",
     "Juve: Yildiz, Milik",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
+  assert.match(html, /id="matchHubNextDate">23 agosto 2026 · 18:30/);
+  assert.match(html, /id="matchHubNextHome">Frosinone/);
+  assert.match(html, /id="matchHubNextAway">Juventus/);
+  assert.match(html, /id="matchHubCompetition">Serie A/);
+  assert.match(html, /nextSerieA = matches\.find[\s\S]*?matchHubIsSerieA\(match\)/);
   assert.doesNotMatch(html, /Focus ICV|buildEditorialFocus|homeFocusTitle/);
   assert.match(html, /renderLiveDesk\(data\.live_desk\);[\s\S]*?renderMatchHub\(matches\);/);
   assert.match(html, /icvReducedMotion\(\)[\s\S]*?#homeMatchHub/);

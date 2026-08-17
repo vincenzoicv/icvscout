@@ -759,13 +759,13 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
     <div class="match-hub-main">
       <section class="match-hub-next" aria-label="Prossima partita della Juventus">
         <div class="match-hub-kicker">Prossimo incontro</div>
-        <div class="match-hub-date" id="matchHubNextDate">17 agosto 2026</div>
+        <div class="match-hub-date" id="matchHubNextDate">23 agosto 2026 · 18:30</div>
         <div class="match-hub-teams">
-          <strong class="match-hub-team" id="matchHubNextHome">Juventus</strong>
+          <strong class="match-hub-team" id="matchHubNextHome">Frosinone</strong>
           <span class="match-hub-vs" id="matchHubVersus">VS</span>
-          <strong class="match-hub-team" id="matchHubNextAway">Next Gen</strong>
+          <strong class="match-hub-team" id="matchHubNextAway">Juventus</strong>
         </div>
-        <div class="match-hub-meta"><span id="matchHubCompetition">Amichevole</span><span id="matchHubVenue">Allianz Stadium</span></div>
+        <div class="match-hub-meta"><span id="matchHubCompetition">Serie A</span><span id="matchHubVenue">Stadio Benito Stirpe</span></div>
         <div class="match-hub-countdown"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Tra 6 giorni</strong></div>
       </section>
       <section class="match-hub-last" aria-label="Ultimo risultato della Juventus">
@@ -1516,6 +1516,10 @@ function matchHubIsJuve(name) {
   return /juventus|juve/i.test(String(name || ""));
 }
 
+function matchHubIsSerieA(match) {
+  return /serie\s*a/i.test(String(match && match.competition || ""));
+}
+
 function matchHubOutcome(match) {
   if (!match || match.status !== "finished" || match.homeScore == null || match.awayScore == null) return null;
   if (match.homeScore === match.awayScore) return "draw";
@@ -1561,7 +1565,10 @@ function renderMatchHub(apiRows) {
   var matches = allMatchHubRows(apiRows);
   var now = Date.now();
   var live = matches.find(function(match) { return match.status === "live"; });
-  var upcoming = live || matches.find(function(match) {
+  var nextSerieA = matches.find(function(match) {
+    return match.status === "scheduled" && matchHubIsSerieA(match) && new Date(match.date).getTime() >= now;
+  });
+  var upcoming = live || nextSerieA || matches.find(function(match) {
     return match.status === "scheduled" && new Date(match.date).getTime() >= now;
   });
   var finished = matches.filter(function(match) {

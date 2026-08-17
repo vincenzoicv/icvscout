@@ -27,7 +27,7 @@ test("la home distingue risultati e prossime amichevoli", async () => {
     "Juventus-Palermo",
     "Yildiz · Milik",
     "Juventus-Next Gen",
-    "Allianz Stadium",
+    "Conceicao · McKennie",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.match(html, /friendly-item is-final[\s\S]*?FINALE[\s\S]*?0-0/);
   assert.match(html, /25 LUG[\s\S]*?FINALE[\s\S]*?Standard Liegi-Juventus[\s\S]*?Gol Miretti[\s\S]*?0-1/);
@@ -37,7 +37,7 @@ test("la home distingue risultati e prossime amichevoli", async () => {
   assert.match(html, /11 AGO[\s\S]*?FINALE[\s\S]*?Juventus-Palermo[\s\S]*?Yildiz · Milik[\s\S]*?Risultato due a zero per la Juventus[\s\S]*?2-0/);
   assert.match(html, /\.friendly-fixtures\.is-four\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\);\}/);
   assert.match(html, /\.friendly-scorer\{[^}]*white-space:normal/);
-  assert.match(html, /17 AGO[\s\S]*?Juventus-Next Gen[\s\S]*?Allianz Stadium/);
+  assert.match(html, /17 AGO[\s\S]*?FINALE[\s\S]*?Juventus-Next Gen[\s\S]*?Conceicao · McKennie[\s\S]*?Risultato due a zero per la Juventus[\s\S]*?2-0/);
 });
 
 test("Anime.js anima la home rispettando Riduci movimento", async () => {
@@ -92,7 +92,7 @@ test("ICV Match Hub sostituisce il Focus e usa risultati automatici", async () =
     'previous.status === "finished" && match.status !== "finished"',
     "function matchHubRecordLabel",
     "function animateMatchHub",
-    "Juve: Yildiz, Milik",
+    "Juve: Conceicao, McKennie",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.match(html, /id="matchHubNextDate">23 agosto 2026 · 18:30/);
   assert.match(html, /id="matchHubNextHome">Frosinone/);

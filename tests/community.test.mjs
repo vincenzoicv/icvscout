@@ -167,6 +167,9 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     read("sw.js"),
   ]);
   assert.match(home, /href=["']\/calendario-juventus["']/);
+  assert.match(home, /class="match-hub-calendar-link" href="\/calendario-juventus">Calendario/);
+  assert.doesNotMatch(home, /class="match-banner"/);
+  assert.doesNotMatch(home, /Aggiungi al calendario/);
   for (const marker of ["Apple Calendar", "Google Calendar", "/api/juventus/calendar.ics", "Risultati automatici", ">38<"]) {
     assert.ok(page.includes(marker), `manca ${marker}`);
   }

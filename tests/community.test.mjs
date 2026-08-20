@@ -70,7 +70,7 @@ test("la home propone l'installazione PWA senza essere invadente", async () => {
   assert.match(html, /onclick="closeInstallCard\(true\)"/);
   assert.match(html, /window\.addEventListener\("load", scheduleInstallCard\)/);
   assert.match(manifest, /"display": "standalone"/);
-  assert.match(worker, /const CACHE = 'icv-v14'/);
+  assert.match(worker, /const CACHE = 'icv-v15'/);
 });
 
 test("ICV Match Hub sostituisce il Focus e usa risultati automatici", async () => {
@@ -178,8 +178,14 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
   }
   assert.doesNotMatch(page, /api\/football-data\/teams\/109\/matches/);
   assert.match(redirects, /^\/calendario-juventus\.html \/calendario-juventus 301$/m);
+  assert.match(redirects, /^\/mercato \/calendario-juventus 301$/m);
+  assert.match(redirects, /^\/mercato\.html \/calendario-juventus 301$/m);
   assert.match(sitemap, /https:\/\/ilcalciodivince\.com\/calendario-juventus/);
+  assert.doesNotMatch(sitemap, /https:\/\/ilcalciodivince\.com\/mercato/);
   assert.match(worker, /\/calendario-juventus\.html/);
+  assert.doesNotMatch(worker, /\/mercato\.html/);
+  assert.doesNotMatch(home, /location\.href=["']\/mercato|>Mercato<\/button>/);
+  assert.match(home, /location\.href='\/calendario-juventus'">Calendario/);
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => new Response(JSON.stringify({ matches: [

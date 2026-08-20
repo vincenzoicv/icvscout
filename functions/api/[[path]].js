@@ -3120,7 +3120,7 @@ function quizResultEmailHtml(profile, score) {
   const links = [
     ["ICV Scout", "https://ilcalciodivince.com/"],
     ["News Juventus", "https://ilcalciodivince.com/#news"],
-    ["Mercato live", "https://ilcalciodivince.com/mercato.html"],
+    ["Calendario Juventus", "https://ilcalciodivince.com/calendario-juventus"],
     ["Instagram", "https://instagram.com/ilcalciodivince_"],
     ["TikTok", "https://www.tiktok.com/@ilcalciodivince"],
     ["X", "https://x.com/VikBrancato"],
@@ -3154,7 +3154,7 @@ function quizResultEmailText(profile, score) {
     "Link ICV:",
     "ICV Scout: https://ilcalciodivince.com/",
     "News Juventus: https://ilcalciodivince.com/#news",
-    "Mercato live: https://ilcalciodivince.com/mercato.html",
+    "Calendario Juventus: https://ilcalciodivince.com/calendario-juventus",
     "Instagram: https://instagram.com/ilcalciodivince_",
     "TikTok: https://www.tiktok.com/@ilcalciodivince",
     "X: https://x.com/VikBrancato",

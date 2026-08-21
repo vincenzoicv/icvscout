@@ -5,39 +5,11 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
-test("la home distingue risultati e prossime amichevoli", async () => {
+test("la home lascia le amichevoli al calendario ufficiale", async () => {
   const html = await read("index.html");
-  for (const marker of [
-    "Risultati e prossime",
-    "Basilea-Juventus",
-    "Risultato zero a zero",
-    "Standard Liegi-Juventus",
-    "Risultato zero a uno per la Juventus",
-    "Gol Miretti",
-    "Juventus-Nizza",
-    "Risultato due a zero per la Juventus",
-    "Douglas Luiz 10'",
-    "Oboavwoduo 89'",
-    "Amichevoli agosto",
-    "Chelsea-Juventus",
-    "Gol Zhegrova",
-    "Juventus-Inter",
-    "<b>Juve</b>: Conceicao · <b>Inter</b>: Dimarco, Diouf",
-    "Risultato uno a due per l'Inter",
-    "Juventus-Palermo",
-    "Yildiz · Milik",
-    "Juventus-Next Gen",
-    "Conceicao · McKennie",
-  ]) assert.ok(html.includes(marker), `manca ${marker}`);
-  assert.match(html, /friendly-item is-final[\s\S]*?FINALE[\s\S]*?0-0/);
-  assert.match(html, /25 LUG[\s\S]*?FINALE[\s\S]*?Standard Liegi-Juventus[\s\S]*?Gol Miretti[\s\S]*?0-1/);
-  assert.match(html, /31 LUG[\s\S]*?FINALE[\s\S]*?Juventus-Nizza[\s\S]*?Douglas Luiz 10'[\s\S]*?Oboavwoduo 89'[\s\S]*?2-0/);
-  assert.match(html, /Amichevoli agosto[\s\S]*?5 AGO[\s\S]*?FINALE[\s\S]*?Chelsea-Juventus[\s\S]*?Gol Zhegrova[\s\S]*?0-1/);
-  assert.match(html, /8 AGO[\s\S]*?FINALE[\s\S]*?Juventus-Inter[\s\S]*?<b>Juve<\/b>: Conceicao · <b>Inter<\/b>: Dimarco, Diouf[\s\S]*?1-2/);
-  assert.match(html, /11 AGO[\s\S]*?FINALE[\s\S]*?Juventus-Palermo[\s\S]*?Yildiz · Milik[\s\S]*?Risultato due a zero per la Juventus[\s\S]*?2-0/);
-  assert.match(html, /\.friendly-fixtures\.is-four\{grid-template-columns:repeat\(2,minmax\(0,1fr\)\);\}/);
-  assert.match(html, /\.friendly-scorer\{[^}]*white-space:normal/);
-  assert.match(html, /17 AGO[\s\S]*?FINALE[\s\S]*?Juventus-Next Gen[\s\S]*?Conceicao · McKennie[\s\S]*?Risultato due a zero per la Juventus[\s\S]*?2-0/);
+  assert.match(html, /class="hero-season-link" href="\/calendario-juventus">Calendario ufficiale 2026\/27/);
+  assert.doesNotMatch(html, /<div class="friendly-strip"/);
+  assert.doesNotMatch(html, /Risultati e prossime/);
 });
 
 test("Anime.js anima la home rispettando Riduci movimento", async () => {
@@ -73,17 +45,28 @@ test("la home propone l'installazione PWA senza essere invadente", async () => {
   assert.match(worker, /const CACHE = 'icv-v15'/);
 });
 
-test("ICV Match Hub sostituisce il Focus e usa risultati automatici", async () => {
-  const [html, api] = await Promise.all([
+test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async () => {
+  const [html, api, admin, cron, cronConfig] = await Promise.all([
     read("index.html"),
     read("functions/api/[[path]].js"),
+    read("icv_admin.html"),
+    read("workers/icv-cron.js"),
+    read("wrangler.cron.toml"),
   ]);
   for (const marker of [
     'id="homeMatchHub"',
     '<div class="match-hub-head">',
     "ICV Match Hub",
     "Prossimo incontro",
-    "Ultimo risultato",
+    "Informazioni verificate",
+    "ICV Match Receipt",
+    "Il referto della partita",
+    "downloadMatchReceipt",
+    "shareMatchReceipt",
+    "function matchHubPhase",
+    "function matchHubFreshness",
+    "function homeDashboardInterval",
+    "cache:\"no-store\"",
     "Forma recente",
     "function renderMatchHub",
     "function normalizeMatchHubRows",
@@ -92,21 +75,51 @@ test("ICV Match Hub sostituisce il Focus e usa risultati automatici", async () =
     'previous.status === "finished" && match.status !== "finished"',
     "function matchHubRecordLabel",
     "function animateMatchHub",
-    "Juve: Conceicao, McKennie",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.match(html, /id="matchHubNextDate">23 agosto 2026 · 18:30/);
   assert.match(html, /id="matchHubNextHome">Frosinone/);
   assert.match(html, /id="matchHubNextAway">Juventus/);
   assert.match(html, /id="matchHubCompetition">Serie A/);
   assert.match(html, /nextSerieA = matches\.find[\s\S]*?matchHubIsSerieA\(match\)/);
+  assert.match(html, /Array\.isArray\(display\.homeLineup\)[\s\S]*?Array\.isArray\(display\.awayLineup\)/);
   assert.doesNotMatch(html, /Focus ICV|buildEditorialFocus|homeFocusTitle/);
   assert.match(html, /renderLiveDesk\(data\.live_desk\);[\s\S]*?renderMatchHub\(matches\);/);
   assert.match(html, /icvReducedMotion\(\)[\s\S]*?#homeMatchHub/);
   assert.match(api, /match_reports\?order=match_date\.asc&limit=80/);
-  assert.match(api, /matches\?status=SCHEDULED&limit=3/);
-  assert.match(api, /matches\?status=FINISHED&limit=5/);
+  assert.match(api, /matches\?dateFrom=/);
+  for (const header of ["X-Unfold-Lineups", "X-Unfold-Bookings", "X-Unfold-Subs", "X-Unfold-Goals"]) {
+    assert.ok(api.includes(header), `manca ${header}`);
+  }
   assert.match(api, /function matchReportFromFootballData/);
   assert.match(api, /function upsertMatchReport/);
+  assert.match(api, /body\.type === "match_override"/);
+  assert.match(api, /icv_manual/);
+  assert.match(admin, /Salva correzione/);
+  assert.match(admin, /Ripristina fonte/);
+  assert.match(cron, /const MATCH_CRON = "\* \* \* \* \*"/);
+  assert.match(cron, /\["home", "market", "match", "all"\]\.includes\(job\)/);
+  assert.match(cronConfig, /"\* \* \* \* \*"/);
+
+  const { footballDataMatchStatus, matchReportFromFootballData } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  assert.equal(footballDataMatchStatus("TIMED"), "pre_match");
+  assert.equal(footballDataMatchStatus("IN_PLAY"), "in_play");
+  assert.equal(footballDataMatchStatus("PAUSED"), "halftime");
+  assert.equal(footballDataMatchStatus("FINISHED"), "finished");
+  const report = matchReportFromFootballData({
+    id: 558635,
+    utcDate: "2026-08-23T16:30:00Z",
+    status: "IN_PLAY",
+    matchday: 1,
+    competition: { name: "Serie A" },
+    homeTeam: { id: 470, name: "Frosinone Calcio" },
+    awayTeam: { id: 109, name: "Juventus FC" },
+    score: { fullTime: { home: 0, away: 1 } },
+    goals: [{ minute: 34, team: { name: "Juventus FC" }, scorer: { name: "Kenan Yildiz" } }],
+  }, { sourceUrl: "https://api.football-data.org/v4/teams/109/matches" });
+  assert.equal(report.status, "in_play");
+  assert.equal(report.title, "Frosinone Calcio 0-1 Juventus FC");
+  assert.match(report.summary, /Kenan Yildiz 34'/);
+  assert.equal(report.source_payload.icv_meta.provider, "football-data.org");
 });
 
 test("Community e API mostrano la prossima partita, non una gara successiva", async () => {
@@ -149,7 +162,7 @@ test("News e Statistiche scorrono alla sezione richiesta", async () => {
 });
 
 test("gli script delle pagine principali hanno sintassi valida", async () => {
-  for (const file of ["community.html", "icv_admin.html", "mercato.html", "giocatore.html", "calendario-juventus.html"]) {
+  for (const file of ["index.html", "community.html", "icv_admin.html", "mercato.html", "giocatore.html", "calendario-juventus.html"]) {
     const html = await read(file);
     const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)].map(match => match[1]).filter(Boolean);
     assert.ok(scripts.length, `${file} deve contenere JavaScript inline`);

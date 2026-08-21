@@ -131,21 +131,29 @@ main{padding-top:58px;position:relative;z-index:1;}
 .home-panel::after{content:"";position:absolute;inset:0;background:linear-gradient(108deg,transparent 28%,rgba(232,184,75,.075) 48%,transparent 68%);transform:translateX(-115%);pointer-events:none;}
 .home-panel:hover{transform:translateY(-3px);border-color:rgba(196,150,42,.32);box-shadow:0 20px 42px rgba(0,0,0,.28),0 0 24px rgba(196,150,42,.055),inset 0 1px 0 rgba(255,255,255,.06);}
 .home-panel:hover::after{animation:panelSheen .85s ease both;}
-.home-match-hub{grid-column:span 2;min-height:300px;padding:0;border-left:3px solid var(--gold);background:linear-gradient(145deg,rgba(27,27,27,.99),rgba(13,13,13,.98));box-shadow:0 22px 48px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.055);}
+.hero-season-link{display:inline-flex;align-items:center;justify-content:center;margin-top:24px;min-height:34px;padding:0 13px;border:1px solid rgba(196,150,42,.28);border-radius:5px;background:rgba(196,150,42,.07);color:var(--gold-l);font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:1.6px;text-decoration:none;text-transform:uppercase;transition:background .2s ease,border-color .2s ease;}
+.hero-season-link:hover{border-color:var(--gold);background:rgba(196,150,42,.14);}
+.home-match-hub{grid-column:1/-1;min-height:300px;padding:0;border-left:3px solid var(--gold);background:linear-gradient(145deg,rgba(27,27,27,.99),rgba(13,13,13,.98));box-shadow:0 22px 48px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.055);}
 .match-hub-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid var(--bdr2);}
 .match-hub-brand{display:flex;align-items:center;gap:10px;min-width:0;}
 .match-hub-brand h3{margin:0;}
 .match-hub-state{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(196,150,42,.3);border-radius:999px;padding:5px 9px;color:var(--gold-l);font-family:"Barlow Condensed";font-size:9px;font-weight:900;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap;}
 .match-hub-state::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px rgba(232,184,75,.09);}
+.home-match-hub[data-state="live"]{border-left-color:#65e294;box-shadow:0 22px 58px rgba(22,163,74,.12),inset 0 1px 0 rgba(255,255,255,.055);}
 .home-match-hub[data-state="live"] .match-hub-state{color:#65e294;border-color:rgba(101,226,148,.34);}
 .home-match-hub[data-state="live"] .match-hub-state::before{animation:pulse 1.2s ease infinite;}
+.home-match-hub[data-state="final"]{border-left-color:#f4c75a;}
 .match-hub-updated{font-family:"Barlow Condensed";font-size:9px;font-weight:800;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase;text-align:right;}
 .match-hub-tools{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:0;}
 .match-hub-calendar-link{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 10px;border:1px solid rgba(196,150,42,.28);border-radius:5px;background:rgba(196,150,42,.06);color:var(--gold-l);font-family:"Barlow Condensed";font-size:9px;font-weight:900;letter-spacing:1.3px;text-decoration:none;text-transform:uppercase;white-space:nowrap;transition:border-color .2s ease,background .2s ease;}
 .match-hub-calendar-link:hover{border-color:var(--gold);background:rgba(196,150,42,.13);}
-.match-hub-main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(245px,.75fr);min-height:190px;}
-.match-hub-next,.match-hub-last{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:20px 24px;}
-.match-hub-last{border-left:1px solid var(--bdr2);background:rgba(255,255,255,.014);}
+.match-hub-phase{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:14px;row-gap:2px;padding:14px 20px;border-bottom:1px solid var(--bdr2);background:linear-gradient(90deg,rgba(196,150,42,.085),transparent 62%);}
+.match-hub-phase span{grid-row:1/3;font-family:"Bebas Neue";font-size:15px;letter-spacing:1.4px;color:var(--gold-l);text-transform:uppercase;}
+.match-hub-phase strong{font-family:"Barlow Condensed";font-size:17px;font-weight:900;color:var(--white);letter-spacing:.4px;}
+.match-hub-phase p{font-size:12px;line-height:1.4;color:var(--t2);}
+.match-hub-main{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(290px,.65fr);min-height:210px;}
+.match-hub-next,.match-hub-intel{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:24px;}
+.match-hub-intel{border-left:1px solid var(--bdr2);background:rgba(255,255,255,.014);}
 .match-hub-kicker{font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:2px;color:var(--gold-l);text-transform:uppercase;margin-bottom:7px;}
 .match-hub-date{font-family:"Barlow Condensed";font-size:12px;font-weight:700;letter-spacing:1.3px;color:var(--t3);text-transform:uppercase;}
 .match-hub-teams{display:flex;align-items:center;gap:14px;min-width:0;margin:8px 0 7px;}
@@ -155,6 +163,18 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-meta span+span::before{content:"·";margin-right:8px;color:var(--gold);}
 .match-hub-countdown{display:inline-flex;align-items:baseline;gap:6px;margin-top:14px;color:var(--gold-l);font-family:"Barlow Condensed";font-size:12px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;}
 .match-hub-countdown strong{font-family:"Bebas Neue";font-size:25px;line-height:1;letter-spacing:1px;}
+.match-hub-facts{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
+.match-hub-facts div{min-width:0;border-top:1px solid var(--bdr2);padding-top:9px;}
+.match-hub-facts span{display:block;margin-bottom:3px;font-family:"Barlow Condensed";font-size:9px;font-weight:800;letter-spacing:1.3px;color:var(--t3);text-transform:uppercase;}
+.match-hub-facts strong{display:block;font-family:"Barlow Condensed";font-size:14px;font-weight:900;line-height:1.2;color:var(--white);overflow-wrap:anywhere;}
+.match-hub-events{padding:18px 20px;border-top:1px solid var(--bdr2);background:rgba(101,226,148,.025);}
+.match-hub-event-list{display:flex;flex-wrap:wrap;gap:8px;}
+.match-hub-event{display:inline-flex;align-items:center;gap:7px;min-height:31px;padding:0 10px;border:1px solid var(--bdr2);border-radius:5px;background:rgba(255,255,255,.025);font-family:"Barlow Condensed";font-size:12px;font-weight:800;color:var(--t2);}
+.match-hub-event b{font-family:"Bebas Neue";font-size:16px;color:var(--gold-l);font-weight:400;}
+.match-hub-event[data-kind="goal"]{border-color:rgba(196,150,42,.3);color:var(--white);}
+.match-hub-event[data-kind="booking"] b{color:#f5d84b;}
+.home-match-hub.is-stale .match-hub-updated{color:#ff7979;}
+.home-match-hub.is-stale .match-hub-updated::before{content:"ATTENZIONE · ";font-weight:900;}
 .match-hub-scoreline{display:flex;align-items:center;gap:10px;margin:7px 0 6px;min-width:0;}
 .match-hub-score-team{font-family:"Barlow Condensed";font-size:16px;font-weight:900;line-height:1;color:var(--white);min-width:0;}
 .match-hub-score{font-family:"Bebas Neue";font-size:42px;line-height:.8;letter-spacing:2px;color:var(--gold-l);white-space:nowrap;}
@@ -167,6 +187,32 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-form-dot.draw{color:#f2cf73;border-color:rgba(242,207,115,.38);background:rgba(242,207,115,.08);}
 .match-hub-form-dot.loss{color:#ff7979;border-color:rgba(255,121,121,.36);background:rgba(255,121,121,.08);}
 .match-hub-record{font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:1.1px;color:var(--t2);text-transform:uppercase;text-align:right;white-space:nowrap;}
+.match-receipt{border-top:1px solid rgba(196,150,42,.24);padding:20px;background:radial-gradient(circle at 50% 0,rgba(196,150,42,.09),transparent 42%),#0b0b0b;}
+.match-receipt-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px;}
+.match-receipt-head>div:first-child span{display:block;font-family:"Barlow Condensed";font-size:9px;font-weight:900;letter-spacing:2px;color:var(--gold-l);text-transform:uppercase;}
+.match-receipt-head>div:first-child strong{display:block;margin-top:3px;font-family:"Barlow Condensed";font-size:18px;color:var(--white);}
+.match-receipt-actions{display:flex;align-items:center;gap:7px;}
+.match-receipt-actions button{min-height:31px;padding:0 10px;border:1px solid var(--bdr2);border-radius:5px;background:rgba(255,255,255,.035);color:var(--t2);font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
+.match-receipt-actions button:hover{color:var(--gold-l);border-color:rgba(196,150,42,.38);}
+.receipt-printer{position:relative;width:min(430px,100%);margin:0 auto;padding:12px 12px 0;border:1px solid rgba(255,255,255,.1);border-radius:8px 8px 5px 5px;background:#191919;box-shadow:0 22px 46px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.07);overflow:hidden;}
+.receipt-printer-screen{position:relative;z-index:3;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;min-height:42px;padding:0 12px;border:1px solid rgba(255,255,255,.08);border-radius:5px;background:#090909;color:var(--t2);font-family:"Barlow Condensed";font-size:10px;letter-spacing:1px;text-transform:uppercase;}
+.receipt-printer-screen strong{color:var(--white);font-size:12px;}
+.receipt-status-dot{width:7px;height:7px;border-radius:50%;background:#65e294;box-shadow:0 0 0 4px rgba(101,226,148,.1);}
+.receipt-printer-slot{position:relative;z-index:3;height:9px;margin:9px 22px 0;border:1px solid #020202;border-radius:2px;background:#030303;box-shadow:inset 0 2px 4px #000;}
+.receipt-paper{position:relative;z-index:2;width:calc(100% - 48px);margin:-2px auto 0;padding:26px 24px 31px;background:#f4f1e9;color:#171717;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;box-shadow:0 12px 30px rgba(0,0,0,.28);clip-path:polygon(0 0,100% 0,100% calc(100% - 5px),97.5% 100%,95% calc(100% - 5px),92.5% 100%,90% calc(100% - 5px),87.5% 100%,85% calc(100% - 5px),82.5% 100%,80% calc(100% - 5px),77.5% 100%,75% calc(100% - 5px),72.5% 100%,70% calc(100% - 5px),67.5% 100%,65% calc(100% - 5px),62.5% 100%,60% calc(100% - 5px),57.5% 100%,55% calc(100% - 5px),52.5% 100%,50% calc(100% - 5px),47.5% 100%,45% calc(100% - 5px),42.5% 100%,40% calc(100% - 5px),37.5% 100%,35% calc(100% - 5px),32.5% 100%,30% calc(100% - 5px),27.5% 100%,25% calc(100% - 5px),22.5% 100%,20% calc(100% - 5px),17.5% 100%,15% calc(100% - 5px),12.5% 100%,10% calc(100% - 5px),7.5% 100%,5% calc(100% - 5px),2.5% 100%,0 calc(100% - 5px));}
+.receipt-paper.is-printing{animation:receiptFeed 1.65s cubic-bezier(.77,0,.175,1) both;}
+.receipt-logo{font-family:"Bebas Neue";font-size:30px;letter-spacing:4px;text-align:center;}
+.receipt-rule{height:1px;margin:14px 0;border-top:1px dashed rgba(0,0,0,.35);}
+.receipt-kicker,.receipt-paper time{display:block;text-align:center;font-size:9px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;}
+.receipt-paper time{margin-top:5px;color:#555;}
+.receipt-scoreline{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;margin:21px 0 16px;text-align:center;}
+.receipt-scoreline strong{font-family:"Barlow Condensed";font-size:17px;line-height:1.05;overflow-wrap:anywhere;}
+.receipt-scoreline b{font-family:"Bebas Neue";font-size:43px;letter-spacing:2px;white-space:nowrap;}
+.receipt-section{margin:13px 0;}
+.receipt-section span{display:block;font-size:8px;font-weight:900;letter-spacing:1.4px;color:#686868;}
+.receipt-section p{margin-top:5px;font-size:10px;font-weight:700;line-height:1.45;}
+.receipt-footer{display:flex;justify-content:space-between;gap:10px;font-size:8px;font-weight:800;color:#666;letter-spacing:.8px;}
+@keyframes receiptFeed{0%{opacity:0;transform:translateY(-88%)}22%{opacity:1;transform:translateY(-72%)}36%{transform:translateY(-72%)}52%{transform:translateY(-48%)}64%{transform:translateY(-48%)}82%{transform:translateY(-20%)}100%{opacity:1;transform:translateY(0)}}
 .home-panel h3{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:3px;color:var(--gold-l);text-transform:uppercase;margin-bottom:10px;}
 .home-main-title{font-family:"Barlow Condensed";font-size:20px;font-weight:800;color:var(--white);line-height:1.15;margin-bottom:6px;}
 .home-text{font-size:14px;color:var(--t2);line-height:1.45;}
@@ -353,11 +399,16 @@ body.light .sec-title{background:linear-gradient(135deg,#111 0%,rgba(0,0,0,0.68)
 body.light .manifesto{color:rgba(196,150,42,0.75);}
 body.light .home-panel{background:var(--surface);border-color:rgba(196,150,42,.18);}
 body.light .home-match-hub{background:linear-gradient(145deg,#f0ece3,#e2ddd2);box-shadow:0 18px 42px rgba(70,55,25,.12),inset 0 1px 0 rgba(255,255,255,.76);}
-body.light .match-hub-last{background:rgba(255,255,255,.2);}
+body.light .match-hub-intel{background:rgba(255,255,255,.2);}
 body.light .match-hub-team,body.light .match-hub-score-team{color:#15120c;}
 body.light .match-hub-date,body.light .match-hub-updated,body.light .match-hub-form-label{color:rgba(0,0,0,.45);}
 body.light .match-hub-meta,body.light .match-hub-scorers,body.light .match-hub-record{color:rgba(0,0,0,.6);}
 body.light .match-hub-form-dot{border-color:rgba(0,0,0,.13);background:rgba(255,255,255,.32);}
+body.light .match-hub-phase strong,body.light .match-hub-facts strong{color:#15120c;}
+body.light .match-hub-phase p{color:rgba(0,0,0,.6);}
+body.light .match-receipt{background:radial-gradient(circle at 50% 0,rgba(196,150,42,.1),transparent 42%),#ded9cd;}
+body.light .match-receipt-head>div:first-child strong{color:#15120c;}
+body.light .match-receipt-actions button{background:rgba(255,255,255,.42);border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.62);}
 body.light .home-main-title,body.light .home-mini strong{color:#111;}
 body.light .home-text{color:rgba(0,0,0,.58);}
 body.light .home-auto{color:rgba(0,0,0,0.44);}
@@ -430,6 +481,8 @@ header{padding:0 14px;height:54px;}main{padding-top:54px;padding-bottom:calc(72p
 body.is-standalone header{height:calc(54px + env(safe-area-inset-top,0px));padding-top:env(safe-area-inset-top,0px);}
 body.is-standalone main{padding-top:calc(54px + env(safe-area-inset-top,0px));}
 nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);}
+.mob-btn{min-width:0;overflow:hidden;font-size:9px;letter-spacing:.45px;}
+.mob-btn svg{flex:0 0 auto;}
 .install-app-btn{height:32px;padding:0 12px;}
 .install-card{left:14px;right:14px;bottom:calc(76px + env(safe-area-inset-bottom,0px));width:auto;transform:none;border-radius:16px;padding:18px 46px 18px 18px;}
 .install-card.show{animation-name:fadeUp;}
@@ -451,15 +504,29 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .match-hub-brand{align-items:flex-start;flex-direction:column;gap:7px;}
 .match-hub-updated{max-width:105px;line-height:1.3;}
 .match-hub-calendar-link{min-height:28px;padding:0 8px;}
+.match-hub-phase{grid-template-columns:1fr;padding:13px 15px;}
+.match-hub-phase span{grid-row:auto;margin-bottom:2px;}
 .match-hub-main{grid-template-columns:1fr;min-height:0;}
-.match-hub-next,.match-hub-last{padding:18px 16px;}
-.match-hub-last{border-left:0;border-top:1px solid var(--bdr2);}
+.match-hub-next,.match-hub-intel{padding:18px 16px;}
+.match-hub-intel{border-left:0;border-top:1px solid var(--bdr2);}
 .match-hub-team{font-size:29px;}
 .match-hub-teams{gap:10px;}
 .match-hub-score{font-size:38px;}
 .match-hub-form{grid-template-columns:1fr auto;padding:13px 15px;gap:10px;}
 .match-hub-form-label{grid-column:1/-1;}
 .match-hub-record{font-size:9px;}
+.match-hub-facts{gap:12px;}
+.match-receipt{padding:16px 12px;}
+.match-receipt-head{align-items:flex-start;flex-direction:column;}
+.match-receipt-actions{width:100%;display:grid;grid-template-columns:repeat(3,1fr);}
+.match-receipt-actions button{padding:0 6px;}
+.receipt-printer{padding-left:7px;padding-right:7px;}
+.receipt-printer-screen{grid-template-columns:auto minmax(0,1fr);}
+.receipt-printer-screen>span:last-child{display:none;}
+.receipt-paper{width:calc(100% - 30px);padding:23px 18px 29px;}
+.receipt-scoreline{gap:7px;}
+.receipt-scoreline strong{font-size:15px;}
+.receipt-scoreline b{font-size:37px;}
 .live-desk-list{grid-template-columns:1fr;}
 .live-desk-row,.live-desk-row:nth-child(odd){border-right:0;border-bottom:1px solid var(--bdr2);}
 .live-desk-row:last-child{border-bottom:0;}
@@ -527,6 +594,9 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .friendly-match{font-size:12px;}
 .friendly-result{font-size:21px;}
 .hero-sil{opacity:0.08;right:-20px;}
+footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14px;text-align:center;}
+.flinks{width:100%;min-width:0;flex-wrap:wrap;justify-content:center;gap:10px 13px;}
+.flink{max-width:100%;font-size:11px;letter-spacing:1.2px;}
 .section{padding:24px 12px 40px;}
 .sec-head{margin-bottom:24px;}
 .sec-title{font-size:44px;}
@@ -660,92 +730,29 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
     <h1>ICV<br><em>SCOUT</em></h1>
     <p class="hero-desc">Formazioni, analisi tattiche e statistiche della Juventus.</p>
     <p class="manifesto">Il calcio vissuto da chi lo vive davvero.</p>
-    <div class="alert-banner friendly-strip" role="region" aria-label="Risultati e calendario delle amichevoli estive della Juventus">
-      <div class="friendly-label">
-        <div class="alert-dot"></div>
-        <div class="friendly-label-copy"><strong>Amichevoli luglio</strong><span>Risultati e prossime</span></div>
-      </div>
-      <div class="friendly-fixtures">
-        <div class="friendly-item is-final">
-          <div class="friendly-meta"><strong>18 LUG</strong><span class="friendly-status">FINALE</span></div>
-          <span class="friendly-match"><span class="friendly-match-name">Basilea-Juventus</span></span>
-          <strong class="friendly-result" aria-label="Risultato zero a zero">0-0</strong>
-        </div>
-        <div class="friendly-item is-final">
-          <div class="friendly-meta"><strong>25 LUG</strong><span class="friendly-status">FINALE</span></div>
-          <span class="friendly-match">
-            <span class="friendly-match-name">Standard Liegi-Juventus</span>
-            <span class="friendly-scorer">Gol Miretti</span>
-          </span>
-          <strong class="friendly-result" aria-label="Risultato zero a uno per la Juventus">0-1</strong>
-        </div>
-        <div class="friendly-item is-final">
-          <div class="friendly-meta"><strong>31 LUG</strong><span class="friendly-status">FINALE</span></div>
-          <span class="friendly-match">
-            <span class="friendly-match-name">Juventus-Nizza</span>
-            <span class="friendly-scorer">Douglas Luiz 10' · Oboavwoduo 89'</span>
-          </span>
-          <strong class="friendly-result" aria-label="Risultato due a zero per la Juventus">2-0</strong>
-        </div>
-      </div>
-    </div>
-    <div class="alert-banner friendly-strip" role="region" aria-label="Calendario delle amichevoli di agosto della Juventus">
-      <div class="friendly-label">
-        <div class="alert-dot"></div>
-        <div class="friendly-label-copy"><strong>Amichevoli agosto</strong><span>Calendario</span></div>
-      </div>
-      <div class="friendly-fixtures is-four">
-        <div class="friendly-item is-final">
-          <div class="friendly-meta"><strong>5 AGO</strong><span class="friendly-status">FINALE</span></div>
-          <span class="friendly-match">
-            <span class="friendly-match-name">Chelsea-Juventus</span>
-            <span class="friendly-scorer">Gol Zhegrova</span>
-          </span>
-          <strong class="friendly-result" aria-label="Risultato zero a uno per la Juventus">0-1</strong>
-        </div>
-        <div class="friendly-item is-final">
-          <div class="friendly-meta"><strong>8 AGO</strong><span class="friendly-status">FINALE</span></div>
-          <span class="friendly-match">
-            <span class="friendly-match-name">Juventus-Inter</span>
-            <span class="friendly-scorer"><b>Juve</b>: Conceicao · <b>Inter</b>: Dimarco, Diouf</span>
-          </span>
-          <strong class="friendly-result" aria-label="Risultato uno a due per l'Inter">1-2</strong>
-        </div>
-        <div class="friendly-item is-final">
-          <div class="friendly-meta"><strong>11 AGO</strong><span class="friendly-status">FINALE</span></div>
-          <span class="friendly-match">
-            <span class="friendly-match-name">Juventus-Palermo</span>
-            <span class="friendly-scorer">Yildiz · Milik</span>
-          </span>
-          <strong class="friendly-result" aria-label="Risultato due a zero per la Juventus">2-0</strong>
-        </div>
-        <div class="friendly-item is-final">
-          <div class="friendly-meta"><strong>17 AGO</strong><span class="friendly-status">FINALE</span></div>
-          <span class="friendly-match">
-            <span class="friendly-match-name">Juventus-Next Gen</span>
-            <span class="friendly-scorer">Conceicao · McKennie</span>
-          </span>
-          <strong class="friendly-result" aria-label="Risultato due a zero per la Juventus">2-0</strong>
-        </div>
-      </div>
-    </div>
+    <a class="hero-season-link" href="/calendario-juventus">Calendario ufficiale 2026/27</a>
   </div>
 </div>
 <section class="home-dash" id="homeDash">
-  <article class="home-panel home-match-hub" id="homeMatchHub" data-state="scheduled" aria-live="polite">
+  <article class="home-panel home-match-hub" id="homeMatchHub" data-state="buildup" aria-live="polite">
     <div class="match-hub-head">
       <div class="match-hub-brand">
         <h3>ICV Match Hub</h3>
-        <span class="match-hub-state" id="matchHubState">Prossima sfida</span>
+        <span class="match-hub-state" id="matchHubState">Avvicinamento</span>
       </div>
       <div class="match-hub-tools">
-        <span class="match-hub-updated" id="matchHubUpdated">Dati Match Center</span>
+        <span class="match-hub-updated" id="matchHubUpdated">Controllo dati in corso</span>
         <a class="match-hub-calendar-link" href="/calendario-juventus">Calendario</a>
       </div>
     </div>
+    <div class="match-hub-phase">
+      <span id="matchHubPhaseEyebrow">Serie A · 1ª giornata</span>
+      <strong id="matchHubPhaseTitle">Domenica si comincia</strong>
+      <p id="matchHubPhaseCopy">Orario e sede verificati. Il Match Center passerà automaticamente alla modalità live.</p>
+    </div>
     <div class="match-hub-main">
       <section class="match-hub-next" aria-label="Prossima partita della Juventus">
-        <div class="match-hub-kicker">Prossimo incontro</div>
+        <div class="match-hub-kicker" id="matchHubPrimaryKicker">Prossimo incontro</div>
         <div class="match-hub-date" id="matchHubNextDate">23 agosto 2026 · 18:30</div>
         <div class="match-hub-teams">
           <strong class="match-hub-team" id="matchHubNextHome">Frosinone</strong>
@@ -755,34 +762,53 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
         <div class="match-hub-meta"><span id="matchHubCompetition">Serie A</span><span id="matchHubVenue">Stadio Benito Stirpe</span></div>
         <div class="match-hub-countdown"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Tra 6 giorni</strong></div>
       </section>
-      <section class="match-hub-last" aria-label="Ultimo risultato della Juventus">
-        <div class="match-hub-kicker">Ultimo risultato</div>
-        <div class="match-hub-date" id="matchHubLastDate">17 agosto 2026 · Finale</div>
-        <div class="match-hub-scoreline">
-          <span class="match-hub-score-team" id="matchHubLastHome">Juventus</span>
-          <strong class="match-hub-score" id="matchHubScore">2-0</strong>
-          <span class="match-hub-score-team" id="matchHubLastAway">Next Gen</span>
+      <aside class="match-hub-intel" aria-label="Informazioni verificate sulla partita">
+        <div class="match-hub-kicker">Informazioni verificate</div>
+        <div class="match-hub-facts">
+          <div><span>Competizione</span><strong id="matchHubFactCompetition">Serie A</strong></div>
+          <div><span>Stadio</span><strong id="matchHubFactVenue">Benito Stirpe</strong></div>
+          <div><span>Fonte</span><strong id="matchHubFactSource">football-data.org</strong></div>
+          <div><span>Formazioni</span><strong id="matchHubLineupState">Non ancora ufficiali</strong></div>
         </div>
-        <div class="match-hub-scorers" id="matchHubScorers">Juve: Conceicao, McKennie</div>
-      </section>
+      </aside>
     </div>
+    <section class="match-hub-events" id="matchHubEventsPanel" hidden>
+      <div class="match-hub-kicker">Cronaca essenziale</div>
+      <div class="match-hub-event-list" id="matchHubEvents"></div>
+    </section>
+    <section class="match-receipt" id="matchReceipt" hidden aria-label="Referto finale ICV">
+      <div class="match-receipt-head">
+        <div><span>ICV Match Receipt</span><strong>Il referto della partita</strong></div>
+        <div class="match-receipt-actions">
+          <button type="button" onclick="replayMatchReceipt()" title="Ripeti animazione">&#8635; Ripeti</button>
+          <button type="button" onclick="downloadMatchReceipt()" title="Scarica referto">&#8595; Scarica</button>
+          <button type="button" onclick="shareMatchReceipt()" title="Condividi referto">&#8599; Condividi</button>
+        </div>
+      </div>
+      <div class="receipt-printer" id="receiptPrinter">
+        <div class="receipt-printer-screen"><span class="receipt-status-dot"></span><strong id="receiptPrinterStatus">Referto verificato</strong><span id="receiptPrinterSource">football-data.org</span></div>
+        <div class="receipt-printer-slot"></div>
+        <article class="receipt-paper" id="receiptPaper">
+          <div class="receipt-logo">ICV</div>
+          <div class="receipt-rule"></div>
+          <span class="receipt-kicker" id="receiptCompetition">SERIE A · 1ª GIORNATA</span>
+          <time id="receiptDate">23 AGO 2026 · FINALE</time>
+          <div class="receipt-scoreline"><strong id="receiptHome">Frosinone</strong><b id="receiptScore">0-0</b><strong id="receiptAway">Juventus</strong></div>
+          <div class="receipt-rule"></div>
+          <div class="receipt-section"><span>MARCATORI</span><p id="receiptScorers">Dati al termine della gara</p></div>
+          <div class="receipt-section" id="receiptLineupsSection"><span>MODULI</span><p id="receiptLineups">Disponibili dopo la pubblicazione ufficiale</p></div>
+          <div class="receipt-section" id="receiptMvpSection" hidden><span>MVP ICV</span><p id="receiptMvp"></p></div>
+          <div class="receipt-rule"></div>
+          <div class="receipt-footer"><span id="receiptMatchId">MATCH #558635</span><span id="receiptVerifiedAt">VERIFICATO</span></div>
+        </article>
+      </div>
+    </section>
     <footer class="match-hub-form">
       <span class="match-hub-form-label">Forma recente</span>
       <div class="match-hub-form-list" id="matchHubForm" aria-label="Forma recente della Juventus"></div>
       <span class="match-hub-record" id="matchHubRecord">4 vittorie · 0 pareggi · 1 sconfitta</span>
     </footer>
   </article>
-  <div class="home-panel">
-    <h3>Prime 5 di A</h3>
-    <div class="fixture-list">
-      <div class="fixture-row"><div class="fixture-round">1ª</div><div class="fixture-main"><strong>Frosinone-Juventus</strong><span>Dom 23/08 &middot; 18.30 &middot; DAZN</span></div></div>
-      <div class="fixture-row"><div class="fixture-round">2ª</div><div class="fixture-main"><strong>Juventus-Parma</strong><span>Sab 29/08 &middot; 20.45 &middot; DAZN</span></div></div>
-      <div class="fixture-row"><div class="fixture-round">3ª</div><div class="fixture-main"><strong>Juventus-Milan</strong><span>Dom 06/09 &middot; 20.45 &middot; DAZN</span></div></div>
-      <div class="fixture-row"><div class="fixture-round">4ª</div><div class="fixture-main"><strong>Sassuolo-Juventus</strong><span>12/09 18.00 o 13/09 20.45 &middot; DAZN</span></div></div>
-      <div class="fixture-row"><div class="fixture-round">5ª</div><div class="fixture-main"><strong>Juventus-Atalanta</strong><span>Dom 20/09 &middot; 18.00 &middot; DAZN/SKY</span></div></div>
-    </div>
-    <div class="fixture-note">4ª giornata condizionata dal calendario UEFA Europa League.</div>
-  </div>
   <div class="home-panel live-desk-panel" id="homeLiveDeskPanel">
     <div class="live-desk-head">
       <h3><span class="live-desk-pulse"></span>ICV Live Desk</h3>
@@ -1421,31 +1447,89 @@ function matchHubPayload(row) {
 function normalizeMatchHubRows(rows) {
   return (Array.isArray(rows) ? rows : []).map(function(row) {
     var payload = matchHubPayload(row);
+    var manual = payload.icv_manual && payload.icv_manual.active !== false ? payload.icv_manual : {};
     var homeTeam = payload.homeTeam || {};
     var awayTeam = payload.awayTeam || {};
     var score = payload.score && (payload.score.fullTime || payload.score.regularTime) || {};
-    var status = String(payload.status || row.status || "scheduled").toLowerCase();
+    var status = String(manual.status || row.status || payload.status || "scheduled").toLowerCase();
     var home = String(homeTeam.name || "").trim();
     var away = String(awayTeam.name || "").trim();
     if (!home || !away) return null;
+    var goals = (Array.isArray(payload.goals) ? payload.goals : []).map(function(goal) {
+      var scorer = goal && goal.scorer || {};
+      var team = goal && goal.team || {};
+      return {
+        kind: "goal",
+        minute: Number.isFinite(Number(goal && goal.minute)) ? Number(goal.minute) : null,
+        injuryTime: Number.isFinite(Number(goal && goal.injuryTime)) ? Number(goal.injuryTime) : null,
+        player: String(scorer.name || "").trim(),
+        team: String(team.name || "").trim(),
+        type: String(goal && goal.type || "REGULAR")
+      };
+    }).filter(function(goal) { return goal.player; });
+    var bookings = (Array.isArray(payload.bookings) ? payload.bookings : []).map(function(booking) {
+      return {
+        kind: "booking",
+        minute: Number.isFinite(Number(booking && booking.minute)) ? Number(booking.minute) : null,
+        player: String(booking && booking.player && booking.player.name || "").trim(),
+        card: String(booking && booking.card || "YELLOW_CARD")
+      };
+    }).filter(function(booking) { return booking.player; });
+    var normalizedStatus = /finished|awarded|final/.test(status) ? "finished"
+      : /paused|halftime|half_time/.test(status) ? "halftime"
+      : /in_play|extra_time|penalty_shootout|live/.test(status) ? "live"
+      : /postponed|cancelled|suspended/.test(status) ? status
+      : "scheduled";
+    var summaryParts = String(row.summary || "").split("·").map(function(part) { return part.trim(); }).filter(Boolean);
+    var summaryScorers = summaryParts.length > 2 ? summaryParts.slice(2).join(" · ") : "";
+    var goalLabels = goals.map(matchHubEventLabel).join(" · ");
     return {
+      matchId: String(row.match_id || payload.id || ""),
       date: row.match_date || payload.utcDate,
-      status: /finished|awarded|final/.test(status) ? "finished" : (/in_play|paused|live/.test(status) ? "live" : "scheduled"),
+      status: normalizedStatus,
       competition: row.competition || payload.competition && payload.competition.name || "Match Center",
       home: home,
       away: away,
-      homeScore: score.home != null && Number.isFinite(Number(score.home)) ? Number(score.home) : null,
-      awayScore: score.away != null && Number.isFinite(Number(score.away)) ? Number(score.away) : null,
+      homeScore: manual.home_score != null && Number.isFinite(Number(manual.home_score)) ? Number(manual.home_score) : score.home != null && Number.isFinite(Number(score.home)) ? Number(score.home) : null,
+      awayScore: manual.away_score != null && Number.isFinite(Number(manual.away_score)) ? Number(manual.away_score) : score.away != null && Number.isFinite(Number(score.away)) ? Number(score.away) : null,
       venue: payload.venue || "",
-      scorers: String(row.summary || "").replace(/^Finale\s*[·:-]?\s*/i, "").trim(),
-      updatedAt: row.updated_at || null
+      matchday: payload.matchday || null,
+      minute: manual.minute != null ? Number(manual.minute) : Number.isFinite(Number(payload.minute)) ? Number(payload.minute) : null,
+      scorers: String(manual.scorers || goalLabels || summaryScorers).trim(),
+      goals: goals,
+      bookings: bookings,
+      homeFormation: String(homeTeam.formation || "").trim(),
+      awayFormation: String(awayTeam.formation || "").trim(),
+      homeLineup: Array.isArray(homeTeam.lineup) ? homeTeam.lineup : [],
+      awayLineup: Array.isArray(awayTeam.lineup) ? awayTeam.lineup : [],
+      mvp: String(manual.mvp || row.tactical_key || "").trim(),
+      note: String(manual.note || "").trim(),
+      source: manual.updated_at ? "ICV + football-data.org" : String(payload.icv_meta && payload.icv_meta.provider || "football-data.org"),
+      sourceUrl: String(payload.icv_meta && payload.icv_meta.source_url || ""),
+      updatedAt: manual.updated_at || payload.icv_meta && payload.icv_meta.fetched_at || row.updated_at || null,
+      manual: !!manual.updated_at
     };
   }).filter(Boolean);
 }
 
+function matchHubEventLabel(event) {
+  if (!event) return "";
+  var minute = event.minute == null ? "" : event.minute + (event.injuryTime ? "+" + event.injuryTime : "") + "' ";
+  return minute + (event.player || "Evento");
+}
+
 function matchHubKey(match) {
   var day = String(match.date || "").slice(0, 10);
-  return [day, match.home, match.away].join("|").toLowerCase().replace(/\s+/g, " ");
+  return [day, matchHubTeamKey(match.home), matchHubTeamKey(match.away)].join("|");
+}
+
+function matchHubTeamKey(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\b(fc|calcio|football club)\b/g, "")
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function allMatchHubRows(apiRows) {
@@ -1497,12 +1581,13 @@ function matchHubDate(match, includeStatus) {
 function matchHubCountdown(match, live) {
   if (live) return "In diretta";
   if (!match) return "Da definire";
-  var now = new Date();
-  var kickoff = new Date(match.date);
-  var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  var matchDay = new Date(kickoff.getFullYear(), kickoff.getMonth(), kickoff.getDate());
-  var days = Math.round((matchDay - today) / 86400000);
-  if (days <= 0) return "Oggi";
+  var diff = new Date(match.date).getTime() - Date.now();
+  if (diff <= 0) return match.status === "finished" ? "Finale" : "In aggiornamento";
+  var minutes = Math.ceil(diff / 60000);
+  if (minutes < 60) return "Tra " + minutes + " min";
+  var hours = Math.floor(minutes / 60);
+  if (hours < 24) return "Tra " + hours + " h " + (minutes % 60) + " min";
+  var days = Math.ceil(hours / 24);
   if (days === 1) return "Domani";
   return "Tra " + days + " giorni";
 }
@@ -1515,6 +1600,53 @@ function setMatchHubText(id, value) {
 function matchHubRecordLabel(count, singular, plural) {
   return count + " " + (count === 1 ? singular : plural);
 }
+
+function matchHubPhase(upcoming, latest, live) {
+  if (live) return "live";
+  if (latest && latest.status === "finished" && Date.now() - new Date(latest.date).getTime() < 18 * 3600000) return "final";
+  if (!upcoming) return latest ? "post" : "buildup";
+  return new Date(upcoming.date).getTime() - Date.now() <= 24 * 3600000 ? "matchday" : "buildup";
+}
+
+function matchHubPhaseContent(phase, match) {
+  if (phase === "live") return { state:"Live", eyebrow:"Diretta verificata", title:"La Juventus è in campo", copy:"Punteggio ed eventi si aggiornano automaticamente. Se un dettaglio non è confermato, non viene mostrato." };
+  if (phase === "final") return { state:"Finale", eyebrow:"Referto disponibile", title:"La partita, in un colpo d'occhio", copy:"Il risultato finale e gli eventi verificati sono raccolti nel Match Receipt scaricabile." };
+  if (phase === "matchday") return { state:"Matchday", eyebrow:"Oggi si gioca", title:"Tutto pronto per " + (match ? match.home + "-" + match.away : "la Juventus"), copy:"Orario e stadio sono verificati. Le formazioni compariranno solo dopo la pubblicazione ufficiale." };
+  if (phase === "post") return { state:"Post partita", eyebrow:"Ultimo finale", title:"Analisi in preparazione", copy:"Il risultato è acquisito; il prossimo incontro verrà caricato dal calendario ufficiale." };
+  return {
+    state:"Avvicinamento",
+    eyebrow:(match && match.matchday ? "Serie A · " + match.matchday + "ª giornata" : "Prossima sfida"),
+    title:match && Number(match.matchday) === 1 ? "Domenica si comincia" : "Verso " + (match ? match.home + "-" + match.away : "la prossima sfida"),
+    copy:"Orario e sede verificati. Il Match Center passerà automaticamente alla modalità live."
+  };
+}
+
+function matchHubFreshness(match) {
+  var updated = new Date(match && match.updatedAt || 0);
+  if (isNaN(updated.getTime())) return "Fonte in sincronizzazione";
+  var mins = Math.max(0, Math.floor((Date.now() - updated.getTime()) / 60000));
+  if (mins < 2) return "Verificato ora";
+  if (mins < 60) return "Verificato " + mins + " min fa";
+  return "Verificato alle " + updated.toLocaleTimeString("it-IT", {hour:"2-digit", minute:"2-digit"});
+}
+
+function renderMatchHubEvents(match) {
+  var panel = document.getElementById("matchHubEventsPanel");
+  var box = document.getElementById("matchHubEvents");
+  if (!panel || !box) return;
+  var events = [].concat(match && match.goals || [], match && match.bookings || []).sort(function(a, b) {
+    return Number(a.minute || 999) - Number(b.minute || 999);
+  });
+  panel.hidden = !events.length;
+  box.innerHTML = events.map(function(event) {
+    var icon = event.kind === "goal" ? "GOL" : "CARD";
+    return "<span class=\"match-hub-event\" data-kind=\"" + icvEsc(event.kind) + "\"><b>" + icon + "</b>" + icvEsc(matchHubEventLabel(event)) + "</span>";
+  }).join("");
+}
+
+var matchHubRenderSignature = "";
+var matchReceiptSignature = "";
+var currentReceiptMatch = null;
 
 function renderMatchHub(apiRows) {
   var hub = document.getElementById("homeMatchHub");
@@ -1532,20 +1664,38 @@ function renderMatchHub(apiRows) {
     return match.status === "finished" && new Date(match.date).getTime() <= now;
   });
   var latest = finished[finished.length - 1] || null;
-  var state = live ? "live" : (upcoming ? "scheduled" : "finished");
-  hub.dataset.state = state;
-  setMatchHubText("matchHubState", live ? "In diretta" : (upcoming ? "Prossima sfida" : "Ultimo finale"));
-  setMatchHubText("matchHubUpdated", "Automatico · Match Center");
+  var phase = matchHubPhase(upcoming, latest, live);
+  var display = phase === "final" || phase === "post" ? latest : upcoming;
+  var phaseCopy = matchHubPhaseContent(phase, display);
+  hub.dataset.state = phase;
+  setMatchHubText("matchHubState", phaseCopy.state);
+  setMatchHubText("matchHubPhaseEyebrow", phaseCopy.eyebrow);
+  setMatchHubText("matchHubPhaseTitle", phaseCopy.title);
+  setMatchHubText("matchHubPhaseCopy", phaseCopy.copy);
+  setMatchHubText("matchHubUpdated", matchHubFreshness(display));
+  var freshnessTime = new Date(display && display.updatedAt || 0).getTime();
+  hub.classList.toggle("is-stale", phase === "live" && (!freshnessTime || Date.now() - freshnessTime > 5 * 60000));
 
-  if (upcoming) {
-    setMatchHubText("matchHubNextDate", matchHubDate(upcoming, false));
-    setMatchHubText("matchHubNextHome", upcoming.home);
-    setMatchHubText("matchHubNextAway", upcoming.away);
-    setMatchHubText("matchHubVersus", live && upcoming.homeScore != null && upcoming.awayScore != null ? upcoming.homeScore + "-" + upcoming.awayScore : (live ? "LIVE" : "VS"));
-    setMatchHubText("matchHubCompetition", upcoming.competition || "Match Center");
-    setMatchHubText("matchHubVenue", upcoming.venue || "Sede da confermare");
-    setMatchHubText("matchHubCountdown", matchHubCountdown(upcoming, !!live));
+  if (display) {
+    var showScore = ["live", "final", "post"].includes(phase) && display.homeScore != null && display.awayScore != null;
+    setMatchHubText("matchHubPrimaryKicker", phase === "live" ? "In diretta" : (phase === "final" || phase === "post" ? "Ultimo risultato" : "Prossimo incontro"));
+    setMatchHubText("matchHubNextDate", matchHubDate(display, phase === "final" || phase === "post"));
+    setMatchHubText("matchHubNextHome", display.home);
+    setMatchHubText("matchHubNextAway", display.away);
+    setMatchHubText("matchHubVersus", showScore ? display.homeScore + "-" + display.awayScore : (live ? "LIVE" : "VS"));
+    setMatchHubText("matchHubCompetition", display.competition || "Match Center");
+    setMatchHubText("matchHubVenue", display.venue || "Sede da confermare");
+    setMatchHubText("matchHubCountdown", phase === "final" || phase === "post" ? "Finale" : matchHubCountdown(display, !!live));
+    setMatchHubText("matchHubFactCompetition", display.competition || "Match Center");
+    setMatchHubText("matchHubFactVenue", display.venue || "Da confermare");
+    setMatchHubText("matchHubFactSource", display.source || "football-data.org");
+    var homeLineup = Array.isArray(display.homeLineup) ? display.homeLineup : [];
+    var awayLineup = Array.isArray(display.awayLineup) ? display.awayLineup : [];
+    var lineupReady = homeLineup.length >= 11 && awayLineup.length >= 11;
+    var formation = [display.homeFormation, display.awayFormation].filter(Boolean).join(" · ");
+    setMatchHubText("matchHubLineupState", lineupReady ? (formation || "Ufficiali") : "Non ancora ufficiali");
   } else {
+    setMatchHubText("matchHubPrimaryKicker", "Prossimo incontro");
     setMatchHubText("matchHubNextDate", "Calendario in aggiornamento");
     setMatchHubText("matchHubNextHome", "Juventus");
     setMatchHubText("matchHubNextAway", "Da definire");
@@ -1553,15 +1703,14 @@ function renderMatchHub(apiRows) {
     setMatchHubText("matchHubCompetition", "Prossimo incontro");
     setMatchHubText("matchHubVenue", "Dati in arrivo");
     setMatchHubText("matchHubCountdown", "Da definire");
+    setMatchHubText("matchHubFactCompetition", "In aggiornamento");
+    setMatchHubText("matchHubFactVenue", "In aggiornamento");
+    setMatchHubText("matchHubFactSource", "Match Center");
+    setMatchHubText("matchHubLineupState", "Non disponibili");
   }
-
-  if (latest) {
-    setMatchHubText("matchHubLastDate", matchHubDate(latest, true));
-    setMatchHubText("matchHubLastHome", latest.home);
-    setMatchHubText("matchHubLastAway", latest.away);
-    setMatchHubText("matchHubScore", latest.homeScore + "-" + latest.awayScore);
-    setMatchHubText("matchHubScorers", latest.scorers || "Marcatori non disponibili");
-  }
+  renderMatchHubEvents(display && ["live", "final", "post"].includes(phase) ? display : null);
+  var receiptMatch = latest && Date.now() - new Date(latest.date).getTime() < 72 * 3600000 ? latest : null;
+  renderMatchReceipt(receiptMatch);
 
   var recent = finished.slice(-5);
   var counts = {win:0, draw:0, loss:0};
@@ -1578,7 +1727,95 @@ function renderMatchHub(apiRows) {
     matchHubRecordLabel(counts.draw, "pareggio", "pareggi"),
     matchHubRecordLabel(counts.loss, "sconfitta", "sconfitte")
   ].join(" · "));
-  animateMatchHub();
+  var signature = [phase, display && display.matchId, display && display.status, display && display.homeScore, display && display.awayScore, display && display.minute].join("|");
+  if (signature !== matchHubRenderSignature) {
+    matchHubRenderSignature = signature;
+    animateMatchHub();
+  }
+}
+
+function renderMatchReceipt(match) {
+  var receipt = document.getElementById("matchReceipt");
+  if (!receipt) return;
+  receipt.hidden = !match;
+  currentReceiptMatch = match || null;
+  if (!match) {
+    matchReceiptSignature = "";
+    return;
+  }
+  setMatchHubText("receiptCompetition", (match.competition || "Match Center") + (match.matchday ? " · " + match.matchday + "ª GIORNATA" : ""));
+  setMatchHubText("receiptDate", new Date(match.date).toLocaleDateString("it-IT", {day:"2-digit", month:"short", year:"numeric"}).toUpperCase() + " · FINALE");
+  setMatchHubText("receiptHome", match.home);
+  setMatchHubText("receiptAway", match.away);
+  setMatchHubText("receiptScore", match.homeScore + "-" + match.awayScore);
+  setMatchHubText("receiptScorers", match.scorers || "Marcatori non disponibili dalla fonte");
+  setMatchHubText("receiptLineups", [match.homeFormation, match.awayFormation].filter(Boolean).join(" · ") || "Formazioni non pubblicate dalla fonte");
+  setMatchHubText("receiptMvp", match.mvp);
+  document.getElementById("receiptMvpSection").hidden = !match.mvp;
+  setMatchHubText("receiptMatchId", "MATCH #" + (match.matchId || "ICV"));
+  setMatchHubText("receiptVerifiedAt", matchHubFreshness(match).toUpperCase());
+  setMatchHubText("receiptPrinterSource", match.source || "football-data.org");
+  var signature = [match.matchId, match.homeScore, match.awayScore, match.scorers, match.updatedAt].join("|");
+  if (signature !== matchReceiptSignature) {
+    matchReceiptSignature = signature;
+    replayMatchReceipt();
+  }
+}
+
+function replayMatchReceipt() {
+  var paper = document.getElementById("receiptPaper");
+  var status = document.getElementById("receiptPrinterStatus");
+  if (!paper || !status || document.getElementById("matchReceipt").hidden) return;
+  paper.classList.remove("is-printing");
+  void paper.offsetWidth;
+  if (icvReducedMotion()) { status.textContent = "Referto verificato"; return; }
+  status.textContent = "Elaborazione dati";
+  window.setTimeout(function() { status.textContent = "Stampa referto"; paper.classList.add("is-printing"); }, 180);
+  window.setTimeout(function() { status.textContent = "Referto verificato"; }, 1900);
+}
+
+function receiptCanvas(match) {
+  var canvas = document.createElement("canvas"),ctx=canvas.getContext("2d");
+  canvas.width=1080;canvas.height=1350;
+  ctx.fillStyle="#f4f1e9";ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="#171717";ctx.textAlign="center";ctx.font="700 72px Arial";ctx.fillText("ICV MATCH RECEIPT",540,120);
+  ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,165);ctx.lineTo(980,165);ctx.stroke();ctx.setLineDash([]);
+  ctx.font="700 27px Arial";ctx.fillText((match.competition||"MATCH CENTER").toUpperCase(),540,225);
+  ctx.font="24px Arial";ctx.fillStyle="#555";ctx.fillText(new Date(match.date).toLocaleString("it-IT",{day:"2-digit",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}).toUpperCase(),540,270);
+  ctx.fillStyle="#171717";ctx.font="700 48px Arial";ctx.fillText(match.home.toUpperCase(),270,430);ctx.fillText(match.away.toUpperCase(),810,430);
+  ctx.font="700 130px Arial";ctx.fillText(match.homeScore+"-"+match.awayScore,540,455);
+  ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,535);ctx.lineTo(980,535);ctx.stroke();ctx.setLineDash([]);
+  ctx.textAlign="left";ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("MARCATORI",110,610);
+  ctx.fillStyle="#171717";ctx.font="700 31px Arial";drawReceiptLines(ctx,match.scorers||"Non disponibili",110,660,850,43);
+  ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("MODULI",110,820);
+  ctx.fillStyle="#171717";ctx.font="700 31px Arial";drawReceiptLines(ctx,[match.homeFormation,match.awayFormation].filter(Boolean).join(" · ")||"Non pubblicati",110,870,850,43);
+  if(match.mvp){ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("MVP ICV",110,1010);ctx.fillStyle="#171717";ctx.font="700 34px Arial";ctx.fillText(match.mvp,110,1060)}
+  ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,1170);ctx.lineTo(980,1170);ctx.stroke();ctx.setLineDash([]);
+  ctx.font="700 20px Arial";ctx.fillStyle="#666";ctx.fillText("MATCH #"+(match.matchId||"ICV"),110,1230);ctx.textAlign="right";ctx.fillText("ILCALCIODIVINCE.COM",970,1230);
+  return canvas;
+}
+
+function drawReceiptLines(ctx,text,x,y,maxWidth,lineHeight){
+  var words=String(text||"").split(/\s+/),line="",row=0;
+  words.forEach(function(word){var test=line?line+" "+word:word;if(ctx.measureText(test).width>maxWidth&&line){ctx.fillText(line,x,y+row*lineHeight);line=word;row+=1}else line=test});
+  if(line)ctx.fillText(line,x,y+row*lineHeight);
+}
+
+function receiptBlob(match){return new Promise(function(resolve){receiptCanvas(match).toBlob(resolve,"image/png",.96)})}
+function downloadMatchReceipt(){
+  if(!currentReceiptMatch)return;
+  receiptBlob(currentReceiptMatch).then(function(blob){if(!blob)return;var url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="icv-referto-"+String(currentReceiptMatch.matchId||"partita")+".png";a.click();window.setTimeout(function(){URL.revokeObjectURL(url)},1000)});
+}
+function shareMatchReceipt(){
+  if(!currentReceiptMatch)return;
+  var text=currentReceiptMatch.home+" "+currentReceiptMatch.homeScore+"-"+currentReceiptMatch.awayScore+" "+currentReceiptMatch.away+" · ICV Match Receipt";
+  receiptBlob(currentReceiptMatch).then(function(blob){
+    if(!blob)throw new Error("Referto non disponibile");
+    var file=new File([blob],"icv-match-receipt.png",{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[file]}))return navigator.share({title:"ICV Match Receipt",text:text,files:[file]});
+    if(navigator.share)return navigator.share({title:"ICV Match Receipt",text:text,url:location.href});
+    if(navigator.clipboard)return navigator.clipboard.writeText(text+" "+location.href).then(function(){alert("Risultato copiato")});
+  }).catch(function(){});
 }
 
 function liveDeskTime(value) {
@@ -1609,9 +1846,24 @@ function renderLiveDesk(rows) {
   animateLiveDeskRows();
 }
 
+var homeDashboardTimer = null;
+function homeDashboardInterval(matches) {
+  var normalized = normalizeMatchHubRows(matches);
+  if (normalized.some(function(match) { return match.status === "live" || match.status === "halftime"; })) return 45000;
+  var next = normalized.filter(function(match) { return match.status === "scheduled"; }).sort(function(a,b){return new Date(a.date)-new Date(b.date)})[0];
+  if (!next) return 15 * 60000;
+  var distance = new Date(next.date).getTime() - Date.now();
+  if (distance <= 4 * 3600000) return 60000;
+  if (distance <= 24 * 3600000) return 5 * 60000;
+  return 15 * 60000;
+}
+function scheduleHomeDashboard(delay) {
+  window.clearTimeout(homeDashboardTimer);
+  homeDashboardTimer = window.setTimeout(loadHomeDashboard, delay);
+}
 function loadHomeDashboard() {
-  fetch("/api/public/home")
-  .then(function(r){ return r.json(); })
+  fetch("/api/public/home", {cache:"no-store"})
+  .then(function(r){ if(!r.ok)throw new Error("Home API " + r.status);return r.json(); })
   .then(function(data) {
     data = data || {};
     var news = Array.isArray(data.news) ? data.news : [];
@@ -1635,6 +1887,7 @@ function loadHomeDashboard() {
       return {title:s.hook || "Post Instagram", meta:(s.media_type || s.platform || "instagram") + (s.status ? " · " + s.status : ""), url:s.post_url || "https://www.instagram.com/ilcalciodivince_/"};
     }, "Nessun post importato al momento.");
     alignHashedSection();
+    scheduleHomeDashboard(homeDashboardInterval(matches));
   })
   .catch(function() {
     renderLiveDesk([]);
@@ -1643,6 +1896,7 @@ function loadHomeDashboard() {
     renderHomeList("homeMarketList", [], null, "Mercato non disponibile in questo momento.");
     renderHomeLinks("homeInstagramList", [], null, "Instagram non disponibile in questo momento.");
     alignHashedSection();
+    scheduleHomeDashboard(2 * 60000);
   });
 }
 
@@ -1887,8 +2141,8 @@ function animateLiveDeskRows() {
 
 function animateMatchHub() {
   if (icvReducedMotion() || !window.anime || typeof window.anime.animate !== "function") return;
-  var reveal = document.querySelectorAll("#homeMatchHub .match-hub-kicker, #homeMatchHub .match-hub-date, #homeMatchHub .match-hub-team, #homeMatchHub .match-hub-meta, #homeMatchHub .match-hub-countdown, #homeMatchHub .match-hub-score-team, #homeMatchHub .match-hub-scorers");
-  window.anime.animate(reveal, {
+  var reveal = document.querySelectorAll("#homeMatchHub .match-hub-phase > *, #homeMatchHub .match-hub-kicker, #homeMatchHub .match-hub-date, #homeMatchHub .match-hub-team, #homeMatchHub .match-hub-meta, #homeMatchHub .match-hub-countdown, #homeMatchHub .match-hub-facts > div, #homeMatchHub .match-hub-event");
+  if (reveal.length) window.anime.animate(reveal, {
     opacity: { from: 0 },
     y: { from: 10 },
     duration: 520,
@@ -1896,8 +2150,8 @@ function animateMatchHub() {
     ease: "out(4)",
     onComplete: function() { reveal.forEach(clearIcvMotionStyles); }
   });
-  var score = document.getElementById("matchHubScore");
-  window.anime.animate(score, {
+  var score = document.getElementById("matchHubVersus");
+  if (score) window.anime.animate(score, {
     opacity: { from: 0 },
     scale: { from: .72 },
     duration: 620,
@@ -1906,7 +2160,7 @@ function animateMatchHub() {
     onComplete: function() { clearIcvMotionStyles(score); }
   });
   var dots = document.querySelectorAll("#matchHubForm .match-hub-form-dot");
-  window.anime.animate(dots, {
+  if (dots.length) window.anime.animate(dots, {
     opacity: { from: 0 },
     scale: { from: .45 },
     duration: 440,

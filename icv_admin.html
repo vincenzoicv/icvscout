@@ -178,7 +178,25 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         </div>
 
         <div class="card admin-panel" data-panel="advanced">
-          <h2>Match Center</h2>
+          <div class="item-head"><div><h2>Match Center</h2><div class="meta">Dati ufficiali con correzione manuale di emergenza</div></div><button class="ghost small" onclick="runAutomation('match_center')">Aggiorna ora</button></div>
+          <div class="form" id="matchOverrideForm" style="margin:14px 0 18px">
+            <input id="matchOverrideId" type="hidden">
+            <div><label>Partita selezionata</label><select id="matchOverrideSelect" onchange="loadMatchOverride(Number(this.value))"></select></div>
+            <div class="row">
+              <div><label>Stato</label><select id="matchOverrideStatus"><option value="pre_match">Pre partita</option><option value="in_play">In diretta</option><option value="halftime">Intervallo</option><option value="finished">Finale</option><option value="postponed">Rinviata</option><option value="suspended">Sospesa</option><option value="cancelled">Annullata</option></select></div>
+              <div><label>Minuto</label><input id="matchOverrideMinute" type="number" min="0" max="130" placeholder="Es. 67"></div>
+            </div>
+            <div class="row">
+              <div><label>Gol casa</label><input id="matchOverrideHomeScore" type="number" min="0" max="30" placeholder="0"></div>
+              <div><label>Gol trasferta</label><input id="matchOverrideAwayScore" type="number" min="0" max="30" placeholder="0"></div>
+            </div>
+            <div><label>Marcatori</label><input id="matchOverrideScorers" placeholder="Es. Yildiz 34' · Kolo Muani 78'"></div>
+            <div class="row">
+              <div><label>MVP ICV</label><input id="matchOverrideMvp" placeholder="Nome giocatore"></div>
+              <div><label>Nota</label><input id="matchOverrideNote" placeholder="Dato o contesto utile"></div>
+            </div>
+            <div class="item-actions"><button class="primary" onclick="saveMatchOverride()">Salva correzione</button><button class="danger" onclick="clearMatchOverride()">Ripristina fonte</button></div>
+          </div>
           <div id="matchList"></div>
         </div>
 
@@ -710,14 +728,70 @@ function renderMarket(){
     return "<div class='item'><h3>"+esc(title)+"</h3><p>"+esc(m.note || "")+"</p><div class='meta'>"+esc(sources)+"</div>"+capologyHtml(title)+"</div>";
   }).join("");
 }
+function adminMatchPayload(match){
+  var payload=match&&match.source_payload||{};
+  if(typeof payload==="string"){try{payload=JSON.parse(payload)}catch(error){payload={}}}
+  return payload||{};
+}
+function adminMatchScore(match){
+  var payload=adminMatchPayload(match),manual=payload.icv_manual||{},score=payload.score&&(payload.score.fullTime||payload.score.regularTime)||{};
+  return {
+    home:manual.home_score!=null?manual.home_score:score.home,
+    away:manual.away_score!=null?manual.away_score:score.away
+  };
+}
+function loadMatchOverride(index){
+  var match=state.matches[index];
+  if(!match)return;
+  var payload=adminMatchPayload(match),manual=payload.icv_manual||{},score=adminMatchScore(match);
+  document.getElementById("matchOverrideId").value=match.match_id||"";
+  document.getElementById("matchOverrideSelect").value=String(index);
+  document.getElementById("matchOverrideStatus").value=manual.status||match.status||"pre_match";
+  document.getElementById("matchOverrideMinute").value=manual.minute==null?"":manual.minute;
+  document.getElementById("matchOverrideHomeScore").value=score.home==null?"":score.home;
+  document.getElementById("matchOverrideAwayScore").value=score.away==null?"":score.away;
+  document.getElementById("matchOverrideScorers").value=manual.scorers||"";
+  document.getElementById("matchOverrideMvp").value=manual.mvp||"";
+  document.getElementById("matchOverrideNote").value=manual.note||"";
+}
+function saveMatchOverride(){
+  var matchId=document.getElementById("matchOverrideId").value;
+  if(!matchId){showToast("Seleziona una partita");return}
+  showToast("Aggiornamento partita in corso");
+  api("/api/admin/news",{method:"PATCH",body:{
+    type:"match_override",
+    match_id:matchId,
+    status:document.getElementById("matchOverrideStatus").value,
+    minute:document.getElementById("matchOverrideMinute").value,
+    home_score:document.getElementById("matchOverrideHomeScore").value,
+    away_score:document.getElementById("matchOverrideAwayScore").value,
+    scorers:document.getElementById("matchOverrideScorers").value,
+    mvp:document.getElementById("matchOverrideMvp").value,
+    note:document.getElementById("matchOverrideNote").value
+  }}).then(function(){showToast("Partita aggiornata");return load()}).catch(function(error){showToast(error.message)});
+}
+function clearMatchOverride(){
+  var matchId=document.getElementById("matchOverrideId").value;
+  if(!matchId){showToast("Seleziona una partita");return}
+  api("/api/admin/news",{method:"PATCH",body:{type:"match_override",match_id:matchId,clear:true}})
+    .then(function(){showToast("Ripristinati i dati ufficiali");return runAutomation("match_center")})
+    .catch(function(error){showToast(error.message)});
+}
 function renderMatches(){
   var list = document.getElementById("matchList");
   if(!list) return;
+  var select=document.getElementById("matchOverrideSelect"),currentId=document.getElementById("matchOverrideId").value;
+  if(select){
+    select.innerHTML=state.matches.map(function(match,index){return "<option value='"+index+"'>"+esc(match.title||match.opponent||("Partita "+(index+1)))+" · "+esc(date(match.match_date))+"</option>"}).join("");
+  }
   var official = "<div class='item'><span class='pill official'>Fonte ufficiale</span><h3>"+esc(OFFICIAL_SERIE_A_CALENDAR.title)+"</h3><p>"+esc(OFFICIAL_SERIE_A_CALENDAR.summary)+"</p><div class='meta'><a href='"+escAttr(OFFICIAL_SERIE_A_CALENDAR.juventusUrl)+"' target='_blank' style='color:var(--gold-l)'>Juventus.com</a> · <a href='"+escAttr(OFFICIAL_SERIE_A_CALENDAR.legaUrl)+"' target='_blank' style='color:var(--gold-l)'>Lega Serie A</a></div></div>";
-  if(!state.matches.length){ list.innerHTML = official + "<div class='empty'>Prossima partita non ancora attiva nel Match Center.</div>"; return; }
-  list.innerHTML = official + state.matches.slice(0,6).map(function(m){
-    return "<div class='item'><span class='pill trusted'>"+esc(m.status || "pre_match")+"</span><h3>"+esc(m.title || m.opponent || "Match")+"</h3><p>"+esc(m.summary || "")+"</p><div class='meta'>"+esc(m.competition || "")+(m.match_date ? " · "+date(m.match_date) : "")+"</div></div>";
+  if(!state.matches.length){ if(select)select.innerHTML="";list.innerHTML = official + "<div class='empty'>Prossima partita non ancora attiva nel Match Center.</div>"; return; }
+  list.innerHTML = official + state.matches.slice(0,6).map(function(m,index){
+    var payload=adminMatchPayload(m),manual=payload.icv_manual&&payload.icv_manual.active!==false;
+    return "<div class='item'><div class='item-head'><div><span class='pill "+(manual?"rumor":"trusted")+"'>"+esc(manual?"correzione manuale":(m.status||"pre_match"))+"</span><h3>"+esc(m.title || m.opponent || "Match")+"</h3></div><button class='ghost small' onclick='loadMatchOverride("+index+")'>Modifica</button></div><p>"+esc(m.summary || "")+"</p><div class='meta'>"+esc(m.competition || "")+(m.match_date ? " · "+date(m.match_date) : "")+"</div></div>";
   }).join("");
+  var currentIndex=state.matches.findIndex(function(match){return String(match.match_id||"")===String(currentId||"")});
+  loadMatchOverride(currentIndex>=0?currentIndex:0);
 }
 function renderSocial(){
   var list = document.getElementById("socialList");

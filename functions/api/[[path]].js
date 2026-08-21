@@ -216,9 +216,16 @@ async function runScheduledAutomations({ env, cron = "", scheduledTime = Date.no
   const normalizedJob = cleanText(job || "").toLowerCase();
   const shouldRunYoutube = youtubeScoutEnabled(env) && (normalizedJob === "all" || normalizedJob === "youtube" || cron === "15 6 * * *");
   const shouldRunMarket = normalizedJob === "all" || normalizedJob === "market";
+  const shouldRunMatch = normalizedJob === "match";
   const shouldRunHome = normalizedJob
     ? normalizedJob === "all" || normalizedJob === "home"
     : cron !== "15 6 * * *";
+
+  if (shouldRunMatch) {
+    const matchResult = await generateMatchCenter(env);
+    tasks.push({ type: "match_center", result: matchResult });
+    await logRun(env, "match_center", matchResult);
+  }
 
   if (shouldRunHome) {
     tasks.push({ type: "home_autopilot", result: await runHomeAutopilot(env, { includeMarket: false }) });
@@ -1836,6 +1843,64 @@ async function adminNews(request, env) {
   }
 
   if (request.method === "PATCH") {
+    if (body.type === "match_override") {
+      const matchId = cleanText(body.match_id).slice(0, 80);
+      if (!matchId) return json({ error: "Seleziona una partita" }, 400);
+      const match = await getOne(env, "/match_reports?match_id=eq." + encodeURIComponent(matchId));
+      const sourcePayload = matchSourcePayload(match.source_payload);
+      if (body.clear === true) {
+        delete sourcePayload.icv_manual;
+        const restored = matchReportFromFootballData(sourcePayload, {
+          sourceUrl: sourcePayload.icv_meta && sourcePayload.icv_meta.source_url,
+        });
+        const updated = await sb(env, "/match_reports?id=eq." + encodeURIComponent(match.id), {
+          method: "PATCH",
+          body: restored ? {
+            status: restored.status,
+            title: restored.title,
+            summary: restored.summary,
+            tactical_key: restored.tactical_key,
+            source_payload: sourcePayload,
+            updated_at: restored.updated_at,
+          } : { source_payload: sourcePayload, updated_at: new Date().toISOString() },
+          prefer: "return=representation",
+        });
+        return json({ match: updated[0], manual_override: false });
+      }
+
+      const allowedStatuses = ["pre_match", "in_play", "halftime", "finished", "postponed", "cancelled", "suspended"];
+      const status = cleanText(body.status).toLowerCase();
+      if (!allowedStatuses.includes(status)) return json({ error: "Stato partita non valido" }, 400);
+      const homeScore = matchScoreValue(body.home_score);
+      const awayScore = matchScoreValue(body.away_score);
+      const homeScoreProvided = body.home_score !== "" && body.home_score != null;
+      const awayScoreProvided = body.away_score !== "" && body.away_score != null;
+      if ((homeScoreProvided && homeScore == null) || (awayScoreProvided && awayScore == null)) return json({ error: "Punteggio non valido" }, 400);
+      if ((homeScore == null) !== (awayScore == null)) return json({ error: "Inserisci entrambi i punteggi" }, 400);
+      const minute = body.minute === "" || body.minute == null ? null : Math.min(Math.max(Number(body.minute), 0), 130);
+      if (minute != null && !Number.isFinite(minute)) return json({ error: "Minuto non valido" }, 400);
+      const manual = {
+        active: true,
+        status,
+        home_score: homeScore,
+        away_score: awayScore,
+        minute,
+        scorers: cleanText(body.scorers).slice(0, 500),
+        mvp: cleanText(body.mvp).slice(0, 120),
+        note: cleanText(body.note).slice(0, 300),
+        updated_at: new Date().toISOString(),
+      };
+      sourcePayload.icv_manual = manual;
+      const baseReport = { ...match, source_payload: sourcePayload };
+      const fields = manualMatchReportFields(baseReport, manual);
+      const updated = await sb(env, "/match_reports?id=eq." + encodeURIComponent(match.id), {
+        method: "PATCH",
+        body: { ...fields, source_payload: sourcePayload, updated_at: manual.updated_at },
+        prefer: "return=representation",
+      });
+      await logRun(env, "match_manual_override", { ok: true, match_id: matchId, status, updated_at: manual.updated_at });
+      return json({ match: updated[0], manual_override: true });
+    }
     if (body.type === "delete_community_context_note") {
       await sb(env, "/community_context_notes?id=eq." + encodeURIComponent(body.id), { method: "PATCH", body: { status: "hidden" } });
       return json({ ok: true });
@@ -2302,54 +2367,161 @@ async function generateMatchCenter(env) {
   const key = env.FOOTBALL_DATA_KEY;
   if (!key) return { ok: false, error: "FOOTBALL_DATA_KEY non configurata" };
 
-  const headers = { "X-Auth-Token": key };
-  const [scheduledData, finishedData] = await Promise.all([
-    fetchJson("https://api.football-data.org/v4/teams/109/matches?status=SCHEDULED&limit=3", headers),
-    fetchJson("https://api.football-data.org/v4/teams/109/matches?status=FINISHED&limit=5", headers),
-  ]);
-  const scheduled = (scheduledData.matches || []).map(match => matchReportFromFootballData(match, false));
-  const finished = (finishedData.matches || []).map(match => matchReportFromFootballData(match, true));
-  const reports = [...scheduled, ...finished].filter(Boolean);
+  const now = new Date();
+  const dateFrom = isoDateOffset(now, -3);
+  const dateTo = isoDateOffset(now, 21);
+  const headers = {
+    "X-Auth-Token": key,
+    "X-Unfold-Lineups": "true",
+    "X-Unfold-Bookings": "true",
+    "X-Unfold-Subs": "true",
+    "X-Unfold-Goals": "true",
+  };
+  const sourceUrl = "https://api.football-data.org/v4/teams/109/matches?dateFrom=" + dateFrom + "&dateTo=" + dateTo + "&limit=30";
+  const data = await fetchJson(sourceUrl, headers);
+  const reports = (data.matches || []).map(match => matchReportFromFootballData(match, { sourceUrl })).filter(Boolean);
+  if (!reports.length) {
+    return { ok: false, error: "Il provider non ha restituito partite Juventus nel periodo controllato", date_from: dateFrom, date_to: dateTo };
+  }
   await Promise.all(reports.map(report => upsertMatchReport(env, report)));
+  const live = reports.filter(report => ["live", "in_play", "paused", "halftime"].includes(report.status));
+  const finished = reports.filter(report => report.status === "finished");
+  const scheduled = reports.filter(report => report.status === "pre_match").sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
   return {
     ok: true,
     matches: reports.length,
     next_match: scheduled[0] ? scheduled[0].title : null,
     final_results: finished.length,
+    live_matches: live.length,
+    checked_at: new Date().toISOString(),
+    date_from: dateFrom,
+    date_to: dateTo,
   };
 }
 
-function matchReportFromFootballData(match, finished) {
+function isoDateOffset(value, days) {
+  const date = new Date(value);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function footballDataMatchStatus(value) {
+  const status = cleanText(value).toUpperCase();
+  if (["IN_PLAY", "LIVE", "EXTRA_TIME", "PENALTY_SHOOTOUT"].includes(status)) return "in_play";
+  if (["PAUSED", "HALFTIME", "HALF_TIME"].includes(status)) return "halftime";
+  if (["FINISHED", "AWARDED"].includes(status)) return "finished";
+  if (status === "POSTPONED") return "postponed";
+  if (status === "CANCELLED") return "cancelled";
+  if (status === "SUSPENDED") return "suspended";
+  return "pre_match";
+}
+
+function footballDataGoals(match) {
+  return (Array.isArray(match && match.goals) ? match.goals : []).map(goal => ({
+    minute: Number.isFinite(Number(goal.minute)) ? Number(goal.minute) : null,
+    injuryTime: Number.isFinite(Number(goal.injuryTime)) ? Number(goal.injuryTime) : null,
+    type: cleanText(goal.type || "REGULAR"),
+    team: goal.team ? { id: goal.team.id, name: cleanText(goal.team.name) } : null,
+    scorer: goal.scorer ? { id: goal.scorer.id, name: cleanText(goal.scorer.name) } : null,
+    assist: goal.assist ? { id: goal.assist.id, name: cleanText(goal.assist.name) } : null,
+    score: goal.score || null,
+  })).filter(goal => goal.scorer && goal.scorer.name);
+}
+
+function footballDataScorers(goals) {
+  return (goals || []).map(goal => {
+    const minute = goal.minute == null ? "" : " " + goal.minute + (goal.injuryTime ? "+" + goal.injuryTime : "") + "'";
+    return goal.scorer.name + minute;
+  }).join(" · ");
+}
+
+function matchReportFromFootballData(match, options = {}) {
   if (!match || !match.id || !match.homeTeam || !match.awayTeam) return null;
   const home = cleanText(match.homeTeam.name);
   const away = cleanText(match.awayTeam.name);
   const isHome = Number(match.homeTeam.id) === 109;
   const opponent = isHome ? away : home;
+  const status = footballDataMatchStatus(match.status);
   const score = match.score && (match.score.fullTime || match.score.regularTime) || {};
   const hasScore = score.home != null && score.away != null &&
     Number.isFinite(Number(score.home)) && Number.isFinite(Number(score.away));
   const scoreline = hasScore ? `${Number(score.home)}-${Number(score.away)}` : "";
+  const goals = footballDataGoals(match);
+  const scorers = footballDataScorers(goals);
+  const matchName = isHome ? `Juventus-${opponent}` : `${opponent}-Juventus`;
+  const isFinal = status === "finished";
+  const isLive = ["in_play", "halftime"].includes(status);
+  const fetchedAt = new Date().toISOString();
   return {
     match_id: String(match.id),
     opponent,
     competition: cleanText(match.competition && match.competition.name),
     match_date: match.utcDate,
-    status: finished ? "finished" : "pre_match",
-    title: finished && scoreline ? `${home} ${scoreline} ${away}` : "Verso " + (isHome ? `Juventus-${opponent}` : `${opponent}-Juventus`),
-    summary: finished && scoreline ? `Finale · ${home} ${scoreline} ${away}` : "",
+    status,
+    title: (isFinal || isLive) && scoreline ? `${home} ${scoreline} ${away}` : "Verso " + matchName,
+    summary: isFinal && scoreline
+      ? `Finale · ${home} ${scoreline} ${away}` + (scorers ? ` · ${scorers}` : "")
+      : isLive && scoreline
+        ? `In diretta · ${home} ${scoreline} ${away}` + (scorers ? ` · ${scorers}` : "")
+        : "",
     tactical_key: "",
-    source_payload: match,
-    updated_at: new Date().toISOString(),
+    source_payload: {
+      ...match,
+      goals,
+      icv_meta: {
+        provider: "football-data.org",
+        source_url: options.sourceUrl || "https://api.football-data.org/v4/teams/109/matches",
+        fetched_at: fetchedAt,
+      },
+    },
+    updated_at: fetchedAt,
   };
 }
 
 async function upsertMatchReport(env, report) {
-  const existing = await sb(env, "/match_reports?match_id=eq." + encodeURIComponent(report.match_id) + "&select=id&limit=1");
+  const existing = await sb(env, "/match_reports?match_id=eq." + encodeURIComponent(report.match_id) + "&select=id,source_payload&limit=1");
   if (existing.length) {
-    await sb(env, "/match_reports?id=eq." + existing[0].id, { method: "PATCH", body: report });
+    const previousPayload = matchSourcePayload(existing[0].source_payload);
+    const manual = previousPayload.icv_manual;
+    const nextReport = manual && manual.active !== false
+      ? { ...report, source_payload: { ...report.source_payload, icv_manual: manual }, ...manualMatchReportFields(report, manual) }
+      : report;
+    await sb(env, "/match_reports?id=eq." + existing[0].id, { method: "PATCH", body: nextReport });
     return;
   }
   await sb(env, "/match_reports", { method: "POST", body: [report] });
+}
+
+function matchSourcePayload(value) {
+  if (value && typeof value === "object") return value;
+  if (typeof value === "string") {
+    try { return JSON.parse(value) || {}; } catch { return {}; }
+  }
+  return {};
+}
+
+function matchScoreValue(value) {
+  if (value === "" || value == null) return null;
+  const score = Number(value);
+  return Number.isInteger(score) && score >= 0 && score <= 30 ? score : null;
+}
+
+function manualMatchReportFields(report, manual) {
+  const status = footballDataMatchStatus(manual.status || report.status);
+  const payload = matchSourcePayload(report.source_payload);
+  const home = cleanText(payload.homeTeam && payload.homeTeam.name);
+  const away = cleanText(payload.awayTeam && payload.awayTeam.name);
+  const hasScore = Number.isFinite(Number(manual.home_score)) && Number.isFinite(Number(manual.away_score));
+  const scoreline = hasScore ? `${Number(manual.home_score)}-${Number(manual.away_score)}` : "";
+  const isFinal = status === "finished";
+  const isLive = ["in_play", "halftime"].includes(status);
+  const prefix = isFinal ? "Finale" : isLive ? "In diretta" : "";
+  return {
+    status,
+    title: scoreline && (isFinal || isLive) ? `${home} ${scoreline} ${away}` : report.title,
+    summary: prefix && scoreline ? `${prefix} · ${home} ${scoreline} ${away}` + (cleanText(manual.scorers) ? ` · ${cleanText(manual.scorers)}` : "") : report.summary,
+    tactical_key: cleanText(manual.mvp || manual.note || report.tactical_key),
+  };
 }
 
 async function generateSocialDrafts(env) {
@@ -5800,4 +5972,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { aggregateMarketItems, buildLiveDeskEntries, isMarketRelevantNewsRow, marketDealMetadata, marketTopicName, publicMarketFromNews, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl, instagramFailureDetails, newsItemRejectionReason, planNewsDraftCleanup, canonicalNewsTitle, orderPublicMatches };
+export { aggregateMarketItems, buildLiveDeskEntries, isMarketRelevantNewsRow, marketDealMetadata, marketTopicName, publicMarketFromNews, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl, instagramFailureDetails, newsItemRejectionReason, planNewsDraftCleanup, canonicalNewsTitle, orderPublicMatches, footballDataMatchStatus, matchReportFromFootballData };

@@ -147,13 +147,11 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-tools{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:0;}
 .match-hub-calendar-link{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 10px;border:1px solid rgba(196,150,42,.28);border-radius:5px;background:rgba(196,150,42,.06);color:var(--gold-l);font-family:"Barlow Condensed";font-size:9px;font-weight:900;letter-spacing:1.3px;text-decoration:none;text-transform:uppercase;white-space:nowrap;transition:border-color .2s ease,background .2s ease;}
 .match-hub-calendar-link:hover{border-color:var(--gold);background:rgba(196,150,42,.13);}
-.match-hub-phase{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:14px;row-gap:2px;padding:14px 20px;border-bottom:1px solid var(--bdr2);background:linear-gradient(90deg,rgba(196,150,42,.085),transparent 62%);}
-.match-hub-phase span{grid-row:1/3;font-family:"Bebas Neue";font-size:15px;letter-spacing:1.4px;color:var(--gold-l);text-transform:uppercase;}
+.match-hub-phase{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:14px;padding:14px 20px;border-bottom:1px solid var(--bdr2);background:linear-gradient(90deg,rgba(196,150,42,.085),transparent 62%);}
+.match-hub-phase span{font-family:"Bebas Neue";font-size:15px;letter-spacing:1.4px;color:var(--gold-l);text-transform:uppercase;}
 .match-hub-phase strong{font-family:"Barlow Condensed";font-size:17px;font-weight:900;color:var(--white);letter-spacing:.4px;}
-.match-hub-phase p{font-size:12px;line-height:1.4;color:var(--t2);}
-.match-hub-main{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(290px,.65fr);min-height:210px;}
-.match-hub-next,.match-hub-intel{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:24px;}
-.match-hub-intel{border-left:1px solid var(--bdr2);background:rgba(255,255,255,.014);}
+.match-hub-main{min-height:210px;}
+.match-hub-next{display:flex;min-height:210px;flex-direction:column;justify-content:center;min-width:0;padding:24px;}
 .match-hub-kicker{font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:2px;color:var(--gold-l);text-transform:uppercase;margin-bottom:7px;}
 .match-hub-date{font-family:"Barlow Condensed";font-size:12px;font-weight:700;letter-spacing:1.3px;color:var(--t3);text-transform:uppercase;}
 .match-hub-teams{display:flex;align-items:center;gap:14px;min-width:0;margin:8px 0 7px;}
@@ -163,10 +161,6 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-meta span+span::before{content:"·";margin-right:8px;color:var(--gold);}
 .match-hub-countdown{display:inline-flex;align-items:baseline;gap:6px;margin-top:14px;color:var(--gold-l);font-family:"Barlow Condensed";font-size:12px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;}
 .match-hub-countdown strong{font-family:"Bebas Neue";font-size:25px;line-height:1;letter-spacing:1px;}
-.match-hub-facts{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
-.match-hub-facts div{min-width:0;border-top:1px solid var(--bdr2);padding-top:9px;}
-.match-hub-facts span{display:block;margin-bottom:3px;font-family:"Barlow Condensed";font-size:9px;font-weight:800;letter-spacing:1.3px;color:var(--t3);text-transform:uppercase;}
-.match-hub-facts strong{display:block;font-family:"Barlow Condensed";font-size:14px;font-weight:900;line-height:1.2;color:var(--white);overflow-wrap:anywhere;}
 .match-hub-events{padding:18px 20px;border-top:1px solid var(--bdr2);background:rgba(101,226,148,.025);}
 .match-hub-event-list{display:flex;flex-wrap:wrap;gap:8px;}
 .match-hub-event{display:inline-flex;align-items:center;gap:7px;min-height:31px;padding:0 10px;border:1px solid var(--bdr2);border-radius:5px;background:rgba(255,255,255,.025);font-family:"Barlow Condensed";font-size:12px;font-weight:800;color:var(--t2);}
@@ -399,13 +393,11 @@ body.light .sec-title{background:linear-gradient(135deg,#111 0%,rgba(0,0,0,0.68)
 body.light .manifesto{color:rgba(196,150,42,0.75);}
 body.light .home-panel{background:var(--surface);border-color:rgba(196,150,42,.18);}
 body.light .home-match-hub{background:linear-gradient(145deg,#f0ece3,#e2ddd2);box-shadow:0 18px 42px rgba(70,55,25,.12),inset 0 1px 0 rgba(255,255,255,.76);}
-body.light .match-hub-intel{background:rgba(255,255,255,.2);}
 body.light .match-hub-team,body.light .match-hub-score-team{color:#15120c;}
 body.light .match-hub-date,body.light .match-hub-updated,body.light .match-hub-form-label{color:rgba(0,0,0,.45);}
 body.light .match-hub-meta,body.light .match-hub-scorers,body.light .match-hub-record{color:rgba(0,0,0,.6);}
 body.light .match-hub-form-dot{border-color:rgba(0,0,0,.13);background:rgba(255,255,255,.32);}
-body.light .match-hub-phase strong,body.light .match-hub-facts strong{color:#15120c;}
-body.light .match-hub-phase p{color:rgba(0,0,0,.6);}
+body.light .match-hub-phase strong{color:#15120c;}
 body.light .match-receipt{background:radial-gradient(circle at 50% 0,rgba(196,150,42,.1),transparent 42%),#ded9cd;}
 body.light .match-receipt-head>div:first-child strong{color:#15120c;}
 body.light .match-receipt-actions button{background:rgba(255,255,255,.42);border-color:rgba(0,0,0,.1);color:rgba(0,0,0,.62);}
@@ -505,17 +497,15 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .match-hub-updated{max-width:105px;line-height:1.3;}
 .match-hub-calendar-link{min-height:28px;padding:0 8px;}
 .match-hub-phase{grid-template-columns:1fr;padding:13px 15px;}
-.match-hub-phase span{grid-row:auto;margin-bottom:2px;}
-.match-hub-main{grid-template-columns:1fr;min-height:0;}
-.match-hub-next,.match-hub-intel{padding:18px 16px;}
-.match-hub-intel{border-left:0;border-top:1px solid var(--bdr2);}
+.match-hub-phase span{margin-bottom:2px;}
+.match-hub-main{min-height:0;}
+.match-hub-next{min-height:0;padding:18px 16px;}
 .match-hub-team{font-size:29px;}
 .match-hub-teams{gap:10px;}
 .match-hub-score{font-size:38px;}
 .match-hub-form{grid-template-columns:1fr auto;padding:13px 15px;gap:10px;}
 .match-hub-form-label{grid-column:1/-1;}
 .match-hub-record{font-size:9px;}
-.match-hub-facts{gap:12px;}
 .match-receipt{padding:16px 12px;}
 .match-receipt-head{align-items:flex-start;flex-direction:column;}
 .match-receipt-actions{width:100%;display:grid;grid-template-columns:repeat(3,1fr);}
@@ -748,7 +738,6 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
     <div class="match-hub-phase">
       <span id="matchHubPhaseEyebrow">Serie A · 1ª giornata</span>
       <strong id="matchHubPhaseTitle">Domenica si comincia</strong>
-      <p id="matchHubPhaseCopy">Orario e sede verificati. Il Match Center passerà automaticamente alla modalità live.</p>
     </div>
     <div class="match-hub-main">
       <section class="match-hub-next" aria-label="Prossima partita della Juventus">
@@ -759,18 +748,9 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
           <span class="match-hub-vs" id="matchHubVersus">VS</span>
           <strong class="match-hub-team" id="matchHubNextAway">Juventus</strong>
         </div>
-        <div class="match-hub-meta"><span id="matchHubCompetition">Serie A</span><span id="matchHubVenue">Stadio Benito Stirpe</span></div>
+        <div class="match-hub-meta"><span id="matchHubCompetition">Serie A</span><span id="matchHubVenue">Stadio Benito Stirpe · Frosinone</span></div>
         <div class="match-hub-countdown"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Tra 6 giorni</strong></div>
       </section>
-      <aside class="match-hub-intel" aria-label="Informazioni verificate sulla partita">
-        <div class="match-hub-kicker">Informazioni verificate</div>
-        <div class="match-hub-facts">
-          <div><span>Competizione</span><strong id="matchHubFactCompetition">Serie A</strong></div>
-          <div><span>Stadio</span><strong id="matchHubFactVenue">Benito Stirpe</strong></div>
-          <div><span>Fonte</span><strong id="matchHubFactSource">football-data.org</strong></div>
-          <div><span>Formazioni</span><strong id="matchHubLineupState">Non ancora ufficiali</strong></div>
-        </div>
-      </aside>
     </div>
     <section class="match-hub-events" id="matchHubEventsPanel" hidden>
       <div class="match-hub-kicker">Cronaca essenziale</div>
@@ -1609,16 +1589,25 @@ function matchHubPhase(upcoming, latest, live) {
 }
 
 function matchHubPhaseContent(phase, match) {
-  if (phase === "live") return { state:"Live", eyebrow:"Diretta verificata", title:"La Juventus è in campo", copy:"Punteggio ed eventi si aggiornano automaticamente. Se un dettaglio non è confermato, non viene mostrato." };
-  if (phase === "final") return { state:"Finale", eyebrow:"Referto disponibile", title:"La partita, in un colpo d'occhio", copy:"Il risultato finale e gli eventi verificati sono raccolti nel Match Receipt scaricabile." };
-  if (phase === "matchday") return { state:"Matchday", eyebrow:"Oggi si gioca", title:"Tutto pronto per " + (match ? match.home + "-" + match.away : "la Juventus"), copy:"Orario e stadio sono verificati. Le formazioni compariranno solo dopo la pubblicazione ufficiale." };
-  if (phase === "post") return { state:"Post partita", eyebrow:"Ultimo finale", title:"Analisi in preparazione", copy:"Il risultato è acquisito; il prossimo incontro verrà caricato dal calendario ufficiale." };
+  if (phase === "live") return { state:"Live", eyebrow:"Diretta verificata", title:"La Juventus è in campo" };
+  if (phase === "final") return { state:"Finale", eyebrow:"Referto disponibile", title:"La partita, in un colpo d'occhio" };
+  if (phase === "matchday") return { state:"Matchday", eyebrow:"Oggi si gioca", title:"Tutto pronto per " + (match ? match.home + "-" + match.away : "la Juventus") };
+  if (phase === "post") return { state:"Post partita", eyebrow:"Ultimo finale", title:"Analisi in preparazione" };
   return {
     state:"Avvicinamento",
     eyebrow:(match && match.matchday ? "Serie A · " + match.matchday + "ª giornata" : "Prossima sfida"),
-    title:match && Number(match.matchday) === 1 ? "Domenica si comincia" : "Verso " + (match ? match.home + "-" + match.away : "la prossima sfida"),
-    copy:"Orario e sede verificati. Il Match Center passerà automaticamente alla modalità live."
+    title:match && Number(match.matchday) === 1 ? "Domenica si comincia" : "Verso " + (match ? match.home + "-" + match.away : "la prossima sfida")
   };
+}
+
+function matchHubVenue(match) {
+  var venue = String(match && match.venue || "").trim();
+  var home = String(match && match.home || "");
+  if (/frosinone/i.test(home)) {
+    if (!venue) return "Stadio Benito Stirpe · Frosinone";
+    return /frosinone/i.test(venue) ? venue : venue + " · Frosinone";
+  }
+  return venue || "Stadio da confermare";
 }
 
 function matchHubFreshness(match) {
@@ -1671,7 +1660,6 @@ function renderMatchHub(apiRows) {
   setMatchHubText("matchHubState", phaseCopy.state);
   setMatchHubText("matchHubPhaseEyebrow", phaseCopy.eyebrow);
   setMatchHubText("matchHubPhaseTitle", phaseCopy.title);
-  setMatchHubText("matchHubPhaseCopy", phaseCopy.copy);
   setMatchHubText("matchHubUpdated", matchHubFreshness(display));
   var freshnessTime = new Date(display && display.updatedAt || 0).getTime();
   hub.classList.toggle("is-stale", phase === "live" && (!freshnessTime || Date.now() - freshnessTime > 5 * 60000));
@@ -1684,16 +1672,8 @@ function renderMatchHub(apiRows) {
     setMatchHubText("matchHubNextAway", display.away);
     setMatchHubText("matchHubVersus", showScore ? display.homeScore + "-" + display.awayScore : (live ? "LIVE" : "VS"));
     setMatchHubText("matchHubCompetition", display.competition || "Match Center");
-    setMatchHubText("matchHubVenue", display.venue || "Sede da confermare");
+    setMatchHubText("matchHubVenue", matchHubVenue(display));
     setMatchHubText("matchHubCountdown", phase === "final" || phase === "post" ? "Finale" : matchHubCountdown(display, !!live));
-    setMatchHubText("matchHubFactCompetition", display.competition || "Match Center");
-    setMatchHubText("matchHubFactVenue", display.venue || "Da confermare");
-    setMatchHubText("matchHubFactSource", display.source || "football-data.org");
-    var homeLineup = Array.isArray(display.homeLineup) ? display.homeLineup : [];
-    var awayLineup = Array.isArray(display.awayLineup) ? display.awayLineup : [];
-    var lineupReady = homeLineup.length >= 11 && awayLineup.length >= 11;
-    var formation = [display.homeFormation, display.awayFormation].filter(Boolean).join(" · ");
-    setMatchHubText("matchHubLineupState", lineupReady ? (formation || "Ufficiali") : "Non ancora ufficiali");
   } else {
     setMatchHubText("matchHubPrimaryKicker", "Prossimo incontro");
     setMatchHubText("matchHubNextDate", "Calendario in aggiornamento");
@@ -1703,10 +1683,6 @@ function renderMatchHub(apiRows) {
     setMatchHubText("matchHubCompetition", "Prossimo incontro");
     setMatchHubText("matchHubVenue", "Dati in arrivo");
     setMatchHubText("matchHubCountdown", "Da definire");
-    setMatchHubText("matchHubFactCompetition", "In aggiornamento");
-    setMatchHubText("matchHubFactVenue", "In aggiornamento");
-    setMatchHubText("matchHubFactSource", "Match Center");
-    setMatchHubText("matchHubLineupState", "Non disponibili");
   }
   renderMatchHubEvents(display && ["live", "final", "post"].includes(phase) ? display : null);
   var receiptMatch = latest && Date.now() - new Date(latest.date).getTime() < 72 * 3600000 ? latest : null;
@@ -2141,7 +2117,7 @@ function animateLiveDeskRows() {
 
 function animateMatchHub() {
   if (icvReducedMotion() || !window.anime || typeof window.anime.animate !== "function") return;
-  var reveal = document.querySelectorAll("#homeMatchHub .match-hub-phase > *, #homeMatchHub .match-hub-kicker, #homeMatchHub .match-hub-date, #homeMatchHub .match-hub-team, #homeMatchHub .match-hub-meta, #homeMatchHub .match-hub-countdown, #homeMatchHub .match-hub-facts > div, #homeMatchHub .match-hub-event");
+  var reveal = document.querySelectorAll("#homeMatchHub .match-hub-phase > *, #homeMatchHub .match-hub-kicker, #homeMatchHub .match-hub-date, #homeMatchHub .match-hub-team, #homeMatchHub .match-hub-meta, #homeMatchHub .match-hub-countdown, #homeMatchHub .match-hub-event");
   if (reveal.length) window.anime.animate(reveal, {
     opacity: { from: 0 },
     y: { from: 10 },

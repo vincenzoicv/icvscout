@@ -58,7 +58,6 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
     '<div class="match-hub-head">',
     "ICV Match Hub",
     "Prossimo incontro",
-    "Informazioni verificate",
     "ICV Match Receipt",
     "Il referto della partita",
     "downloadMatchReceipt",
@@ -80,8 +79,12 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /id="matchHubNextHome">Frosinone/);
   assert.match(html, /id="matchHubNextAway">Juventus/);
   assert.match(html, /id="matchHubCompetition">Serie A/);
+  assert.match(html, /id="matchHubVenue">Stadio Benito Stirpe · Frosinone/);
+  assert.match(html, /function matchHubVenue/);
+  assert.doesNotMatch(html, /Orario e sede verificati/);
+  assert.doesNotMatch(html, /Informazioni verificate/);
+  assert.doesNotMatch(html, /matchHubFact/);
   assert.match(html, /nextSerieA = matches\.find[\s\S]*?matchHubIsSerieA\(match\)/);
-  assert.match(html, /Array\.isArray\(display\.homeLineup\)[\s\S]*?Array\.isArray\(display\.awayLineup\)/);
   assert.doesNotMatch(html, /Focus ICV|buildEditorialFocus|homeFocusTitle/);
   assert.match(html, /renderLiveDesk\(data\.live_desk\);[\s\S]*?renderMatchHub\(matches\);/);
   assert.match(html, /icvReducedMotion\(\)[\s\S]*?#homeMatchHub/);

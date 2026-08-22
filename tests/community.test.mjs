@@ -74,6 +74,7 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
     'previous.status === "finished" && match.status !== "finished"',
     "function matchHubRecordLabel",
     "function matchHubRomeDayNumber",
+    "function renderMatchHubProbable",
     "function animateMatchHub",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.match(html, /id="matchHubNextDate">23 agosto 2026 · 18:30/);
@@ -82,6 +83,12 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /id="matchHubCompetition">Serie A/);
   assert.match(html, /id="matchHubVenue">Stadio Benito Stirpe · Frosinone/);
   assert.match(html, /id="matchHubCountdown">Domani/);
+  assert.match(html, /<h4>Probabile formazione<\/h4>/);
+  assert.match(html, /match-hub-probable-module">4-2-3-1/);
+  for (const player of ["Kolo Muani", "Conceicao", "McKennie", "Yildiz", "Locatelli", "Douglas Luiz", "Kalulu", "Bremer", "Kelly", "Cambiaso", "Perin"]) {
+    assert.ok(html.includes(player), `manca ${player} nella probabile formazione`);
+  }
+  assert.match(html, /\["buildup", "matchday"\]\.includes\(phase\)/);
   assert.match(html, /calendarDays === 1\) return "Domani"/);
   assert.match(html, /timeZone: "Europe\/Rome"/);
   assert.match(html, /\.match-hub-next\{[^}]*align-items:center[^}]*text-align:center/);

@@ -84,6 +84,9 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /id="matchHubCountdown">Domani/);
   assert.match(html, /calendarDays === 1\) return "Domani"/);
   assert.match(html, /timeZone: "Europe\/Rome"/);
+  assert.match(html, /\.match-hub-next\{[^}]*align-items:center[^}]*text-align:center/);
+  assert.match(html, /\.match-hub-phase\{[^}]*justify-content:center[^}]*text-align:center/);
+  assert.match(html, /\.match-hub-meta\{[^}]*justify-content:center/);
   assert.match(html, /function matchHubVenue/);
   assert.doesNotMatch(html, /Orario e sede verificati/);
   assert.doesNotMatch(html, /Informazioni verificate/);

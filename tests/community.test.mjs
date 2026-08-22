@@ -73,6 +73,7 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
     "var upcoming = live || nextSerieA",
     'previous.status === "finished" && match.status !== "finished"',
     "function matchHubRecordLabel",
+    "function matchHubRomeDayNumber",
     "function animateMatchHub",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.match(html, /id="matchHubNextDate">23 agosto 2026 · 18:30/);
@@ -80,6 +81,9 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /id="matchHubNextAway">Juventus/);
   assert.match(html, /id="matchHubCompetition">Serie A/);
   assert.match(html, /id="matchHubVenue">Stadio Benito Stirpe · Frosinone/);
+  assert.match(html, /id="matchHubCountdown">Domani/);
+  assert.match(html, /calendarDays === 1\) return "Domani"/);
+  assert.match(html, /timeZone: "Europe\/Rome"/);
   assert.match(html, /function matchHubVenue/);
   assert.doesNotMatch(html, /Orario e sede verificati/);
   assert.doesNotMatch(html, /Informazioni verificate/);

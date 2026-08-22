@@ -749,7 +749,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
           <strong class="match-hub-team" id="matchHubNextAway">Juventus</strong>
         </div>
         <div class="match-hub-meta"><span id="matchHubCompetition">Serie A</span><span id="matchHubVenue">Stadio Benito Stirpe · Frosinone</span></div>
-        <div class="match-hub-countdown"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Tra 6 giorni</strong></div>
+        <div class="match-hub-countdown"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Domani</strong></div>
       </section>
     </div>
     <section class="match-hub-events" id="matchHubEventsPanel" hidden>
@@ -1558,18 +1558,35 @@ function matchHubDate(match, includeStatus) {
   return includeStatus ? label + " · Finale" : label;
 }
 
+function matchHubRomeDayNumber(value) {
+  var date = value instanceof Date ? value : new Date(value);
+  if (isNaN(date.getTime())) return NaN;
+  var values = {};
+  new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Rome",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date).forEach(function(part) {
+    if (part.type !== "literal") values[part.type] = Number(part.value);
+  });
+  return Math.floor(Date.UTC(values.year, values.month - 1, values.day) / 86400000);
+}
+
 function matchHubCountdown(match, live) {
   if (live) return "In diretta";
   if (!match) return "Da definire";
-  var diff = new Date(match.date).getTime() - Date.now();
+  var target = new Date(match.date);
+  if (isNaN(target.getTime())) return "Da definire";
+  var diff = target.getTime() - Date.now();
   if (diff <= 0) return match.status === "finished" ? "Finale" : "In aggiornamento";
+  var calendarDays = matchHubRomeDayNumber(target) - matchHubRomeDayNumber(new Date());
+  if (calendarDays === 1) return "Domani";
+  if (calendarDays > 1) return "Tra " + calendarDays + " giorni";
   var minutes = Math.ceil(diff / 60000);
   if (minutes < 60) return "Tra " + minutes + " min";
   var hours = Math.floor(minutes / 60);
-  if (hours < 24) return "Tra " + hours + " h " + (minutes % 60) + " min";
-  var days = Math.ceil(hours / 24);
-  if (days === 1) return "Domani";
-  return "Tra " + days + " giorni";
+  return "Tra " + hours + " h " + (minutes % 60) + " min";
 }
 
 function setMatchHubText(id, value) {

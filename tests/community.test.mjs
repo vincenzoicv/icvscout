@@ -85,9 +85,11 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /id="matchHubCountdown">Domani/);
   assert.match(html, /<h4>Probabile formazione<\/h4>/);
   assert.match(html, /match-hub-probable-module">4-2-3-1/);
-  for (const player of ["Kolo Muani", "Conceicao", "McKennie", "Yildiz", "Locatelli", "Douglas Luiz", "Kalulu", "Bremer", "Kelly", "Cambiaso", "Perin"]) {
+  for (const player of ["Kolo Muani", "Conceicao", "McKennie", "Yildiz", "Locatelli", "Douglas Luiz", "Cambiaso", "Bremer", "Kelly", "Kalulu", "Vicario"]) {
     assert.ok(html.includes(player), `manca ${player} nella probabile formazione`);
   }
+  assert.match(html, /27<\/b>Cambiaso[\s\S]*3<\/b>Bremer[\s\S]*6<\/b>Kelly[\s\S]*15<\/b>Kalulu/);
+  assert.match(html, /match-hub-probable-number">P<\/b>Vicario/);
   assert.match(html, /\["buildup", "matchday"\]\.includes\(phase\)/);
   assert.match(html, /calendarDays === 1\) return "Domani"/);
   assert.match(html, /timeZone: "Europe\/Rome"/);

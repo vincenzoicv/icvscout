@@ -768,6 +768,7 @@ test("l'import Instagram spiega gli errori Meta e registra i fallimenti", async 
   assert.match(rateLimited.message, /temporaneamente limitato/);
 
   assert.match(api, /logRun\(env, "instagram_import", automationFailure/);
+  assert.match(api, /social_drafts\?platform=eq\.instagram&visible=eq\.true&post_url=not\.is\.null&order=published_at\.desc\.nullslast,created_at\.desc&limit=12/);
   assert.match(admin, /Token Instagram scaduto o revocato/);
   assert.match(admin, /contenuti controllati/);
 });

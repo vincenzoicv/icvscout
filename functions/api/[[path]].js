@@ -273,7 +273,7 @@ async function publicHome(env) {
     sb(env, "/market_items?order=updated_at.desc&limit=12"),
     sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=18"),
     sb(env, "/match_reports?order=match_date.asc&limit=80"),
-    sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&order=created_at.desc&limit=12"),
+    sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&post_url=not.is.null&order=published_at.desc.nullslast,created_at.desc&limit=12"),
     latestAutomationRun(env, "home_autopilot"),
     getSiteSetting(env, "radar_home", DEFAULT_RADAR),
   ]);

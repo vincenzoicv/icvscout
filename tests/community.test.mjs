@@ -193,6 +193,20 @@ test("News e Statistiche scorrono alla sezione richiesta", async () => {
   assert.doesNotMatch(html, /function showSec\(id,btn\)\{[\s\S]*?window\.scrollTo\(\{top:0/);
 });
 
+test("le statistiche mostrano esclusivamente la stagione 2026/27", async () => {
+  const html = await read("index.html");
+  const section = html.match(/<section class="section" id="statistiche">([\s\S]*?)<\/section>/)?.[1] || "";
+  assert.match(section, /Stagione 2026\/27/);
+  assert.match(section, /Classifica Serie A 2026\/27/);
+  assert.match(section, /Frosinone Calcio vs Juventus/);
+  assert.match(section, /0 - 1/);
+  assert.doesNotMatch(section, /2025\/26/);
+  assert.match(html, /season=" \+ CURRENT_SEASON/);
+  assert.match(html, /function isCurrentStandings\(table\)/);
+  assert.match(html, /function renderStandingsUnavailable\(\)/);
+  assert.doesNotMatch(html, /renderStandings\(ICV_STANDINGS_FALLBACK/);
+});
+
 test("gli script delle pagine principali hanno sintassi valida", async () => {
   for (const file of ["index.html", "community.html", "icv_admin.html", "mercato.html", "giocatore.html", "calendario-juventus.html"]) {
     const html = await read(file);

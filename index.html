@@ -157,9 +157,11 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-teams{display:flex;align-items:center;justify-content:center;gap:14px;min-width:0;margin:8px 0 7px;}
 .match-hub-team{font-family:"Bebas Neue";font-size:34px;line-height:.95;letter-spacing:1.2px;color:var(--white);overflow-wrap:anywhere;}
 .match-hub-vs{font-family:"Barlow Condensed";font-size:9px;font-weight:900;letter-spacing:2px;color:var(--gold);text-transform:uppercase;flex:0 0 auto;}
+.home-match-hub[data-state="final"] .match-hub-vs,.home-match-hub[data-state="post"] .match-hub-vs{min-width:112px;font-family:"Bebas Neue";font-size:72px;font-weight:400;line-height:.82;letter-spacing:1px;color:var(--gold-l);}
 .match-hub-meta{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-family:"Barlow Condensed";font-size:11px;font-weight:700;letter-spacing:1.1px;color:var(--t2);text-transform:uppercase;}
 .match-hub-meta span+span::before{content:"·";margin-right:8px;color:var(--gold);}
 .match-hub-countdown{display:inline-flex;align-items:baseline;justify-content:center;gap:6px;margin-top:14px;color:var(--gold-l);font-family:"Barlow Condensed";font-size:12px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;}
+.match-hub-countdown[hidden]{display:none;}
 .match-hub-countdown strong{font-family:"Bebas Neue";font-size:25px;line-height:1;letter-spacing:1px;}
 .match-hub-probable{padding:18px 20px 20px;border-top:1px solid var(--bdr2);background:linear-gradient(180deg,rgba(196,150,42,.035),rgba(255,255,255,.012));text-align:center;}
 .match-hub-probable[hidden]{display:none;}
@@ -199,7 +201,7 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-receipt-actions button{min-height:31px;padding:0 10px;border:1px solid var(--bdr2);border-radius:5px;background:rgba(255,255,255,.035);color:var(--t2);font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:1px;text-transform:uppercase;cursor:pointer;}
 .match-receipt-actions button:hover{color:var(--gold-l);border-color:rgba(196,150,42,.38);}
 .receipt-printer{position:relative;width:min(430px,100%);margin:0 auto;padding:12px 12px 0;border:1px solid rgba(255,255,255,.1);border-radius:8px 8px 5px 5px;background:#191919;box-shadow:0 22px 46px rgba(0,0,0,.36),inset 0 1px 0 rgba(255,255,255,.07);overflow:hidden;}
-.receipt-printer-screen{position:relative;z-index:3;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;min-height:42px;padding:0 12px;border:1px solid rgba(255,255,255,.08);border-radius:5px;background:#090909;color:var(--t2);font-family:"Barlow Condensed";font-size:10px;letter-spacing:1px;text-transform:uppercase;}
+.receipt-printer-screen{position:relative;z-index:3;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px;min-height:42px;padding:0 12px;border:1px solid rgba(255,255,255,.08);border-radius:5px;background:#090909;color:var(--t2);font-family:"Barlow Condensed";font-size:10px;letter-spacing:1px;text-transform:uppercase;}
 .receipt-printer-screen strong{color:var(--white);font-size:12px;}
 .receipt-status-dot{width:7px;height:7px;border-radius:50%;background:#65e294;box-shadow:0 0 0 4px rgba(101,226,148,.1);}
 .receipt-printer-slot{position:relative;z-index:3;height:9px;margin:9px 22px 0;border:1px solid #020202;border-radius:2px;background:#030303;box-shadow:inset 0 2px 4px #000;}
@@ -514,6 +516,7 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .match-hub-next{min-height:0;padding:18px 16px;}
 .match-hub-team{font-size:29px;}
 .match-hub-teams{gap:10px;}
+.home-match-hub[data-state="final"] .match-hub-vs,.home-match-hub[data-state="post"] .match-hub-vs{min-width:78px;font-size:50px;}
 .match-hub-score{font-size:38px;}
 .match-hub-probable{padding:16px 14px 18px;}
 .match-hub-probable-pitch{gap:12px;padding:15px 10px;}
@@ -529,7 +532,6 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .match-receipt-actions button{padding:0 6px;}
 .receipt-printer{padding-left:7px;padding-right:7px;}
 .receipt-printer-screen{grid-template-columns:auto minmax(0,1fr);}
-.receipt-printer-screen>span:last-child{display:none;}
 .receipt-paper{width:calc(100% - 30px);padding:23px 18px 29px;}
 .receipt-scoreline{gap:7px;}
 .receipt-scoreline strong{font-size:15px;}
@@ -766,7 +768,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
           <strong class="match-hub-team" id="matchHubNextAway">Juventus</strong>
         </div>
         <div class="match-hub-meta"><span id="matchHubCompetition">Serie A</span><span id="matchHubVenue">Stadio Benito Stirpe · Frosinone</span></div>
-        <div class="match-hub-countdown"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Domani</strong></div>
+        <div class="match-hub-countdown" id="matchHubCountdownWrap"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Domani</strong></div>
       </section>
     </div>
     <section class="match-hub-probable" id="matchHubProbable" aria-label="Probabile formazione Juventus">
@@ -808,7 +810,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
         </div>
       </div>
       <div class="receipt-printer" id="receiptPrinter">
-        <div class="receipt-printer-screen"><span class="receipt-status-dot"></span><strong id="receiptPrinterStatus">Referto verificato</strong><span id="receiptPrinterSource">football-data.org</span></div>
+        <div class="receipt-printer-screen"><span class="receipt-status-dot"></span><strong id="receiptPrinterStatus">Referto verificato</strong></div>
         <div class="receipt-printer-slot"></div>
         <article class="receipt-paper" id="receiptPaper">
           <div class="receipt-logo">ICV</div>
@@ -818,7 +820,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
           <div class="receipt-scoreline"><strong id="receiptHome">Frosinone</strong><b id="receiptScore">0-0</b><strong id="receiptAway">Juventus</strong></div>
           <div class="receipt-rule"></div>
           <div class="receipt-section"><span>MARCATORI</span><p id="receiptScorers">Dati al termine della gara</p></div>
-          <div class="receipt-section" id="receiptLineupsSection"><span>MODULI</span><p id="receiptLineups">Disponibili dopo la pubblicazione ufficiale</p></div>
+          <div class="receipt-section" id="receiptLineupsSection"><span id="receiptLineupsLabel">FORMAZIONI UFFICIALI</span><p id="receiptLineups">In verifica</p></div>
           <div class="receipt-section" id="receiptMvpSection" hidden><span>MVP ICV</span><p id="receiptMvp"></p></div>
           <div class="receipt-rule"></div>
           <div class="receipt-footer"><span id="receiptMatchId">MATCH #558635</span><span id="receiptVerifiedAt">VERIFICATO</span></div>
@@ -1458,6 +1460,14 @@ var ICV_MATCH_FALLBACKS = [
   {date:"2026-08-23T18:30:00+02:00",status:"scheduled",competition:"Serie A",home:"Frosinone",away:"Juventus",venue:"Stadio Benito Stirpe"}
 ];
 
+var ICV_VERIFIED_MATCH_DATA = {
+  "558635": {
+    scorers:"Juventus: Bremer 22'",
+    goals:[{kind:"goal",minute:22,injuryTime:null,player:"Bremer",team:"Juventus FC",type:"REGULAR"}],
+    lineups:"Frosinone: Palmisani; Cittadini, Calvani, Monterisi, Bracaglia; Fini, Calo, Cichella; Schmid, Raimondo, Kvernadze. Juventus: Vicario; Kalulu, Bremer, Kelly, Celik; Locatelli, Douglas Luiz; Conceicao, McKennie, Yildiz; Kolo Muani."
+  }
+};
+
 function matchHubPayload(row) {
   var payload = row && row.source_payload || {};
   if (typeof payload === "string") {
@@ -1469,6 +1479,8 @@ function matchHubPayload(row) {
 function normalizeMatchHubRows(rows) {
   return (Array.isArray(rows) ? rows : []).map(function(row) {
     var payload = matchHubPayload(row);
+    var matchId = String(row.match_id || payload.id || "");
+    var verified = ICV_VERIFIED_MATCH_DATA[matchId] || {};
     var manual = payload.icv_manual && payload.icv_manual.active !== false ? payload.icv_manual : {};
     var homeTeam = payload.homeTeam || {};
     var awayTeam = payload.awayTeam || {};
@@ -1489,6 +1501,7 @@ function normalizeMatchHubRows(rows) {
         type: String(goal && goal.type || "REGULAR")
       };
     }).filter(function(goal) { return goal.player; });
+    if (!goals.length && Array.isArray(verified.goals)) goals = verified.goals.slice();
     var bookings = (Array.isArray(payload.bookings) ? payload.bookings : []).map(function(booking) {
       return {
         kind: "booking",
@@ -1506,7 +1519,7 @@ function normalizeMatchHubRows(rows) {
     var summaryScorers = summaryParts.length > 2 ? summaryParts.slice(2).join(" · ") : "";
     var goalLabels = goals.map(matchHubEventLabel).join(" · ");
     return {
-      matchId: String(row.match_id || payload.id || ""),
+      matchId: matchId,
       date: row.match_date || payload.utcDate,
       status: normalizedStatus,
       competition: row.competition || payload.competition && payload.competition.name || "Match Center",
@@ -1517,13 +1530,14 @@ function normalizeMatchHubRows(rows) {
       venue: payload.venue || "",
       matchday: payload.matchday || null,
       minute: manual.minute != null ? Number(manual.minute) : Number.isFinite(Number(payload.minute)) ? Number(payload.minute) : null,
-      scorers: String(manual.scorers || goalLabels || summaryScorers).trim(),
+      scorers: String(manual.scorers || verified.scorers || goalLabels || summaryScorers || "").trim(),
       goals: goals,
       bookings: bookings,
       homeFormation: String(homeTeam.formation || "").trim(),
       awayFormation: String(awayTeam.formation || "").trim(),
       homeLineup: Array.isArray(homeTeam.lineup) ? homeTeam.lineup : [],
       awayLineup: Array.isArray(awayTeam.lineup) ? awayTeam.lineup : [],
+      lineupsText: String(verified.lineups || "").trim(),
       mvp: String(manual.mvp || row.tactical_key || "").trim(),
       note: String(manual.note || "").trim(),
       source: manual.updated_at ? "ICV + football-data.org" : String(payload.icv_meta && payload.icv_meta.provider || "football-data.org"),
@@ -1750,6 +1764,8 @@ function renderMatchHub(apiRows) {
     setMatchHubText("matchHubVenue", "Dati in arrivo");
     setMatchHubText("matchHubCountdown", "Da definire");
   }
+  var countdownWrap = document.getElementById("matchHubCountdownWrap");
+  if (countdownWrap) countdownWrap.hidden = phase === "final" || phase === "post";
   renderMatchHubProbable(display, phase);
   renderMatchHubEvents(display && ["live", "final", "post"].includes(phase) ? display : null);
   var receiptMatch = latest && Date.now() - new Date(latest.date).getTime() < 72 * 3600000 ? latest : null;
@@ -1791,13 +1807,14 @@ function renderMatchReceipt(match) {
   setMatchHubText("receiptHome", match.home);
   setMatchHubText("receiptAway", match.away);
   setMatchHubText("receiptScore", match.homeScore + "-" + match.awayScore);
-  setMatchHubText("receiptScorers", match.scorers || "Marcatori non disponibili dalla fonte");
-  setMatchHubText("receiptLineups", [match.homeFormation, match.awayFormation].filter(Boolean).join(" · ") || "Formazioni non pubblicate dalla fonte");
+  setMatchHubText("receiptScorers", match.scorers || "Nessun marcatore registrato");
+  var formations = [match.homeFormation, match.awayFormation].filter(Boolean).join(" · ");
+  setMatchHubText("receiptLineups", match.lineupsText || formations || "Formazioni in verifica");
+  setMatchHubText("receiptLineupsLabel", match.lineupsText ? "Formazioni ufficiali" : "Moduli");
   setMatchHubText("receiptMvp", match.mvp);
   document.getElementById("receiptMvpSection").hidden = !match.mvp;
   setMatchHubText("receiptMatchId", "MATCH #" + (match.matchId || "ICV"));
   setMatchHubText("receiptVerifiedAt", matchHubFreshness(match).toUpperCase());
-  setMatchHubText("receiptPrinterSource", match.source || "football-data.org");
   var signature = [match.matchId, match.homeScore, match.awayScore, match.scorers, match.updatedAt].join("|");
   if (signature !== matchReceiptSignature) {
     matchReceiptSignature = signature;
@@ -1830,8 +1847,8 @@ function receiptCanvas(match) {
   ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,535);ctx.lineTo(980,535);ctx.stroke();ctx.setLineDash([]);
   ctx.textAlign="left";ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("MARCATORI",110,610);
   ctx.fillStyle="#171717";ctx.font="700 31px Arial";drawReceiptLines(ctx,match.scorers||"Non disponibili",110,660,850,43);
-  ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("MODULI",110,820);
-  ctx.fillStyle="#171717";ctx.font="700 31px Arial";drawReceiptLines(ctx,[match.homeFormation,match.awayFormation].filter(Boolean).join(" · ")||"Non pubblicati",110,870,850,43);
+  ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText(match.lineupsText?"FORMAZIONI UFFICIALI":"MODULI",110,820);
+  ctx.fillStyle="#171717";ctx.font="700 27px Arial";drawReceiptLines(ctx,match.lineupsText||[match.homeFormation,match.awayFormation].filter(Boolean).join(" · ")||"In verifica",110,870,850,38);
   if(match.mvp){ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("MVP ICV",110,1010);ctx.fillStyle="#171717";ctx.font="700 34px Arial";ctx.fillText(match.mvp,110,1060)}
   ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,1170);ctx.lineTo(980,1170);ctx.stroke();ctx.setLineDash([]);
   ctx.font="700 20px Arial";ctx.fillStyle="#666";ctx.fillText("MATCH #"+(match.matchId||"ICV"),110,1230);ctx.textAlign="right";ctx.fillText("ILCALCIODIVINCE.COM",970,1230);

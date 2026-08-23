@@ -76,6 +76,7 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
     "function matchHubRomeDayNumber",
     "function renderMatchHubProbable",
     "function animateMatchHub",
+    "ICV_VERIFIED_MATCH_DATA",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.match(html, /id="matchHubNextDate">23 agosto 2026 · 18:30/);
   assert.match(html, /id="matchHubNextHome">Frosinone/);
@@ -83,6 +84,7 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /id="matchHubCompetition">Serie A/);
   assert.match(html, /id="matchHubVenue">Stadio Benito Stirpe · Frosinone/);
   assert.match(html, /id="matchHubCountdown">Domani/);
+  assert.match(html, /id="matchHubCountdownWrap"/);
   assert.match(html, /<h4>Probabile formazione<\/h4>/);
   assert.match(html, /match-hub-probable-module">4-2-3-1/);
   for (const player of ["Kolo Muani", "Conceicao", "McKennie", "Yildiz", "Locatelli", "Douglas Luiz", "Cambiaso", "Bremer", "Kelly", "Kalulu", "Vicario"]) {
@@ -98,6 +100,15 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /\.match-hub-next\{[^}]*align-items:center[^}]*text-align:center/);
   assert.match(html, /\.match-hub-phase\{[^}]*justify-content:center[^}]*text-align:center/);
   assert.match(html, /\.match-hub-meta\{[^}]*justify-content:center/);
+  assert.match(html, /data-state="final"\] \.match-hub-vs[^}]*font-size:72px/);
+  assert.match(html, /Bremer 22'/);
+  assert.match(html, /FORMAZIONI UFFICIALI/);
+  assert.match(html, /Frosinone: Palmisani; Cittadini, Calvani, Monterisi, Bracaglia/);
+  assert.match(html, /Juventus: Vicario; Kalulu, Bremer, Kelly, Celik/);
+  assert.match(html, /countdownWrap\.hidden = phase === "final" \|\| phase === "post"/);
+  assert.doesNotMatch(html, /id="receiptPrinterSource"/);
+  assert.doesNotMatch(html, /Marcatori non disponibili dalla fonte/);
+  assert.doesNotMatch(html, /Formazioni non pubblicate dalla fonte/);
   assert.match(html, /function matchHubVenue/);
   assert.doesNotMatch(html, /Orario e sede verificati/);
   assert.doesNotMatch(html, /Informazioni verificate/);

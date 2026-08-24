@@ -163,6 +163,18 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-countdown{display:inline-flex;align-items:baseline;justify-content:center;gap:6px;margin-top:14px;color:var(--gold-l);font-family:"Barlow Condensed";font-size:12px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;}
 .match-hub-countdown[hidden]{display:none;}
 .match-hub-countdown strong{font-family:"Bebas Neue";font-size:25px;line-height:1;letter-spacing:1px;}
+.match-hub-upcoming{padding:0 20px 18px;border-top:1px solid var(--bdr2);background:rgba(196,150,42,.025);}
+.match-hub-upcoming[hidden]{display:none;}
+.match-hub-upcoming-head{display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px;}
+.match-hub-upcoming-head h4{margin:0;font-family:"Bebas Neue";font-size:18px;font-weight:400;letter-spacing:1.5px;color:var(--gold-l);text-transform:uppercase;}
+.match-hub-upcoming-head span{font-family:"Barlow Condensed";font-size:9px;font-weight:800;letter-spacing:1.3px;color:var(--t3);text-transform:uppercase;}
+.match-hub-upcoming-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid rgba(196,150,42,.16);border-bottom:1px solid rgba(196,150,42,.16);}
+.match-hub-upcoming-item{display:flex;min-width:0;flex-direction:column;gap:4px;padding:13px 16px;}
+.match-hub-upcoming-item+.match-hub-upcoming-item{border-left:1px solid rgba(196,150,42,.16);}
+.match-hub-upcoming-round{font-family:"Barlow Condensed";font-size:9px;font-weight:900;letter-spacing:1.5px;color:var(--gold-l);text-transform:uppercase;}
+.match-hub-upcoming-fixture{font-family:"Barlow Condensed";font-size:16px;font-weight:900;line-height:1.05;color:var(--white);overflow-wrap:anywhere;}
+.match-hub-upcoming-fixture em{margin:0 4px;color:var(--gold);font-size:9px;font-style:normal;letter-spacing:1px;text-transform:uppercase;}
+.match-hub-upcoming-meta{font-family:"Barlow Condensed";font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--t3);text-transform:uppercase;}
 .match-hub-probable{padding:18px 20px 20px;border-top:1px solid var(--bdr2);background:linear-gradient(180deg,rgba(196,150,42,.035),rgba(255,255,255,.012));text-align:center;}
 .match-hub-probable[hidden]{display:none;}
 .match-hub-probable-head{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;}
@@ -518,6 +530,11 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .match-hub-teams{gap:10px;}
 .home-match-hub[data-state="final"] .match-hub-vs,.home-match-hub[data-state="post"] .match-hub-vs{min-width:78px;font-size:50px;}
 .match-hub-score{font-size:38px;}
+.match-hub-upcoming{padding:0 14px 15px;}
+.match-hub-upcoming-list{grid-template-columns:1fr;}
+.match-hub-upcoming-item{padding:11px 8px;}
+.match-hub-upcoming-item+.match-hub-upcoming-item{border-left:0;border-top:1px solid rgba(196,150,42,.16);}
+.match-hub-upcoming-fixture{font-size:15px;}
 .match-hub-probable{padding:16px 14px 18px;}
 .match-hub-probable-pitch{gap:12px;padding:15px 10px;}
 .match-hub-probable-line{gap:9px 12px;}
@@ -755,23 +772,30 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
       </div>
     </div>
     <div class="match-hub-phase">
-      <span id="matchHubPhaseEyebrow">Serie A · 1ª giornata</span>
-      <strong id="matchHubPhaseTitle">Domenica si comincia</strong>
+      <span id="matchHubPhaseEyebrow">Serie A · 2ª giornata</span>
+      <strong id="matchHubPhaseTitle">Verso Juventus FC-Parma Calcio 1913</strong>
     </div>
     <div class="match-hub-main">
       <section class="match-hub-next" aria-label="Prossima partita della Juventus">
         <div class="match-hub-kicker" id="matchHubPrimaryKicker">Prossimo incontro</div>
-        <div class="match-hub-date" id="matchHubNextDate">23 agosto 2026 · 18:30</div>
+        <div class="match-hub-date" id="matchHubNextDate">29 agosto 2026 · 20:45</div>
         <div class="match-hub-teams">
-          <strong class="match-hub-team" id="matchHubNextHome">Frosinone</strong>
+          <strong class="match-hub-team" id="matchHubNextHome">Juventus FC</strong>
           <span class="match-hub-vs" id="matchHubVersus">VS</span>
-          <strong class="match-hub-team" id="matchHubNextAway">Juventus</strong>
+          <strong class="match-hub-team" id="matchHubNextAway">Parma Calcio 1913</strong>
         </div>
-        <div class="match-hub-meta"><span id="matchHubCompetition">Serie A</span><span id="matchHubVenue">Stadio Benito Stirpe · Frosinone</span></div>
-        <div class="match-hub-countdown" id="matchHubCountdownWrap"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Domani</strong></div>
+        <div class="match-hub-meta"><span id="matchHubCompetition">Serie A</span><span id="matchHubVenue">Allianz Stadium · Torino</span></div>
+        <div class="match-hub-countdown" id="matchHubCountdownWrap"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Tra 5 giorni</strong></div>
       </section>
     </div>
-    <section class="match-hub-probable" id="matchHubProbable" aria-label="Probabile formazione Juventus">
+    <section class="match-hub-upcoming" id="matchHubUpcomingPanel" aria-label="Prossime tre partite della Juventus" hidden>
+      <div class="match-hub-upcoming-head">
+        <h4>Prossime 3</h4>
+        <span>Serie A 2026/27</span>
+      </div>
+      <div class="match-hub-upcoming-list" id="matchHubUpcoming"></div>
+    </section>
+    <section class="match-hub-probable" id="matchHubProbable" aria-label="Probabile formazione Juventus" hidden>
       <div class="match-hub-probable-head">
         <h4>Probabile formazione</h4>
         <span class="match-hub-probable-module">4-2-3-1</span>
@@ -1433,7 +1457,10 @@ var ICV_MATCH_FALLBACKS = [
   {date:"2026-08-08T20:00:00+08:00",status:"finished",competition:"Amichevole",home:"Juventus",away:"Inter",homeScore:1,awayScore:2,venue:"Perth",scorers:"Juve: Conceicao · Inter: Dimarco, Diouf"},
   {date:"2026-08-11T00:00:00+02:00",dateOnly:true,status:"finished",competition:"Amichevole",home:"Juventus",away:"Palermo",homeScore:2,awayScore:0,venue:"Perth",scorers:"Juve: Yildiz, Milik"},
   {date:"2026-08-17T00:00:00+02:00",dateOnly:true,status:"finished",competition:"Amichevole",home:"Juventus",away:"Next Gen",homeScore:2,awayScore:0,venue:"Allianz Stadium",scorers:"Juve: Conceicao, McKennie"},
-  {date:"2026-08-23T18:30:00+02:00",status:"scheduled",competition:"Serie A",home:"Frosinone",away:"Juventus",venue:"Stadio Benito Stirpe"}
+  {date:"2026-08-23T18:30:00+02:00",status:"finished",competition:"Serie A",home:"Frosinone",away:"Juventus",homeScore:0,awayScore:1,venue:"Stadio Benito Stirpe",matchday:1,scorers:"Juventus: Bremer 22'"},
+  {date:"2026-08-29T20:45:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Parma Calcio 1913",venue:"Allianz Stadium · Torino",matchday:2},
+  {date:"2026-09-06T20:45:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"AC Milan",venue:"Allianz Stadium · Torino",matchday:3},
+  {date:"2026-09-12T18:00:00+02:00",status:"scheduled",competition:"Serie A",home:"US Sassuolo Calcio",away:"Juventus FC",matchday:4}
 ];
 
 var ICV_VERIFIED_MATCH_DATA = {
@@ -1656,7 +1683,47 @@ function matchHubVenue(match) {
     if (!venue) return "Stadio Benito Stirpe · Frosinone";
     return /frosinone/i.test(venue) ? venue : venue + " · Frosinone";
   }
+  if (matchHubIsJuve(home)) return venue || "Allianz Stadium · Torino";
   return venue || "Stadio da confermare";
+}
+
+function matchHubCompactTeam(name) {
+  return String(name || "")
+    .replace(/^US\s+/i, "")
+    .replace(/^AC\s+/i, "")
+    .replace(/\s+FC$/i, "")
+    .replace(/\s+Calcio(?:\s+1913)?$/i, "")
+    .trim();
+}
+
+function matchHubUpcomingDate(match) {
+  var date = new Date(match && match.date || 0);
+  if (isNaN(date.getTime())) return "Data da definire";
+  return new Intl.DateTimeFormat("it-IT", {
+    timeZone:"Europe/Rome", day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"
+  }).format(date).replace(",", " ·");
+}
+
+function renderMatchHubUpcoming(matches) {
+  var panel = document.getElementById("matchHubUpcomingPanel");
+  var box = document.getElementById("matchHubUpcoming");
+  if (!panel || !box) return;
+  var now = Date.now();
+  var upcoming = (Array.isArray(matches) ? matches : []).filter(function(match) {
+    return match.status === "scheduled" && matchHubIsSerieA(match) && new Date(match.date).getTime() >= now;
+  }).slice(0, 3);
+  panel.hidden = !upcoming.length;
+  box.innerHTML = upcoming.map(function(match) {
+    var home = matchHubCompactTeam(match.home);
+    var away = matchHubCompactTeam(match.away);
+    var round = match.matchday ? match.matchday + "ª giornata" : "Serie A";
+    var side = matchHubIsJuve(match.home) ? "Casa" : "Trasferta";
+    return "<div class=\"match-hub-upcoming-item\">" +
+      "<span class=\"match-hub-upcoming-round\">" + icvEsc(round) + "</span>" +
+      "<strong class=\"match-hub-upcoming-fixture\">" + icvEsc(home) + " <em>vs</em> " + icvEsc(away) + "</strong>" +
+      "<span class=\"match-hub-upcoming-meta\">" + icvEsc(matchHubUpcomingDate(match)) + " · " + side + "</span>" +
+    "</div>";
+  }).join("");
 }
 
 function matchHubFreshness(match) {
@@ -1719,6 +1786,7 @@ function renderMatchHub(apiRows) {
   setMatchHubText("matchHubUpdated", matchHubFreshness(display));
   var freshnessTime = new Date(display && display.updatedAt || 0).getTime();
   hub.classList.toggle("is-stale", phase === "live" && (!freshnessTime || Date.now() - freshnessTime > 5 * 60000));
+  renderMatchHubUpcoming(matches);
 
   if (display) {
     var showScore = ["live", "final", "post"].includes(phase) && display.homeScore != null && display.awayScore != null;

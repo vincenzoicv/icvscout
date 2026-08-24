@@ -75,16 +75,24 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
     "function matchHubRecordLabel",
     "function matchHubRomeDayNumber",
     "function renderMatchHubProbable",
+    "function renderMatchHubUpcoming",
     "function animateMatchHub",
     "ICV_VERIFIED_MATCH_DATA",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
-  assert.match(html, /id="matchHubNextDate">23 agosto 2026 · 18:30/);
-  assert.match(html, /id="matchHubNextHome">Frosinone/);
-  assert.match(html, /id="matchHubNextAway">Juventus/);
+  assert.match(html, /id="matchHubNextDate">29 agosto 2026 · 20:45/);
+  assert.match(html, /id="matchHubNextHome">Juventus FC/);
+  assert.match(html, /id="matchHubNextAway">Parma Calcio 1913/);
   assert.match(html, /id="matchHubCompetition">Serie A/);
-  assert.match(html, /id="matchHubVenue">Stadio Benito Stirpe · Frosinone/);
-  assert.match(html, /id="matchHubCountdown">Domani/);
+  assert.match(html, /id="matchHubVenue">Allianz Stadium · Torino/);
+  assert.match(html, /id="matchHubCountdown">Tra 5 giorni/);
   assert.match(html, /id="matchHubCountdownWrap"/);
+  assert.match(html, /id="matchHubUpcomingPanel"/);
+  assert.match(html, /id="matchHubUpcoming"/);
+  assert.match(html, /<h4>Prossime 3<\/h4>/);
+  assert.match(html, /Allianz Stadium · Torino/);
+  assert.match(html, /Juventus FC",away:"Parma Calcio 1913"/);
+  assert.match(html, /Juventus FC",away:"AC Milan"/);
+  assert.match(html, /US Sassuolo Calcio",away:"Juventus FC"/);
   assert.match(html, /<h4>Probabile formazione<\/h4>/);
   assert.match(html, /match-hub-probable-module">4-2-3-1/);
   for (const player of ["Kolo Muani", "Conceicao", "McKennie", "Yildiz", "Locatelli", "Douglas Luiz", "Cambiaso", "Bremer", "Kelly", "Kalulu", "Vicario"]) {

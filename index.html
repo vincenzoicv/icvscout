@@ -844,10 +844,9 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
           <div class="receipt-scoreline"><strong id="receiptHome">Frosinone</strong><b id="receiptScore">0-0</b><strong id="receiptAway">Juventus</strong></div>
           <div class="receipt-rule"></div>
           <div class="receipt-section"><span>MARCATORI</span><p id="receiptScorers">Dati al termine della gara</p></div>
-          <div class="receipt-section" id="receiptLineupsSection"><span id="receiptLineupsLabel">FORMAZIONI UFFICIALI</span><p id="receiptLineups">In verifica</p></div>
           <div class="receipt-section" id="receiptMvpSection" hidden><span>MVP ICV</span><p id="receiptMvp"></p></div>
           <div class="receipt-rule"></div>
-          <div class="receipt-footer"><span id="receiptMatchId">MATCH #558635</span><span id="receiptVerifiedAt">VERIFICATO</span></div>
+          <div class="receipt-footer"><span id="receiptMatchId">MATCH #558635</span><span>FINO ALLA FINE.</span></div>
         </article>
       </div>
     </section>
@@ -1466,8 +1465,7 @@ var ICV_MATCH_FALLBACKS = [
 var ICV_VERIFIED_MATCH_DATA = {
   "558635": {
     scorers:"Juventus: Bremer 22'",
-    goals:[{kind:"goal",minute:22,injuryTime:null,player:"Bremer",team:"Juventus FC",type:"REGULAR"}],
-    lineups:"Frosinone: Palmisani; Cittadini, Calvani, Monterisi, Bracaglia; Fini, Calo, Cichella; Schmid, Raimondo, Kvernadze. Juventus: Vicario; Kalulu, Bremer, Kelly, Celik; Locatelli, Douglas Luiz; Conceicao, McKennie, Yildiz; Kolo Muani."
+    goals:[{kind:"goal",minute:22,injuryTime:null,player:"Bremer",team:"Juventus FC",type:"REGULAR"}]
   }
 };
 
@@ -1540,7 +1538,6 @@ function normalizeMatchHubRows(rows) {
       awayFormation: String(awayTeam.formation || "").trim(),
       homeLineup: Array.isArray(homeTeam.lineup) ? homeTeam.lineup : [],
       awayLineup: Array.isArray(awayTeam.lineup) ? awayTeam.lineup : [],
-      lineupsText: String(verified.lineups || "").trim(),
       mvp: String(manual.mvp || row.tactical_key || "").trim(),
       note: String(manual.note || "").trim(),
       source: manual.updated_at ? "ICV + football-data.org" : String(payload.icv_meta && payload.icv_meta.provider || "football-data.org"),
@@ -1852,13 +1849,9 @@ function renderMatchReceipt(match) {
   setMatchHubText("receiptAway", match.away);
   setMatchHubText("receiptScore", match.homeScore + "-" + match.awayScore);
   setMatchHubText("receiptScorers", match.scorers || "Nessun marcatore registrato");
-  var formations = [match.homeFormation, match.awayFormation].filter(Boolean).join(" · ");
-  setMatchHubText("receiptLineups", match.lineupsText || formations || "Formazioni in verifica");
-  setMatchHubText("receiptLineupsLabel", match.lineupsText ? "Formazioni ufficiali" : "Moduli");
   setMatchHubText("receiptMvp", match.mvp);
   document.getElementById("receiptMvpSection").hidden = !match.mvp;
   setMatchHubText("receiptMatchId", "MATCH #" + (match.matchId || "ICV"));
-  setMatchHubText("receiptVerifiedAt", matchHubFreshness(match).toUpperCase());
   var signature = [match.matchId, match.homeScore, match.awayScore, match.scorers, match.updatedAt].join("|");
   if (signature !== matchReceiptSignature) {
     matchReceiptSignature = signature;
@@ -1880,7 +1873,7 @@ function replayMatchReceipt() {
 
 function receiptCanvas(match) {
   var canvas = document.createElement("canvas"),ctx=canvas.getContext("2d");
-  canvas.width=1080;canvas.height=1350;
+  canvas.width=1080;canvas.height=1050;
   ctx.fillStyle="#f4f1e9";ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.fillStyle="#171717";ctx.textAlign="center";ctx.font="700 72px Arial";ctx.fillText("ICV MATCH RECEIPT",540,120);
   ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,165);ctx.lineTo(980,165);ctx.stroke();ctx.setLineDash([]);
@@ -1891,11 +1884,9 @@ function receiptCanvas(match) {
   ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,535);ctx.lineTo(980,535);ctx.stroke();ctx.setLineDash([]);
   ctx.textAlign="left";ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("MARCATORI",110,610);
   ctx.fillStyle="#171717";ctx.font="700 31px Arial";drawReceiptLines(ctx,match.scorers||"Non disponibili",110,660,850,43);
-  ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText(match.lineupsText?"FORMAZIONI UFFICIALI":"MODULI",110,820);
-  ctx.fillStyle="#171717";ctx.font="700 27px Arial";drawReceiptLines(ctx,match.lineupsText||[match.homeFormation,match.awayFormation].filter(Boolean).join(" · ")||"In verifica",110,870,850,38);
-  if(match.mvp){ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("MVP ICV",110,1010);ctx.fillStyle="#171717";ctx.font="700 34px Arial";ctx.fillText(match.mvp,110,1060)}
-  ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,1170);ctx.lineTo(980,1170);ctx.stroke();ctx.setLineDash([]);
-  ctx.font="700 20px Arial";ctx.fillStyle="#666";ctx.fillText("MATCH #"+(match.matchId||"ICV"),110,1230);ctx.textAlign="right";ctx.fillText("ILCALCIODIVINCE.COM",970,1230);
+  if(match.mvp){ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("MVP ICV",110,780);ctx.fillStyle="#171717";ctx.font="700 34px Arial";ctx.fillText(match.mvp,110,830)}
+  ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,890);ctx.lineTo(980,890);ctx.stroke();ctx.setLineDash([]);
+  ctx.font="700 20px Arial";ctx.fillStyle="#666";ctx.fillText("MATCH #"+(match.matchId||"ICV"),110,950);ctx.textAlign="right";ctx.fillText("FINO ALLA FINE.",970,950);
   return canvas;
 }
 

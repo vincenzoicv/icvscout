@@ -110,9 +110,10 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /\.match-hub-meta\{[^}]*justify-content:center/);
   assert.match(html, /data-state="final"\] \.match-hub-vs[^}]*font-size:72px/);
   assert.match(html, /Bremer 22'/);
-  assert.match(html, /FORMAZIONI UFFICIALI/);
-  assert.match(html, /Frosinone: Palmisani; Cittadini, Calvani, Monterisi, Bracaglia/);
-  assert.match(html, /Juventus: Vicario; Kalulu, Bremer, Kelly, Celik/);
+  assert.match(html, /FINO ALLA FINE\./);
+  assert.doesNotMatch(html, /id="receiptLineups/);
+  assert.doesNotMatch(html, /match\.lineupsText/);
+  assert.doesNotMatch(html, /FORMAZIONI UFFICIALI/);
   assert.match(html, /countdownWrap\.hidden = phase === "final" \|\| phase === "post"/);
   assert.doesNotMatch(html, /id="receiptPrinterSource"/);
   assert.doesNotMatch(html, /Marcatori non disponibili dalla fonte/);

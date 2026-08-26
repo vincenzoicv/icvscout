@@ -23,6 +23,21 @@ test("Anime.js anima la home rispettando Riduci movimento", async () => {
   assert.doesNotMatch(html, /https:\/\/cdn[^"']*anime/i);
 });
 
+test("la home apre con lo Stadium immersivo su desktop e mobile", async () => {
+  const [html, worker] = await Promise.all([read("index.html"), read("sw.js")]);
+  for (const marker of [
+    "/assets/hero-allianz-immersive.jpg",
+    "/assets/hero-allianz-immersive-mobile.jpg",
+    'id="heroAtmosphere"',
+    "function setupImmersiveHero()",
+    "setupImmersiveHero();",
+    "pointer:fine",
+  ]) assert.ok(html.includes(marker), `manca ${marker}`);
+  assert.match(html, /prefers-reduced-motion: reduce/);
+  assert.match(worker, /hero-allianz-immersive\.jpg/);
+  assert.match(worker, /hero-allianz-immersive-mobile\.jpg/);
+});
+
 test("la home propone l'installazione PWA senza essere invadente", async () => {
   const [html, manifest, worker] = await Promise.all([
     read("index.html"),
@@ -42,7 +57,7 @@ test("la home propone l'installazione PWA senza essere invadente", async () => {
   assert.match(html, /onclick="closeInstallCard\(true\)"/);
   assert.match(html, /window\.addEventListener\("load", scheduleInstallCard\)/);
   assert.match(manifest, /"display": "standalone"/);
-  assert.match(worker, /const CACHE = 'icv-v15'/);
+  assert.match(worker, /const CACHE = 'icv-v16'/);
 });
 
 test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async () => {

@@ -44,8 +44,8 @@
 <link rel="apple-touch-startup-image" href="/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
 
 <link rel="stylesheet" href="/assets/fonts.css?v=20260728-1">
-<link rel="preload" as="image" href="/assets/hero-allianz-immersive.jpg" media="(min-width: 769px)" fetchpriority="high">
-<link rel="preload" as="image" href="/assets/hero-allianz-immersive-mobile.jpg" media="(max-width: 768px)" fetchpriority="high">
+<link rel="preload" as="image" href="/assets/hero-allianz-real.jpg" media="(min-width: 769px)" fetchpriority="high">
+<link rel="preload" as="image" href="/assets/hero-allianz-real-mobile.jpg" media="(max-width: 768px)" fetchpriority="high">
 <style>
 :root{--gold:#C4962A;--gold-l:#E8B84B;--gold-d:#8B6520;--black:#060606;--d1:#0f0f0f;--d2:#151515;--d3:#1c1c1c;--surface:linear-gradient(145deg,#161616,#131313);--surface-soft:linear-gradient(145deg,#121212,#0f0f0f);--surface-hi:linear-gradient(145deg,#1d1d1d,#151515);--white:#f0f0f0;--t2:rgba(255,255,255,0.65);--t3:rgba(255,255,255,0.40);--bdr:rgba(196,150,42,0.15);--bdr2:rgba(255,255,255,0.06);}
 *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
@@ -95,7 +95,7 @@ nav button::before,.hsocial a::before,.theme-toggle::before,.quick-actions butto
 main{padding-top:58px;position:relative;z-index:1;}
 .hero{--hero-shift-x:0px;--hero-shift-y:0px;position:relative;min-height:min(820px,calc(100svh - 92px));display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:70px 24px 92px;text-align:center;background:#030303;isolation:isolate;}
 .hero-stadium-media{position:absolute;inset:-2%;z-index:0;overflow:hidden;pointer-events:none;background:#030303;}
-.hero-stadium-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 55%;filter:saturate(.72) contrast(1.12) brightness(.58);transform:translate3d(var(--hero-shift-x),var(--hero-shift-y),0) scale(1.055);transition:transform .8s cubic-bezier(.2,.8,.2,1);will-change:transform;}
+.hero-stadium-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 52%;filter:saturate(.78) contrast(1.08) brightness(.66);transform:translate3d(var(--hero-shift-x),var(--hero-shift-y),0) scale(1.045);transition:transform .8s cubic-bezier(.2,.8,.2,1);will-change:transform;}
 .hero-stadium-media::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(3,3,3,.42) 0%,rgba(3,3,3,.08) 31%,rgba(3,3,3,.16) 62%,rgba(3,3,3,.86) 100%);}
 .hero-stadium-media::after{content:"";position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse at center,transparent 12%,rgba(3,3,3,.12) 48%,rgba(3,3,3,.76) 100%);box-shadow:inset 0 0 120px rgba(0,0,0,.55);}
 .hero-atmosphere{position:absolute;inset:0;z-index:3;width:100%;height:100%;opacity:.72;mix-blend-mode:screen;}
@@ -527,7 +527,7 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .theme-toggle-label{font-size:10px;letter-spacing:1px;}
 .theme-toggle-knob{width:26px;height:26px;}
 .hero{min-height:min(650px,calc(100svh - 104px));padding:58px 18px 76px;}.hero h1{font-size:clamp(82px,25vw,112px);margin-bottom:24px;}
-.hero-stadium-img{object-position:center 58%;}
+.hero-stadium-img{object-position:center 50%;}
 .hero-c{width:min(100%,480px);}
 .hero-tag{font-size:11px;margin-bottom:18px;}
 .hero-desc{font-size:15px;max-width:310px;line-height:1.4;}
@@ -768,8 +768,8 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
 <div class="hero" id="immersiveHero">
   <div class="hero-stadium-media" aria-hidden="true">
     <picture>
-      <source media="(max-width: 768px)" srcset="/assets/hero-allianz-immersive-mobile.jpg">
-      <img class="hero-stadium-img" src="/assets/hero-allianz-immersive.jpg" alt="" width="1920" height="827" fetchpriority="high" decoding="async">
+      <source media="(max-width: 768px)" srcset="/assets/hero-allianz-real-mobile.jpg">
+      <img class="hero-stadium-img" src="/assets/hero-allianz-real.jpg" alt="" width="728" height="420" fetchpriority="high" decoding="async">
     </picture>
     <canvas class="hero-atmosphere" id="heroAtmosphere"></canvas>
   </div>

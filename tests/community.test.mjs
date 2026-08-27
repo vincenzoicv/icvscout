@@ -26,10 +26,8 @@ test("Anime.js anima la home rispettando Riduci movimento", async () => {
 test("la home apre con fotografie reali dello Stadium su desktop e mobile", async () => {
   const [html, worker] = await Promise.all([read("index.html"), read("sw.js")]);
   for (const marker of [
-    "/assets/hero-allianz-west-2026.jpg",
-    "/assets/hero-allianz-west-mobile-2026.jpg",
-    "Foto: Roberto Gearfil Lombardi",
-    "CC BY-SA 3.0 IT",
+    "/assets/hero-allianz-user-2026.webp",
+    "/assets/hero-allianz-user-mobile-2026.jpg",
     "<h1><span>ICV</span><strong>SCOUT</strong></h1>",
     'id="heroAtmosphere"',
     "function setupImmersiveHero()",
@@ -37,8 +35,8 @@ test("la home apre con fotografie reali dello Stadium su desktop e mobile", asyn
     "pointer:fine",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.match(html, /prefers-reduced-motion: reduce/);
-  assert.match(worker, /hero-allianz-west-2026\.jpg/);
-  assert.match(worker, /hero-allianz-west-mobile-2026\.jpg/);
+  assert.match(worker, /hero-allianz-user-2026\.webp/);
+  assert.match(worker, /hero-allianz-user-mobile-2026\.jpg/);
   assert.doesNotMatch(html, /hero h1[^}]*background:linear-gradient/);
 });
 
@@ -61,7 +59,7 @@ test("la home propone l'installazione PWA senza essere invadente", async () => {
   assert.match(html, /onclick="closeInstallCard\(true\)"/);
   assert.match(html, /window\.addEventListener\("load", scheduleInstallCard\)/);
   assert.match(manifest, /"display": "standalone"/);
-  assert.match(worker, /const CACHE = 'icv-v19'/);
+  assert.match(worker, /const CACHE = 'icv-v20'/);
 });
 
 test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async () => {

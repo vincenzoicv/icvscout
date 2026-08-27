@@ -44,8 +44,8 @@
 <link rel="apple-touch-startup-image" href="/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
 
 <link rel="stylesheet" href="/assets/fonts.css?v=20260728-1">
-<link rel="preload" as="image" href="/assets/hero-allianz-west-2026.jpg" media="(min-width: 769px)" fetchpriority="high">
-<link rel="preload" as="image" href="/assets/hero-allianz-west-mobile-2026.jpg" media="(max-width: 768px)" fetchpriority="high">
+<link rel="preload" as="image" href="/assets/hero-allianz-user-2026.webp" media="(min-width: 769px)" fetchpriority="high">
+<link rel="preload" as="image" href="/assets/hero-allianz-user-mobile-2026.jpg" media="(max-width: 768px)" fetchpriority="high">
 <style>
 :root{--gold:#C4962A;--gold-l:#E8B84B;--gold-d:#8B6520;--black:#060606;--d1:#0f0f0f;--d2:#151515;--d3:#1c1c1c;--surface:linear-gradient(145deg,#161616,#131313);--surface-soft:linear-gradient(145deg,#121212,#0f0f0f);--surface-hi:linear-gradient(145deg,#1d1d1d,#151515);--white:#f0f0f0;--t2:rgba(255,255,255,0.65);--t3:rgba(255,255,255,0.40);--bdr:rgba(196,150,42,0.15);--bdr2:rgba(255,255,255,0.06);}
 *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
@@ -95,7 +95,7 @@ nav button::before,.hsocial a::before,.theme-toggle::before,.quick-actions butto
 main{padding-top:58px;position:relative;z-index:1;}
 .hero{--hero-shift-x:0px;--hero-shift-y:0px;position:relative;min-height:min(820px,calc(100svh - 92px));display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:70px 24px 92px;text-align:center;background:#030303;isolation:isolate;}
 .hero-stadium-media{position:absolute;inset:-2%;z-index:0;overflow:hidden;pointer-events:none;background:#030303;}
-.hero-stadium-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 52%;filter:saturate(.82) contrast(1.02) brightness(.62);transform:translate3d(var(--hero-shift-x),var(--hero-shift-y),0) scale(1.02);transition:transform .8s cubic-bezier(.2,.8,.2,1);will-change:transform;}
+.hero-stadium-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 52%;filter:saturate(.88) contrast(1.03) brightness(.68);transform:translate3d(var(--hero-shift-x),var(--hero-shift-y),0) scale(1.008);transition:transform .8s cubic-bezier(.2,.8,.2,1);will-change:transform;}
 .hero-stadium-media::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(3,3,3,.48) 0%,rgba(3,3,3,.12) 31%,rgba(3,3,3,.22) 64%,rgba(3,3,3,.88) 100%);}
 .hero-stadium-media::after{content:"";position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse at center,transparent 16%,rgba(3,3,3,.10) 52%,rgba(3,3,3,.68) 100%);box-shadow:inset 0 0 96px rgba(0,0,0,.48);}
 .hero-atmosphere{position:absolute;inset:0;z-index:3;width:100%;height:100%;opacity:.26;mix-blend-mode:screen;}
@@ -110,10 +110,6 @@ main{padding-top:58px;position:relative;z-index:1;}
 .hero-stadium-meta{position:absolute;left:24px;bottom:28px;z-index:4;display:flex;align-items:center;gap:9px;color:rgba(255,255,255,.58);font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:0;text-transform:uppercase;}
 .hero-stadium-meta::before{content:"";width:28px;height:1px;background:var(--gold-l);box-shadow:0 0 14px rgba(232,184,75,.45);}
 .hero-stadium-meta b{color:var(--gold-l);font-weight:900;}
-.hero-photo-credit{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
-.hero-photo-credit i{font-style:normal;color:rgba(232,184,75,.7);}
-.hero-stadium-meta a{color:inherit;text-decoration:none;transition:color .2s ease;}
-.hero-stadium-meta a:hover,.hero-stadium-meta a:focus-visible{color:#fff;}
 .hero-scroll-cue{position:absolute;right:24px;bottom:25px;z-index:4;display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.56);font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:0;text-decoration:none;text-transform:uppercase;}
 .hero-scroll-cue span{display:block;width:8px;height:20px;border:1px solid rgba(232,184,75,.58);border-radius:999px;position:relative;}
 .hero-scroll-cue span::after{content:"";position:absolute;left:50%;top:4px;width:2px;height:4px;border-radius:2px;background:var(--gold-l);transform:translateX(-50%);animation:scrollCue 1.8s ease-in-out infinite;}
@@ -540,7 +536,6 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .hero-tag{font-size:11px;margin-bottom:18px;}
 .hero-desc{font-size:15px;max-width:310px;line-height:1.4;}
 .hero-stadium-meta{left:16px;right:80px;bottom:22px;flex-wrap:wrap;gap:6px 9px;line-height:1.25;}
-.hero-photo-credit{flex-basis:100%;margin-left:37px;font-size:9px;}
 .hero-scroll-cue{right:16px;bottom:20px;}
 .home-dash{grid-template-columns:1fr;margin-top:0;padding:0 14px;}
 .home-panel{min-height:auto;}
@@ -777,8 +772,8 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
 <div class="hero" id="immersiveHero">
   <div class="hero-stadium-media" aria-hidden="true">
     <picture>
-      <source media="(max-width: 768px)" srcset="/assets/hero-allianz-west-mobile-2026.jpg">
-      <img class="hero-stadium-img" src="/assets/hero-allianz-west-2026.jpg" alt="" width="2400" height="1527" fetchpriority="high" decoding="async">
+      <source media="(max-width: 768px)" srcset="/assets/hero-allianz-user-mobile-2026.jpg">
+      <img class="hero-stadium-img" src="/assets/hero-allianz-user-2026.webp" alt="" width="1280" height="720" fetchpriority="high" decoding="async">
     </picture>
     <canvas class="hero-atmosphere" id="heroAtmosphere"></canvas>
   </div>
@@ -790,7 +785,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
     <p class="manifesto">Il calcio vissuto da chi lo vive davvero.</p>
     <a class="hero-season-link" href="/calendario-juventus">Calendario ufficiale 2026/27</a>
   </div>
-  <div class="hero-stadium-meta"><b>Allianz Stadium</b><span>Torino</span><span class="hero-photo-credit"><a href="https://commons.wikimedia.org/wiki/File:Inside_Juventus_Stadium.jpg" target="_blank" rel="noopener noreferrer">Foto: Roberto Gearfil Lombardi</a><i aria-hidden="true">·</i><a href="https://creativecommons.org/licenses/by-sa/3.0/it/" target="_blank" rel="license noopener noreferrer">CC BY-SA 3.0 IT</a></span></div>
+  <div class="hero-stadium-meta"><b>Allianz Stadium</b><span>Torino</span></div>
   <a class="hero-scroll-cue" href="#homeDash">Entra nel match <span aria-hidden="true"></span></a>
 </div>
 <section class="home-dash" id="homeDash">

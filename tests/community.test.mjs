@@ -112,13 +112,19 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /US Sassuolo Calcio",away:"Juventus FC"/);
   assert.match(html, /<h4>Probabile formazione<\/h4>/);
   assert.match(html, /match-hub-probable-module">4-2-3-1/);
-  for (const player of ["Kolo Muani", "Conceicao", "McKennie", "Yildiz", "Locatelli", "Douglas Luiz", "Cambiaso", "Bremer", "Kelly", "Kalulu", "Vicario"]) {
+  for (const player of ["Kolo Muani", "Conceicao", "Koopmeiners", "Boga", "Locatelli", "Douglas Luiz", "Cambiaso", "Bremer", "Kelly", "Kalulu", "Vicario"]) {
     assert.ok(html.includes(player), `manca ${player} nella probabile formazione`);
   }
-  assert.match(html, /10<\/b>Yildiz[\s\S]*22<\/b>McKennie[\s\S]*7<\/b>Conceicao/);
+  assert.match(html, /13<\/b>Boga[\s\S]*8<\/b>Koopmeiners[\s\S]*7<\/b>Conceicao/);
   assert.match(html, /5<\/b>Locatelli[\s\S]*12<\/b>Douglas Luiz/);
   assert.match(html, /20<\/b>Cambiaso[\s\S]*3<\/b>Bremer[\s\S]*6<\/b>Kelly[\s\S]*15<\/b>Kalulu/);
   assert.match(html, /match-hub-probable-number">25<\/b>Vicario/);
+  assert.match(html, /Aggiornata dopo la conferenza del 28 agosto/);
+  assert.match(html, /Cambiaso \/ Celik/);
+  assert.match(html, /Koopmeiners \/ Alajbegovic/);
+  assert.match(html, /<b>Assenti<\/b>Yildiz, McKennie/);
+  assert.match(html, /<b>Da valutare<\/b>Thuram/);
+  assert.match(html, /!\/parma\/i\.test\(teams\)/);
   assert.match(html, /\["buildup", "matchday"\]\.includes\(phase\)/);
   assert.match(html, /calendarDays === 1\) return "Domani"/);
   assert.match(html, /timeZone: "Europe\/Rome"/);
@@ -255,9 +261,12 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
   assert.match(home, /class="match-hub-calendar-link" href="\/calendario-juventus">Calendario/);
   assert.doesNotMatch(home, /class="match-banner"/);
   assert.doesNotMatch(home, /Aggiungi al calendario/);
-  for (const marker of ["Apple Calendar", "Google Calendar", "/api/juventus/calendar.ics", "Risultati automatici", ">38<"]) {
+  for (const marker of ["Apple Calendar", "Google Calendar", "/api/juventus/calendar.ics", "Risultati automatici", ">38<", "Europa League", "Real Sociedad", "Rennes", "Omonia Nicosia", "NEC Nijmegen", "AZ Alkmaar", "Ferencvaros", "Celta Vigo", "Hapoel Be’er Sheva", "16/17 SET", "28 GEN"]) {
     assert.ok(page.includes(marker), `manca ${marker}`);
   }
+  assert.match(page, /data-calendar-filter="europa"/);
+  assert.match(page, /Nessun evento europeo viene aggiunto al calendario finché il programma non è definitivo/);
+  assert.match(page, /Le date indicano le otto giornate UEFA, non sono ancora abbinate alle singole avversarie/);
   for (const marker of ['path === "juventus/calendar.ics"', "JUVENTUS_SERIE_A_2026_27", "Risultato finale:", "LAST-MODIFIED", "SEQUENCE:"]) {
     assert.ok(api.includes(marker), `manca ${marker}`);
   }

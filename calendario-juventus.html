@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Calendario Juventus 2026/27 · ICV Scout</title>
-  <meta name="description" content="Aggiungi le 38 partite della Juventus in Serie A ad Apple Calendar o Google Calendar, con orari e risultati aggiornati.">
+  <meta name="description" content="Calendario Juventus 2026/27: Serie A scaricabile e sorteggio ufficiale di Europa League, con dati aggiornati e verificati.">
   <link rel="canonical" href="https://ilcalciodivince.com/calendario-juventus">
   <meta property="og:title" content="Calendario Juventus 2026/27 · ICV Scout">
-  <meta property="og:description" content="La Serie A della Juventus nel tuo calendario, con orari e risultati aggiornati automaticamente.">
+  <meta property="og:description" content="Serie A ed Europa League 2026/27 della Juventus, con calendario scaricabile e sorteggio ufficiale.">
   <meta property="og:url" content="https://ilcalciodivince.com/calendario-juventus">
   <meta property="og:image" content="https://ilcalciodivince.com/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Calendario Juventus 2026/27 · ICV Scout">
-  <meta name="twitter:description" content="La Serie A della Juventus nel tuo calendario, con orari e risultati aggiornati automaticamente.">
+  <meta name="twitter:description" content="Serie A ed Europa League 2026/27 della Juventus, con calendario scaricabile e sorteggio ufficiale.">
   <meta name="twitter:image" content="https://ilcalciodivince.com/og-image.png">
   <link rel="stylesheet" href="/assets/fonts.css?v=20260728-1">
   <style>
@@ -48,6 +48,11 @@
     .platform small{display:block;margin-top:5px;font-size:10px;font-weight:500;line-height:1.4;opacity:.7}
     .status{min-height:18px;margin-top:14px;color:var(--green);font-size:12px;text-align:center}
     main{width:min(1060px,100%);margin:auto;padding:72px 24px}
+    .competition-tabs{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:0 auto 54px}
+    .competition-tab{min-height:42px;padding:0 18px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted);font:700 11px Inter,sans-serif;letter-spacing:.7px;cursor:pointer;transition:border-color .2s ease,background .2s ease,color .2s ease}
+    .competition-tab:hover{border-color:rgba(237,190,82,.5);color:var(--text)}
+    .competition-tab.active{border-color:var(--gold);background:rgba(201,152,55,.14);color:var(--gold2)}
+    [data-calendar-section][hidden]{display:none!important}
     .section-eye{color:var(--gold);font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase}
     .section-title{margin:10px 0 30px;font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,7vw,66px);line-height:.95}
     .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -62,6 +67,29 @@
     .match strong{font-size:13px}
     .match span{padding:3px 8px;border-radius:999px;background:rgba(201,152,55,.12);color:var(--gold2);font-size:9px;font-weight:700;text-transform:uppercase}
     .loading{padding:36px;border:1px dashed var(--line);border-radius:10px;color:var(--muted);text-align:center;font-size:13px}
+    .uel-section{margin-top:88px;padding-top:62px;border-top:1px solid var(--line)}
+    .uel-heading{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,420px);align-items:end;gap:36px;margin-bottom:36px}
+    .uel-heading .section-title{margin-bottom:0}
+    .uel-status{padding:16px 18px;border-left:2px solid var(--gold);background:rgba(201,152,55,.07);color:var(--muted);font-size:12px;line-height:1.6}
+    .uel-status strong{display:block;margin-bottom:4px;color:var(--gold2);font-size:10px;letter-spacing:1.6px;text-transform:uppercase}
+    .uel-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .uel-venue{padding:26px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .uel-venue h3{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px}
+    .uel-venue h3 span{font:700 9px Inter,sans-serif;color:var(--muted);letter-spacing:1.8px;text-transform:uppercase}
+    .uel-list{display:grid;gap:2px}
+    .uel-opponent{display:flex;align-items:center;gap:12px;min-height:48px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:14px;font-weight:700}
+    .uel-opponent:last-child{border-bottom:0}
+    .uel-opponent i{display:grid;width:27px;height:27px;place-items:center;border:1px solid rgba(201,152,55,.32);border-radius:50%;color:var(--gold2);font:400 14px 'Bebas Neue',sans-serif;font-style:normal}
+    .uel-windows{margin-top:44px}
+    .uel-windows-head{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:15px}
+    .uel-windows-head h3{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px}
+    .uel-windows-head p{max-width:470px;color:var(--muted);font-size:11px;line-height:1.5;text-align:right}
+    .uel-dates{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line)}
+    .uel-date{min-height:82px;padding:16px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .uel-date span{display:block;color:var(--muted);font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase}
+    .uel-date strong{display:block;margin-top:7px;font-family:'Bebas Neue',sans-serif;color:var(--text);font-size:25px;letter-spacing:.8px}
+    .uel-sources{display:flex;gap:16px;flex-wrap:wrap;margin-top:18px;color:var(--muted);font-size:11px}
+    .uel-sources a{color:var(--gold2);text-underline-offset:3px}
     .newsletter{margin-top:72px;padding:30px;border:1px solid rgba(201,152,55,.24);border-radius:14px;background:rgba(201,152,55,.06);text-align:center}
     .newsletter h2{font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:1px}
     .newsletter p{margin:6px auto 18px;color:var(--muted);font-size:13px}
@@ -72,7 +100,7 @@
     .newsletter .note{min-height:17px;margin-top:10px;color:var(--muted);font-size:11px}
     footer{padding:25px;border-top:1px solid var(--line);color:var(--faint);font-size:12px;text-align:center}
     footer a{color:var(--muted);text-decoration:none}
-    @media(max-width:720px){.platforms,.features{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}}
+    @media(max-width:720px){.platforms,.features,.uel-grid,.uel-heading{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}.competition-tabs{margin-bottom:42px}.uel-section{margin-top:62px;padding-top:48px}.uel-heading{gap:22px}.uel-dates{grid-template-columns:repeat(2,1fr)}.uel-windows-head{display:block}.uel-windows-head p{margin-top:8px;text-align:left}}
   </style>
 </head>
 <body>
@@ -89,11 +117,11 @@
     <div class="hero-inner">
       <div class="eyebrow">Il Calcio di Vince</div>
       <h1>Calendario<br>Juventus</h1>
-      <p class="lead">Tutta la Serie A 2026/27 nel tuo calendario, con orari e risultati che si aggiornano automaticamente.</p>
+      <p class="lead">Serie A ed Europa League 2026/27 in un’unica agenda: eventi scaricabili solo quando date e orari sono ufficiali.</p>
       <div class="facts">
-        <div class="fact"><strong>38</strong><span>giornate</span></div>
-        <div class="fact"><strong>A</strong><span>Serie A</span></div>
-        <div class="fact"><strong>1</strong><span>calendario live</span></div>
+        <div class="fact"><strong>38</strong><span>gare di Serie A</span></div>
+        <div class="fact"><strong>8</strong><span>sfide europee</span></div>
+        <div class="fact"><strong>1</strong><span>agenda ICV</span></div>
       </div>
 
       <div class="calendar-box">
@@ -109,18 +137,75 @@
   </section>
 
   <main>
-    <div class="section-eye">Come funziona</div>
-    <div class="section-title">Un solo calendario,<br>tre modi per usarlo</div>
-    <div class="features">
-      <article class="card"><div class="num">01</div><h3>Orari aggiornati</h3><p>Se Lega Serie A modifica giorno o calcio d’inizio, la sottoscrizione riceve il nuovo orario.</p></article>
-      <article class="card"><div class="num">02</div><h3>Risultati automatici</h3><p>Al termine della partita, il punteggio viene aggiunto allo stesso evento senza creare duplicati.</p></article>
-      <article class="card"><div class="num">03</div><h3>Promemoria incluso</h3><p>Ogni partita contiene un avviso trenta minuti prima e un collegamento rapido a ICV Scout.</p></article>
-    </div>
+    <nav class="competition-tabs" aria-label="Filtra competizione">
+      <button class="competition-tab active" type="button" data-calendar-filter="all" aria-pressed="true">Tutte</button>
+      <button class="competition-tab" type="button" data-calendar-filter="seriea" aria-pressed="false">Serie A</button>
+      <button class="competition-tab" type="button" data-calendar-filter="europa" aria-pressed="false">Europa League</button>
+    </nav>
 
-    <section class="preview">
-      <div class="section-eye">Anteprima live</div>
-      <div class="section-title">Calendario e risultati</div>
-      <div class="matches" id="matchPreview"><div class="loading">Caricamento del calendario in corso...</div></div>
+    <section data-calendar-section="seriea">
+      <div class="section-eye">Come funziona</div>
+      <div class="section-title">La Serie A,<br>sempre aggiornata</div>
+      <div class="features">
+        <article class="card"><div class="num">01</div><h3>Orari aggiornati</h3><p>Se Lega Serie A modifica giorno o calcio d’inizio, la sottoscrizione riceve il nuovo orario.</p></article>
+        <article class="card"><div class="num">02</div><h3>Risultati automatici</h3><p>Al termine della partita, il punteggio viene aggiunto allo stesso evento senza creare duplicati.</p></article>
+        <article class="card"><div class="num">03</div><h3>Promemoria incluso</h3><p>Ogni partita contiene un avviso trenta minuti prima e un collegamento rapido a ICV Scout.</p></article>
+      </div>
+
+      <section class="preview">
+        <div class="section-eye">Anteprima live</div>
+        <div class="section-title">Calendario e risultati</div>
+        <div class="matches" id="matchPreview"><div class="loading">Caricamento del calendario in corso...</div></div>
+      </section>
+    </section>
+
+    <section class="uel-section" data-calendar-section="europa" id="europa-league">
+      <div class="uel-heading">
+        <div>
+          <div class="section-eye">Europa League 2026/27</div>
+          <div class="section-title">Otto avversarie,<br>due percorsi</div>
+        </div>
+        <div class="uel-status"><strong>Sorteggio ufficiale</strong>Ordine delle partite e orari in attesa UEFA. Nessun evento europeo viene aggiunto al calendario finché il programma non è definitivo.</div>
+      </div>
+
+      <div class="uel-grid">
+        <section class="uel-venue">
+          <h3>Allianz Stadium <span>In casa</span></h3>
+          <div class="uel-list">
+            <div class="uel-opponent"><i>RS</i>Real Sociedad</div>
+            <div class="uel-opponent"><i>R</i>Rennes</div>
+            <div class="uel-opponent"><i>O</i>Omonia Nicosia</div>
+            <div class="uel-opponent"><i>N</i>NEC Nijmegen</div>
+          </div>
+        </section>
+        <section class="uel-venue">
+          <h3>In trasferta <span>Fuori casa</span></h3>
+          <div class="uel-list">
+            <div class="uel-opponent"><i>AZ</i>AZ Alkmaar</div>
+            <div class="uel-opponent"><i>F</i>Ferencvaros</div>
+            <div class="uel-opponent"><i>CV</i>Celta Vigo</div>
+            <div class="uel-opponent"><i>HB</i>Hapoel Be’er Sheva</div>
+          </div>
+        </section>
+      </div>
+
+      <div class="uel-windows">
+        <div class="uel-windows-head">
+          <h3>Finestre della fase campionato</h3>
+          <p>Le date indicano le otto giornate UEFA, non sono ancora abbinate alle singole avversarie.</p>
+        </div>
+        <div class="uel-dates">
+          <div class="uel-date"><span>1ª giornata</span><strong>16/17 SET</strong></div>
+          <div class="uel-date"><span>2ª giornata</span><strong>15 OTT</strong></div>
+          <div class="uel-date"><span>3ª giornata</span><strong>22 OTT</strong></div>
+          <div class="uel-date"><span>4ª giornata</span><strong>5 NOV</strong></div>
+          <div class="uel-date"><span>5ª giornata</span><strong>26 NOV</strong></div>
+          <div class="uel-date"><span>6ª giornata</span><strong>10 DIC</strong></div>
+          <div class="uel-date"><span>7ª giornata</span><strong>21 GEN</strong></div>
+          <div class="uel-date"><span>8ª giornata</span><strong>28 GEN</strong></div>
+        </div>
+        <div class="uel-sources">Fonti: <a href="https://www.juventus.com/en/news/articles/ucl-draw-juventus-league-phase-opponents-28-08-26" target="_blank" rel="noopener noreferrer">Juventus.com</a><a href="https://it.uefa.com/uefaeuropaleague/news/02a8-2174bdb8d37c-94a52a200388-1000--sorteggio-fase-campionato-di-europa-league-2026-27-le-avvers/" target="_blank" rel="noopener noreferrer">UEFA</a></div>
+      </div>
     </section>
   </main>
 
@@ -129,6 +214,23 @@
   <script>
     const calendarPath = '/api/juventus/calendar.ics';
     const publicCalendarUrl = 'https://ilcalciodivince.com' + calendarPath;
+
+    function setCompetitionFilter(filter, updateHash = true) {
+      document.querySelectorAll('[data-calendar-filter]').forEach(button => {
+        const active = button.dataset.calendarFilter === filter;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      document.querySelectorAll('[data-calendar-section]').forEach(section => {
+        section.hidden = filter !== 'all' && section.dataset.calendarSection !== filter;
+      });
+      if (updateHash) history.replaceState(null, '', filter === 'europa' ? '#europa-league' : location.pathname);
+    }
+
+    document.querySelectorAll('[data-calendar-filter]').forEach(button => {
+      button.addEventListener('click', () => setCompetitionFilter(button.dataset.calendarFilter));
+    });
+    if (location.hash === '#europa-league') setCompetitionFilter('europa', false);
 
     function setCalendarStatus(message) {
       document.getElementById('calendarStatus').textContent = message;

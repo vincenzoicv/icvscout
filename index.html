@@ -192,11 +192,15 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-probable-head{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;}
 .match-hub-probable-head h4{margin:0;font-family:"Bebas Neue";font-size:18px;font-weight:400;letter-spacing:1.5px;color:var(--gold-l);text-transform:uppercase;}
 .match-hub-probable-module{font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:1.3px;color:var(--t3);}
+.match-hub-probable-note{margin:-6px auto 14px;color:var(--t3);font-family:"Barlow Condensed";font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;}
 .match-hub-probable-pitch{position:relative;display:flex;flex-direction:column;gap:11px;max-width:780px;margin:0 auto;padding:16px 18px;border:1px solid rgba(196,150,42,.16);background:linear-gradient(90deg,rgba(196,150,42,.025),rgba(255,255,255,.018),rgba(196,150,42,.025));overflow:hidden;}
 .match-hub-probable-pitch::before{content:"";position:absolute;inset:50% 0 auto;border-top:1px solid rgba(196,150,42,.11);}
 .match-hub-probable-line{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px 18px;flex-wrap:wrap;}
 .match-hub-probable-player{display:inline-flex;align-items:center;gap:7px;color:var(--white);font-family:"Barlow Condensed";font-size:13px;font-weight:800;white-space:nowrap;}
 .match-hub-probable-number{display:inline-grid;place-items:center;width:24px;height:24px;border:1px solid rgba(196,150,42,.3);border-radius:50%;background:rgba(196,150,42,.08);color:var(--gold-l);font-family:"Bebas Neue";font-size:13px;font-weight:400;}
+.match-hub-probable-info{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;max-width:780px;margin:12px auto 0;}
+.match-hub-probable-info span{display:inline-flex;align-items:center;min-height:28px;padding:0 9px;border:1px solid var(--bdr2);border-radius:5px;background:rgba(255,255,255,.025);color:var(--t2);font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:.65px;}
+.match-hub-probable-info b{margin-right:4px;color:var(--gold-l);font-weight:900;text-transform:uppercase;}
 .match-hub-events{padding:18px 20px;border-top:1px solid var(--bdr2);background:rgba(101,226,148,.025);}
 .match-hub-event-list{display:flex;flex-wrap:wrap;gap:8px;}
 .match-hub-event{display:inline-flex;align-items:center;gap:7px;min-height:31px;padding:0 10px;border:1px solid var(--bdr2);border-radius:5px;background:rgba(255,255,255,.025);font-family:"Barlow Condensed";font-size:12px;font-weight:800;color:var(--t2);}
@@ -829,11 +833,12 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
         <h4>Probabile formazione</h4>
         <span class="match-hub-probable-module">4-2-3-1</span>
       </div>
+      <p class="match-hub-probable-note">Aggiornata dopo la conferenza del 28 agosto</p>
       <div class="match-hub-probable-pitch">
         <div class="match-hub-probable-line"><span class="match-hub-probable-player"><b class="match-hub-probable-number">9</b>Kolo Muani</span></div>
         <div class="match-hub-probable-line">
-          <span class="match-hub-probable-player"><b class="match-hub-probable-number">10</b>Yildiz</span>
-          <span class="match-hub-probable-player"><b class="match-hub-probable-number">22</b>McKennie</span>
+          <span class="match-hub-probable-player"><b class="match-hub-probable-number">13</b>Boga</span>
+          <span class="match-hub-probable-player"><b class="match-hub-probable-number">8</b>Koopmeiners</span>
           <span class="match-hub-probable-player"><b class="match-hub-probable-number">7</b>Conceicao</span>
         </div>
         <div class="match-hub-probable-line">
@@ -847,6 +852,12 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
           <span class="match-hub-probable-player"><b class="match-hub-probable-number">15</b>Kalulu</span>
         </div>
         <div class="match-hub-probable-line"><span class="match-hub-probable-player"><b class="match-hub-probable-number">25</b>Vicario</span></div>
+      </div>
+      <div class="match-hub-probable-info" aria-label="Ballottaggi e indisponibili">
+        <span><b>Ballottaggio</b>Cambiaso / Celik</span>
+        <span><b>Ballottaggio</b>Koopmeiners / Alajbegovic</span>
+        <span><b>Assenti</b>Yildiz, McKennie</span>
+        <span><b>Da valutare</b>Thuram</span>
       </div>
     </section>
     <section class="match-hub-events" id="matchHubEventsPanel" hidden>
@@ -1779,7 +1790,7 @@ function renderMatchHubProbable(match, phase) {
   var panel = document.getElementById("matchHubProbable");
   if (!panel) return;
   var teams = String(match && match.home || "") + " " + String(match && match.away || "");
-  panel.hidden = !match || !/frosinone/i.test(teams) || !matchHubIsJuve(teams) || !["buildup", "matchday"].includes(phase);
+  panel.hidden = !match || !/parma/i.test(teams) || !matchHubIsJuve(teams) || !["buildup", "matchday"].includes(phase);
 }
 
 var matchHubRenderSignature = "";

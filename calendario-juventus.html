@@ -15,6 +15,7 @@
   <meta name="twitter:title" content="Calendario Juventus 2026/27 · ICV Scout">
   <meta name="twitter:description" content="Serie A ed Europa League 2026/27 della Juventus, con calendario scaricabile e sorteggio ufficiale.">
   <meta name="twitter:image" content="https://ilcalciodivince.com/og-image.png">
+  <meta name="theme-color" content="#070708" id="themeColor">
   <link rel="stylesheet" href="/assets/fonts.css?v=20260728-1">
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -95,10 +96,31 @@
     .newsletter .note{min-height:17px;margin-top:10px;color:var(--muted);font-size:11px}
     footer{padding:25px;border-top:1px solid var(--line);color:var(--faint);font-size:12px;text-align:center}
     footer a{color:var(--muted);text-decoration:none}
-    @media(max-width:720px){.platforms,.uel-grid,.uel-heading{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}.competition-tabs{margin-bottom:42px}.uel-section{margin-top:62px;padding-top:48px}.uel-heading{gap:22px}.uel-dates{grid-template-columns:repeat(2,1fr)}.uel-windows-head{display:block}.uel-windows-head p{margin-top:8px;text-align:left}}
+    .theme-toggle{display:flex;align-items:center;gap:8px;margin-left:auto;padding:8px 11px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--text);font:700 10px Inter,sans-serif;letter-spacing:.8px;text-transform:uppercase;cursor:pointer}
+    .theme-toggle:hover{border-color:rgba(237,190,82,.55)}
+    .theme-toggle svg{width:15px;height:15px}
+    body.light{--bg:#f5f5f2;--panel:rgba(255,255,255,.84);--panel2:#fff;--line:rgba(24,23,19,.14);--gold:#8a6100;--gold2:#765100;--text:#181713;--muted:rgba(24,23,19,.8);--faint:rgba(24,23,19,.66);--green:#176b3a}
+    body.light header{background:rgba(250,250,247,.96);box-shadow:0 8px 28px rgba(28,25,17,.06)}
+    body.light .hero::before{background:radial-gradient(ellipse 70% 55% at 50% 0,rgba(138,97,0,.12),transparent 70%)}
+    body.light h1{background:linear-gradient(135deg,#181713 0%,#3f3b31 52%,#8a6100 100%);background-clip:text;-webkit-background-clip:text;color:transparent}
+    body.light .fact,body.light .calendar-box,body.light .match,body.light .competition-tab,body.light .theme-toggle{box-shadow:0 10px 30px rgba(35,30,18,.055)}
+    body.light .calendar-box{background:rgba(255,255,255,.9);box-shadow:0 24px 70px rgba(45,37,18,.1)}
+    body.light .platform{background:#fff;box-shadow:0 8px 22px rgba(35,30,18,.055)}
+    body.light .platform:hover{background:#fffaf0;border-color:rgba(138,97,0,.42)}
+    body.light .platform.primary{color:#fff;background:linear-gradient(135deg,#8a6100,#5f4200)}
+    body.light .competition-tab.active{border-color:rgba(138,97,0,.5);background:#fff4d8;color:#6b4900}
+    body.light .match{background:#fff;border-color:rgba(24,23,19,.13)}
+    body.light .match span{background:#fff2cf;color:#694700}
+    body.light .uel-status,body.light .newsletter{background:rgba(138,97,0,.07)}
+    body.light .uel-opponent{border-bottom-color:rgba(24,23,19,.1)}
+    body.light .uel-date{background:rgba(255,255,255,.5)}
+    body.light .newsletter input{background:#fff;color:#181713}
+    body.light footer{background:#efefeb}
+    @media(max-width:720px){header{padding:12px 15px}.badge{font-size:16px}.theme-toggle{padding:8px}.theme-toggle span{display:none}.platforms,.uel-grid,.uel-heading{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}.competition-tabs{margin-bottom:42px}.uel-section{margin-top:62px;padding-top:48px}.uel-heading{gap:22px}.uel-dates{grid-template-columns:repeat(2,1fr)}.uel-windows-head{display:block}.uel-windows-head p{margin-top:8px;text-align:left}}
   </style>
 </head>
 <body>
+  <script>try{if(localStorage.getItem('icv-theme')==='light')document.body.classList.add('light')}catch(error){}</script>
   <header>
     <a href="/" class="back">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3 5 8l5 5"/></svg>
@@ -106,6 +128,10 @@
     </a>
     <div class="sep"></div>
     <span class="badge">Agenda ICV</span>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Cambia tema" aria-pressed="false" onclick="toggleTheme()">
+      <span id="themeLabel">Night</span>
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></svg>
+    </button>
   </header>
 
   <section class="hero">
@@ -201,6 +227,21 @@
   <script>
     const calendarPath = '/api/juventus/calendar.ics';
     const publicCalendarUrl = 'https://ilcalciodivince.com' + calendarPath;
+
+    function syncThemeToggle() {
+      const light = document.body.classList.contains('light');
+      document.getElementById('themeLabel').textContent = light ? 'Day' : 'Night';
+      document.getElementById('themeToggle').setAttribute('aria-pressed', String(light));
+      document.getElementById('themeColor').setAttribute('content', light ? '#f5f5f2' : '#070708');
+    }
+
+    function toggleTheme() {
+      const light = document.body.classList.toggle('light');
+      try { localStorage.setItem('icv-theme', light ? 'light' : 'dark'); } catch (error) {}
+      syncThemeToggle();
+    }
+
+    syncThemeToggle();
 
     function setCompetitionFilter(filter, updateHash = true) {
       document.querySelectorAll('[data-calendar-filter]').forEach(button => {

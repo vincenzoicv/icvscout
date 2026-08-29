@@ -277,6 +277,11 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     assert.ok(!page.includes(removed), `va rimosso ${removed}`);
   }
   assert.match(page, /data-calendar-filter="europa"/);
+  assert.match(page, /body\.light\{--bg:#f5f5f2/);
+  assert.match(page, /localStorage\.getItem\('icv-theme'\)/);
+  assert.match(page, /function toggleTheme\(\)/);
+  assert.match(page, /aria-label="Cambia tema"/);
+  assert.match(page, /body\.light h1\{background:linear-gradient\(135deg,#181713/);
   assert.match(page, /Nessun evento europeo viene aggiunto al calendario finché il programma non è definitivo/);
   assert.match(page, /Le date indicano le otto giornate UEFA, non sono ancora abbinate alle singole avversarie/);
   for (const marker of ['path === "juventus/calendar.ics"', "JUVENTUS_SERIE_A_2026_27", "Risultato finale:", "LAST-MODIFIED", "SEQUENCE:"]) {

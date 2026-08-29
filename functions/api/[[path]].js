@@ -2985,6 +2985,17 @@ const JUVENTUS_SERIE_A_2026_27 = [
   [38, "2027-05-30", "Juventus", "Frosinone", null],
 ].map(([matchday, date, home, away, kickoff]) => ({ matchday, date, home, away, kickoff }));
 
+const JUVENTUS_EUROPA_LEAGUE_2026_27 = [
+  [1, "2026-09-17T19:00:00Z", "Juventus", "NEC Nijmegen"],
+  [2, "2026-10-15T19:00:00Z", "Celta Vigo", "Juventus"],
+  [3, "2026-10-22T16:45:00Z", "Juventus", "Rennes"],
+  [4, "2026-11-05T20:00:00Z", "AZ Alkmaar", "Juventus"],
+  [5, "2026-11-26T20:00:00Z", "Juventus", "Omonia Nicosia"],
+  [6, "2026-12-10T17:45:00Z", "Hapoel Beer-Sheva", "Juventus"],
+  [7, "2027-01-21T17:45:00Z", "Ferencvárosi", "Juventus"],
+  [8, "2027-01-28T20:00:00Z", "Juventus", "Real Sociedad"],
+].map(([matchday, kickoff, home, away]) => ({ matchday, kickoff, home, away, competition:"Europa League", code:"EL", uidKey:"europa-league" }));
+
 function normalizedClubName(value) {
   const normalized = String(value || "")
     .normalize("NFD")
@@ -2997,10 +3008,19 @@ function normalizedClubName(value) {
     "lazio", "lecce", "genoa", "napoli", "fiorentina", "venezia", "como", "udinese",
     "monza", "roma", "bologna", "torino", "inter",
   ];
+  const europeanClubs = [
+    [/nijmegen|^nec$/, "necnijmegen"], [/rennes|rennais/, "rennes"],
+    [/celta/, "celtavigo"], [/omonia/, "omonianicosia"],
+    [/ferencvar/, "ferencvarosi"], [/beersheva/, "hapoelbeersheva"],
+    [/alkmaar|^az$/, "azalkmaar"], [/realsociedad/, "realsociedad"],
+  ];
+  const europeanClub = europeanClubs.find(([pattern]) => pattern.test(normalized));
+  if (europeanClub) return europeanClub[1];
   return clubs.find(club => normalized.includes(club)) || normalized;
 }
 
 function officialFixtureMatch(match, fixture) {
+  if (match && match.competition && match.competition.code && match.competition.code !== fixture.code) return false;
   if (Number(match && match.matchday) !== fixture.matchday) return false;
   const home = worldCupTeamName(match && match.homeTeam, "");
   const away = worldCupTeamName(match && match.awayTeam, "");
@@ -3025,7 +3045,7 @@ async function juventusCalendar(request, env) {
   if (env.FOOTBALL_DATA_KEY) {
     try {
       const headers = { "X-Auth-Token": env.FOOTBALL_DATA_KEY };
-      const data = await fetchJson("https://api.football-data.org/v4/teams/109/matches?competitions=SA&season=2026", headers);
+      const data = await fetchJson("https://api.football-data.org/v4/teams/109/matches?season=2026", headers);
       providerMatches = Array.isArray(data.matches) ? data.matches : [];
     } catch (error) {
       console.warn("Calendario Juventus: aggiornamento esterno non disponibile", error);
@@ -3035,17 +3055,21 @@ async function juventusCalendar(request, env) {
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//ICV Scout//Juventus Serie A 2026-27//IT",
+    "PRODID:-//ICV Scout//Juventus 2026-27//IT",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    "X-WR-CALNAME:ICV Juventus Serie A 2026/27",
+    "X-WR-CALNAME:ICV Juventus 2026/27",
     "X-WR-CALDESC:Calendario Juventus con orari e risultati aggiornati automaticamente",
     "X-APPLE-CALENDAR-COLOR:#C99837",
     "REFRESH-INTERVAL;VALUE=DURATION:PT1H",
     "X-PUBLISHED-TTL:PT1H",
   ];
 
-  for (const fixture of JUVENTUS_SERIE_A_2026_27) {
+  const fixtures = [
+    ...JUVENTUS_SERIE_A_2026_27.map(fixture => ({...fixture, competition:"Serie A", code:"SA", uidKey:"serie-a"})),
+    ...JUVENTUS_EUROPA_LEAGUE_2026_27,
+  ];
+  for (const fixture of fixtures) {
     const match = providerMatches.find(candidate => officialFixtureMatch(candidate, fixture));
     const providerKickoff = match && new Date(match.utcDate);
     const officialKickoff = fixture.kickoff && new Date(fixture.kickoff);
@@ -3060,19 +3084,21 @@ async function juventusCalendar(request, env) {
       && Number.isFinite(score.home)
       && Number.isFinite(score.away);
     const result = finished ? `${home} ${score.home}-${score.away} ${away}` : "";
-    const summary = finished ? `Juventus: ${result}` : `Serie A: ${home} - ${away}`;
+    const summary = finished ? `Juventus: ${result}` : `${fixture.competition}: ${home} - ${away}`;
     const description = [
-      `${fixture.matchday}ª giornata di Serie A 2026/27`,
+      `${fixture.matchday}ª giornata di ${fixture.competition} 2026/27`,
       finished ? `Risultato finale: ${result}` : kickoff ? "Data e orario confermati." : "Data del turno; giorno e orario da confermare.",
-      "Calendario ufficiale: https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27",
+      fixture.code === "EL"
+        ? "Calendario ufficiale: https://www.juventus.com/it/news/articoli/uefa-europa-league-date-e-orari-delle-partite-della-juventus"
+        : "Calendario ufficiale: https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27",
     ].join("\n");
     const modified = match && new Date(match.lastUpdated || now);
-    const validModified = modified && Number.isFinite(modified.getTime()) ? modified : new Date("2026-06-05T00:00:00Z");
+    const validModified = modified && Number.isFinite(modified.getTime()) ? modified : new Date(fixture.code === "EL" ? "2026-08-29T00:00:00Z" : "2026-06-05T00:00:00Z");
     const sequence = match ? Math.floor(validModified.getTime() / 1000) : 0;
 
     lines.push(
       "BEGIN:VEVENT",
-      `UID:juventus-serie-a-2026-27-g${fixture.matchday}@ilcalciodivince.com`,
+      `UID:juventus-${fixture.uidKey}-2026-27-g${fixture.matchday}@ilcalciodivince.com`,
       `DTSTAMP:${formatIcsDate(now)}`,
       `LAST-MODIFIED:${formatIcsDate(validModified)}`,
       `SEQUENCE:${sequence}`,
@@ -3081,7 +3107,7 @@ async function juventusCalendar(request, env) {
       `SUMMARY:${escapeIcsText(summary)}`,
       `DESCRIPTION:${escapeIcsText(description)}`,
       "URL:https://ilcalciodivince.com/calendario-juventus",
-      "CATEGORIES:Serie A,Juventus",
+      `CATEGORIES:${fixture.competition},Juventus`,
       `STATUS:${match && match.status === "CANCELLED" ? "CANCELLED" : "CONFIRMED"}`,
       "TRANSP:TRANSPARENT",
       "BEGIN:VALARM",
@@ -3098,7 +3124,7 @@ async function juventusCalendar(request, env) {
   return new Response(calendar, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="ICV-Juventus-Serie-A-2026-27.ics"',
+      "Content-Disposition": 'attachment; filename="ICV-Juventus-2026-27.ics"',
       "Cache-Control": "public, max-age=900, stale-while-revalidate=3600",
       "Access-Control-Allow-Origin": "*",
     },

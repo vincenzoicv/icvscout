@@ -36,7 +36,7 @@ test("i marcatori sono sotto il risultato e spariscono senza dati", async () => 
   assert.equal(element.hidden, true);
 });
 
-test("dopo Parma le prossime tre sono Milan, Sassuolo e Atalanta", async () => {
+test("dopo Parma le prossime tre includono il debutto in Europa League", async () => {
   const html = await read("index.html");
   const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function matchHubFreshness("));
   const panel = {hidden:true};
@@ -45,10 +45,15 @@ test("dopo Parma le prossime tre sono Milan, Sassuolo e Atalanta", async () => {
   const {allRows, render} = new Function("document", "Date", source + ";return {allRows:allMatchHubRows,render:renderMatchHubUpcoming}")({
     getElementById:id => id === "matchHubUpcomingPanel" ? panel : box,
   }, MatchDate);
+  const merged = allRows([{match_id:'uel-nec',match_date:'2026-09-17T19:00:00Z',status:'scheduled',competition:'Europa League',source_payload:{homeTeam:{name:'Juventus FC'},awayTeam:{name:'N.E.C.'},matchday:1}}]);
+  assert.equal(merged.filter(match => match.date === '2026-09-17T19:00:00Z').length, 1);
+  assert.equal(merged.find(match => match.matchId === 'uel-nec').away, 'N.E.C.');
   render(allRows([]));
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.match(box.innerHTML, /Milan[\s\S]*Sassuolo[\s\S]*Atalanta/);
+  assert.match(box.innerHTML, /Milan[\s\S]*Sassuolo[\s\S]*NEC Nijmegen/);
+  assert.match(box.innerHTML, /Europa League/);
+  assert.doesNotMatch(box.innerHTML, /Atalanta/);
   assert.doesNotMatch(box.innerHTML, /Parma/);
   const api = await read("functions/api/[[path]].js");
   assert.match(api, /dateTo = isoDateOffset\(now, 60\)/);
@@ -145,7 +150,7 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
     "function renderMatchHub",
     "function normalizeMatchHubRows",
     "function matchHubIsSerieA",
-    "var upcoming = live || nextSerieA",
+    "var upcoming = live || matches.find",
     'previous.status === "finished" && match.status !== "finished"',
     "function matchHubRecordLabel",
     "function matchHubRomeDayNumber",
@@ -203,7 +208,7 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.doesNotMatch(html, /Orario e sede verificati/);
   assert.doesNotMatch(html, /Informazioni verificate/);
   assert.doesNotMatch(html, /matchHubFact/);
-  assert.match(html, /nextSerieA = matches\.find[\s\S]*?matchHubIsSerieA\(match\)/);
+  assert.doesNotMatch(html, /var nextSerieA/);
   assert.doesNotMatch(html, /Focus ICV|buildEditorialFocus|homeFocusTitle/);
   assert.match(html, /renderLiveDesk\(data\.live_desk\);[\s\S]*?renderMatchHub\(matches\);/);
   assert.match(html, /icvReducedMotion\(\)[\s\S]*?#homeMatchHub/);
@@ -319,7 +324,7 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
   assert.match(home, /class="match-hub-calendar-link" href="\/calendario-juventus">Calendario/);
   assert.doesNotMatch(home, /class="match-banner"/);
   assert.doesNotMatch(home, /Aggiungi al calendario/);
-  for (const marker of ["Apple Calendar", "Google Calendar", "/api/juventus/calendar.ics", ">38<", "Europa League", "Real Sociedad", "Rennes", "Omonia Nicosia", "NEC Nijmegen", "AZ Alkmaar", "Ferencvaros", "Celta Vigo", "Hapoel Be’er Sheva", "16/17 SET", "28 GEN"]) {
+  for (const marker of ["Apple Calendar", "Google Calendar", "/api/juventus/calendar.ics", ">38<", "Europa League", "europaPreview", "Calendario ufficiale", "Europe/Rome"]) {
     assert.ok(page.includes(marker), `manca ${marker}`);
   }
   for (const removed of ["Come funziona", "Orari aggiornati", "Risultati automatici", "Promemoria incluso"]) {
@@ -331,8 +336,7 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
   assert.match(page, /function toggleTheme\(\)/);
   assert.match(page, /aria-label="Cambia tema"/);
   assert.match(page, /body\.light h1\{background:linear-gradient\(135deg,#181713/);
-  assert.match(page, /Nessun evento europeo viene aggiunto al calendario finché il programma non è definitivo/);
-  assert.match(page, /Le date indicano le otto giornate UEFA, non sono ancora abbinate alle singole avversarie/);
+  assert.doesNotMatch(page, /orari in attesa UEFA|non sono ancora abbinate|Finestre della fase campionato/);
   for (const marker of ['path === "juventus/calendar.ics"', "JUVENTUS_SERIE_A_2026_27", "Risultato finale:", "LAST-MODIFIED", "SEQUENCE:"]) {
     assert.ok(api.includes(marker), `manca ${marker}`);
   }
@@ -369,6 +373,12 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
       awayTeam: { name: "Juventus" },
       score: { fullTime: { home: null, away: null } },
     },
+    {
+      id: 2701, utcDate:'2026-09-17T19:00:00Z', lastUpdated:'2026-08-29T19:00:00Z',
+      status:'SCHEDULED', matchday:1, competition:{code:'EL'},
+      homeTeam:{name:'Juventus FC'}, awayTeam:{name:'N.E.C.'},
+      score:{fullTime:{home:null,away:null}},
+    },
   ] }), { status: 200, headers: { "Content-Type": "application/json" } });
   try {
     const { onRequest } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
@@ -380,7 +390,7 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     const unfoldedCalendar = calendar.replace(/\r\n /g, "");
     assert.equal(response.status, 200);
     assert.match(response.headers.get("content-type"), /text\/calendar/);
-    assert.equal((unfoldedCalendar.match(/BEGIN:VEVENT/g) || []).length, 38);
+    assert.equal((unfoldedCalendar.match(/BEGIN:VEVENT/g) || []).length, 46);
     assert.match(unfoldedCalendar, /UID:juventus-serie-a-2026-27-g1@ilcalciodivince\.com/);
     assert.match(unfoldedCalendar, /SUMMARY:Juventus: Frosinone 0-2 Juventus/);
     assert.match(unfoldedCalendar, /Risultato finale: Frosinone 0-2 Juventus/);
@@ -388,6 +398,8 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     const secondRound = unfoldedCalendar.match(/UID:juventus-serie-a-2026-27-g2@[\s\S]*?END:VEVENT/)[0];
     assert.doesNotMatch(secondRound, /Inter - Juventus/);
     assert.match(unfoldedCalendar, /SUMMARY:Serie A: Juventus - Frosinone/);
+    const europeanFirstRound = unfoldedCalendar.match(/UID:juventus-europa-league-2026-27-g1@[\s\S]*?END:VEVENT/)[0];
+    assert.match(europeanFirstRound, /LAST-MODIFIED:20260829T190000Z/);
 
     const fallbackResponse = await onRequest({
       request: new Request("https://ilcalciodivince.com/api/juventus/calendar.ics"),
@@ -395,7 +407,44 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     });
     const fallbackCalendar = (await fallbackResponse.text()).replace(/\r\n /g, "");
     assert.equal(fallbackResponse.status, 200);
-    assert.equal((fallbackCalendar.match(/BEGIN:VEVENT/g) || []).length, 38);
+    assert.equal((fallbackCalendar.match(/BEGIN:VEVENT/g) || []).length, 46);
+    const europeanEvents = [...fallbackCalendar.matchAll(/BEGIN:VEVENT\r\n([\s\S]*?)END:VEVENT/g)]
+      .map(match => match[1]).filter(event => event.includes('CATEGORIES:Europa League,Juventus'));
+    assert.equal(europeanEvents.length, 8);
+    const expected = [
+      ['20260917T190000Z', '17/09/2026, 21:00', 'Juventus - NEC Nijmegen'],
+      ['20261015T190000Z', '15/10/2026, 21:00', 'Celta Vigo - Juventus'],
+      ['20261022T164500Z', '22/10/2026, 18:45', 'Juventus - Rennes'],
+      ['20261105T200000Z', '05/11/2026, 21:00', 'AZ Alkmaar - Juventus'],
+      ['20261126T200000Z', '26/11/2026, 21:00', 'Juventus - Omonia Nicosia'],
+      ['20261210T174500Z', '10/12/2026, 18:45', 'Hapoel Beer-Sheva - Juventus'],
+      ['20270121T174500Z', '21/01/2027, 18:45', 'Ferencvárosi - Juventus'],
+      ['20270128T200000Z', '28/01/2027, 21:00', 'Juventus - Real Sociedad'],
+    ];
+    const homeSource = home.slice(home.indexOf('var ICV_MATCH_FALLBACKS ='), home.indexOf('var ICV_VERIFIED_MATCH_DATA ='));
+    const homeEurope = new Function(homeSource + ';return ICV_MATCH_FALLBACKS.filter(match => match.competition === "Europa League")')();
+    assert.equal(homeEurope.length, 8);
+    europeanEvents.forEach((event, index) => {
+      const [utc, local, teams] = expected[index];
+      assert.ok(event.includes('DTSTART:' + utc));
+      assert.ok(event.includes('SUMMARY:Europa League: ' + teams));
+      assert.ok(event.includes(`UID:juventus-europa-league-2026-27-g${index + 1}@`));
+      assert.ok(event.includes('TRIGGER:-PT30M'));
+      assert.ok(!event.includes('VALUE=DATE'));
+      assert.equal(new Intl.DateTimeFormat('it-IT', {timeZone:'Europe/Rome', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}).format(new Date(homeEurope[index].date)), local);
+      assert.equal(homeEurope[index].home + ' - ' + homeEurope[index].away, teams);
+    });
+    const previews = {matchPreview:{innerHTML:''}, europaPreview:{innerHTML:''}};
+    const previewSource = page.slice(page.indexOf('function escapeHtml('), page.lastIndexOf('loadPreview();'));
+    await new Function('document', 'fetch', 'calendarPath', previewSource + '; return loadPreview();')(
+      {getElementById:id => previews[id]},
+      async () => new Response(fallbackCalendar),
+      '/api/juventus/calendar.ics',
+    );
+    assert.equal((previews.europaPreview.innerHTML.match(/<article/g) || []).length, 8);
+    assert.match(previews.europaPreview.innerHTML, /1ª giornata[\s\S]*8ª giornata/);
+    assert.doesNotMatch(previews.europaPreview.innerHTML, /Serie A|orario da confermare/);
+    assert.doesNotMatch(previews.matchPreview.innerHTML, /NEC Nijmegen|Rennes/);
   } finally {
     globalThis.fetch = originalFetch;
   }

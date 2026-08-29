@@ -4,16 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Calendario Juventus 2026/27 · ICV Scout</title>
-  <meta name="description" content="Calendario Juventus 2026/27: Serie A scaricabile e sorteggio ufficiale di Europa League, con dati aggiornati e verificati.">
+  <meta name="description" content="Calendario Juventus 2026/27: Serie A ed Europa League con date e orari ufficiali, risultati e agenda scaricabile.">
   <link rel="canonical" href="https://ilcalciodivince.com/calendario-juventus">
   <meta property="og:title" content="Calendario Juventus 2026/27 · ICV Scout">
-  <meta property="og:description" content="Serie A ed Europa League 2026/27 della Juventus, con calendario scaricabile e sorteggio ufficiale.">
+  <meta property="og:description" content="Serie A ed Europa League 2026/27 della Juventus: date, orari ufficiali e calendario scaricabile.">
   <meta property="og:url" content="https://ilcalciodivince.com/calendario-juventus">
   <meta property="og:image" content="https://ilcalciodivince.com/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Calendario Juventus 2026/27 · ICV Scout">
-  <meta name="twitter:description" content="Serie A ed Europa League 2026/27 della Juventus, con calendario scaricabile e sorteggio ufficiale.">
+  <meta name="twitter:description" content="Serie A ed Europa League 2026/27 della Juventus: date, orari ufficiali e calendario scaricabile.">
   <meta name="twitter:image" content="https://ilcalciodivince.com/og-image.png">
   <meta name="theme-color" content="#070708" id="themeColor">
   <link rel="stylesheet" href="/assets/fonts.css?v=20260728-1">
@@ -166,7 +166,7 @@
 
     <section data-calendar-section="seriea">
       <section class="preview">
-        <div class="section-eye">Anteprima live</div>
+        <div class="section-eye">Serie A 2026/27</div>
         <div class="section-title">Calendario e risultati</div>
         <div class="matches" id="matchPreview"><div class="loading">Caricamento del calendario in corso...</div></div>
       </section>
@@ -176,49 +176,13 @@
       <div class="uel-heading">
         <div>
           <div class="section-eye">Europa League 2026/27</div>
-          <div class="section-title">Otto avversarie,<br>due percorsi</div>
+          <div class="section-title">Calendario ufficiale</div>
         </div>
-        <div class="uel-status"><strong>Sorteggio ufficiale</strong>Ordine delle partite e orari in attesa UEFA. Nessun evento europeo viene aggiunto al calendario finché il programma non è definitivo.</div>
+        <div class="uel-status"><strong>League Phase</strong>17 settembre 2026 – 28 gennaio 2027<br>Orari italiani</div>
       </div>
 
-      <div class="uel-grid">
-        <section class="uel-venue">
-          <h3>Allianz Stadium <span>In casa</span></h3>
-          <div class="uel-list">
-            <div class="uel-opponent"><i>RS</i>Real Sociedad</div>
-            <div class="uel-opponent"><i>R</i>Rennes</div>
-            <div class="uel-opponent"><i>O</i>Omonia Nicosia</div>
-            <div class="uel-opponent"><i>N</i>NEC Nijmegen</div>
-          </div>
-        </section>
-        <section class="uel-venue">
-          <h3>In trasferta <span>Fuori casa</span></h3>
-          <div class="uel-list">
-            <div class="uel-opponent"><i>AZ</i>AZ Alkmaar</div>
-            <div class="uel-opponent"><i>F</i>Ferencvaros</div>
-            <div class="uel-opponent"><i>CV</i>Celta Vigo</div>
-            <div class="uel-opponent"><i>HB</i>Hapoel Be’er Sheva</div>
-          </div>
-        </section>
-      </div>
-
-      <div class="uel-windows">
-        <div class="uel-windows-head">
-          <h3>Finestre della fase campionato</h3>
-          <p>Le date indicano le otto giornate UEFA, non sono ancora abbinate alle singole avversarie.</p>
-        </div>
-        <div class="uel-dates">
-          <div class="uel-date"><span>1ª giornata</span><strong>16/17 SET</strong></div>
-          <div class="uel-date"><span>2ª giornata</span><strong>15 OTT</strong></div>
-          <div class="uel-date"><span>3ª giornata</span><strong>22 OTT</strong></div>
-          <div class="uel-date"><span>4ª giornata</span><strong>5 NOV</strong></div>
-          <div class="uel-date"><span>5ª giornata</span><strong>26 NOV</strong></div>
-          <div class="uel-date"><span>6ª giornata</span><strong>10 DIC</strong></div>
-          <div class="uel-date"><span>7ª giornata</span><strong>21 GEN</strong></div>
-          <div class="uel-date"><span>8ª giornata</span><strong>28 GEN</strong></div>
-        </div>
-        <div class="uel-sources">Fonti: <a href="https://www.juventus.com/en/news/articles/ucl-draw-juventus-league-phase-opponents-28-08-26" target="_blank" rel="noopener noreferrer">Juventus.com</a><a href="https://it.uefa.com/uefaeuropaleague/news/02a8-2174bdb8d37c-94a52a200388-1000--sorteggio-fase-campionato-di-europa-league-2026-27-le-avvers/" target="_blank" rel="noopener noreferrer">UEFA</a></div>
-      </div>
+      <div class="matches" id="europaPreview"><div class="loading">Caricamento del calendario in corso...</div></div>
+      <div class="uel-sources">Fonte: <a href="https://www.juventus.com/it/news/articoli/uefa-europa-league-date-e-orari-delle-partite-della-juventus" target="_blank" rel="noopener noreferrer">Juventus.com · date e orari ufficiali</a></div>
     </section>
   </main>
 
@@ -299,12 +263,14 @@
 
     async function loadPreview() {
       const container = document.getElementById('matchPreview');
+      const europaContainer = document.getElementById('europaPreview');
       try {
         const response = await fetch(calendarPath, { cache: 'no-store' });
         if (!response.ok) throw new Error('HTTP ' + response.status);
         const calendar = (await response.text()).replace(/\r?\n[ \t]/g, '');
         const events = [...calendar.matchAll(/BEGIN:VEVENT\r?\n([\s\S]*?)\r?\nEND:VEVENT/g)].map(match => {
-          const fields = Object.fromEntries(match[1].split(/\r?\n/).map(line => {
+          const eventBody = match[1].replace(/BEGIN:VALARM\r?\n[\s\S]*?END:VALARM/g, '');
+          const fields = Object.fromEntries(eventBody.split(/\r?\n/).map(line => {
             const separator = line.indexOf(':');
             return separator < 0 ? ['', ''] : [line.slice(0, separator), line.slice(separator + 1)];
           }));
@@ -318,25 +284,30 @@
           return {
             date,
             allDay,
-            title: String(fields.SUMMARY || '').replace(/^Serie A: /, '').replace(/^Juventus: /, ''),
+            title: String(fields.SUMMARY || '').replace(/^(Serie A|Europa League|Juventus): /, ''),
+            competition: String(fields.CATEGORIES || '').includes('Europa League') ? 'europa' : 'seriea',
             round: (description.match(/\d+ª giornata/) || ['Serie A'])[0],
           };
-        }).filter(event => Number.isFinite(event.date.getTime()));
+        }).filter(event => Number.isFinite(event.date.getTime())).sort((a, b) => a.date - b.date);
         if (!events.length) throw new Error('Nessuna partita disponibile');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const nextIndex = events.findIndex(event => event.date >= today);
-        const start = Math.max(0, (nextIndex < 0 ? events.length : nextIndex) - 2);
-        container.innerHTML = events.slice(start, start + 8).map(event => {
+        const serieA = events.filter(event => event.competition === 'seriea');
+        const nextIndex = serieA.findIndex(event => event.date >= today);
+        const start = Math.max(0, (nextIndex < 0 ? serieA.length : nextIndex) - 2);
+        const renderEvent = event => {
           const options = event.allDay
-            ? {day:'2-digit',month:'short'}
-            : {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'};
+            ? {day:'2-digit',month:'short',timeZone:'Europe/Rome'}
+            : {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'};
           const date = new Intl.DateTimeFormat('it-IT', options).format(event.date);
           const label = event.allDay ? event.round + ' · orario da confermare' : event.round;
           return `<article class="match"><time>${escapeHtml(date)}</time><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(label)}</span></article>`;
-        }).join('');
+        };
+        container.innerHTML = serieA.slice(start, start + 8).map(renderEvent).join('');
+        europaContainer.innerHTML = events.filter(event => event.competition === 'europa').map(renderEvent).join('');
       } catch {
         container.innerHTML = '<div class="loading">Il calendario resta disponibile. L’anteprima live tornerà al prossimo aggiornamento.</div>';
+        europaContainer.innerHTML = '<div class="loading">Calendario momentaneamente non disponibile. Consulta le date e gli orari nella fonte ufficiale qui sotto.</div>';
       }
     }
 

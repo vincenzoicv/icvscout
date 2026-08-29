@@ -873,7 +873,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
     <section class="match-hub-upcoming" id="matchHubUpcomingPanel" aria-label="Prossime tre partite della Juventus" hidden>
       <div class="match-hub-upcoming-head">
         <h4>Prossime 3</h4>
-        <span>Serie A 2026/27</span>
+        <span>Serie A · Europa League</span>
       </div>
       <div class="match-hub-upcoming-list" id="matchHubUpcoming"></div>
     </section>
@@ -1545,7 +1545,15 @@ var ICV_MATCH_FALLBACKS = [
   {date:"2026-08-29T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Parma Calcio 1913",homeScore:2,awayScore:0,venue:"Allianz Stadium · Torino",matchday:2,scorers:"Juventus: González, Koopmeiners",mvp:"González"},
   {date:"2026-09-06T20:45:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"AC Milan",venue:"Allianz Stadium · Torino",matchday:3},
   {date:"2026-09-12T18:00:00+02:00",status:"scheduled",competition:"Serie A",home:"US Sassuolo Calcio",away:"Juventus FC",matchday:4},
-  {date:"2026-09-20T18:00:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Atalanta BC",venue:"Allianz Stadium · Torino",matchday:5}
+  {date:"2026-09-20T18:00:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Atalanta BC",venue:"Allianz Stadium · Torino",matchday:5},
+  {date:"2026-09-17T19:00:00Z",status:"scheduled",competition:"Europa League",home:"Juventus",away:"NEC Nijmegen",matchday:1},
+  {date:"2026-10-15T19:00:00Z",status:"scheduled",competition:"Europa League",home:"Celta Vigo",away:"Juventus",matchday:2},
+  {date:"2026-10-22T16:45:00Z",status:"scheduled",competition:"Europa League",home:"Juventus",away:"Rennes",matchday:3},
+  {date:"2026-11-05T20:00:00Z",status:"scheduled",competition:"Europa League",home:"AZ Alkmaar",away:"Juventus",matchday:4},
+  {date:"2026-11-26T20:00:00Z",status:"scheduled",competition:"Europa League",home:"Juventus",away:"Omonia Nicosia",matchday:5},
+  {date:"2026-12-10T17:45:00Z",status:"scheduled",competition:"Europa League",home:"Hapoel Beer-Sheva",away:"Juventus",matchday:6},
+  {date:"2027-01-21T17:45:00Z",status:"scheduled",competition:"Europa League",home:"Ferencvárosi",away:"Juventus",matchday:7},
+  {date:"2027-01-28T20:00:00Z",status:"scheduled",competition:"Europa League",home:"Juventus",away:"Real Sociedad",matchday:8}
 ];
 
 var ICV_VERIFIED_MATCH_DATA = {
@@ -1654,12 +1662,20 @@ function matchHubKey(match) {
 }
 
 function matchHubTeamKey(value) {
-  return String(value || "")
+  var key = String(value || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/\b(fc|calcio|football club)\b/g, "")
     .replace(/[^a-z0-9]/g, "");
+  var europeanClubs = [
+    [/nijmegen|^nec$/, "necnijmegen"], [/rennes|rennais/, "rennes"],
+    [/celta/, "celtavigo"], [/omonia/, "omonianicosia"],
+    [/ferencvar/, "ferencvarosi"], [/beersheva/, "hapoelbeersheva"],
+    [/alkmaar|^az$/, "azalkmaar"], [/realsociedad/, "realsociedad"]
+  ];
+  var club = europeanClubs.find(function(entry) { return entry[0].test(key); });
+  return club ? club[1] : key;
 }
 
 function allMatchHubRows(apiRows) {
@@ -1762,8 +1778,8 @@ function matchHubPhaseContent(phase, match) {
   if (phase === "post") return { state:"Post partita", eyebrow:"Ultimo finale", title:"Analisi in preparazione" };
   return {
     state:"Avvicinamento",
-    eyebrow:(match && match.matchday ? "Serie A · " + match.matchday + "ª giornata" : "Prossima sfida"),
-    title:match && Number(match.matchday) === 1 ? "Domenica si comincia" : "Verso " + (match ? match.home + "-" + match.away : "la prossima sfida")
+    eyebrow:(match && match.matchday ? match.competition + " · " + match.matchday + "ª giornata" : "Prossima sfida"),
+    title:"Verso " + (match ? match.home + "-" + match.away : "la prossima sfida")
   };
 }
 
@@ -1801,13 +1817,13 @@ function renderMatchHubUpcoming(matches) {
   if (!panel || !box) return;
   var now = Date.now();
   var upcoming = (Array.isArray(matches) ? matches : []).filter(function(match) {
-    return match.status === "scheduled" && matchHubIsSerieA(match) && new Date(match.date).getTime() >= now;
+    return match.status === "scheduled" && new Date(match.date).getTime() >= now;
   }).slice(0, 3);
   panel.hidden = !upcoming.length;
   box.innerHTML = upcoming.map(function(match) {
     var home = matchHubCompactTeam(match.home);
     var away = matchHubCompactTeam(match.away);
-    var round = match.matchday ? match.matchday + "ª giornata" : "Serie A";
+    var round = match.competition + (match.matchday ? " · " + match.matchday + "ª giornata" : "");
     var side = matchHubIsJuve(match.home) ? "Casa" : "Trasferta";
     return "<div class=\"match-hub-upcoming-item\">" +
       "<span class=\"match-hub-upcoming-round\">" + icvEsc(round) + "</span>" +
@@ -1850,10 +1866,7 @@ function renderMatchHub(apiRows) {
   var matches = allMatchHubRows(apiRows);
   var now = Date.now();
   var live = matches.find(function(match) { return match.status === "live"; });
-  var nextSerieA = matches.find(function(match) {
-    return match.status === "scheduled" && matchHubIsSerieA(match) && new Date(match.date).getTime() >= now;
-  });
-  var upcoming = live || nextSerieA || matches.find(function(match) {
+  var upcoming = live || matches.find(function(match) {
     return match.status === "scheduled" && new Date(match.date).getTime() >= now;
   });
   var finished = matches.filter(function(match) {

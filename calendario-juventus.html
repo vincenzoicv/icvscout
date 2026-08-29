@@ -55,12 +55,7 @@
     [data-calendar-section][hidden]{display:none!important}
     .section-eye{color:var(--gold);font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase}
     .section-title{margin:10px 0 30px;font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,7vw,66px);line-height:.95}
-    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .card{padding:22px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
-    .card .num{font-family:'Bebas Neue',sans-serif;color:var(--gold2);font-size:28px}
-    .card h3{margin:10px 0 7px;font-size:15px}
-    .card p{color:var(--muted);font-size:13px;line-height:1.6}
-    .preview{margin-top:72px}
+    .preview{margin-top:0}
     .matches{display:grid;gap:8px}
     .match{display:grid;grid-template-columns:135px 1fr auto;align-items:center;gap:12px;padding:13px 16px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
     .match time{color:var(--faint);font-size:11px;font-weight:600}
@@ -100,7 +95,7 @@
     .newsletter .note{min-height:17px;margin-top:10px;color:var(--muted);font-size:11px}
     footer{padding:25px;border-top:1px solid var(--line);color:var(--faint);font-size:12px;text-align:center}
     footer a{color:var(--muted);text-decoration:none}
-    @media(max-width:720px){.platforms,.features,.uel-grid,.uel-heading{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}.competition-tabs{margin-bottom:42px}.uel-section{margin-top:62px;padding-top:48px}.uel-heading{gap:22px}.uel-dates{grid-template-columns:repeat(2,1fr)}.uel-windows-head{display:block}.uel-windows-head p{margin-top:8px;text-align:left}}
+    @media(max-width:720px){.platforms,.uel-grid,.uel-heading{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}.competition-tabs{margin-bottom:42px}.uel-section{margin-top:62px;padding-top:48px}.uel-heading{gap:22px}.uel-dates{grid-template-columns:repeat(2,1fr)}.uel-windows-head{display:block}.uel-windows-head p{margin-top:8px;text-align:left}}
   </style>
 </head>
 <body>
@@ -144,14 +139,6 @@
     </nav>
 
     <section data-calendar-section="seriea">
-      <div class="section-eye">Come funziona</div>
-      <div class="section-title">La Serie A,<br>sempre aggiornata</div>
-      <div class="features">
-        <article class="card"><div class="num">01</div><h3>Orari aggiornati</h3><p>Se Lega Serie A modifica giorno o calcio d’inizio, la sottoscrizione riceve il nuovo orario.</p></article>
-        <article class="card"><div class="num">02</div><h3>Risultati automatici</h3><p>Al termine della partita, il punteggio viene aggiunto allo stesso evento senza creare duplicati.</p></article>
-        <article class="card"><div class="num">03</div><h3>Promemoria incluso</h3><p>Ogni partita contiene un avviso trenta minuti prima e un collegamento rapido a ICV Scout.</p></article>
-      </div>
-
       <section class="preview">
         <div class="section-eye">Anteprima live</div>
         <div class="section-title">Calendario e risultati</div>

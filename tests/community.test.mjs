@@ -261,8 +261,11 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
   assert.match(home, /class="match-hub-calendar-link" href="\/calendario-juventus">Calendario/);
   assert.doesNotMatch(home, /class="match-banner"/);
   assert.doesNotMatch(home, /Aggiungi al calendario/);
-  for (const marker of ["Apple Calendar", "Google Calendar", "/api/juventus/calendar.ics", "Risultati automatici", ">38<", "Europa League", "Real Sociedad", "Rennes", "Omonia Nicosia", "NEC Nijmegen", "AZ Alkmaar", "Ferencvaros", "Celta Vigo", "Hapoel Be’er Sheva", "16/17 SET", "28 GEN"]) {
+  for (const marker of ["Apple Calendar", "Google Calendar", "/api/juventus/calendar.ics", ">38<", "Europa League", "Real Sociedad", "Rennes", "Omonia Nicosia", "NEC Nijmegen", "AZ Alkmaar", "Ferencvaros", "Celta Vigo", "Hapoel Be’er Sheva", "16/17 SET", "28 GEN"]) {
     assert.ok(page.includes(marker), `manca ${marker}`);
+  }
+  for (const removed of ["Come funziona", "Orari aggiornati", "Risultati automatici", "Promemoria incluso"]) {
+    assert.ok(!page.includes(removed), `va rimosso ${removed}`);
   }
   assert.match(page, /data-calendar-filter="europa"/);
   assert.match(page, /Nessun evento europeo viene aggiunto al calendario finché il programma non è definitivo/);

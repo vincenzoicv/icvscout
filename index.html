@@ -172,6 +172,7 @@ main{padding-top:58px;position:relative;z-index:1;}
 .home-match-hub[data-state="final"] .match-hub-vs,.home-match-hub[data-state="post"] .match-hub-vs{min-width:112px;font-family:"Bebas Neue";font-size:72px;font-weight:400;line-height:.82;letter-spacing:1px;color:var(--gold-l);}
 .match-hub-meta{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-family:"Barlow Condensed";font-size:11px;font-weight:700;letter-spacing:1.1px;color:var(--t2);text-transform:uppercase;}
 .match-hub-meta span+span::before{content:"·";margin-right:8px;color:var(--gold);}
+.match-hub-result-scorers{max-width:100%;margin:6px 0 12px;color:var(--white);font-family:"Barlow Condensed";font-size:16px;font-weight:600;line-height:1.4;letter-spacing:0;overflow-wrap:anywhere;}
 .match-hub-countdown{display:inline-flex;align-items:baseline;justify-content:center;gap:6px;margin-top:14px;color:var(--gold-l);font-family:"Barlow Condensed";font-size:12px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;}
 .match-hub-countdown[hidden]{display:none;}
 .match-hub-countdown strong{font-family:"Bebas Neue";font-size:25px;line-height:1;letter-spacing:1px;}
@@ -201,12 +202,6 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-probable-info{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;max-width:780px;margin:12px auto 0;}
 .match-hub-probable-info span{display:inline-flex;align-items:center;min-height:28px;padding:0 9px;border:1px solid var(--bdr2);border-radius:5px;background:rgba(255,255,255,.025);color:var(--t2);font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:.65px;}
 .match-hub-probable-info b{margin-right:4px;color:var(--gold-l);font-weight:900;text-transform:uppercase;}
-.match-hub-events{padding:18px 20px;border-top:1px solid var(--bdr2);background:rgba(101,226,148,.025);}
-.match-hub-event-list{display:flex;flex-wrap:wrap;gap:8px;}
-.match-hub-event{display:inline-flex;align-items:center;gap:7px;min-height:31px;padding:0 10px;border:1px solid var(--bdr2);border-radius:5px;background:rgba(255,255,255,.025);font-family:"Barlow Condensed";font-size:12px;font-weight:800;color:var(--t2);}
-.match-hub-event b{font-family:"Bebas Neue";font-size:16px;color:var(--gold-l);font-weight:400;}
-.match-hub-event[data-kind="goal"]{border-color:rgba(196,150,42,.3);color:var(--white);}
-.match-hub-event[data-kind="booking"] b{color:#f5d84b;}
 .home-match-hub.is-stale .match-hub-updated{color:#ff7979;}
 .home-match-hub.is-stale .match-hub-updated::before{content:"ATTENZIONE · ";font-weight:900;}
 .match-hub-scoreline{display:flex;align-items:center;gap:10px;margin:7px 0 6px;min-width:0;}
@@ -870,6 +865,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
           <span class="match-hub-vs" id="matchHubVersus">VS</span>
           <strong class="match-hub-team" id="matchHubNextAway">Parma Calcio 1913</strong>
         </div>
+        <p class="match-hub-result-scorers" id="matchHubResultScorers" aria-label="Marcatori" hidden></p>
         <div class="match-hub-meta"><span id="matchHubCompetition">Serie A</span><span id="matchHubVenue">Allianz Stadium · Torino</span></div>
         <div class="match-hub-countdown" id="matchHubCountdownWrap"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Tra 5 giorni</strong></div>
       </section>
@@ -912,10 +908,6 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
         <span><b>Assenti</b>Yildiz, McKennie</span>
         <span><b>Da valutare</b>Thuram</span>
       </div>
-    </section>
-    <section class="match-hub-events" id="matchHubEventsPanel" hidden>
-      <div class="match-hub-kicker">Cronaca essenziale</div>
-      <div class="match-hub-event-list" id="matchHubEvents"></div>
     </section>
     <section class="match-receipt" id="matchReceipt" hidden aria-label="Referto finale ICV">
       <div class="match-receipt-head">
@@ -1550,14 +1542,16 @@ var ICV_MATCH_FALLBACKS = [
   {date:"2026-08-11T00:00:00+02:00",dateOnly:true,status:"finished",competition:"Amichevole",home:"Juventus",away:"Palermo",homeScore:2,awayScore:0,venue:"Perth",scorers:"Juve: Yildiz, Milik"},
   {date:"2026-08-17T00:00:00+02:00",dateOnly:true,status:"finished",competition:"Amichevole",home:"Juventus",away:"Next Gen",homeScore:2,awayScore:0,venue:"Allianz Stadium",scorers:"Juve: Conceicao, McKennie"},
   {date:"2026-08-23T18:30:00+02:00",status:"finished",competition:"Serie A",home:"Frosinone",away:"Juventus",homeScore:0,awayScore:1,venue:"Stadio Benito Stirpe",matchday:1,scorers:"Juventus: Bremer 22'"},
-  {date:"2026-08-29T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Parma Calcio 1913",homeScore:2,awayScore:0,venue:"Allianz Stadium · Torino",matchday:2,scorers:"Juventus: González, Koopmeiners"},
+  {date:"2026-08-29T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Parma Calcio 1913",homeScore:2,awayScore:0,venue:"Allianz Stadium · Torino",matchday:2,scorers:"Juventus: González, Koopmeiners",mvp:"González"},
   {date:"2026-09-06T20:45:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"AC Milan",venue:"Allianz Stadium · Torino",matchday:3},
-  {date:"2026-09-12T18:00:00+02:00",status:"scheduled",competition:"Serie A",home:"US Sassuolo Calcio",away:"Juventus FC",matchday:4}
+  {date:"2026-09-12T18:00:00+02:00",status:"scheduled",competition:"Serie A",home:"US Sassuolo Calcio",away:"Juventus FC",matchday:4},
+  {date:"2026-09-20T18:00:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Atalanta BC",venue:"Allianz Stadium · Torino",matchday:5}
 ];
 
 var ICV_VERIFIED_MATCH_DATA = {
   "558619": {
     scorers:"Juventus: González, Koopmeiners",
+    mvp:"González",
     goals:[
       {kind:"goal",minute:null,injuryTime:null,player:"González",team:"Juventus FC",type:"REGULAR"},
       {kind:"goal",minute:null,injuryTime:null,player:"Koopmeiners",team:"Juventus FC",type:"REGULAR"}
@@ -1638,7 +1632,7 @@ function normalizeMatchHubRows(rows) {
       awayFormation: String(awayTeam.formation || "").trim(),
       homeLineup: Array.isArray(homeTeam.lineup) ? homeTeam.lineup : [],
       awayLineup: Array.isArray(awayTeam.lineup) ? awayTeam.lineup : [],
-      mvp: String(manual.mvp || row.tactical_key || "").trim(),
+      mvp: String(manual.mvp || verified.mvp || row.tactical_key || "").trim(),
       note: String(manual.note || "").trim(),
       source: manual.updated_at ? "ICV + football-data.org" : String(payload.icv_meta && payload.icv_meta.provider || "football-data.org"),
       sourceUrl: String(payload.icv_meta && payload.icv_meta.source_url || ""),
@@ -1832,18 +1826,11 @@ function matchHubFreshness(match) {
   return "Verificato alle " + updated.toLocaleTimeString("it-IT", {hour:"2-digit", minute:"2-digit"});
 }
 
-function renderMatchHubEvents(match) {
-  var panel = document.getElementById("matchHubEventsPanel");
-  var box = document.getElementById("matchHubEvents");
-  if (!panel || !box) return;
-  var events = [].concat(match && match.goals || [], match && match.bookings || []).sort(function(a, b) {
-    return Number(a.minute || 999) - Number(b.minute || 999);
-  });
-  panel.hidden = !events.length;
-  box.innerHTML = events.map(function(event) {
-    var icon = event.kind === "goal" ? "GOL" : "CARD";
-    return "<span class=\"match-hub-event\" data-kind=\"" + icvEsc(event.kind) + "\"><b>" + icon + "</b>" + icvEsc(matchHubEventLabel(event)) + "</span>";
-  }).join("");
+function renderMatchHubScorers(match) {
+  var scorers = document.getElementById("matchHubResultScorers");
+  if (!scorers) return;
+  scorers.textContent = match && match.scorers || "";
+  scorers.hidden = !scorers.textContent;
 }
 
 function renderMatchHubProbable(match, phase) {
@@ -1908,7 +1895,7 @@ function renderMatchHub(apiRows) {
   var countdownWrap = document.getElementById("matchHubCountdownWrap");
   if (countdownWrap) countdownWrap.hidden = phase === "final" || phase === "post";
   renderMatchHubProbable(display, phase);
-  renderMatchHubEvents(display && ["live", "final", "post"].includes(phase) ? display : null);
+  renderMatchHubScorers(display && ["live", "final", "post"].includes(phase) ? display : null);
   var receiptMatch = latest && Date.now() - new Date(latest.date).getTime() < 72 * 3600000 ? latest : null;
   renderMatchReceipt(receiptMatch);
 
@@ -1952,7 +1939,7 @@ function renderMatchReceipt(match) {
   setMatchHubText("receiptMvp", match.mvp);
   document.getElementById("receiptMvpSection").hidden = !match.mvp;
   setMatchHubText("receiptMatchId", "MATCH #" + (match.matchId || "ICV"));
-  var signature = [match.matchId, match.homeScore, match.awayScore, match.scorers, match.updatedAt].join("|");
+  var signature = [match.matchId, match.homeScore, match.awayScore, match.scorers, match.mvp, match.updatedAt].join("|");
   if (signature !== matchReceiptSignature) {
     matchReceiptSignature = signature;
     replayMatchReceipt();
@@ -2415,7 +2402,7 @@ function animateLiveDeskRows() {
 
 function animateMatchHub() {
   if (icvReducedMotion() || !window.anime || typeof window.anime.animate !== "function") return;
-  var reveal = document.querySelectorAll("#homeMatchHub .match-hub-phase > *, #homeMatchHub .match-hub-kicker, #homeMatchHub .match-hub-date, #homeMatchHub .match-hub-team, #homeMatchHub .match-hub-meta, #homeMatchHub .match-hub-countdown, #homeMatchHub .match-hub-event");
+  var reveal = document.querySelectorAll("#homeMatchHub .match-hub-phase > *, #homeMatchHub .match-hub-kicker, #homeMatchHub .match-hub-date, #homeMatchHub .match-hub-team, #homeMatchHub .match-hub-meta, #homeMatchHub .match-hub-countdown, #homeMatchHub .match-hub-result-scorers");
   if (reveal.length) window.anime.animate(reveal, {
     opacity: { from: 0 },
     y: { from: 10 },

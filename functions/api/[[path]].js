@@ -2369,7 +2369,7 @@ async function generateMatchCenter(env) {
 
   const now = new Date();
   const dateFrom = isoDateOffset(now, -3);
-  const dateTo = isoDateOffset(now, 21);
+  const dateTo = isoDateOffset(now, 60);
   const headers = {
     "X-Auth-Token": key,
     "X-Unfold-Lineups": "true",

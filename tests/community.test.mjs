@@ -13,10 +13,45 @@ test("Juventus-Parma conserva il 2-0 e i marcatori senza inventare minuti", asyn
   assert.equal(fallback.status, "finished");
   assert.equal(fallback.homeScore, 2);
   assert.equal(fallback.awayScore, 0);
+  assert.equal(fallback.mvp, "González");
   const [match] = normalize([{match_id:"558619", status:"finished", source_payload:{homeTeam:{name:"Juventus FC"},awayTeam:{name:"Parma Calcio 1913"},score:{fullTime:{home:2,away:0}},goals:[]}}]);
   assert.equal(match.scorers, "Juventus: González, Koopmeiners");
+  assert.equal(match.mvp, "González");
   assert.deepEqual(match.goals.map(label), ["González", "Koopmeiners"]);
   assert.ok(match.goals.every(goal => goal.minute === null));
+});
+
+test("i marcatori sono sotto il risultato e spariscono senza dati", async () => {
+  const html = await read("index.html");
+  assert.match(html, /id="matchHubVersus"[\s\S]*?id="matchHubResultScorers"[\s\S]*?<\/section>/);
+  assert.doesNotMatch(html, /Cronaca essenziale|matchHubEventsPanel/);
+  const element = {textContent:"", hidden:true};
+  const source = html.slice(html.indexOf("function renderMatchHubScorers("), html.indexOf("function renderMatchHubProbable("));
+  const render = new Function("document", source + ";return renderMatchHubScorers")({getElementById:() => element});
+  render({scorers:"Juventus: González, Koopmeiners"});
+  assert.equal(element.textContent, "Juventus: González, Koopmeiners");
+  assert.equal(element.hidden, false);
+  render(null);
+  assert.equal(element.textContent, "");
+  assert.equal(element.hidden, true);
+});
+
+test("dopo Parma le prossime tre sono Milan, Sassuolo e Atalanta", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function matchHubFreshness("));
+  const panel = {hidden:true};
+  const box = {innerHTML:""};
+  class MatchDate extends Date { static now() { return Date.parse("2026-08-29T22:00:00Z"); } }
+  const {allRows, render} = new Function("document", "Date", source + ";return {allRows:allMatchHubRows,render:renderMatchHubUpcoming}")({
+    getElementById:id => id === "matchHubUpcomingPanel" ? panel : box,
+  }, MatchDate);
+  render(allRows([]));
+  assert.equal(panel.hidden, false);
+  assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
+  assert.match(box.innerHTML, /Milan[\s\S]*Sassuolo[\s\S]*Atalanta/);
+  assert.doesNotMatch(box.innerHTML, /Parma/);
+  const api = await read("functions/api/[[path]].js");
+  assert.match(api, /dateTo = isoDateOffset\(now, 60\)/);
 });
 
 test("la home lascia le amichevoli al calendario ufficiale", async () => {

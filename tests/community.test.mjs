@@ -5,6 +5,20 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 const read = path => readFile(new URL(path, root), "utf8");
 
+test("Juventus-Parma conserva il 2-0 e i marcatori senza inventare minuti", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("var ICV_MATCH_FALLBACKS ="), html.indexOf("function allMatchHubRows("));
+  const { fallbacks, normalize, label } = new Function(source + ";return {fallbacks:ICV_MATCH_FALLBACKS,normalize:normalizeMatchHubRows,label:matchHubEventLabel}")();
+  const fallback = fallbacks.find(match => match.matchday === 2);
+  assert.equal(fallback.status, "finished");
+  assert.equal(fallback.homeScore, 2);
+  assert.equal(fallback.awayScore, 0);
+  const [match] = normalize([{match_id:"558619", status:"finished", source_payload:{homeTeam:{name:"Juventus FC"},awayTeam:{name:"Parma Calcio 1913"},score:{fullTime:{home:2,away:0}},goals:[]}}]);
+  assert.equal(match.scorers, "Juventus: González, Koopmeiners");
+  assert.deepEqual(match.goals.map(label), ["González", "Koopmeiners"]);
+  assert.ok(match.goals.every(goal => goal.minute === null));
+});
+
 test("la home lascia le amichevoli al calendario ufficiale", async () => {
   const html = await read("index.html");
   assert.match(html, /class="hero-season-link" href="\/calendario-juventus">Calendario ufficiale 2026\/27/);

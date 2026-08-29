@@ -23,6 +23,15 @@ test("Anime.js anima la home rispettando Riduci movimento", async () => {
   assert.doesNotMatch(html, /https:\/\/cdn[^"']*anime/i);
 });
 
+test("la modalita chiara usa una palette leggibile in tutta la home", async () => {
+  const html = await read("index.html");
+  assert.match(html, /body\.light\{[^}]*--gold-l:#765100[^}]*--t3:rgba\(24,23,19,\.66\)/);
+  assert.match(html, /body\.light \.hero h1 span,[^{]+\{color:#efbd52;\}/);
+  assert.match(html, /body\.light \.stat-val\{background:linear-gradient\(135deg,#8a6100,#4f3500\)/);
+  assert.match(html, /body\.light \.mob-btn\{color:var\(--t3\);\}/);
+  assert.match(html, /body\.light \.live-desk-tag\[data-kind="official"\][^{]+\{color:#176b3a/);
+});
+
 test("la home apre con fotografie reali dello Stadium su desktop e mobile", async () => {
   const [html, worker] = await Promise.all([read("index.html"), read("sw.js")]);
   for (const marker of [

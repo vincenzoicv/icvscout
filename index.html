@@ -496,6 +496,59 @@ body.light .fcopy{color:rgba(0,0,0,0.30);}
 body.light .mob-nav{background:rgba(244,242,236,0.97);}
 body.light .mob-btn{color:rgba(0,0,0,0.32);}
 body.light .mob-btn.active{color:var(--gold);background:rgba(196,150,42,0.10);box-shadow:inset 0 1px 0 rgba(255,255,255,0.70);}
+/* High-contrast light theme: shared tokens first, component exceptions second. */
+body.light{background:#f5f5f2;color:#181713;--black:#f5f5f2;--d1:#f0efe9;--d2:#e6e4dc;--d3:#d8d5cb;--surface:linear-gradient(145deg,#fff,#f1f0ea);--surface-soft:linear-gradient(145deg,#fafaf7,#efeee8);--surface-hi:linear-gradient(145deg,#fff,#eceae2);--white:#181713;--gold:#8a6100;--gold-l:#765100;--gold-d:#4f3500;--t2:rgba(24,23,19,.80);--t3:rgba(24,23,19,.66);--bdr:rgba(118,81,0,.27);--bdr2:rgba(24,23,19,.14);}
+body.light header{background:rgba(250,250,247,.97);border-bottom-color:rgba(24,23,19,.12);box-shadow:0 8px 28px rgba(24,23,19,.08);}
+body.light nav button{color:rgba(24,23,19,.76);background:rgba(255,255,255,.82);border-color:rgba(24,23,19,.14);}
+body.light nav button:hover,body.light nav button.active{color:var(--gold-l);background:#fff;border-color:rgba(118,81,0,.42);}
+body.light .hlogo-sub{color:rgba(24,23,19,.66);}
+body.light .hsocial a,body.light .install-app-btn{color:var(--gold-l);background:rgba(255,255,255,.86);border-color:rgba(118,81,0,.32);}
+body.light .hsocial a:hover,body.light .install-app-btn:hover{color:var(--gold-d);background:#fff;border-color:rgba(118,81,0,.5);}
+body.light .theme-toggle{background:#fff;color:#181713;border-color:rgba(24,23,19,.16);}
+body.light .theme-toggle:hover{background:#fff;border-color:rgba(118,81,0,.42);}
+body.light .install-card{background:rgba(255,255,252,.98);border-color:var(--bdr);}
+body.light .install-card h3,body.light .install-close:hover{color:#181713;}
+body.light .install-close{color:var(--t3);}
+body.light .install-steps,body.light .install-actions button.secondary{color:var(--t2);}
+body.light .install-actions button.secondary{background:#fff;border-color:var(--bdr2);}
+body.light .hero h1 strong{color:#fff;}
+body.light .hero h1 span,body.light .manifesto,body.light .hero-tag,body.light .hero-season-link,body.light .hero-stadium-meta b{color:#efbd52;}
+body.light .hero-desc,body.light .hero-stadium-meta,body.light .hero-scroll-cue{color:rgba(255,255,255,.84);}
+body.light .hero-season-link{background:rgba(6,6,6,.34);border-color:rgba(239,189,82,.56);}
+body.light .hero-stadium-meta::before,body.light .hero-scroll-cue span::after{background:#efbd52;}
+body.light .home-panel,body.light .field-card,body.light .lineup-card,body.light .stat-card,body.light .chart-box,body.light .result-item,body.light .market-card,body.light .news-card,body.light .graphic-card,body.light .graphic-empty,body.light .news-empty-state,body.light .offseason-main,body.light .offseason-side{border-color:var(--bdr);box-shadow:0 14px 34px rgba(24,23,19,.07);}
+body.light .home-match-hub{background:linear-gradient(145deg,#fff,#ecebe4);border-color:rgba(118,81,0,.34);box-shadow:0 18px 42px rgba(24,23,19,.09),inset 0 1px 0 #fff;}
+body.light .home-main-title,body.light .home-mini strong,body.light .match-hub-team,body.light .match-hub-score-team,body.light .match-hub-probable-player,body.light .match-hub-phase strong,body.light .match-receipt-head>div:first-child strong,body.light .pr-name,body.light .res-name,body.light .res-score,body.light .t-name,body.light .sp-name,body.light .sp-mv,body.light .offseason-title,body.light .radar-card strong,body.light .watch-text strong,body.light .graphic-card h3,body.light .news-card-title{color:#181713;}
+body.light .home-text,body.light .home-auto,body.light .match-hub-date,body.light .match-hub-updated,body.light .match-hub-form-label,body.light .match-hub-meta,body.light .match-hub-scorers,body.light .match-hub-record,body.light .pr-pos,body.light .res-comp,body.light .res-date,body.light .t-from,body.light .stat-lbl,body.light .stat-sub,body.light .news-card-meta,body.light .attr-name,body.light .offseason-copy,body.light .radar-card span,body.light .watch-text span,body.light .news-card-body,body.light .bar-label{color:var(--t2);}
+body.light .ctx-box{background:rgba(118,81,0,.07);border-color:var(--bdr);color:var(--t2);}
+body.light .match-hub-probable-pitch{background:linear-gradient(90deg,rgba(118,81,0,.06),rgba(255,255,255,.86),rgba(118,81,0,.06));border-color:var(--bdr);}
+body.light .match-hub-probable-info span{background:rgba(255,255,255,.74);border-color:var(--bdr2);color:var(--t2);}
+body.light .match-hub-form-dot{border-color:rgba(24,23,19,.22);background:#fff;}
+body.light .match-hub-form-dot.win,body.light .res-w{color:#176b3a;border-color:rgba(23,107,58,.35);background:rgba(23,107,58,.1);}
+body.light .match-hub-form-dot.loss,body.light .res-l{color:#9b2c2c;border-color:rgba(155,44,44,.34);background:rgba(155,44,44,.09);}
+body.light .match-receipt{background:radial-gradient(circle at 50% 0,rgba(118,81,0,.1),transparent 42%),#e9e7df;}
+body.light .match-receipt-actions button{background:#fff;border-color:var(--bdr2);color:var(--t2);}
+body.light .player-row,body.light .transfer-item,body.light .sp-meta-row{border-bottom-color:var(--bdr2);}
+body.light .bar-track,body.light .attr-track{background:rgba(24,23,19,.11);}
+body.light .stat-val{background:linear-gradient(135deg,#8a6100,#4f3500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+body.light .sec-tag,body.light .field-label,body.light .lc-title,body.light .chart-lbl,body.light .sp-pos,body.light .watch-num,body.light .pr-num,body.light .flink{color:var(--gold-l);}
+body.light .tab-btn{color:var(--t3);background:rgba(255,255,255,.82);border-color:var(--bdr2);}
+body.light .tab-btn:hover{color:#181713;background:#fff;border-color:rgba(24,23,19,.22);}
+body.light .tab-btn.active,body.light .quick-actions button{color:var(--gold-l);background:#fff;border-color:rgba(118,81,0,.4);}
+body.light .quick-actions button:hover{color:var(--gold-d);background:#fff;border-color:rgba(118,81,0,.56);}
+body.light .live-desk-tag[data-kind="official"],body.light .b-uff,body.light .mc-title.tin{color:#176b3a;border-color:rgba(23,107,58,.36);background:rgba(23,107,58,.09);}
+body.light .live-desk-tag[data-kind="match"],body.light .b-tra,body.light .mc-title.trin{color:#245f9e;border-color:rgba(36,95,158,.36);background:rgba(36,95,158,.09);}
+body.light .b-out,body.light .mc-title.tout{color:#9b2c2c;border-color:rgba(155,44,44,.34);background:rgba(155,44,44,.09);}
+body.light .standings-table th,body.light .standings-loading,body.light .legend-out,body.light .standings-source{color:var(--t3);}
+body.light .standings-table td{color:#181713;border-bottom-color:var(--bdr2);}
+body.light .standings-table tr.juve-row td{color:var(--gold-l);}
+body.light .tooltip{background:#fff;border-color:var(--bdr);box-shadow:0 8px 28px rgba(24,23,19,.16);}
+body.light .tt-name{color:#181713;}
+body.light footer{border-top-color:var(--bdr);}
+body.light .fcopy{color:var(--t3);}
+body.light .mob-nav{background:rgba(252,252,249,.98);border-top:1px solid rgba(24,23,19,.14);box-shadow:0 -10px 30px rgba(24,23,19,.1);}
+body.light .mob-btn{color:var(--t3);}
+body.light .mob-btn.active{color:var(--gold-l);background:rgba(118,81,0,.11);box-shadow:inset 0 1px 0 #fff;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 @keyframes installCardIn{from{opacity:0;transform:translate(-50%,16px)}to{opacity:1;transform:translate(-50%,0)}}
 @keyframes breathe{0%,100%{opacity:0.7;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.04)}}

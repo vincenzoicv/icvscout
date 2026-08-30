@@ -202,6 +202,13 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 
         <div class="card admin-panel" data-panel="social">
           <h2>Instagram Picks</h2>
+          <h3>Sala stampa in home</h3>
+          <div class="form-grid">
+            <div><label for="conferenceMode">Selezione</label><select id="conferenceMode" onchange="toggleConferenceFields()"><option value="auto">Ultima conferenza automatica</option><option value="manual">Video scelto manualmente</option><option value="off">Sezione nascosta</option></select></div>
+            <div id="conferenceManual" hidden><label for="conferencePost">Video</label><select id="conferencePost"></select><label for="conferenceManualPhase">Tipo</label><select id="conferenceManualPhase"><option value="pre">Pre partita</option><option value="post">Post partita</option><option value="press">Conferenza stampa</option></select></div>
+          </div>
+          <p id="conferenceCurrent" class="meta"></p>
+          <button class="ghost" type="button" id="saveConference" onclick="saveConferenceSelection()">Salva selezione</button>
           <div class="form" style="margin-bottom:12px">
             <div class="row">
               <div><label>Tipo</label><select id="igType"><option value="reel">Reel</option><option value="post">Post</option><option value="story">Story</option></select></div>
@@ -292,6 +299,9 @@ function load(){
     state.news = data.news || [];
     state.sources = data.sources || [];
     state.social = data.social || [];
+    state.conferenceConfig=data.conference_config || {mode:'auto'};
+    state.conference=data.featured_conference || null;
+    state.conferenceOptions=data.conference_options || [];
     state.graphics = data.graphics || [];
     state.market = data.market || [];
     state.matches = data.matches || [];
@@ -794,12 +804,29 @@ function renderMatches(){
   loadMatchOverride(currentIndex>=0?currentIndex:0);
 }
 function renderSocial(){
+  var setting=state.conferenceConfig || {mode:'auto'};
+  document.getElementById('conferenceMode').value=setting.mode;
+  document.getElementById('conferencePost').innerHTML=(state.conferenceOptions || []).map(function(row){return '<option value="'+Number(row.id)+'">'+esc((row.hook || 'Video Instagram')+' · '+date(row.published_at))+'</option>';}).join('');
+  if(setting.post_id) document.getElementById('conferencePost').value=setting.post_id;
+  document.getElementById('conferenceManualPhase').value=setting.phase || 'press';
+  document.getElementById('conferenceCurrent').textContent=state.conference ? 'In evidenza: '+state.conference.title : 'Nessuna conferenza in evidenza';
+  toggleConferenceFields();
   var list = document.getElementById("socialList");
   if(!state.social.length){ list.innerHTML = "<div class='empty'>Aggiungi post o Reel Instagram da mostrare nella home.</div>"; return; }
   list.innerHTML = state.social.slice(0,8).map(function(s){
     var url = s.post_url ? " · <a href='"+escAttr(s.post_url)+"' target='_blank' style='color:var(--gold-l)'>apri</a>" : "";
     return "<div class='item'><div class='item-head'><div><h3>"+esc(s.hook || s.platform)+"</h3></div><div class='meta'>"+(s.visible === false ? "nascosto" : "visibile")+"</div></div><p>"+esc(s.caption || "")+"</p><div class='meta'>"+esc(s.platform)+" · "+esc(s.media_type || "post")+" · "+esc(s.status || "draft")+url+"</div><div class='item-actions' style='margin-top:10px'><button class='ghost small' onclick='toggleSocial("+s.id+","+!!s.visible+")'>"+(s.visible === false ? "Mostra" : "Nascondi")+"</button></div></div>";
   }).join("");
+}
+function toggleConferenceFields(){
+  document.getElementById('conferenceManual').hidden=document.getElementById('conferenceMode').value!=='manual';
+}
+function saveConferenceSelection(){
+  var button=document.getElementById('saveConference');button.disabled=true;
+  api('/api/admin/news',{method:'PATCH',body:{type:'featured_conference',mode:val('conferenceMode'),post_id:Number(val('conferencePost')),phase:val('conferenceManualPhase')}})
+  .then(function(data){state.conferenceConfig=data.conference_config;state.conference=data.featured_conference;renderSocial();showToast('Selezione Sala stampa salvata');})
+  .catch(function(error){showToast(error.message || 'Salvataggio non riuscito');})
+  .finally(function(){button.disabled=false;});
 }
 function renderGraphics(){
   var list = document.getElementById("graphicsList");

@@ -767,6 +767,8 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
   .news-section{padding:24px 12px 40px;}
 }
 </style>
+<link rel="stylesheet" href="/assets/featured-conference.css?v=20260830-1">
+<script defer src="/assets/featured-conference.js?v=20260830-1"></script>
 </head>
 <body>
 <header>
@@ -941,6 +943,33 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
       <span class="match-hub-record" id="matchHubRecord">4 vittorie · 0 pareggi · 1 sconfitta</span>
     </footer>
   </article>
+  <section class="featured-conference" id="featuredConference" aria-labelledby="conferenceHeading" hidden>
+    <div class="conference-header">
+      <h2 id="conferenceHeading">Sala stampa</h2>
+      <a href="https://www.instagram.com/ilcalciodivince_/" target="_blank" rel="noopener noreferrer">@ilcalciodivince_ <i class="conference-icon external" aria-hidden="true"></i></a>
+    </div>
+    <div class="conference-layout">
+      <div class="conference-stage" id="conferenceStage">
+        <img id="conferencePoster" width="720" height="720" loading="lazy" decoding="async" alt="Conferenza stampa">
+        <button class="conference-poster-play" id="conferencePosterPlay" type="button" aria-label="Carica la conferenza su Instagram" title="Carica la conferenza su Instagram" aria-describedby="conferencePrivacy"><i class="conference-icon play" aria-hidden="true"></i></button>
+        <span class="conference-poster-label">Conferenza stampa</span>
+        <div class="conference-embed" id="conferenceEmbed" hidden></div>
+      </div>
+      <div class="conference-copy">
+        <span class="conference-eyebrow" id="conferencePhase">Conferenza stampa</span>
+        <h3 id="conferenceTitle"></h3>
+        <time id="conferenceDate"></time>
+        <p id="conferenceSummary"></p>
+        <div class="conference-actions">
+          <button class="conference-primary" id="conferenceLoad" type="button" aria-describedby="conferencePrivacy"><i class="conference-icon play" aria-hidden="true"></i><span>Consenti e carica video</span></button>
+          <button class="conference-stop" id="conferenceStop" type="button" hidden><i class="conference-icon stop" aria-hidden="true"></i>Chiudi video</button>
+          <a id="conferenceOriginal" target="_blank" rel="noopener noreferrer">Guarda su Instagram <i class="conference-icon external" aria-hidden="true"></i></a>
+        </div>
+        <p class="conference-privacy" id="conferencePrivacy">Il player Instagram riceve dati di navigazione e puo usare cookie. <a href="#" data-privacy-settings>Preferenze privacy</a></p>
+        <p class="conference-status" id="conferenceStatus" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
   <div class="home-panel live-desk-panel" id="homeLiveDeskPanel">
     <div class="live-desk-head">
       <h3><span class="live-desk-pulse"></span>ICV Live Desk</h3>
@@ -2065,6 +2094,7 @@ function loadHomeDashboard() {
     var market = Array.isArray(data.market) ? data.market : [];
     var matches = Array.isArray(data.matches) ? data.matches : [];
     var social = Array.isArray(data.social) ? data.social : [];
+    if (window.ICVConference) window.ICVConference.render(data.featured_conference || null);
     renderLiveDesk(data.live_desk);
     renderMatchHub(matches);
     renderAutoStatus(data.auto);
@@ -2677,7 +2707,7 @@ if ('serviceWorker' in navigator) {
 }
 
 </script>
-<script defer src="/assets/privacy-controls.js?v=20260728-1"></script>
+<script defer src="/assets/privacy-controls.js?v=20260830-1"></script>
 <script defer src="/assets/analytics.js?v=20260728-1"></script>
 </body>
 </html>

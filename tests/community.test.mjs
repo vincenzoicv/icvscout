@@ -122,7 +122,7 @@ test("la home propone l'installazione PWA senza essere invadente", async () => {
   assert.match(html, /onclick="closeInstallCard\(true\)"/);
   assert.match(html, /window\.addEventListener\("load", scheduleInstallCard\)/);
   assert.match(manifest, /"display": "standalone"/);
-  assert.match(worker, /const CACHE = 'icv-v20'/);
+  assert.match(worker, /const CACHE = 'icv-v21'/);
 });
 
 test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async () => {

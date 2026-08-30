@@ -9,6 +9,7 @@
     return {
       version: VERSION,
       analytics: navigator.doNotTrack !== "1",
+      external_media: false,
       updated_at: null
     };
   }
@@ -20,6 +21,7 @@
         return {
           version: VERSION,
           analytics: stored.analytics !== false,
+          external_media: stored.external_media === true,
           updated_at: stored.updated_at || null
         };
       }
@@ -30,6 +32,7 @@
   function enabled(category) {
     if (category === "technical") return true;
     if (category === "analytics" && navigator.doNotTrack === "1") return false;
+    if (category === "external_media") return read().external_media === true;
     return read()[category] !== false;
   }
 
@@ -37,6 +40,7 @@
     var next = {
       version: VERSION,
       analytics: preferences.analytics !== false,
+      external_media: preferences.external_media === true,
       updated_at: new Date().toISOString()
     };
     try {
@@ -76,15 +80,16 @@
     modal.innerHTML =
       '<section class="icv-privacy-panel" role="dialog" aria-modal="true" aria-labelledby="icvPrivacyTitle">' +
         '<div class="icv-privacy-head"><div><h2 id="icvPrivacyTitle">Preferenze privacy</h2></div><button type="button" aria-label="Chiudi">&times;</button></div>' +
-        "<p>ICV non usa cookie pubblicitari. Puoi scegliere se contribuire alle statistiche anonime che ci aiutano a migliorare sito e Community.</p>" +
+        "<p>Gestisci le statistiche ICV e il caricamento dei contenuti esterni.</p>" +
         '<label class="icv-privacy-option"><span><strong>Funzioni tecniche</strong><span>Accesso, sicurezza, preferenze e funzionamento del servizio.</span></span><input type="checkbox" checked disabled aria-label="Funzioni tecniche sempre attive"></label>' +
         '<label class="icv-privacy-option"><span><strong>Analytics anonimo ICV</strong><span>Nessun indirizzo IP, dato scritto o profilo pubblicitario.</span></span><input id="icvPrivacyAnalytics" type="checkbox" ' + (preferences.analytics ? "checked" : "") + "></label>" +
+        '<label class="icv-privacy-option"><span><strong>Video Instagram</strong><span>Il player riceve dati di navigazione e puo usare cookie propri. I video si caricano solo al clic.</span></span><input id="icvPrivacyMedia" type="checkbox" ' + (preferences.external_media ? "checked" : "") + '></label>' +
         '<div class="icv-privacy-actions"><span><a href="/privacy">Privacy Policy</a> · <a href="/cookie-policy">Cookie Policy</a></span><button class="icv-privacy-save" type="button">Salva preferenze</button></div>' +
       "</section>";
     document.body.appendChild(modal);
     modal.querySelector(".icv-privacy-head button").addEventListener("click", close);
     modal.querySelector(".icv-privacy-save").addEventListener("click", function () {
-      save({ analytics: modal.querySelector("#icvPrivacyAnalytics").checked });
+      save({ analytics: modal.querySelector("#icvPrivacyAnalytics").checked, external_media: modal.querySelector("#icvPrivacyMedia").checked });
       close();
     });
     modal.addEventListener("click", function (event) {

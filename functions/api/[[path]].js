@@ -1,3 +1,5 @@
+import { chooseConference, conferenceSetting, instagramThumbnail } from '../lib/conferences.js';
+
 const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
   "Access-Control-Allow-Origin": "*",
@@ -151,6 +153,7 @@ export async function onRequest(context) {
 
   try {
     if (path === "public/home") return publicHome(env);
+    if (path === "public/conference-thumbnail" && request.method === "GET") return await publicConferenceThumbnail(env, url);
     if (path === "public/players") return publicPlayers(env, url);
     if (/^public\/players\/[a-z0-9-]+$/i.test(path)) return publicPlayer(env, path.split("/").pop());
     if (path === "public/graphics") return publicGraphics(env, url);
@@ -268,7 +271,7 @@ async function publicHome(env) {
     });
   }
 
-  const [news, market, marketNews, matches, social, auto, radar] = await Promise.all([
+  const [news, market, marketNews, matches, social, auto, radar, conference] = await Promise.all([
     sb(env, "/news?visible=eq.true&order=created_at.desc&limit=48"),
     sb(env, "/market_items?order=updated_at.desc&limit=12"),
     sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=18"),
@@ -276,6 +279,7 @@ async function publicHome(env) {
     sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&post_url=not.is.null&order=published_at.desc.nullslast,created_at.desc&limit=12"),
     latestAutomationRun(env, "home_autopilot"),
     getSiteSetting(env, "radar_home", DEFAULT_RADAR),
+    safeAdminRead(() => featuredConference(env), null),
   ]);
   const allCleanNews = publicNewsRows(news);
   const cleanNews = allCleanNews.slice(0, 6);
@@ -294,10 +298,43 @@ async function publicHome(env) {
     matches: orderedMatches,
     live_desk: buildLiveDeskEntries({ news: publicNewsRows(news), market: aggregatedMarket, matches: orderedMatches }, 6),
     social: publicSocialRows(social),
+    featured_conference: conference,
     graphics: [],
     radar,
     auto: { enabled: true, interval_hours: Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1), last_run_at: auto && auto.created_at },
   });
+}
+
+async function conferenceRows(env, setting) {
+  const query = setting.mode === 'manual' && setting.post_id
+    ? '/social_drafts?id=eq.' + setting.post_id + '&limit=1'
+    : '/social_drafts?platform=eq.instagram&media_type=eq.video&visible=eq.true&status=eq.published&order=published_at.desc.nullslast&limit=100';
+  return sb(env, query);
+}
+
+async function featuredConference(env) {
+  const setting = conferenceSetting(await getSiteSetting(env,'featured_conference',{}));
+  if (setting.mode === 'off') return null;
+  return chooseConference(await conferenceRows(env,setting),setting);
+}
+
+async function publicConferenceThumbnail(env, url) {
+  const id = Number(url.searchParams.get('id'));
+  if (!hasSupabase(env) || !Number.isSafeInteger(id) || id<=0) return json({error:'Anteprima non disponibile'},404);
+  const selected = await featuredConference(env);
+  if (!selected || Number(selected.id) !== id) return json({error:'Anteprima non disponibile'},404);
+  const rows = await sb(env,'/social_drafts?id=eq.'+id+'&select=thumbnail_url&limit=1');
+  const source = instagramThumbnail(rows[0]?.thumbnail_url);
+  if (!source) return json({error:'Anteprima non disponibile'},404);
+  const response = await fetch(source,{redirect:'error',signal:AbortSignal.timeout(8000)});
+  const type = response.headers.get('content-type')?.split(';')[0];
+  if (!response.ok || !['image/jpeg','image/png','image/webp'].includes(type)) return json({error:'Anteprima non disponibile'},502);
+  const limit = 4*1024*1024;
+  if (Number(response.headers.get('content-length'))>limit) {await response.body?.cancel();return json({error:'Anteprima troppo grande'},502);}
+  const reader=response.body.getReader();let size=0;const chunks=[];
+  while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel();return json({error:'Anteprima troppo grande'},502);}chunks.push(value);}
+  const image=new Uint8Array(size);let offset=0;for(const chunk of chunks){image.set(chunk,offset);offset+=chunk.byteLength;}
+  return new Response(image,{headers:{'Content-Type':type,'Cache-Control':'public, max-age=300','X-Content-Type-Options':'nosniff'}});
 }
 
 function orderPublicMatches(rows, options = {}) {
@@ -1660,12 +1697,25 @@ async function adminNews(request, env) {
       safeAdminRead(() => sb(env, "/community_moderation_actions?select=id,action,reason,created_at,target_user_id,post_id,comment_id&order=created_at.desc&limit=100"), []),
       safeAdminRead(() => sb(env, "/community_context_notes?select=id,post_id,news_id,body,source_url,reliability,status,created_at&order=created_at.desc&limit=100"), []),
     ]);
+    const conferenceConfig = conferenceSetting(await getSiteSetting(env,'featured_conference',{}));
+    const conference = await safeAdminRead(() => featuredConference(env),null);
+    const conferenceOptions = await safeAdminRead(() => conferenceRows(env,{mode:'auto'}),[]);
     const visibleNews = publicNewsRows(news).filter(item => item.visible !== false);
     const publicMarket = aggregateMarketItems(publicMarketRows(market));
-    return json({ drafts, news, sources, social, market: publicMarket, matches, live_desk: buildLiveDeskEntries({ news: visibleNews, market: publicMarket, matches }, 20), runs, automation_monitor: buildAutomationMonitor(runs, { cadences: { home_autopilot: Math.max(1, Number(env.HOME_AUTO_INTERVAL_HOURS || 6)) } }), radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
+    return json({ drafts, news, sources, social, conference_config:conferenceConfig, featured_conference:conference, conference_options:conferenceOptions.map(row=>({id:row.id,hook:row.hook,published_at:row.published_at})), market: publicMarket, matches, live_desk: buildLiveDeskEntries({ news: visibleNews, market: publicMarket, matches }, 20), runs, automation_monitor: buildAutomationMonitor(runs, { cadences: { home_autopilot: Math.max(1, Number(env.HOME_AUTO_INTERVAL_HOURS || 6)) } }), radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
   }
 
   const body = await readBody(request);
+  if (request.method === 'PATCH' && body.type === 'featured_conference') {
+    if (!['auto','manual','off'].includes(body.mode)) return json({error:'Modalita non valida'},400);
+    const setting=conferenceSetting(body);
+    if (setting.mode === 'manual') {
+      if (!setting.post_id || !['pre','post','press'].includes(body.phase)) return json({error:'Seleziona video e tipo di conferenza'},400);
+      if (!chooseConference(await conferenceRows(env,setting),setting)) return json({error:'Video non pubblicato o non visibile'},400);
+    }
+    await setSiteSetting(env,'featured_conference',setting);
+    return json({conference_config:setting,featured_conference:await featuredConference(env)});
+  }
   if (request.method === "POST") {
     if (body.type === "community_context_note") {
       const noteBody = communityText(body.body, 600);
@@ -2654,7 +2704,7 @@ async function importInstagramMedia(env) {
 
   for (const item of media) {
     if (!item.permalink) continue;
-    const existing = await sb(env, "/social_drafts?post_url=eq." + encodeURIComponent(item.permalink) + "&select=id&limit=1");
+    const existing = await sb(env, "/social_drafts?post_url=eq." + encodeURIComponent(item.permalink) + "&select=id,visible&limit=1");
     const payload = {
       platform: "instagram",
       hook: hookFromCaption(item.caption) || labelInstagramMedia(item.media_type),
@@ -2667,7 +2717,7 @@ async function importInstagramMedia(env) {
       thumbnail_url: item.thumbnail_url || item.media_url || "",
       published_at: item.timestamp || null,
       status: "published",
-      visible: true,
+      visible: existing.length ? existing[0].visible !== false : true,
       updated_at: new Date().toISOString(),
     };
 

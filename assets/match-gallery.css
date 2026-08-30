@@ -1,0 +1,40 @@
+.match-gallery{grid-column:1/-1;padding:24px 0 12px;border-top:1px solid var(--bdr2);min-width:0}
+.match-gallery[hidden]{display:none!important}
+.match-gallery *,.match-lightbox *{letter-spacing:0;box-sizing:border-box}
+.match-gallery-heading{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.match-gallery-heading p{color:var(--gold-l);font-size:13px;font-weight:700;margin:0 0 6px}
+.match-gallery-heading h2{font-family:"Barlow Condensed",sans-serif;font-size:28px;line-height:1.2;color:var(--white);margin:0;overflow-wrap:anywhere}
+#matchGalleryMeta,.match-gallery-credit{font-size:13px;color:var(--t2);line-height:1.5}
+.match-gallery-credit{margin:12px 0 0}
+.match-gallery-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.match-gallery-photo{position:relative;border:0;padding:0;background:#242424;cursor:pointer;aspect-ratio:4/3;min-width:0;overflow:hidden;border-radius:4px}
+.match-gallery-photo:first-child{grid-column:span 2;grid-row:span 2;aspect-ratio:auto}
+.match-gallery-photos[data-count="1"]{grid-template-columns:1fr}
+.match-gallery-photos[data-count="1"] .match-gallery-photo{grid-column:auto;grid-row:auto;aspect-ratio:16/9}
+.match-gallery-photos[data-count="2"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.match-gallery-photos[data-count="2"] .match-gallery-photo{grid-column:auto;grid-row:auto;aspect-ratio:4/3}
+.match-gallery-photos[data-count="4"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.match-gallery-photos[data-count="4"] .match-gallery-photo{grid-column:auto;grid-row:auto;aspect-ratio:4/3}
+.match-gallery-photos[data-count="5"]{grid-template-columns:repeat(4,minmax(0,1fr))}
+.match-gallery-photo img{display:block;position:absolute;width:100%;height:100%;inset:0;object-fit:cover;transition:transform .2s}
+.match-gallery-photo:hover img{transform:scale(1.025)}
+.match-gallery-photo span{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.82);color:white;border-radius:4px;padding:6px 9px;font:600 14px Barlow,sans-serif}
+.match-gallery-photo:focus-visible{outline:3px solid var(--gold-l);outline-offset:3px}
+.match-lightbox{padding:0;border:0;width:min(1200px,100%);max-width:100%;height:100dvh;max-height:100dvh;background:#101010;color:#fff;margin:auto}
+.match-lightbox::backdrop{background:rgba(0,0,0,.94)}
+.match-lightbox[open]{display:flex;flex-direction:column}
+.match-lightbox-bar{padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-shrink:0}
+.match-lightbox-bar h2{font:700 20px "Barlow Condensed",sans-serif;margin:0;overflow-wrap:anywhere}
+.match-lightbox button{display:grid;place-items:center;width:48px;height:48px;flex-shrink:0;background:#242424;border:1px solid #555;border-radius:6px;cursor:pointer}
+.match-lightbox button:disabled{opacity:.35;cursor:default}
+.match-lightbox button:focus-visible{outline:3px solid #e8b84b;outline-offset:2px}
+.match-lightbox button img{width:24px;height:24px;filter:invert(1)}
+.match-lightbox-image{position:relative;flex:1;min-height:0;display:grid;place-items:center;margin:0 16px;overflow:hidden}
+.match-lightbox-image>img{width:100%;height:100%;object-fit:contain;position:absolute;inset:0}
+.match-lightbox-image p{padding:24px;text-align:center;color:#ddd}
+.match-lightbox-caption{display:grid;gap:8px;padding:16px;flex-shrink:0;font:16px/1.4 Barlow,sans-serif}
+.match-lightbox-caption p{margin:0;overflow-wrap:anywhere;max-height:100px;overflow:auto;color:#eee}
+.match-lightbox-controls{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 16px max(16px,env(safe-area-inset-bottom));flex-shrink:0}
+.match-lightbox-controls span{font:14px Barlow,sans-serif;color:#ddd}
+@media(max-width:650px){.match-gallery-heading h2{font-size:24px}.match-gallery-photos,.match-gallery-photos[data-count="5"]{grid-template-columns:repeat(2,minmax(0,1fr))}.match-gallery-photo:first-child{grid-column:1/-1;grid-row:auto;aspect-ratio:4/3}.match-lightbox-bar h2{font-size:18px}.match-lightbox-caption{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.match-gallery-photo img{transition:none}.match-gallery-photo:hover img{transform:none}}

@@ -6,6 +6,8 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>ICV Admin - Automazioni</title>
 <link rel="stylesheet" href="/assets/fonts.css?v=20260728-1">
+<link rel="stylesheet" href="/assets/admin-match-gallery.css?v=20260830-1">
+<script defer src="/assets/admin-match-gallery.js?v=20260830-1"></script>
 <style>
 :root{--gold:#C4962A;--gold-l:#E8B84B;--black:#060606;--d2:#151515;--d3:#1c1c1c;--white:#f0f0f0;--t2:rgba(255,255,255,.66);--t3:rgba(255,255,255,.40);--bdr:rgba(196,150,42,.16);--bdr2:rgba(255,255,255,.07);--green:#4ade80;--red:#f87171;--blue:#60a5fa;--orange:#f59e0b}
 *{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh;background:var(--black);color:var(--white);font-family:Barlow,sans-serif}body:before{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.025;pointer-events:none}
@@ -85,6 +87,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
       <button data-tab="market" onclick="setAdminTab('market',this)">Mercato</button>
       <button data-tab="social" onclick="setAdminTab('social',this)">Social</button>
       <button data-tab="graphics" onclick="setAdminTab('graphics',this)">Grafiche</button>
+      <button data-tab="photos" onclick="setAdminTab('photos',this)">Foto partite</button>
       <button data-tab="community" onclick="setAdminTab('community',this)">Community</button>
       <button data-tab="analytics" onclick="setAdminTab('analytics',this)">Analytics</button>
       <button data-tab="monitor" onclick="setAdminTab('monitor',this)">Monitor</button>
@@ -94,6 +97,31 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 
     <div class="grid">
       <div>
+        <section class="admin-panel photo-admin" data-panel="photos" id="photoAdmin" aria-labelledby="photoAdminHeading">
+          <div class="photo-toolbar"><h2 id="photoAdminHeading">Foto partite</h2><button type="button" class="ghost" id="photoRefresh">Ricarica album</button></div>
+          <p id="photoStatus" role="status" aria-live="polite"></p>
+          <fieldset id="photoControls">
+            <div class="photo-toolbar"><label for="photoAlbum">Album<select id="photoAlbum"><option value="">Nuovo album</option></select></label><button type="button" class="primary" id="photoNew">Nuovo album</button></div>
+            <form id="photoAlbumForm">
+              <div class="photo-fields">
+                <label for="photoTitle">Partita o titolo<input id="photoTitle" maxlength="120" required placeholder="Juventus - Parma"></label>
+                <label for="photoDate">Data<input id="photoDate" type="date" required></label>
+                <label for="photoCredit">Credito fotografico<input id="photoCredit" maxlength="160" value="Il Calcio di Vince"></label>
+              </div>
+              <div class="photo-toolbar"><span id="photoAlbumState"></span><button type="submit" class="primary" id="photoSaveAlbum">Crea album</button></div>
+            </form>
+            <div id="photoEditor" hidden>
+              <div class="photo-upload">
+                <label for="photoFiles">Aggiungi foto<input type="file" id="photoFiles" accept="image/jpeg,image/png,image/webp" multiple></label>
+                <label class="photo-rights"><input id="photoRights" type="checkbox">Ho i diritti per pubblicare queste foto</label>
+                <div id="photoQueue" class="photo-queue"></div>
+                <button type="button" class="primary" id="photoUpload" disabled>Carica foto</button>
+              </div>
+              <div class="photo-toolbar"><h3 id="photoCount">Foto</h3><div class="photo-actions"><button type="button" class="primary" id="photoPublish">Pubblica in home</button><button type="button" class="ghost" id="photoHide">Nascondi album</button><button type="button" class="danger" id="photoDelete">Elimina album</button></div></div>
+              <div id="photoList" class="photo-list"></div>
+            </div>
+          </fieldset>
+        </section>
         <div class="card admin-panel active" data-panel="drafts">
           <h2>Bozze Automatiche</h2>
           <div id="reliabilityGuideDrafts"></div>
@@ -358,6 +386,7 @@ function setAdminTab(tab, btn){
   });
   if(tab === "analytics") loadAnalytics();
   if(tab === "monitor") renderAutomationMonitor();
+  if(tab === "photos" && window.ICVPhotoAdmin) window.ICVPhotoAdmin.open();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 

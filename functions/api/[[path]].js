@@ -1,4 +1,5 @@
 import { chooseConference, conferenceSetting, instagramThumbnail } from '../lib/conferences.js';
+import { adminMatchGallery, readMatchGallery, publicMatchGallery, matchPhotoResponse } from '../lib/match-gallery.js';
 
 const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
@@ -152,6 +153,14 @@ export async function onRequest(context) {
   const path = url.pathname.replace(/^\/api\/?/, "");
 
   try {
+    if (path === 'admin/match-gallery' || path === 'admin/match-photo') {
+      requireAdmin(request, env);
+      if (path === 'admin/match-photo' && request.method === 'GET') return await matchPhotoResponse(request, env, sb, true);
+      if (path === 'admin/match-gallery') return await adminMatchGallery(request, env, sb);
+      return json({ error: 'Metodo non consentito' }, 405);
+    }
+    if (path === 'public/match-gallery' && request.method === 'GET') return json({ gallery: publicMatchGallery(await readMatchGallery(env, sb)) });
+    if (path === 'public/match-photo' && request.method === 'GET') return await matchPhotoResponse(request, env, sb);
     if (path === "public/home") return publicHome(env);
     if (path === "public/conference-thumbnail" && request.method === "GET") return await publicConferenceThumbnail(env, url);
     if (path === "public/players") return publicPlayers(env, url);

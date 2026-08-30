@@ -47,3 +47,17 @@ export function instagramThumbnail(value) {
     return url.protocol === 'https:' && !url.port && !url.username && !url.password && ['cdninstagram.com','fbcdn.net'].some(host=>url.hostname.endsWith('.'+host)) ? url.href : null;
   } catch {return null;}
 }
+
+export function conferenceCollection(rows, input, now = Date.now()) {
+  const featured = chooseConference(rows, input, now);
+  if (!featured) return { featured: null, recent: [] };
+  const recent = [], urls = new Set([featured.post_url]);
+  for (const row of [...rows].sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at))) {
+    if (Date.parse(row.published_at) < now - 30 * 86400000) continue;
+    const item = chooseConference([row], {mode:'auto'}, now);
+    if (!item || urls.has(item.post_url)) continue;
+    urls.add(item.post_url); recent.push(item);
+    if (recent.length === 4) break;
+  }
+  return { featured, recent };
+}

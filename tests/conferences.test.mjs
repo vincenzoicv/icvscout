@@ -1,11 +1,21 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {chooseConference,conferencePhase,instagramPost,instagramThumbnail} from '../functions/lib/conferences.js';
+import {chooseConference,conferenceCollection,conferencePhase,instagramPost,instagramThumbnail} from '../functions/lib/conferences.js';
 import {onRequest} from '../functions/api/[[path]].js';
 
 const now=Date.parse('2026-08-30T12:00:00Z');
 const pre={id:1,platform:'instagram',instagram_id:'ig1',media_type:'video',status:'published',visible:true,post_url:'https://www.instagram.com/reel/PRE/',caption:'Conferenza stampa di Spalletti prima di Juventus Parma',published_at:'2026-08-28T15:00:00Z'};
 const post={...pre,id:2,instagram_id:'ig2',post_url:'https://www.instagram.com/reel/POST/',caption:'La conferenza stampa di Spalletti post Juventus Parma',published_at:'2026-08-30T11:00:00Z'};
+test('raccolta: scelta manuale preservata, Vicario e Spalletti accessibili, nessun duplicato',()=>{
+  const vicario={...post,id:3,post_url:'https://www.instagram.com/reel/VICARIO/',caption:'Conferenza stampa di Vicario post Juventus Parma',published_at:'2026-08-30T11:30:00Z'};
+  const collection=conferenceCollection([pre,post,vicario,{...vicario,id:4}],{mode:'manual',post_id:2,phase:'post'},now);
+  assert.equal(collection.featured.id,2);
+  assert.deepEqual(collection.recent.map(item=>item.post_url),[vicario.post_url,pre.post_url]);
+  assert.equal(conferenceCollection([pre,post,vicario],{},now).featured.id,3);
+  assert.deepEqual(conferenceCollection([pre,post],{mode:'off'},now),{featured:null,recent:[]});
+  const old={...pre,id:9,published_at:'2026-06-01T12:00:00Z'};
+  assert.equal(conferenceCollection([post,old,{...pre,visible:false}],{},now).recent.length,0);
+});
 test('l ultima conferenza post partita sostituisce la pre, non gli altri reel',()=>{
   const interview={...post,id:3,caption:'Prima intervista di Grabara',published_at:'2026-08-30T11:59:00Z'};
   assert.equal(chooseConference([pre,interview,post],{},now).id,2);
@@ -68,11 +78,28 @@ test('API home seleziona la conferenza oltre il limite dei tre post; salvataggio
   });
   const env={ADMIN_TOKEN:'test',SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test'};
   const home=await onRequest({request:new Request('https://example.test/api/public/home'),env});
-  assert.equal((await home.json()).featured_conference.id,2);
+  const homeData=await home.json();
+  assert.equal(homeData.featured_conference.id,2);
+  assert.equal(homeData.recent_conferences[0].id,1);
   assert.ok(calls.some(url=>url.includes('media_type=eq.video') && url.includes('limit=100')));
   const response=await onRequest({request:new Request('https://example.test/api/admin/news',{method:'PATCH',headers:{'X-ICV-Admin-Token':'test','Content-Type':'application/json'},body:JSON.stringify({type:'featured_conference',mode:'manual',post_id:1,phase:'pre'})}),env});
   assert.equal(response.status,200);assert.equal(setting.mode,'manual');
   assert.equal((await response.json()).featured_conference.id,1);
+});
+
+test('miniature delle conferenze secondarie disponibili, nascoste e modalita off escluse',async(t)=>{
+  let hidden=false,off=false;
+  t.mock.method(globalThis,'fetch',async(input)=>{
+    const url=new URL(input);
+    if(url.hostname==='scontent.cdninstagram.com')return new Response(new Uint8Array([1,2,3]),{headers:{'Content-Type':'image/jpeg'}});
+    if(url.pathname.endsWith('/site_settings'))return Response.json([{value:{mode:off?'off':'auto'}}]);
+    if(url.pathname.endsWith('/social_drafts'))return Response.json(url.searchParams.has('id')?[{thumbnail_url:'https://scontent.cdninstagram.com/photo.jpg'}]:[{...pre,visible:!hidden},post]);
+    return Response.json([]);
+  });
+  const env={SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test'},request=new Request('https://example.test/api/public/conference-thumbnail?id=1');
+  assert.equal((await onRequest({request,env})).status,200);
+  hidden=true;assert.equal((await onRequest({request,env})).status,404);
+  hidden=false;off=true;assert.equal((await onRequest({request,env})).status,404);
 });
 
 test('importazione aggiorna la miniatura ma non riattiva un contenuto nascosto',async(t)=>{

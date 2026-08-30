@@ -767,8 +767,8 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
   .news-section{padding:24px 12px 40px;}
 }
 </style>
-<link rel="stylesheet" href="/assets/featured-conference.css?v=20260830-1">
-<script defer src="/assets/featured-conference.js?v=20260830-1"></script>
+<link rel="stylesheet" href="/assets/featured-conference.css?v=20260830-2">
+<script defer src="/assets/featured-conference.js?v=20260830-2"></script>
 <link rel="stylesheet" href="/assets/match-gallery.css?v=20260830-1">
 <script defer src="/assets/match-gallery.js?v=20260830-1"></script>
 </head>
@@ -970,6 +970,10 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
         <p class="conference-privacy" id="conferencePrivacy">Il player Instagram riceve dati di navigazione e puo usare cookie. <a href="#" data-privacy-settings>Preferenze privacy</a></p>
         <p class="conference-status" id="conferenceStatus" role="status" aria-live="polite"></p>
       </div>
+    </div>
+    <div id="conferenceRecent" class="conference-recent" role="group" aria-label="Conferenze recenti" hidden>
+      <h3>Conferenze recenti</h3>
+      <div id="conferenceChoices" class="conference-choices"></div>
     </div>
   </section>
   <section id="matchGallery" class="match-gallery" aria-labelledby="matchGalleryHeading" hidden>
@@ -2101,7 +2105,7 @@ function loadHomeDashboard() {
     var market = Array.isArray(data.market) ? data.market : [];
     var matches = Array.isArray(data.matches) ? data.matches : [];
     var social = Array.isArray(data.social) ? data.social : [];
-    if (window.ICVConference) window.ICVConference.render(data.featured_conference || null);
+    if (window.ICVConference) window.ICVConference.render(data.featured_conference || null, data.recent_conferences || []);
     renderLiveDesk(data.live_desk);
     renderMatchHub(matches);
     renderAutoStatus(data.auto);

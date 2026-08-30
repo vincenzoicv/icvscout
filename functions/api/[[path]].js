@@ -1,4 +1,4 @@
-import { chooseConference, conferenceSetting, instagramThumbnail } from '../lib/conferences.js';
+import { chooseConference, conferenceCollection, conferenceSetting, instagramThumbnail } from '../lib/conferences.js';
 import { adminMatchGallery, readMatchGallery, publicMatchGallery, matchPhotoResponse } from '../lib/match-gallery.js';
 
 const JSON_HEADERS = {
@@ -288,7 +288,7 @@ async function publicHome(env) {
     sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&post_url=not.is.null&order=published_at.desc.nullslast,created_at.desc&limit=12"),
     latestAutomationRun(env, "home_autopilot"),
     getSiteSetting(env, "radar_home", DEFAULT_RADAR),
-    safeAdminRead(() => featuredConference(env), null),
+    safeAdminRead(() => publicConferences(env), null),
   ]);
   const allCleanNews = publicNewsRows(news);
   const cleanNews = allCleanNews.slice(0, 6);
@@ -307,7 +307,8 @@ async function publicHome(env) {
     matches: orderedMatches,
     live_desk: buildLiveDeskEntries({ news: publicNewsRows(news), market: aggregatedMarket, matches: orderedMatches }, 6),
     social: publicSocialRows(social),
-    featured_conference: conference,
+    featured_conference: conference?.featured || null,
+    recent_conferences: conference?.recent || [],
     graphics: [],
     radar,
     auto: { enabled: true, interval_hours: Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1), last_run_at: auto && auto.created_at },
@@ -327,11 +328,21 @@ async function featuredConference(env) {
   return chooseConference(await conferenceRows(env,setting),setting);
 }
 
+async function publicConferences(env) {
+  const setting = conferenceSetting(await getSiteSetting(env,'featured_conference',{}));
+  if (setting.mode === 'off') return {featured:null,recent:[]};
+  const rows = await conferenceRows(env,{mode:'auto'});
+  if (setting.mode === 'manual' && !rows.some(row=>Number(row.id)===setting.post_id)) {
+    rows.push(...await conferenceRows(env,setting));
+  }
+  return conferenceCollection(rows,setting);
+}
+
 async function publicConferenceThumbnail(env, url) {
   const id = Number(url.searchParams.get('id'));
   if (!hasSupabase(env) || !Number.isSafeInteger(id) || id<=0) return json({error:'Anteprima non disponibile'},404);
-  const selected = await featuredConference(env);
-  if (!selected || Number(selected.id) !== id) return json({error:'Anteprima non disponibile'},404);
+  const collection = await publicConferences(env);
+  if (![collection.featured,...collection.recent].some(item=>item && Number(item.id)===id)) return json({error:'Anteprima non disponibile'},404);
   const rows = await sb(env,'/social_drafts?id=eq.'+id+'&select=thumbnail_url&limit=1');
   const source = instagramThumbnail(rows[0]?.thumbnail_url);
   if (!source) return json({error:'Anteprima non disponibile'},404);

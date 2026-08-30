@@ -326,7 +326,7 @@ async function publicConferenceThumbnail(env, url) {
   const rows = await sb(env,'/social_drafts?id=eq.'+id+'&select=thumbnail_url&limit=1');
   const source = instagramThumbnail(rows[0]?.thumbnail_url);
   if (!source) return json({error:'Anteprima non disponibile'},404);
-  const response = await fetch(source,{redirect:'error',signal:AbortSignal.timeout(8000)});
+  const response = await fetch(source,{redirect:'manual',signal:AbortSignal.timeout(8000)});
   const type = response.headers.get('content-type')?.split(';')[0];
   if (!response.ok || !['image/jpeg','image/png','image/webp'].includes(type)) return json({error:'Anteprima non disponibile'},502);
   const limit = 4*1024*1024;

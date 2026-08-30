@@ -33,6 +33,26 @@ test('il salvataggio della selezione richiede autenticazione amministratore',asy
   assert.equal(result.status,401);
 });
 
+test('miniatura: risposta immagine e redirect disabilitati in modo compatibile con Cloudflare',async(t)=>{
+  let redirectStatus=200;
+  t.mock.method(globalThis,'fetch',async(input,options={})=>{
+    const url=new URL(input);
+    if(url.hostname==='scontent.cdninstagram.com'){
+      assert.equal(options.redirect,'manual');
+      return new Response(new Uint8Array([1,2,3]),{status:redirectStatus,headers:{'Content-Type':'image/jpeg'}});
+    }
+    if(url.pathname.endsWith('/site_settings'))return Response.json([]);
+    if(url.pathname.endsWith('/social_drafts'))return Response.json([{...pre,thumbnail_url:'https://scontent.cdninstagram.com/photo.jpg'}]);
+    return Response.json([]);
+  });
+  const env={SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test'};
+  const request=new Request('https://example.test/api/public/conference-thumbnail?id=1');
+  let response=await onRequest({request,env});
+  assert.equal(response.status,200);assert.equal(response.headers.get('content-type'),'image/jpeg');
+  assert.equal((await response.arrayBuffer()).byteLength,3);
+  redirectStatus=302;response=await onRequest({request,env});assert.equal(response.status,502);
+});
+
 test('API home seleziona la conferenza oltre il limite dei tre post; salvataggio manuale persistente',async(t)=>{
   let setting=null;
   const calls=[];

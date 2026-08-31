@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Media: video, foto e Storie bianconere | ICV Scout</title><meta name="description" content="La sala stampa, le fotografie delle partite e i racconti sulla Juventus di Il Calcio di Vince."><link rel="icon" href="/icon-192.png"><link rel="canonical" href="https://ilcalciodivince.com/media"><link rel="stylesheet" href="/assets/featured-conference.css?v=20260830-2"><link rel="stylesheet" href="/assets/match-gallery.css?v=20260830-1"><link rel="stylesheet" href="/assets/icv-stories.css?v=20260831-1"><link rel="stylesheet" href="/assets/section-pages.css?v=20260831-1"><link rel="stylesheet" href="/assets/classifica-nav.css?v=20260831-1"><script defer src="/assets/lucide.min.js"></script><script defer src="/assets/section-pages.js?v=20260831-1"></script><script defer src="/assets/privacy-controls.js?v=20260830-1"></script><script defer src="/assets/featured-conference.js?v=20260831-3"></script><script defer src="/assets/match-gallery.js?v=20260831-3"></script><script defer src="/assets/icv-stories.js?v=20260831-1"></script><script defer src="/assets/media-page.js?v=20260831-1"></script></head><body class="media-page">
+<header class="page-header"><div class="page-header-inner">
+<a class="page-brand" href="/"><img src="/assets/icv-logo-160.jpg" alt="" width="40" height="40">ICV Scout</a>
+<nav aria-label="Menu principale"><a href="/">Home</a><details class="classifica-menu"><summary>Classifica</summary><div><a href="/classifica?competizione=serie-a">Serie A</a><a href="/classifica?competizione=europa-league">Europa League</a></div></details><a href="/calendario-juventus">Calendario</a><a href="/media">Media</a><a href="/community">Community</a><a href="/#news">News</a></nav>
+<button class="page-theme" id="pageTheme" type="button" aria-label="Cambia tema" aria-pressed="false" title="Cambia tema"><i data-lucide="sun-moon" aria-hidden="true"></i></button>
+</div></header><main class="page-main"><p class="page-kicker">Il Calcio di Vince</p><h1>Media</h1>
+<div class="page-tabs" role="group" aria-label="Tipo di contenuto"><button type="button" data-filter="tutti" aria-pressed="true">Tutti</button><button type="button" data-filter="sala-stampa" aria-pressed="false">Sala stampa</button><button type="button" data-filter="foto" aria-pressed="false">Foto</button><button type="button" data-filter="storie" aria-pressed="false">Storie bianconere</button></div>
+<p id="mediaStatus" class="page-status" role="status">Caricamento contenuti...</p><div id="mediaError" class="page-error" role="alert" hidden><p>Foto e conferenze non sono disponibili in questo momento.</p><button type="button" id="mediaRetry">Riprova</button></div>
+<div data-media-section="sala-stampa">  <section class="featured-conference" id="featuredConference" data-archive="true" aria-labelledby="conferenceHeading" hidden>
+    <div class="conference-header">
+      <h2 id="conferenceHeading">Sala stampa</h2>
+      <a href="https://www.instagram.com/ilcalciodivince_/" target="_blank" rel="noopener noreferrer">@ilcalciodivince_ <i class="conference-icon external" aria-hidden="true"></i></a>
+    </div>
+    <div class="conference-layout">
+      <div class="conference-stage" id="conferenceStage">
+        <img id="conferencePoster" width="720" height="720" loading="lazy" decoding="async" alt="Conferenza stampa">
+        <button class="conference-poster-play" id="conferencePosterPlay" type="button" aria-label="Carica la conferenza su Instagram" title="Carica la conferenza su Instagram" aria-describedby="conferencePrivacy"><i class="conference-icon play" aria-hidden="true"></i></button>
+        <span class="conference-poster-label">Conferenza stampa</span>
+        <div class="conference-embed" id="conferenceEmbed" hidden></div>
+      </div>
+      <div class="conference-copy">
+        <span class="conference-eyebrow" id="conferencePhase">Conferenza stampa</span>
+        <h3 id="conferenceTitle"></h3>
+        <time id="conferenceDate"></time>
+        <p id="conferenceSummary"></p>
+        <div class="conference-actions">
+          <button class="conference-primary" id="conferenceLoad" type="button" aria-describedby="conferencePrivacy"><i class="conference-icon play" aria-hidden="true"></i><span>Consenti e carica video</span></button>
+          <button class="conference-stop" id="conferenceStop" type="button" hidden><i class="conference-icon stop" aria-hidden="true"></i>Chiudi video</button>
+          <a id="conferenceOriginal" target="_blank" rel="noopener noreferrer">Guarda su Instagram <i class="conference-icon external" aria-hidden="true"></i></a>
+        </div>
+        <p class="conference-privacy" id="conferencePrivacy">Il player Instagram riceve dati di navigazione e puo usare cookie. <a href="#" data-privacy-settings>Preferenze privacy</a></p>
+        <p class="conference-status" id="conferenceStatus" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+    <div id="conferenceRecent" class="conference-recent" role="group" aria-label="Archivio conferenze" hidden>
+      <h3>Archivio conferenze</h3>
+      <div id="conferenceChoices" class="conference-choices"></div>
+    </div>
+  </section>
+<p id="noConferences" class="page-status" hidden>Nessuna conferenza pubblicata.</p></div>
+<div data-media-section="foto"><section class="media-albums" aria-labelledby="albumsHeading"><h2 id="albumsHeading">La partita in immagini</h2><div class="album-grid" id="albumList"></div><p id="noAlbums" class="page-status" hidden>Nessun album pubblicato.</p></section>
+<section id="matchGallery" data-manual="true" class="match-gallery" aria-labelledby="matchGalleryHeading" hidden>
+    <div class="match-gallery-heading"><div><p>La partita in immagini</p><h2 id="matchGalleryHeading"></h2></div><span id="matchGalleryMeta"></span></div>
+    <div id="matchGalleryPhotos" class="match-gallery-photos"></div>
+    <p id="matchGalleryCredit" class="match-gallery-credit"></p>
+  </section>
+</div><div data-media-section="storie"><section id="storieBianconere" class="icv-stories" aria-labelledby="storiesHeading">
+    <div class="icv-stories-heading">
+      <div><p>Storie bianconere</p><h2 id="storiesHeading">Come nasce la Juventus</h2></div>
+      <span>Un racconto di Il Calcio di Vince &middot; 29 secondi</span>
+    </div>
+    <div class="icv-story-stage">
+      <video id="icvStoryVideo" controls playsinline preload="none" width="1920" height="1080" aria-label="Come nasce la Juventus" data-src="/assets/nascita-juventus-20260831.mp4?v=1" hidden></video>
+      <button id="icvStoryPlay" class="icv-story-play" type="button" aria-label="Riproduci Come nasce la Juventus" title="Riproduci Come nasce la Juventus">
+        <img class="icv-story-poster" src="/assets/nascita-juventus-poster-20260831.jpg" alt="Una panchina nel video sulle origini della Juventus" width="1920" height="1080" loading="lazy" decoding="async">
+        <span class="icv-story-play-icon"><img src="/assets/play.svg" alt="" width="28" height="28"></span>
+      </button>
+    </div>
+    <p id="icvStoryError" class="icv-story-error" role="status" hidden>Il video non riesce a partire. <a href="/assets/nascita-juventus-20260831.mp4?v=1">Apri il video</a></p>
+    <noscript><p><a href="/assets/nascita-juventus-20260831.mp4?v=1">Guarda Come nasce la Juventus</a></p></noscript>
+  </section>
+</div><noscript><p><a href="https://www.instagram.com/ilcalciodivince_/">Guarda le conferenze su Instagram</a></p></noscript></main><footer class="page-footer"><a href="/">ICV Scout</a><a href="/privacy">Privacy</a><a href="/cookie-policy">Cookie</a><a href="#" data-privacy-settings>Preferenze privacy</a></footer></body></html>
+

@@ -1,5 +1,6 @@
-import { chooseConference, conferenceCollection, conferenceSetting, instagramThumbnail } from '../lib/conferences.js';
-import { adminMatchGallery, readMatchGallery, publicMatchGallery, matchPhotoResponse } from '../lib/match-gallery.js';
+import { chooseConference, conferenceCollection, conferenceArchive, conferenceSetting, instagramThumbnail } from '../lib/conferences.js';
+import { adminMatchGallery, readMatchGallery, publicMatchGallery, publicMatchAlbums, matchPhotoResponse } from '../lib/match-gallery.js';
+import { standingsResponse } from '../lib/standings.js';
 
 const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
@@ -162,6 +163,8 @@ export async function onRequest(context) {
     if (path === 'public/match-gallery' && request.method === 'GET') return json({ gallery: publicMatchGallery(await readMatchGallery(env, sb)) });
     if (path === 'public/match-photo' && request.method === 'GET') return await matchPhotoResponse(request, env, sb);
     if (path === "public/home") return publicHome(env);
+    if (path === 'public/standings' && request.method === 'GET') return await standingsResponse(url,env);
+    if (path === 'public/media' && request.method === 'GET') return await publicMedia(env);
     if (path === "public/conference-thumbnail" && request.method === "GET") return await publicConferenceThumbnail(env, url);
     if (path === "public/players") return publicPlayers(env, url);
     if (/^public\/players\/[a-z0-9-]+$/i.test(path)) return publicPlayer(env, path.split("/").pop());
@@ -338,11 +341,25 @@ async function publicConferences(env) {
   return conferenceCollection(rows,setting);
 }
 
+async function publicMedia(env) {
+  if (!hasSupabase(env)) return json({conferences:[],albums:[]});
+  const [rows,setting,gallery] = await Promise.all([
+    conferenceRows(env,{mode:'auto'}),
+    getSiteSetting(env,'featured_conference',{}),
+    readMatchGallery(env,sb),
+  ]);
+  return json({conferences:conferenceArchive(rows,setting),albums:publicMatchAlbums(gallery)});
+}
+
 async function publicConferenceThumbnail(env, url) {
   const id = Number(url.searchParams.get('id'));
   if (!hasSupabase(env) || !Number.isSafeInteger(id) || id<=0) return json({error:'Anteprima non disponibile'},404);
   const collection = await publicConferences(env);
-  if (![collection.featured,...collection.recent].some(item=>item && Number(item.id)===id)) return json({error:'Anteprima non disponibile'},404);
+  if (![collection.featured,...collection.recent].some(item=>item && Number(item.id)===id)) {
+    const setting = await getSiteSetting(env,'featured_conference',{});
+    const archived = await sb(env,'/social_drafts?id=eq.'+id+'&limit=1');
+    if (!conferenceArchive(archived,setting).length) return json({error:'Anteprima non disponibile'},404);
+  }
   const rows = await sb(env,'/social_drafts?id=eq.'+id+'&select=thumbnail_url&limit=1');
   const source = instagramThumbnail(rows[0]?.thumbnail_url);
   if (!source) return json({error:'Anteprima non disponibile'},404);
@@ -3163,7 +3180,9 @@ async function juventusCalendar(request, env) {
   ];
   for (const fixture of fixtures) {
     const match = correctScheduledJuventusMatch(providerMatches.find(candidate => officialFixtureMatch(candidate, fixture)));
-    const providerKickoff = match && new Date(match.utcDate);
+    // SCHEDULED contains a date placeholder, not a confirmed kickoff time.
+    const providerHasTime = match && ['TIMED','IN_PLAY','PAUSED','FINISHED','AWARDED'].includes(match.status);
+    const providerKickoff = providerHasTime && new Date(match.utcDate);
     const officialKickoff = fixture.kickoff && new Date(fixture.kickoff);
     const kickoff = providerKickoff && Number.isFinite(providerKickoff.getTime())
       ? providerKickoff
@@ -3186,7 +3205,9 @@ async function juventusCalendar(request, env) {
     ].join("\n");
     const modified = match && new Date(match.lastUpdated || now);
     const baseModified = modified && Number.isFinite(modified.getTime()) ? modified : new Date(fixture.code === "EL" ? "2026-08-29T00:00:00Z" : "2026-06-05T00:00:00Z");
-    const validModified = fixture.updatedAt ? new Date(Math.max(baseModified.getTime(), new Date(fixture.updatedAt).getTime())) : baseModified;
+    const correctedPlaceholder = match?.status === 'SCHEDULED' && !fixture.kickoff;
+    const revisionDate = correctedPlaceholder ? '2026-08-31T11:20:00Z' : fixture.updatedAt;
+    const validModified = revisionDate ? new Date(Math.max(baseModified.getTime(), new Date(revisionDate).getTime())) : baseModified;
     const sequence = match || fixture.updatedAt ? Math.floor(validModified.getTime() / 1000) : 0;
 
     lines.push(

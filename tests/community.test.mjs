@@ -434,7 +434,7 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
       assert.equal(new Intl.DateTimeFormat('it-IT', {timeZone:'Europe/Rome', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}).format(new Date(homeEurope[index].date)), local);
       assert.equal(homeEurope[index].home + ' - ' + homeEurope[index].away, teams);
     });
-    const previews = {matchPreview:{innerHTML:''}, europaPreview:{innerHTML:''}};
+    const previews = {matchPreview:{innerHTML:''}, europaPreview:{innerHTML:''}, allPreview:{innerHTML:''}};
     const previewSource = page.slice(page.indexOf('function escapeHtml('), page.lastIndexOf('loadPreview();'));
     await new Function('document', 'fetch', 'calendarPath', previewSource + '; return loadPreview();')(
       {getElementById:id => previews[id]},
@@ -445,6 +445,8 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     assert.match(previews.europaPreview.innerHTML, /1ª giornata[\s\S]*8ª giornata/);
     assert.doesNotMatch(previews.europaPreview.innerHTML, /Serie A|orario da confermare/);
     assert.doesNotMatch(previews.matchPreview.innerHTML, /NEC Nijmegen|Rennes/);
+    assert.match(previews.allPreview.innerHTML, /Juventus - Milan[\s\S]*Sassuolo - Juventus[\s\S]*Juventus - NEC Nijmegen[\s\S]*Juventus - Atalanta/);
+    assert.match(previews.allPreview.innerHTML, /Prossima partita/);
   } finally {
     globalThis.fetch = originalFetch;
   }

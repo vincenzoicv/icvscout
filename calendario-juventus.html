@@ -117,6 +117,7 @@
     body.light .newsletter input{background:#fff;color:#181713}
     body.light footer{background:#efefeb}
     @media(max-width:720px){header{padding:12px 15px}.badge{font-size:16px}.theme-toggle{padding:8px}.theme-toggle span{display:none}.platforms,.uel-grid,.uel-heading{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}.competition-tabs{margin-bottom:42px}.uel-section{margin-top:62px;padding-top:48px}.uel-heading{gap:22px}.uel-dates{grid-template-columns:repeat(2,1fr)}.uel-windows-head{display:block}.uel-windows-head p{margin-top:8px;text-align:left}}
+    .match.next-fixture{border-color:var(--gold);border-left-width:3px}.next-fixture-label{display:block;color:var(--gold);font-size:12px;line-height:1.5;margin-bottom:4px}.match{border-radius:6px}.match strong,.match span{overflow-wrap:anywhere}.match time{font-size:13px}@media(max-width:720px){.match{grid-template-columns:minmax(0,1fr)}.match span{justify-self:start}}
   </style>
 </head>
 <body>
@@ -164,7 +165,12 @@
       <button class="competition-tab" type="button" data-calendar-filter="europa" aria-pressed="false">Europa League</button>
     </nav>
 
-    <section data-calendar-section="seriea">
+    <section data-calendar-section="all">
+      <div class="section-eye">Serie A &middot; Europa League</div>
+      <div class="section-title">Calendario e risultati</div>
+      <div class="matches" id="allPreview"><div class="loading">Caricamento del calendario in corso...</div></div>
+    </section>
+    <section data-calendar-section="seriea" hidden>
       <section class="preview">
         <div class="section-eye">Serie A 2026/27</div>
         <div class="section-title">Calendario e risultati</div>
@@ -172,7 +178,7 @@
       </section>
     </section>
 
-    <section class="uel-section" data-calendar-section="europa" id="europa-league">
+    <section class="uel-section" data-calendar-section="europa" id="europa-league" hidden>
       <div class="uel-heading">
         <div>
           <div class="section-eye">Europa League 2026/27</div>
@@ -214,15 +220,16 @@
         button.setAttribute('aria-pressed', String(active));
       });
       document.querySelectorAll('[data-calendar-section]').forEach(section => {
-        section.hidden = filter !== 'all' && section.dataset.calendarSection !== filter;
+        section.hidden = section.dataset.calendarSection !== filter;
       });
-      if (updateHash) history.replaceState(null, '', filter === 'europa' ? '#europa-league' : location.pathname);
+      if (updateHash) history.replaceState(null, '', filter === 'europa' ? '#europa-league' : filter === 'seriea' ? '#serie-a' : location.pathname);
     }
 
     document.querySelectorAll('[data-calendar-filter]').forEach(button => {
       button.addEventListener('click', () => setCompetitionFilter(button.dataset.calendarFilter));
     });
     if (location.hash === '#europa-league') setCompetitionFilter('europa', false);
+    if (location.hash === '#serie-a') setCompetitionFilter('seriea', false);
 
     function setCalendarStatus(message) {
       document.getElementById('calendarStatus').textContent = message;
@@ -295,17 +302,22 @@
         const serieA = events.filter(event => event.competition === 'seriea');
         const nextIndex = serieA.findIndex(event => event.date >= today);
         const start = Math.max(0, (nextIndex < 0 ? serieA.length : nextIndex) - 2);
+        const nextEvent = events.find(event => event.date >= new Date() || event.allDay && event.date >= today);
         const renderEvent = event => {
           const options = event.allDay
             ? {day:'2-digit',month:'short',timeZone:'Europe/Rome'}
             : {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'};
           const date = new Intl.DateTimeFormat('it-IT', options).format(event.date);
           const label = event.allDay ? event.round + ' · orario da confermare' : event.round;
-          return `<article class="match"><time>${escapeHtml(date)}</time><strong>${escapeHtml(event.title)}</strong><span>${escapeHtml(label)}</span></article>`;
+          const upcoming = event === nextEvent;
+          return `<article class="match${upcoming ? ' next-fixture' : ''}"><time>${escapeHtml(date)}</time><strong>${upcoming ? '<small class="next-fixture-label">Prossima partita</small>' : ''}${escapeHtml(event.title)}</strong><span>${event.competition === 'europa' ? 'Europa League' : 'Serie A'} &middot; ${escapeHtml(label)}</span></article>`;
         };
         container.innerHTML = serieA.slice(start, start + 8).map(renderEvent).join('');
         europaContainer.innerHTML = events.filter(event => event.competition === 'europa').map(renderEvent).join('');
+        const allIndex = events.findIndex(event => event.date >= today);
+        document.getElementById('allPreview').innerHTML = events.slice(Math.max(0,(allIndex < 0 ? events.length : allIndex)-2)).map(renderEvent).join('');
       } catch {
+        document.getElementById('allPreview').innerHTML = '<div class="loading">Calendario momentaneamente non disponibile. Riprova tra poco.</div>';
         container.innerHTML = '<div class="loading">Il calendario resta disponibile. L’anteprima live tornerà al prossimo aggiornamento.</div>';
         europaContainer.innerHTML = '<div class="loading">Calendario momentaneamente non disponibile. Consulta le date e gli orari nella fonte ufficiale qui sotto.</div>';
       }

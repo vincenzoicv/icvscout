@@ -20,7 +20,7 @@
     choices=[value,...(Array.isArray(items)?items:[])].filter(item=>{
       if (!valid(item) || unique.has(item.post_url)) return false;
       unique.add(item.post_url);return true;
-    }).slice(0,5);
+    }).slice(0,root.dataset.archive==='true'?100:5);
     choiceList.replaceChildren();recent.hidden=!valid(value) || choices.length<2;
     for (const item of choices) {
       const button=document.createElement('button'),image=document.createElement('img'),title=document.createElement('strong'),date=document.createElement('time');

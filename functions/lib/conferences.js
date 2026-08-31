@@ -61,3 +61,12 @@ export function conferenceCollection(rows, input, now = Date.now()) {
   }
   return { featured, recent };
 }
+
+export function conferenceArchive(rows, input, now = Date.now()) {
+  if (conferenceSetting(input).mode === 'off') return [];
+  const seen = new Set();
+  return [...rows].sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at)).map(row=>chooseConference([row],{mode:'auto'},now)).filter(item=>{
+    if (!item || seen.has(item.post_url)) return false;
+    seen.add(item.post_url); return true;
+  });
+}

@@ -27,6 +27,12 @@ export function publicMatchGallery(state) {
   };
 }
 
+export function publicMatchAlbums(state) {
+  return state.albums.filter(album=>album.published && album.photos.length)
+    .sort((a,b)=>String(b.date).localeCompare(String(a.date)))
+    .map(album=>publicMatchGallery({...state,featured_id:album.id}));
+}
+
 // Compare the stored revision atomically so another admin tab cannot overwrite an album.
 async function save(env, sb, state, previous) {
   state.revision = crypto.randomUUID();

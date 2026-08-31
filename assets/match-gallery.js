@@ -31,16 +31,13 @@
   dialog.addEventListener('close',function() { document.body.style.overflow = scrollStyle; image.removeAttribute('src'); if (opener && opener.isConnected) opener.focus({preventScroll:true}); });
   dialog.querySelector('.match-lightbox-image').addEventListener('touchstart',function(event) { startX = event.touches.length === 1 ? event.touches[0].clientX : null; },{passive:true});
   dialog.querySelector('.match-lightbox-image').addEventListener('touchend',function(event) { if (startX !== null) { var distance = event.changedTouches[0].clientX - startX; if (Math.abs(distance) > 60) show(index + (distance < 0 ? 1 : -1)); } startX = null; },{passive:true});
-  async function load() {
-    try {
-      var result = await fetch('/api/public/match-gallery', {cache:'no-store'});
-      if (!result.ok) return;
-      gallery = (await result.json()).gallery;
+  function render(next) {
+      gallery = next;
       if (!gallery || !gallery.photos.length) return;
       document.getElementById('matchGalleryHeading').textContent = gallery.title;
       document.getElementById('matchGalleryMeta').textContent = new Date(gallery.date + 'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'}) + ' · ' + gallery.photos.length + ' foto';
       document.getElementById('matchGalleryCredit').textContent = gallery.credit ? 'Foto: ' + gallery.credit : '';
-      var grid = document.getElementById('matchGalleryPhotos'); grid.dataset.count = String(Math.min(5, gallery.photos.length));
+      var grid = document.getElementById('matchGalleryPhotos'); grid.replaceChildren(); grid.dataset.count = String(Math.min(5, gallery.photos.length));
       gallery.photos.slice(0,5).forEach(function(photo, number) {
         var button = document.createElement('button'), img = document.createElement('img');
         button.type = 'button'; button.className = 'match-gallery-photo'; button.setAttribute('aria-label','Apri foto ' + (number + 1) + ' di ' + gallery.photos.length + ': ' + (photo.caption || gallery.title));
@@ -51,7 +48,14 @@
         grid.appendChild(button);
       });
       section.hidden = false;
+  }
+  async function load() {
+    try {
+      var result = await fetch('/api/public/match-gallery', {cache:'no-store'});
+      if (!result.ok) return;
+      render((await result.json()).gallery);
     } catch (_) { /* An unavailable gallery must not block match data or the conference. */ }
   }
-  load();
+  window.ICVGallery = {render:render};
+  if(section.dataset.manual !== 'true') load();
 })();

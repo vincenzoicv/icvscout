@@ -292,7 +292,7 @@ test("le statistiche mostrano esclusivamente la stagione 2026/27", async () => {
   const html = await read("index.html");
   const section = html.match(/<section class="section" id="statistiche">([\s\S]*?)<\/section>/)?.[1] || "";
   assert.match(section, /Stagione 2026\/27/);
-  assert.match(section, /Classifica Serie A 2026\/27/);
+  assert.doesNotMatch(section, /Classifica Serie A|standingsTable/);
   assert.match(section, /Frosinone Calcio vs Juventus/);
   assert.match(section, /0 - 1/);
   assert.doesNotMatch(section, /2025\/26/);

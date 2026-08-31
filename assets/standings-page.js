@@ -8,7 +8,7 @@
   const body=document.getElementById('standingsRows'),status=document.getElementById('standingsStatus'),error=document.getElementById('standingsError');
   function cell(text,cls){const el=document.createElement('td');el.textContent=text;if(cls)el.className=cls;return el;}
   async function load(){
-    error.hidden=true;status.textContent='Caricamento classifica...';document.getElementById('standingsContent').hidden=true;
+    error.hidden=true;status.hidden=false;status.textContent='Caricamento classifica...';document.getElementById('standingsContent').hidden=true;
     try{
       const response=await fetch('/api/public/standings?competition='+competition);
       if(!response.ok)throw new Error();const data=await response.json();
@@ -38,9 +38,9 @@
       for(const [cls,text] of (european?[['top','1-8: ottavi di finale'],['middle','9-24: spareggi'],['bottom','25-36: eliminate']]:[['top','1-4: zona Champions League'],['middle','5-6: zona Europa'],['bottom','18-20: retrocessione']])){const item=document.createElement('span');item.className=cls;item.textContent=text;legend.append(item);}
       document.getElementById('standingsCaveat').textContent=european?'':'Posti europei indicativi: dipendono anche dalle coppe e da eventuali posti aggiuntivi.';
       const source=document.getElementById('standingsSource');source.href=data.source;source.textContent=european?'UEFA':'Lega Serie A';
-      status.textContent='Verificata il '+new Date(data.checkedAt).toLocaleString('it-IT',{day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'})+' \u00b7 Dati '+data.provider;
+      status.textContent='';status.hidden=true;
       document.getElementById('standingsContent').hidden=false;
-    }catch{status.textContent='';error.hidden=false;}
+    }catch{status.textContent='';status.hidden=true;error.hidden=false;}
   }
   document.getElementById('standingsRetry').addEventListener('click',load);load();
 })();

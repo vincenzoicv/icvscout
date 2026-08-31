@@ -1053,15 +1053,6 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
     <div class="result-item"><div class="res-badge res-w">V</div><div class="res-teams"><div class="res-name">Frosinone Calcio vs Juventus</div><div class="res-comp">Serie A &middot; 1&#170; giornata</div></div><div class="res-score">0 - 1</div><div class="res-date">23 ago</div></div>
   </div>
 
-  <div class="sec-head" style="margin-top:28px;margin-bottom:14px;">
-    <div class="sec-tag">Classifica Serie A 2026/27</div>
-  </div>
-  <div class="chart-box" style="padding:16px;">
-    <div id="standingsTable">
-      <div class="standings-loading">Caricamento classifica aggiornata...</div>
-</div>
-  </div>
-
 </section>
 <section class="section" id="mercato">
   <div class="sec-head"><div class="sec-tag">Estate 2026</div><div class="sec-title">MERCATO</div><div class="gold-bar"></div></div>
@@ -1439,14 +1430,14 @@ function renderResults(matches) {
 function loadStandings() {
   var cached = cacheGet("standings");
   if (isCurrentStandings(cached)) {
-    renderStandings(cached, "Classifica aggiornata automaticamente");
+    renderStandings(cached);
     return;
   }
   fdFetch("/competitions/" + SERIE_A_ID + "/standings", function(err, data) {
     var table = data && data.standings && data.standings[0] && data.standings[0].table;
     if (!err && isCurrentStandings(table)) {
       cacheSet("standings", table);
-      renderStandings(table, "Classifica aggiornata automaticamente");
+      renderStandings(table);
       return;
     }
     renderStandingsUnavailable();
@@ -1454,12 +1445,11 @@ function loadStandings() {
 }
 
 function renderStandingsUnavailable() {
-  var container = document.getElementById("standingsTable");
-  if (!container) return;
-  container.innerHTML = "<div class='standings-loading'>Classifica 2026/27 in aggiornamento. Riprova tra poco.</div>";
+  var tag = document.getElementById("statsSecTag");
+  if (tag) tag.textContent = "Statistiche " + CURRENT_SEASON_LABEL + " in aggiornamento";
 }
 
-function renderStandings(table, sourceLabel) {
+function renderStandings(table) {
   // Update stat cards with Juve data
   var juve = null;
   for (var i = 0; i < table.length; i++) {
@@ -1514,44 +1504,6 @@ function renderStandings(table, sourceLabel) {
     });
   }
 
-  // Render full table
-  var container = document.getElementById("standingsTable");
-  if (!container) return;
-  var html = "<table class='standings-table'>";
-  html += "<tr><th class='left' colspan='2'>Squadra</th><th>G</th><th>V</th><th>P</th><th>S</th><th>GF</th><th>GS</th><th>DR</th><th>Pts</th></tr>";
-  table.forEach(function(row) {
-    var pos = row.position;
-    var posClass = "st-pos";
-    var rowClasses = [];
-    if (pos <= 4) posClass += " ucl";
-    if (pos <= 4) rowClasses.push("zone-ucl");
-    else if (pos === 5 || pos === 6) { posClass += " uel"; rowClasses.push("zone-uel"); }
-    else if (pos >= 18) { posClass += " rel"; rowClasses.push("zone-rel"); }
-    var isJuve = row.team.id === JUVE_ID;
-    if (isJuve) rowClasses.push("juve-row");
-    var dr = row.goalDifference > 0 ? "+" + row.goalDifference : String(row.goalDifference);
-    html += "<tr class='" + rowClasses.join(" ") + "'>";
-    html += "<td class='" + posClass + "'>" + pos + "</td>";
-    html += "<td class='left st-team'>" + row.team.name + (isJuve ? " &#9733;" : "") + "</td>";
-    html += "<td class='st-num'>" + row.playedGames + "</td>";
-    html += "<td class='st-num'>" + row.won + "</td>";
-    html += "<td class='st-num'>" + row.draw + "</td>";
-    html += "<td class='st-num'>" + row.lost + "</td>";
-    html += "<td class='st-num'>" + row.goalsFor + "</td>";
-    html += "<td class='st-num'>" + row.goalsAgainst + "</td>";
-    html += "<td class='st-num'>" + dr + "</td>";
-    html += "<td class='st-pts'>" + row.points + "</td>";
-    html += "</tr>";
-  });
-  html += "</table>";
-  html += "<div class='standings-legend'>";
-  html += "<span class='legend-ucl'>&#9632; Champions League</span>";
-  html += "<span class='legend-uel'>&#9632; Europa / Conference</span>";
-  html += "<span class='legend-rel'>&#9632; Retrocessione</span>";
-  html += "<span class='legend-out'>* Retrocesse</span>";
-  html += "</div>";
-  html += "<div class='standings-source'>" + (sourceLabel || "Classifica aggiornata automaticamente") + "</div>";
-  container.innerHTML = html;
 }
 
 // Init

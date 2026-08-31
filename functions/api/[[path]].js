@@ -362,6 +362,15 @@ function orderPublicMatches(rows, options = {}) {
   const liveStatuses = new Set(["live", "in_play", "paused", "halftime"]);
   const finishedStatuses = new Set(["finished", "cancelled", "postponed"]);
   return (Array.isArray(rows) ? rows : [])
+    .map(row => {
+      if (!row) return row;
+      const payload = matchSourcePayload(row.source_payload);
+      const corrected = correctScheduledJuventusMatch({ ...payload, utcDate: row.match_date, status: row.status });
+      return corrected.utcDate === row.match_date ? row : {
+        ...row, match_date: corrected.utcDate,
+        source_payload: { ...payload, utcDate: corrected.utcDate, icv_schedule_updated_at: corrected.icv_schedule_updated_at },
+      };
+    })
     .filter(row => row && row.match_date && Number.isFinite(new Date(row.match_date).getTime()))
     .map((row, index) => {
       const matchTime = new Date(row.match_date).getTime();
@@ -2507,6 +2516,7 @@ function footballDataScorers(goals) {
 
 function matchReportFromFootballData(match, options = {}) {
   if (!match || !match.id || !match.homeTeam || !match.awayTeam) return null;
+  match = correctScheduledJuventusMatch(match);
   const home = cleanText(match.homeTeam.name);
   const away = cleanText(match.awayTeam.name);
   const isHome = Number(match.homeTeam.id) === 109;
@@ -3018,7 +3028,7 @@ const JUVENTUS_SERIE_A_2026_27 = [
   [1, "2026-08-23", "Frosinone", "Juventus", "2026-08-23T16:30:00Z"],
   [2, "2026-08-30", "Juventus", "Parma", "2026-08-29T18:45:00Z"],
   [3, "2026-09-06", "Juventus", "Milan", "2026-09-06T18:45:00Z"],
-  [4, "2026-09-13", "Sassuolo", "Juventus", null],
+  [4, "2026-09-13", "Sassuolo", "Juventus", "2026-09-13T18:45:00Z"],
   [5, "2026-09-20", "Juventus", "Atalanta", "2026-09-20T16:00:00Z"],
   [6, "2026-10-11", "Cagliari", "Juventus", null],
   [7, "2026-10-18", "Juventus", "Lazio", null],
@@ -3053,7 +3063,10 @@ const JUVENTUS_SERIE_A_2026_27 = [
   [36, "2027-05-16", "Juventus", "Inter", null],
   [37, "2027-05-23", "Parma", "Juventus", null],
   [38, "2027-05-30", "Juventus", "Frosinone", null],
-].map(([matchday, date, home, away, kickoff]) => ({ matchday, date, home, away, kickoff }));
+].map(([matchday, date, home, away, kickoff]) => ({
+  matchday, date, home, away, kickoff,
+  ...(matchday === 4 ? { previousKickoff:"2026-09-12T16:00:00Z", updatedAt:"2026-08-31T10:44:56Z" } : {}),
+}));
 
 const JUVENTUS_EUROPA_LEAGUE_2026_27 = [
   [1, "2026-09-17T19:00:00Z", "Juventus", "NEC Nijmegen"],
@@ -3102,6 +3115,15 @@ function compactIcsDate(date) {
   return String(date || "").replace(/-/g, "");
 }
 
+function correctScheduledJuventusMatch(match) {
+  if (!match || !["scheduled", "timed", "pre_match"].includes(String(match.status || "").toLowerCase())) return match;
+  // Correct the superseded slot only; preserve later rescheduling and played matches.
+  const fixture = JUVENTUS_SERIE_A_2026_27.find(item => item.previousKickoff
+    && new Date(match.utcDate).getTime() === new Date(item.previousKickoff).getTime()
+    && officialFixtureMatch(match, { ...item, code:"SA" }));
+  return fixture ? { ...match, utcDate:fixture.kickoff, icv_schedule_updated_at:fixture.updatedAt } : match;
+}
+
 function nextCalendarDate(date) {
   const value = new Date(`${date}T12:00:00Z`);
   value.setUTCDate(value.getUTCDate() + 1);
@@ -3140,7 +3162,7 @@ async function juventusCalendar(request, env) {
     ...JUVENTUS_EUROPA_LEAGUE_2026_27,
   ];
   for (const fixture of fixtures) {
-    const match = providerMatches.find(candidate => officialFixtureMatch(candidate, fixture));
+    const match = correctScheduledJuventusMatch(providerMatches.find(candidate => officialFixtureMatch(candidate, fixture)));
     const providerKickoff = match && new Date(match.utcDate);
     const officialKickoff = fixture.kickoff && new Date(fixture.kickoff);
     const kickoff = providerKickoff && Number.isFinite(providerKickoff.getTime())
@@ -3163,8 +3185,9 @@ async function juventusCalendar(request, env) {
         : "Calendario ufficiale: https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27",
     ].join("\n");
     const modified = match && new Date(match.lastUpdated || now);
-    const validModified = modified && Number.isFinite(modified.getTime()) ? modified : new Date(fixture.code === "EL" ? "2026-08-29T00:00:00Z" : "2026-06-05T00:00:00Z");
-    const sequence = match ? Math.floor(validModified.getTime() / 1000) : 0;
+    const baseModified = modified && Number.isFinite(modified.getTime()) ? modified : new Date(fixture.code === "EL" ? "2026-08-29T00:00:00Z" : "2026-06-05T00:00:00Z");
+    const validModified = fixture.updatedAt ? new Date(Math.max(baseModified.getTime(), new Date(fixture.updatedAt).getTime())) : baseModified;
+    const sequence = match || fixture.updatedAt ? Math.floor(validModified.getTime() / 1000) : 0;
 
     lines.push(
       "BEGIN:VEVENT",

@@ -40,6 +40,7 @@
 .conference-choice{display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:0;padding:8px;background:transparent;border:1px solid var(--bdr2);border-radius:6px;color:var(--white);text-align:left;cursor:pointer;font-family:inherit;text-transform:none;box-shadow:none;}
 .conference-choice img{display:block;width:100%;height:auto;aspect-ratio:8/5;object-fit:cover;border-radius:3px;background:var(--d2);}
 .conference-choice strong{font:600 17px/1.25 "Barlow Condensed",sans-serif;overflow-wrap:anywhere;}
+.conference-choice img.conference-choice-fallback{object-fit:scale-down;padding:16px;background:#111;}
 .conference-choice time{font-size:12px;color:var(--t2);margin-top:auto;}
 .conference-choice:hover{border-color:var(--gold-l);}
 .conference-choice[aria-pressed="true"]{border-color:var(--gold-l);box-shadow:inset 0 -3px var(--gold-l);}

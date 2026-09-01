@@ -15,7 +15,7 @@ test('story follows gallery and precedes live desk, without autoplay or eager vi
   assert.match(tag, /controls playsinline/);
   assert.doesNotMatch(tag, /\s(?:src|autoplay)=/);
   assert.match(section, /loading="lazy"/);
-  assert.match(section, /nascita-juventus-cover-20260901\.jpg/);
+  assert.match(section, /nascita-juventus-cover-20260901\.jpg\?v=2/);
 });
 
 test('story cover is a real JPEG asset, not an HTML fallback', () => {

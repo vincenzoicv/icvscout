@@ -104,6 +104,13 @@ test('archive thumbnail remains protected for old hidden or disabled posts',asyn
 test('new pages keep semantic navigation, stats deep link and existing privacy-aware players',()=>{
   const file=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
   assert.match(file('index.html'),/<summary>Classifica<\/summary>/);assert.match(file('classifica.html'),/href="\/#statistiche"/);assert.match(file('media.html'),/data-manual="true"/);assert.match(file('media.html'),/privacy-controls.js/);
+  const pageCss=file('assets/section-pages.css');
+  assert.match(pageCss,/nav>a,.page-header .page-header-inner>nav>details>summary/);
+  assert.match(pageCss,/border-radius:999px/);
+  assert.match(pageCss,/min-height:44px/);
+  assert.match(pageCss,/prefers-reduced-motion:reduce/);
+  assert.match(file('classifica.html'),/section-pages\.css\?v=20260901-2/);
+  assert.match(file('media.html'),/section-pages\.css\?v=20260901-2/);
   for(const name of ['section-pages','standings-page','media-page','featured-conference','match-gallery'])assert.doesNotThrow(()=>new vm.Script(file('assets/'+name+'.js')));
 });
 test('scheduled date placeholders are all-day, confirmed kickoffs retain their time',async(t)=>{

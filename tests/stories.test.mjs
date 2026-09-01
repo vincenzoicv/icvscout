@@ -15,6 +15,16 @@ test('story follows gallery and precedes live desk, without autoplay or eager vi
   assert.match(tag, /controls playsinline/);
   assert.doesNotMatch(tag, /\s(?:src|autoplay)=/);
   assert.match(section, /loading="lazy"/);
+  assert.match(section, /nascita-juventus-cover-20260901\.jpg/);
+});
+
+test('story cover is a real JPEG asset, not an HTML fallback', () => {
+  const bytes = readFileSync(new URL('../assets/nascita-juventus-cover-20260901.jpg', import.meta.url));
+  assert.ok(bytes.length > 100000);
+  assert.equal(bytes[0], 0xff);
+  assert.equal(bytes[1], 0xd8);
+  assert.equal(bytes.at(-2), 0xff);
+  assert.equal(bytes.at(-1), 0xd9);
 });
 
 test('published MP4 fits hosting and has metadata before media for quick start', () => {

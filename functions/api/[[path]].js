@@ -190,7 +190,7 @@ export async function onRequest(context) {
     if (path === "admin/automate") return await adminAutomate(request, env);
     if (path === "cron/autopilot") return cronAutopilot(request, env);
     if (path.startsWith("football-data/")) return footballDataProxy(path, url, env);
-    return apiSportsProxy(path, url, env);
+    return json({ error: "Endpoint non disponibile" }, 404);
   } catch (err) {
     const status = Number(err.status) || 500;
     const payload = { error: err.message || "Errore API", ...(err.details || {}) };
@@ -3826,16 +3826,6 @@ function compactGoalEvents(events, match) {
       side: sameWorldCupTeam(match.homeTeam && match.homeTeam.name, event.team && event.team.name) ? "home" : "away",
     }))
     .sort((a, b) => (a.minute + a.extra / 100) - (b.minute + b.extra / 100));
-}
-
-async function apiSportsProxy(path, url, env) {
-  if (!env.APISPORTS_KEY) return json({ error: "APISPORTS_KEY non configurata" }, 500);
-  const targetUrl = "https://v3.football.api-sports.io/" + path + url.search;
-  const response = await fetch(targetUrl, { headers: { "x-apisports-key": env.APISPORTS_KEY } });
-  return new Response(await response.text(), {
-    status: response.status,
-    headers: { ...JSON_HEADERS, "Cache-Control": "public, max-age=3600" },
-  });
 }
 
 async function getSources(env) {

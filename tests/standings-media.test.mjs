@@ -90,6 +90,14 @@ test('public media API returns authorized archive metadata and hides disabled co
   let response=await onRequest({request,env});assert.equal(response.status,200);let data=await response.json();assert.equal(data.conferences.length,1);assert.equal(data.albums.length,1);
   off=true;data=await (await onRequest({request,env})).json();assert.equal(data.conferences.length,0);assert.equal(data.albums.length,1);
 });
+test('unknown API routes fail closed without consuming an external API quota',async(t)=>{
+  let calls=0;
+  t.mock.method(globalThis,'fetch',async()=>{calls+=1;return Response.json({unexpected:true});});
+  const response=await onRequest({request:new Request('https://example.test/api/teams/statistics?league=135&season=2026&team=496'),env:{APISPORTS_KEY:'secret'}});
+  assert.equal(response.status,404);
+  assert.deepEqual(await response.json(),{error:'Endpoint non disponibile'});
+  assert.equal(calls,0);
+});
 test('archive thumbnail remains protected for old hidden or disabled posts',async(t)=>{
   let hidden=false,off=false;t.mock.method(globalThis,'fetch',async(input)=>{
     const url=new URL(input);

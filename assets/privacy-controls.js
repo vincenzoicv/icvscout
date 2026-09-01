@@ -83,7 +83,7 @@
         "<p>Gestisci le statistiche ICV e il caricamento dei contenuti esterni.</p>" +
         '<label class="icv-privacy-option"><span><strong>Funzioni tecniche</strong><span>Accesso, sicurezza, preferenze e funzionamento del servizio.</span></span><input type="checkbox" checked disabled aria-label="Funzioni tecniche sempre attive"></label>' +
         '<label class="icv-privacy-option"><span><strong>Analytics anonimo ICV</strong><span>Nessun indirizzo IP, dato scritto o profilo pubblicitario.</span></span><input id="icvPrivacyAnalytics" type="checkbox" ' + (preferences.analytics ? "checked" : "") + "></label>" +
-        '<label class="icv-privacy-option"><span><strong>Video Instagram</strong><span>Il player riceve dati di navigazione e puo usare cookie propri. I video si caricano solo al clic.</span></span><input id="icvPrivacyMedia" type="checkbox" ' + (preferences.external_media ? "checked" : "") + '></label>' +
+        '<label class="icv-privacy-option"><span><strong>Video Instagram e YouTube</strong><span>I player ricevono dati di navigazione e possono usare cookie propri. I video si caricano solo al clic.</span></span><input id="icvPrivacyMedia" type="checkbox" ' + (preferences.external_media ? "checked" : "") + '></label>' +
         '<div class="icv-privacy-actions"><span><a href="/privacy">Privacy Policy</a> · <a href="/cookie-policy">Cookie Policy</a></span><button class="icv-privacy-save" type="button">Salva preferenze</button></div>' +
       "</section>";
     document.body.appendChild(modal);

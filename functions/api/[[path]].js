@@ -1,4 +1,5 @@
 import { chooseConference, conferenceCollection, conferenceArchive, conferenceSetting, instagramThumbnail } from '../lib/conferences.js';
+import { DEFAULT_HIGHLIGHTS, highlightsSetting, publicHighlights, highlightsThumbnail } from '../lib/highlights.js';
 import { adminMatchGallery, readMatchGallery, publicMatchGallery, publicMatchAlbums, matchPhotoResponse } from '../lib/match-gallery.js';
 import { standingsResponse } from '../lib/standings.js';
 
@@ -166,6 +167,11 @@ export async function onRequest(context) {
     if (path === 'public/standings' && request.method === 'GET') return await standingsResponse(url,env);
     if (path === 'public/media' && request.method === 'GET') return await publicMedia(env);
     if (path === "public/conference-thumbnail" && request.method === "GET") return await publicConferenceThumbnail(env, url);
+    if (path === 'public/highlights-thumbnail' && request.method === 'GET') {
+      const highlights = publicHighlights(await readHighlightsSetting(env));
+      if (!highlights || url.searchParams.get('id') !== highlights.video_id) return json({error:'Anteprima non disponibile'},404);
+      return await highlightsThumbnail(highlights.video_id);
+    }
     if (path === "public/players") return publicPlayers(env, url);
     if (/^public\/players\/[a-z0-9-]+$/i.test(path)) return publicPlayer(env, path.split("/").pop());
     if (path === "public/graphics") return publicGraphics(env, url);
@@ -283,7 +289,7 @@ async function publicHome(env) {
     });
   }
 
-  const [news, market, marketNews, matches, social, auto, radar, conference] = await Promise.all([
+  const [news, market, marketNews, matches, social, auto, radar, conference, highlights] = await Promise.all([
     sb(env, "/news?visible=eq.true&order=created_at.desc&limit=48"),
     sb(env, "/market_items?order=updated_at.desc&limit=12"),
     sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=18"),
@@ -292,6 +298,7 @@ async function publicHome(env) {
     latestAutomationRun(env, "home_autopilot"),
     getSiteSetting(env, "radar_home", DEFAULT_RADAR),
     safeAdminRead(() => publicConferences(env), null),
+    safeAdminRead(() => readHighlightsSetting(env), null),
   ]);
   const allCleanNews = publicNewsRows(news);
   const cleanNews = allCleanNews.slice(0, 6);
@@ -312,10 +319,18 @@ async function publicHome(env) {
     social: publicSocialRows(social),
     featured_conference: conference?.featured || null,
     recent_conferences: conference?.recent || [],
+    featured_highlights: publicHighlights(highlights),
     graphics: [],
     radar,
     auto: { enabled: true, interval_hours: Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1), last_run_at: auto && auto.created_at },
   });
+}
+
+async function readHighlightsSetting(env) {
+  if (!hasSupabase(env)) return {mode:'off'};
+  // A failed read must not revive a hidden video; only an absent setting uses the initial selection.
+  const rows = await sb(env, '/site_settings?key=eq.featured_highlights&select=value&limit=1');
+  return highlightsSetting(rows.length ? rows[0].value : DEFAULT_HIGHLIGHTS);
 }
 
 async function conferenceRows(env, setting) {
@@ -1748,7 +1763,7 @@ async function adminNews(request, env) {
     const conferenceOptions = await safeAdminRead(() => conferenceRows(env,{mode:'auto'}),[]);
     const visibleNews = publicNewsRows(news).filter(item => item.visible !== false);
     const publicMarket = aggregateMarketItems(publicMarketRows(market));
-    return json({ drafts, news, sources, social, conference_config:conferenceConfig, featured_conference:conference, conference_options:conferenceOptions.map(row=>({id:row.id,hook:row.hook,published_at:row.published_at})), market: publicMarket, matches, live_desk: buildLiveDeskEntries({ news: visibleNews, market: publicMarket, matches }, 20), runs, automation_monitor: buildAutomationMonitor(runs, { cadences: { home_autopilot: Math.max(1, Number(env.HOME_AUTO_INTERVAL_HOURS || 6)) } }), radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
+    return json({ drafts, news, sources, social, highlights_config:await safeAdminRead(() => readHighlightsSetting(env),{mode:'off'}), conference_config:conferenceConfig, featured_conference:conference, conference_options:conferenceOptions.map(row=>({id:row.id,hook:row.hook,published_at:row.published_at})), market: publicMarket, matches, live_desk: buildLiveDeskEntries({ news: visibleNews, market: publicMarket, matches }, 20), runs, automation_monitor: buildAutomationMonitor(runs, { cadences: { home_autopilot: Math.max(1, Number(env.HOME_AUTO_INTERVAL_HOURS || 6)) } }), radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
   }
 
   const body = await readBody(request);
@@ -1761,6 +1776,13 @@ async function adminNews(request, env) {
     }
     await setSiteSetting(env,'featured_conference',setting);
     return json({conference_config:setting,featured_conference:await featuredConference(env)});
+  }
+  if (request.method === 'PATCH' && body.type === 'featured_highlights') {
+    let setting;
+    try { setting = highlightsSetting(body); }
+    catch (error) { return json({error:error.message},400); }
+    await setSiteSetting(env,'featured_highlights',setting);
+    return json({highlights_config:setting,featured_highlights:publicHighlights(setting)});
   }
   if (request.method === "POST") {
     if (body.type === "community_context_note") {

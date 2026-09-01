@@ -1,0 +1,22 @@
+.featured-highlights{grid-column:1/-1;min-width:0;padding:28px 0;border-bottom:1px solid var(--bdr2);color:var(--white);scroll-margin-top:100px;}
+.featured-highlights[hidden],.featured-highlights [hidden]{display:none!important;}
+.featured-highlights *{box-sizing:border-box;letter-spacing:0;}
+.highlights-header{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.highlights-eyebrow{display:block;font:700 14px/1.5 "Barlow Condensed",sans-serif;color:var(--gold-l);text-transform:uppercase;margin-bottom:6px;}
+.highlights-header h2{font:700 32px/1.15 "Barlow Condensed",sans-serif;margin:0;overflow-wrap:anywhere;}
+.featured-highlights a{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:var(--gold-l);font-size:14px;text-decoration:none;}
+.featured-highlights a:hover{text-decoration:underline;}
+.highlights-stage{position:relative;aspect-ratio:16/9;min-height:200px;background:#101010;overflow:hidden;border-radius:6px;}
+.highlights-stage>img{display:block;width:100%;height:100%;object-fit:cover;}
+#highlightsPlay{position:absolute;inset:0;margin:auto;width:72px;height:72px;display:grid;place-items:center;background:#fff;color:#111;border:0;border-radius:50%;cursor:pointer;box-shadow:0 2px 18px #0008;}
+#highlightsPlay:hover{background:#e8b84b;}
+#highlightsPlay .conference-icon{width:30px;height:30px;}
+#highlightsEmbed{position:absolute;inset:0;background:#101010;}
+#highlightsEmbed iframe{width:100%;height:100%;display:block;border:0;}
+.highlights-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px;}
+#highlightsPrivacy,#highlightsStatus{font-size:12px;line-height:1.6;color:var(--t2);margin:0;}
+#highlightsPrivacy a{font-size:12px;text-decoration:underline;}
+#highlightsStatus:empty{display:none;}
+#highlightsStop{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 12px;font:inherit;font-size:14px;color:var(--white);background:transparent;border:1px solid var(--bdr2);border-radius:5px;cursor:pointer;}
+.featured-highlights :is(a,button):focus-visible{outline:3px solid var(--gold-l);outline-offset:4px;}
+@media(max-width:650px){.highlights-header h2{font-size:26px;}.highlights-header{gap:8px;}.featured-highlights{padding:24px 0;}#highlightsPlay{width:60px;height:60px;}}

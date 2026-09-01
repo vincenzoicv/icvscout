@@ -88,6 +88,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
       <button data-tab="social" onclick="setAdminTab('social',this)">Social</button>
       <button data-tab="graphics" onclick="setAdminTab('graphics',this)">Grafiche</button>
       <button data-tab="photos" onclick="setAdminTab('photos',this)">Foto partite</button>
+      <button data-tab="highlights" onclick="setAdminTab('highlights',this)">Highlights</button>
       <button data-tab="community" onclick="setAdminTab('community',this)">Community</button>
       <button data-tab="analytics" onclick="setAdminTab('analytics',this)">Analytics</button>
       <button data-tab="monitor" onclick="setAdminTab('monitor',this)">Monitor</button>
@@ -227,7 +228,16 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           </div>
           <div id="matchList"></div>
         </div>
-
+          <form id="highlightsForm" class="card admin-panel" data-panel="highlights" onsubmit="event.preventDefault();saveHighlightsSelection()">
+            <h2>Highlights in home</h2>
+            <div class="row">
+              <div><label for="highlightsMode">Selezione highlights</label><select id="highlightsMode" onchange="toggleHighlightsFields()"><option value="manual">Video scelto manualmente</option><option value="off">Sezione nascosta</option></select></div>
+              <div><label for="highlightsTitle">Titolo highlights</label><input id="highlightsTitle" maxlength="120" placeholder="Juventus - Parma 2-0"></div>
+            </div>
+            <label for="highlightsUrl">Link YouTube highlights</label><input id="highlightsUrl" type="url" placeholder="https://www.youtube.com/watch?v=...">
+            <p id="highlightsCurrent" class="meta" role="status" aria-live="polite"></p>
+            <button class="primary" type="submit" id="saveHighlights">Salva highlights</button>
+          </form>
         <div class="card admin-panel" data-panel="social">
           <h2>Instagram Picks</h2>
           <h3>Sala stampa in home</h3>
@@ -330,6 +340,8 @@ function load(){
     state.conferenceConfig=data.conference_config || {mode:'auto'};
     state.conference=data.featured_conference || null;
     state.conferenceOptions=data.conference_options || [];
+    state.highlightsConfig=data.highlights_config || {mode:'off'};
+    renderHighlightsSettings();
     state.graphics = data.graphics || [];
     state.market = data.market || [];
     state.matches = data.matches || [];
@@ -846,6 +858,27 @@ function renderSocial(){
     var url = s.post_url ? " · <a href='"+escAttr(s.post_url)+"' target='_blank' style='color:var(--gold-l)'>apri</a>" : "";
     return "<div class='item'><div class='item-head'><div><h3>"+esc(s.hook || s.platform)+"</h3></div><div class='meta'>"+(s.visible === false ? "nascosto" : "visibile")+"</div></div><p>"+esc(s.caption || "")+"</p><div class='meta'>"+esc(s.platform)+" · "+esc(s.media_type || "post")+" · "+esc(s.status || "draft")+url+"</div><div class='item-actions' style='margin-top:10px'><button class='ghost small' onclick='toggleSocial("+s.id+","+!!s.visible+")'>"+(s.visible === false ? "Mostra" : "Nascondi")+"</button></div></div>";
   }).join("");
+}
+function renderHighlightsSettings(){
+  var setting=state.highlightsConfig || {mode:'off'};
+  document.getElementById('highlightsMode').value=setting.mode;
+  document.getElementById('highlightsTitle').value=setting.title || '';
+  document.getElementById('highlightsUrl').value=setting.video_url || '';
+  document.getElementById('highlightsCurrent').textContent=setting.mode==='off'?'Highlights nascosti':'In evidenza: '+setting.title;
+  toggleHighlightsFields();
+}
+function toggleHighlightsFields(){
+  var active=val('highlightsMode')==='manual';
+  ['highlightsTitle','highlightsUrl'].forEach(function(id){var field=document.getElementById(id);field.disabled=!active;field.required=active;});
+}
+function saveHighlightsSelection(){
+  var button=document.getElementById('saveHighlights'),status=document.getElementById('highlightsCurrent');
+  if(button.disabled)return;
+  button.disabled=true;status.textContent='Salvataggio...';
+  return api('/api/admin/news',{method:'PATCH',body:{type:'featured_highlights',mode:val('highlightsMode'),title:val('highlightsTitle'),video_url:val('highlightsUrl')}})
+    .then(function(data){state.highlightsConfig=data.highlights_config;renderHighlightsSettings();showToast('Highlights salvati');})
+    .catch(function(error){status.textContent=error.message;showToast(error.message);})
+    .finally(function(){button.disabled=false;});
 }
 function toggleConferenceFields(){
   document.getElementById('conferenceManual').hidden=document.getElementById('conferenceMode').value!=='manual';

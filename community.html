@@ -341,7 +341,7 @@
     async function blockUser(btn,id){if(!session)return openAuth();try{var data=await communityApi("profiles/"+id+"/block",{method:"POST"});btn.textContent=data.active?"Sblocca":"Blocca";await loadBlockedUsers();await loadFeed();showToast(data.active?"Utente bloccato":"Utente sbloccato")}catch(error){showToast(error.message)}}
     window.addEventListener("DOMContentLoaded",init);
   </script>
-  <script defer src="/assets/privacy-controls.js?v=20260830-1"></script>
+  <script defer src="/assets/privacy-controls.js?v=20260831-2"></script>
   <script defer src="/assets/analytics.js?v=20260728-1"></script>
 </body>
 </html>

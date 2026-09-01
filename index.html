@@ -769,6 +769,8 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
 </style>
 <link rel="stylesheet" href="/assets/featured-conference.css?v=20260831-4">
 <script defer src="/assets/featured-conference.js?v=20260831-4"></script>
+<link rel="stylesheet" href="/assets/featured-highlights.css?v=20260831-1">
+<script defer src="/assets/featured-highlights.js?v=20260831-1"></script>
 <link rel="stylesheet" href="/assets/match-gallery.css?v=20260830-1">
 <script defer src="/assets/match-gallery.js?v=20260831-3"></script>
 <link rel="stylesheet" href="/assets/icv-stories.css?v=20260831-1">
@@ -948,6 +950,22 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
       <span class="match-hub-record" id="matchHubRecord">4 vittorie · 0 pareggi · 1 sconfitta</span>
     </footer>
   </article>
+  <section class="featured-highlights" id="featuredHighlights" aria-labelledby="highlightsHeading" hidden>
+    <div class="highlights-header">
+      <div><span class="highlights-eyebrow">Highlights</span><h2 id="highlightsHeading"></h2></div>
+      <a id="highlightsOriginal" target="_blank" rel="noopener noreferrer">Guarda su YouTube <i class="conference-icon external" aria-hidden="true"></i></a>
+    </div>
+    <div class="highlights-stage" id="highlightsStage">
+      <img id="highlightsPoster" alt="" width="480" height="360" loading="lazy" decoding="async">
+      <button id="highlightsPlay" type="button" aria-label="Consenti e carica highlights YouTube" aria-describedby="highlightsPrivacy"><i class="conference-icon play" aria-hidden="true"></i></button>
+      <div id="highlightsEmbed" hidden></div>
+    </div>
+    <div class="highlights-footer">
+      <p id="highlightsPrivacy">Video YouTube. Il caricamento attiva i contenuti esterni. <a href="#" data-privacy-settings>Preferenze privacy</a></p>
+      <button id="highlightsStop" type="button" hidden><i class="conference-icon stop" aria-hidden="true"></i>Chiudi video</button>
+    </div>
+    <p id="highlightsStatus" role="status" aria-live="polite"></p>
+  </section>
   <section class="featured-conference" id="featuredConference" aria-labelledby="conferenceHeading" hidden>
     <div class="conference-header">
       <h2 id="conferenceHeading">Sala stampa</h2><a href="/media">Archivio media <i class="conference-icon external" aria-hidden="true"></i></a>
@@ -2078,6 +2096,7 @@ function loadHomeDashboard() {
     var matches = Array.isArray(data.matches) ? data.matches : [];
     var social = Array.isArray(data.social) ? data.social : [];
     if (window.ICVConference) window.ICVConference.render(data.featured_conference || null, data.recent_conferences || []);
+    if (window.ICVHighlights) window.ICVHighlights.render(data.featured_highlights || null);
     renderLiveDesk(data.live_desk);
     renderMatchHub(matches);
     renderAutoStatus(data.auto);
@@ -2690,7 +2709,7 @@ if ('serviceWorker' in navigator) {
 }
 
 </script>
-<script defer src="/assets/privacy-controls.js?v=20260830-1"></script>
+<script defer src="/assets/privacy-controls.js?v=20260831-2"></script>
 <script defer src="/assets/analytics.js?v=20260728-1"></script>
 </body>
 </html>

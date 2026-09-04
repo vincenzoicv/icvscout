@@ -188,6 +188,19 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-upcoming-fixture{font-family:"Barlow Condensed";font-size:16px;font-weight:900;line-height:1.05;color:var(--white);overflow-wrap:anywhere;}
 .match-hub-upcoming-fixture em{margin:0 4px;color:var(--gold);font-size:9px;font-style:normal;letter-spacing:1px;text-transform:uppercase;}
 .match-hub-upcoming-meta{font-family:"Barlow Condensed";font-size:10px;font-weight:700;letter-spacing:.8px;color:var(--t3);text-transform:uppercase;}
+.match-hub-intel{padding:18px 20px;border-top:1px solid var(--bdr2);background:rgba(255,255,255,.012);}
+.match-hub-intel[hidden]{display:none;}
+.match-hub-intel-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:12px;}
+.match-hub-intel-head h4{margin:0;font-family:"Bebas Neue";font-size:19px;font-weight:400;letter-spacing:1.5px;color:var(--gold-l);text-transform:uppercase;}
+.match-hub-intel-head span{font-family:"Barlow Condensed";font-size:9px;font-weight:900;letter-spacing:1.3px;color:var(--t3);text-align:right;text-transform:uppercase;}
+.match-hub-intel-list{display:grid;gap:8px;}
+.match-hub-intel-item{display:grid;grid-template-columns:92px minmax(0,1fr) auto;align-items:start;gap:12px;padding:11px 12px;border:1px solid var(--bdr2);border-radius:5px;background:rgba(255,255,255,.02);}
+.match-hub-intel-kind{font-family:"Barlow Condensed";font-size:9px;font-weight:900;letter-spacing:1.2px;color:var(--gold-l);text-transform:uppercase;}
+.match-hub-intel-copy{min-width:0;}
+.match-hub-intel-copy strong{display:block;color:var(--white);font-family:"Barlow Condensed";font-size:15px;line-height:1.2;overflow-wrap:anywhere;}
+.match-hub-intel-copy p{margin:4px 0 0;color:var(--t2);font-size:12px;line-height:1.45;overflow-wrap:anywhere;}
+.match-hub-intel-source{color:var(--t3);font-family:"Barlow Condensed";font-size:10px;font-weight:700;line-height:1.3;text-align:right;text-decoration:none;white-space:nowrap;}
+.match-hub-intel-source:hover{color:var(--gold-l);text-decoration:underline;}
 .match-hub-probable{padding:18px 20px 20px;border-top:1px solid var(--bdr2);background:linear-gradient(180deg,rgba(196,150,42,.035),rgba(255,255,255,.012));text-align:center;}
 .match-hub-probable[hidden]{display:none;}
 .match-hub-probable-head{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;}
@@ -513,11 +526,14 @@ body.light .hero-season-link{background:rgba(6,6,6,.34);border-color:rgba(239,18
 body.light .hero-stadium-meta::before,body.light .hero-scroll-cue span::after{background:#efbd52;}
 body.light .home-panel,body.light .field-card,body.light .lineup-card,body.light .stat-card,body.light .chart-box,body.light .result-item,body.light .market-card,body.light .news-card,body.light .graphic-card,body.light .graphic-empty,body.light .news-empty-state,body.light .offseason-main,body.light .offseason-side{border-color:var(--bdr);box-shadow:0 14px 34px rgba(24,23,19,.07);}
 body.light .home-match-hub{background:linear-gradient(145deg,#fff,#ecebe4);border-color:rgba(118,81,0,.34);box-shadow:0 18px 42px rgba(24,23,19,.09),inset 0 1px 0 #fff;}
-body.light .home-main-title,body.light .home-mini strong,body.light .match-hub-team,body.light .match-hub-score-team,body.light .match-hub-probable-player,body.light .match-hub-phase strong,body.light .match-receipt-head>div:first-child strong,body.light .pr-name,body.light .res-name,body.light .res-score,body.light .t-name,body.light .sp-name,body.light .sp-mv,body.light .offseason-title,body.light .radar-card strong,body.light .watch-text strong,body.light .graphic-card h3,body.light .news-card-title{color:#181713;}
+body.light .home-main-title,body.light .home-mini strong,body.light .match-hub-team,body.light .match-hub-score-team,body.light .match-hub-probable-player,body.light .match-hub-phase strong,body.light .match-hub-intel-copy strong,body.light .match-receipt-head>div:first-child strong,body.light .pr-name,body.light .res-name,body.light .res-score,body.light .t-name,body.light .sp-name,body.light .sp-mv,body.light .offseason-title,body.light .radar-card strong,body.light .watch-text strong,body.light .graphic-card h3,body.light .news-card-title{color:#181713;}
 body.light .home-text,body.light .home-auto,body.light .match-hub-date,body.light .match-hub-updated,body.light .match-hub-form-label,body.light .match-hub-meta,body.light .match-hub-scorers,body.light .match-hub-record,body.light .pr-pos,body.light .res-comp,body.light .res-date,body.light .t-from,body.light .stat-lbl,body.light .stat-sub,body.light .news-card-meta,body.light .attr-name,body.light .offseason-copy,body.light .radar-card span,body.light .watch-text span,body.light .news-card-body,body.light .bar-label{color:var(--t2);}
 body.light .ctx-box{background:rgba(118,81,0,.07);border-color:var(--bdr);color:var(--t2);}
 body.light .match-hub-probable-pitch{background:linear-gradient(90deg,rgba(118,81,0,.06),rgba(255,255,255,.86),rgba(118,81,0,.06));border-color:var(--bdr);}
 body.light .match-hub-probable-info span{background:rgba(255,255,255,.74);border-color:var(--bdr2);color:var(--t2);}
+body.light .match-hub-intel{background:rgba(118,81,0,.025);}
+body.light .match-hub-intel-item{background:rgba(255,255,255,.72);border-color:var(--bdr);}
+body.light .match-hub-intel-copy p,body.light .match-hub-intel-source{color:var(--t2);}
 body.light .match-hub-form-dot{border-color:rgba(24,23,19,.22);background:#fff;}
 body.light .match-hub-form-dot.win,body.light .res-w{color:#176b3a;border-color:rgba(23,107,58,.35);background:rgba(23,107,58,.1);}
 body.light .match-hub-form-dot.loss,body.light .res-l{color:#9b2c2c;border-color:rgba(155,44,44,.34);background:rgba(155,44,44,.09);}
@@ -610,6 +626,11 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .match-hub-upcoming-item{padding:11px 8px;}
 .match-hub-upcoming-item+.match-hub-upcoming-item{border-left:0;border-top:1px solid rgba(196,150,42,.16);}
 .match-hub-upcoming-fixture{font-size:15px;}
+.match-hub-intel{padding:15px 14px;}
+.match-hub-intel-head{align-items:flex-start;flex-direction:column;gap:4px;}
+.match-hub-intel-head span{text-align:left;}
+.match-hub-intel-item{grid-template-columns:1fr;gap:5px;padding:11px;}
+.match-hub-intel-source{text-align:left;white-space:normal;}
 .match-hub-probable{padding:16px 14px 18px;}
 .match-hub-probable-pitch{gap:12px;padding:15px 10px;}
 .match-hub-probable-line{gap:9px 12px;}
@@ -885,6 +906,13 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
         <span>Serie A · Europa League</span>
       </div>
       <div class="match-hub-upcoming-list" id="matchHubUpcoming"></div>
+    </section>
+    <section class="match-hub-intel" id="matchHubIntel" aria-labelledby="matchHubIntelHeading" hidden>
+      <div class="match-hub-intel-head">
+        <h4 id="matchHubIntelHeading">Aggiornamenti pre-partita</h4>
+        <span id="matchHubIntelStatus">Monitoraggio attivo nelle 48 ore</span>
+      </div>
+      <div class="match-hub-intel-list" id="matchHubIntelList"></div>
     </section>
     <section class="match-hub-probable" id="matchHubProbable" aria-label="Probabile formazione Juventus" hidden>
       <div class="match-hub-probable-head">
@@ -1703,7 +1731,7 @@ function matchHubTeamKey(value) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/\b(fc|calcio|football club)\b/g, "")
+    .replace(/\b(fc|ac|us|bc|calcio|football club)\b/g, "")
     .replace(/[^a-z0-9]/g, "");
   var europeanClubs = [
     [/nijmegen|^nec$/, "necnijmegen"], [/rennes|rennais/, "rennes"],
@@ -1868,6 +1896,53 @@ function renderMatchHubUpcoming(matches) {
       "<span class=\"match-hub-upcoming-meta\">" + icvEsc(matchHubUpcomingDate(match)) + " · " + side + "</span>" +
     "</div>";
   }).join("");
+}
+
+function matchMonitorMatches(monitor, match) {
+  if (!monitor || !monitor.match || !match) return false;
+  var monitoredKickoff = new Date(monitor.match.kickoff).getTime();
+  var matchKickoff = new Date(match.date).getTime();
+  if (!Number.isFinite(monitoredKickoff) || !Number.isFinite(matchKickoff) || Math.abs(monitoredKickoff - matchKickoff) > 3 * 3600000) return false;
+  return matchHubTeamKey(monitor.match.home) === matchHubTeamKey(match.home)
+    && matchHubTeamKey(monitor.match.away) === matchHubTeamKey(match.away);
+}
+
+function matchMonitorTime(value) {
+  var date = new Date(value || 0);
+  if (isNaN(date.getTime())) return "Fonte verificata";
+  return new Intl.DateTimeFormat("it-IT", {timeZone:"Europe/Rome",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}).format(date).replace(",", " ·");
+}
+
+function renderMatchMonitor(data, matches) {
+  var panel = document.getElementById("matchHubIntel");
+  var list = document.getElementById("matchHubIntelList");
+  if (!panel || !list) return;
+  var now = Date.now();
+  var upcoming = (Array.isArray(matches) ? matches : []).find(function(match) {
+    return match.status === "scheduled" && new Date(match.date).getTime() >= now;
+  });
+  var kickoff = new Date(data && data.match && data.match.kickoff || 0).getTime();
+  var updates = Array.isArray(data && data.updates) ? data.updates.filter(function(item) {
+    return item && item.significant !== false && item.title && item.source && /^https:\/\//i.test(item.source_url || "");
+  }).slice(0, 6) : [];
+  var active = matchMonitorMatches(data, upcoming) && now >= kickoff - 48 * 3600000 && now < kickoff && updates.length > 0;
+  panel.hidden = !active;
+  if (!active) { list.replaceChildren(); return; }
+  setMatchHubText("matchHubIntelStatus", "Monitoraggio 48 ore · aggiornato " + matchMonitorTime(data.updated_at));
+  list.innerHTML = updates.map(function(item) {
+    return "<article class=\"match-hub-intel-item\">" +
+      "<span class=\"match-hub-intel-kind\">" + icvEsc(item.category || "Notizia") + "</span>" +
+      "<div class=\"match-hub-intel-copy\"><strong>" + icvEsc(item.title) + "</strong><p>" + icvEsc(item.summary || "") + "</p></div>" +
+      "<a class=\"match-hub-intel-source\" href=\"" + icvEsc(item.source_url) + "\" target=\"_blank\" rel=\"noopener noreferrer\">" + icvEsc(item.source) + "<br>" + icvEsc(matchMonitorTime(item.published_at)) + "</a>" +
+    "</article>";
+  }).join("");
+}
+
+function loadMatchMonitor(matches) {
+  fetch("/data/match-monitor.json", {cache:"no-store"})
+    .then(function(response) { if (!response.ok) throw new Error("Monitor " + response.status); return response.json(); })
+    .then(function(data) { renderMatchMonitor(data, matches); })
+    .catch(function() { renderMatchMonitor(null, matches); });
 }
 
 function matchHubFreshness(match) {
@@ -2106,6 +2181,7 @@ function loadHomeDashboard() {
     if (window.ICVHighlights) window.ICVHighlights.render(data.featured_highlights || null);
     renderLiveDesk(data.live_desk);
     renderMatchHub(matches);
+    loadMatchMonitor(allMatchHubRows(matches));
     renderAutoStatus(data.auto);
     renderRadar(data.radar);
     renderHomeList("homeNewsList", news, function(n) {
@@ -2126,6 +2202,7 @@ function loadHomeDashboard() {
   .catch(function() {
     renderLiveDesk([]);
     renderMatchHub([]);
+    renderMatchMonitor(null, []);
     renderHomeList("homeNewsList", [], null, "News non disponibili in questo momento.");
     renderHomeList("homeMarketList", [], null, "Mercato non disponibile in questo momento.");
     renderHomeLinks("homeInstagramList", [], null, "Instagram non disponibile in questo momento.");

@@ -1,6 +1,30 @@
 {
   "version": 1,
-  "updated_at": null,
-  "match": null,
-  "updates": []
+  "updated_at": "2026-09-04T19:04:23Z",
+  "match": {
+    "home": "Juventus",
+    "away": "Milan",
+    "kickoff": "2026-09-06T18:45:00Z",
+    "competition": "Serie A"
+  },
+  "updates": [
+    {
+      "category": "Probabile formazione",
+      "title": "Prime indicazioni: Juventus verso il 4-2-3-1",
+      "summary": "Indicazione non ufficiale: Vicario; Kalulu, Bremer, Lucumi, Celik; Locatelli, Douglas Luiz; Conceicao, Nico Gonzalez, Boga; Kolo Muani. McKennie, Cambiaso e Sarr sono segnalati in dubbio.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-3/juventus-milan/formazioni",
+      "published_at": "2026-09-04",
+      "significant": true
+    },
+    {
+      "category": "Infortuni",
+      "title": "Yildiz operato, lesione muscolare per Ekhator",
+      "summary": "La Juventus ha comunicato che Yildiz ha iniziato la riabilitazione dopo l'intervento al piede sinistro. Per Ekhator gli esami hanno evidenziato una lesione di medio grado del semitendinoso destro.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/bollettino-medico-le-condizioni-di-yildiz-ed-ekhator",
+      "published_at": "2026-08-31",
+      "significant": true
+    }
+  ]
 }

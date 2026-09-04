@@ -37,3 +37,12 @@ test('a later provider rescheduling remains authoritative',()=>{
   const match={id:1,matchday:6,status:'TIMED',utcDate:'2026-10-12T18:45:00Z',lastUpdated:'2026-09-04T08:00:00Z',competition:{code:'SA',name:'Serie A'},homeTeam:{id:104,name:'Cagliari'},awayTeam:{id:109,name:'Juventus'},score:{fullTime:{home:null,away:null}}};
   assert.equal(matchReportFromFootballData(match).match_date,'2026-10-12T18:45:00Z');
 });
+
+test('calendar revision stays stable when the provider omits lastUpdated',async(t)=>{
+  t.mock.method(globalThis,'fetch',async()=>Response.json({matches:[{id:1,matchday:6,status:'SCHEDULED',utcDate:'2026-10-11T00:00:00Z',competition:{code:'SA'},homeTeam:{name:'Cagliari'},awayTeam:{name:'Juventus'}}]}));
+  const response=await onRequest({request:new Request('https://example.test/api/juventus/calendar.ics'),env:{FOOTBALL_DATA_KEY:'test'}});
+  const calendar=(await response.text()).replace(/\r\n /g,'');
+  const event=calendar.split('BEGIN:VEVENT').find(item=>item.includes('UID:juventus-serie-a-2026-27-g6@'));
+  assert.match(event,/LAST-MODIFIED:20260903T124600Z/);
+  assert.match(event,/SEQUENCE:1788439560/);
+});

@@ -3236,7 +3236,7 @@ async function juventusCalendar(request, env) {
         ? "Calendario ufficiale: https://www.juventus.com/it/news/articoli/uefa-europa-league-date-e-orari-delle-partite-della-juventus"
         : `Calendario ufficiale: ${fixture.sourceUrl || "https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27"}`,
     ].join("\n");
-    const modified = match && new Date(match.lastUpdated || now);
+    const modified = match && match.lastUpdated ? new Date(match.lastUpdated) : null;
     const baseModified = modified && Number.isFinite(modified.getTime()) ? modified : new Date(fixture.code === "EL" ? "2026-08-29T00:00:00Z" : "2026-06-05T00:00:00Z");
     const correctedPlaceholder = match?.status === 'SCHEDULED' && !fixture.kickoff;
     const revisionDate = correctedPlaceholder ? '2026-08-31T11:20:00Z' : fixture.updatedAt;

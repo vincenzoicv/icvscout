@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-04T19:04:23Z",
+  "updated_at": "2026-09-04T20:05:53Z",
   "match": {
     "home": "Juventus",
     "away": "Milan",
@@ -8,6 +8,15 @@
     "competition": "Serie A"
   },
   "updates": [
+    {
+      "category": "Avversaria",
+      "title": "Milan, Gabbia indisponibile per la trasferta di Torino",
+      "summary": "Indicazione non ufficiale: il difensore è fermo per un problema alla caviglia. Amorim valuta Bartesaghi o Estupinan a sinistra e possibili cambi sulla trequarti; la conferenza della vigilia è prevista sabato alle 14:00.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/2026/09/04/milan-formazione-juve-news-video",
+      "published_at": "2026-09-04T15:00:00+02:00",
+      "significant": true
+    },
     {
       "category": "Probabile formazione",
       "title": "Prime indicazioni: Juventus verso il 4-2-3-1",

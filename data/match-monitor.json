@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-04T20:05:53Z",
+  "updated_at": "2026-09-04T22:05:54Z",
   "match": {
     "home": "Juventus",
     "away": "Milan",
@@ -8,6 +8,15 @@
     "competition": "Serie A"
   },
   "updates": [
+    {
+      "category": "Recuperi",
+      "title": "Woltemade e Zhegrova rientrano in gruppo",
+      "summary": "Indicazione non ufficiale: entrambi sono tornati ad allenarsi con la squadra e possono diventare opzioni a gara in corso. Cambiaso, McKennie e Sarr hanno invece lavorato a parte; Spalletti parlera sabato alle 16:00.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/video/2026/09/04/juventus-milan-news-probabile-formazione-spalletti-1121943",
+      "published_at": "2026-09-04T15:05:00+02:00",
+      "significant": true
+    },
     {
       "category": "Avversaria",
       "title": "Milan, Gabbia indisponibile per la trasferta di Torino",

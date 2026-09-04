@@ -3069,13 +3069,13 @@ const JUVENTUS_SERIE_A_2026_27 = [
   [3, "2026-09-06", "Juventus", "Milan", "2026-09-06T18:45:00Z"],
   [4, "2026-09-13", "Sassuolo", "Juventus", "2026-09-13T18:45:00Z"],
   [5, "2026-09-20", "Juventus", "Atalanta", "2026-09-20T16:00:00Z"],
-  [6, "2026-10-11", "Cagliari", "Juventus", null],
-  [7, "2026-10-18", "Juventus", "Lazio", null],
-  [8, "2026-10-25", "Lecce", "Juventus", null],
-  [9, "2026-10-28", "Genoa", "Juventus", null],
-  [10, "2026-11-01", "Juventus", "Napoli", null],
-  [11, "2026-11-08", "Fiorentina", "Juventus", null],
-  [12, "2026-11-22", "Juventus", "Venezia", null],
+  [6, "2026-10-11", "Cagliari", "Juventus", "2026-10-11T18:45:00Z"],
+  [7, "2026-10-18", "Juventus", "Lazio", "2026-10-18T18:45:00Z"],
+  [8, "2026-10-25", "Lecce", "Juventus", "2026-10-25T17:00:00Z"],
+  [9, "2026-10-28", "Genoa", "Juventus", "2026-10-28T19:45:00Z"],
+  [10, "2026-11-01", "Juventus", "Napoli", "2026-11-01T19:45:00Z"],
+  [11, "2026-11-08", "Fiorentina", "Juventus", "2026-11-08T19:45:00Z"],
+  [12, "2026-11-23", "Juventus", "Venezia", "2026-11-23T19:45:00Z"],
   [13, "2026-11-29", "Como", "Juventus", null],
   [14, "2026-12-06", "Juventus", "Udinese", null],
   [15, "2026-12-13", "Juventus", "Monza", null],
@@ -3105,6 +3105,10 @@ const JUVENTUS_SERIE_A_2026_27 = [
 ].map(([matchday, date, home, away, kickoff]) => ({
   matchday, date, home, away, kickoff,
   ...(matchday === 4 ? { previousKickoff:"2026-09-12T16:00:00Z", updatedAt:"2026-08-31T10:44:56Z" } : {}),
+  ...(matchday >= 6 && matchday <= 12 ? {
+    updatedAt:"2026-09-03T12:46:00Z",
+    sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-2026-27-anticipi-e-posticipi-dalla-giornata-sei-alla-dodici",
+  } : {}),
 }));
 
 const JUVENTUS_EUROPA_LEAGUE_2026_27 = [
@@ -3156,10 +3160,17 @@ function compactIcsDate(date) {
 
 function correctScheduledJuventusMatch(match) {
   if (!match || !["scheduled", "timed", "pre_match"].includes(String(match.status || "").toLowerCase())) return match;
-  // Correct the superseded slot only; preserve later rescheduling and played matches.
-  const fixture = JUVENTUS_SERIE_A_2026_27.find(item => item.previousKickoff
-    && new Date(match.utcDate).getTime() === new Date(item.previousKickoff).getTime()
-    && officialFixtureMatch(match, { ...item, code:"SA" }));
+  // Replace provider placeholders or superseded slots, while preserving later rescheduling.
+  const fixture = JUVENTUS_SERIE_A_2026_27.find(item => {
+    if (!item.kickoff || !officialFixtureMatch(match, { ...item, code:"SA" })) return false;
+    if (item.previousKickoff && new Date(match.utcDate).getTime() === new Date(item.previousKickoff).getTime()) return true;
+    const status = String(match.status || "").toLowerCase();
+    if (status === "scheduled" || status === "pre_match") return true;
+    const sameOfficialDay = String(match.utcDate || "").slice(0, 10) === item.date;
+    const providerUpdatedAt = new Date(match.lastUpdated || 0).getTime();
+    const officialUpdatedAt = new Date(item.updatedAt || 0).getTime();
+    return sameOfficialDay && (!providerUpdatedAt || providerUpdatedAt <= officialUpdatedAt);
+  });
   return fixture ? { ...match, utcDate:fixture.kickoff, icv_schedule_updated_at:fixture.updatedAt } : match;
 }
 
@@ -3223,7 +3234,7 @@ async function juventusCalendar(request, env) {
       finished ? `Risultato finale: ${result}` : kickoff ? "Data e orario confermati." : "Data del turno; giorno e orario da confermare.",
       fixture.code === "EL"
         ? "Calendario ufficiale: https://www.juventus.com/it/news/articoli/uefa-europa-league-date-e-orari-delle-partite-della-juventus"
-        : "Calendario ufficiale: https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27",
+        : `Calendario ufficiale: ${fixture.sourceUrl || "https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27"}`,
     ].join("\n");
     const modified = match && new Date(match.lastUpdated || now);
     const baseModified = modified && Number.isFinite(modified.getTime()) ? modified : new Date(fixture.code === "EL" ? "2026-08-29T00:00:00Z" : "2026-06-05T00:00:00Z");

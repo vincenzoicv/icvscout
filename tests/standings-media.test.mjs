@@ -121,11 +121,11 @@ test('new pages keep semantic navigation, stats deep link and existing privacy-a
   assert.match(file('media.html'),/section-pages\.css\?v=20260901-2/);
   for(const name of ['section-pages','standings-page','media-page','featured-conference','match-gallery'])assert.doesNotThrow(()=>new vm.Script(file('assets/'+name+'.js')));
 });
-test('scheduled date placeholders are all-day, confirmed kickoffs retain their time',async(t)=>{
+test('new official kickoffs replace stale provider placeholders',async(t)=>{
   let status='SCHEDULED';t.mock.method(globalThis,'fetch',async()=>Response.json({matches:[{id:1,matchday:6,competition:{code:'SA'},homeTeam:{name:'Cagliari'},awayTeam:{name:'Juventus'},utcDate:'2026-10-11T00:00:00Z',lastUpdated:'2026-08-01T00:00:00Z',status}]}));
   const request=new Request('https://example.test/api/juventus/calendar.ics'),env={FOOTBALL_DATA_KEY:'test'};
   let calendar=(await (await onRequest({request,env})).text()).replace(/\r\n /g,'');
   let event=calendar.split('BEGIN:VEVENT').find(event=>event.includes('UID:juventus-serie-a-2026-27-g6@'));
-  assert.match(event,/DTSTART;VALUE=DATE:20261011/);assert.match(event,/giorno e orario da confermare/);assert.match(event,/LAST-MODIFIED:20260831T112000Z/);
-  status='TIMED';calendar=(await (await onRequest({request,env})).text()).replace(/\r\n /g,'');event=calendar.split('BEGIN:VEVENT').find(event=>event.includes('UID:juventus-serie-a-2026-27-g6@'));assert.match(event,/DTSTART:20261011T000000Z/);
+  assert.match(event,/DTSTART:20261011T184500Z/);assert.match(event,/Data e orario confermati/);assert.match(event,/LAST-MODIFIED:20260903T124600Z/);
+  status='TIMED';calendar=(await (await onRequest({request,env})).text()).replace(/\r\n /g,'');event=calendar.split('BEGIN:VEVENT').find(event=>event.includes('UID:juventus-serie-a-2026-27-g6@'));assert.match(event,/DTSTART:20261011T184500Z/);
 });

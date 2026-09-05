@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-04T22:05:54Z",
+  "updated_at": "2026-09-05T00:07:24Z",
   "match": {
     "home": "Juventus",
     "away": "Milan",
@@ -8,6 +8,15 @@
     "competition": "Serie A"
   },
   "updates": [
+    {
+      "category": "Infortuni",
+      "title": "Thuram operato, lesione muscolare per Cabal",
+      "summary": "Bollettino ufficiale Juventus: Thuram ha iniziato la riabilitazione dopo l'intervento al ginocchio destro. Per Cabal gli esami hanno evidenziato una lesione di basso grado del semimembranoso della coscia sinistra.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/bollettino-medico-le-condizioni-di-thuram-e-cabal",
+      "published_at": "2026-09-03",
+      "significant": true
+    },
     {
       "category": "Recuperi",
       "title": "Woltemade e Zhegrova rientrano in gruppo",

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-05T00:07:24Z",
+  "updated_at": "2026-09-06T15:18:03Z",
   "match": {
     "home": "Juventus",
     "away": "Milan",
@@ -8,6 +8,24 @@
     "competition": "Serie A"
   },
   "updates": [
+    {
+      "category": "Convocati",
+      "title": "Ufficiali i 22 convocati per Juventus-Milan",
+      "summary": "Nella lista di Spalletti figurano Zhegrova e Woltemade. Assenti Cambiaso, McKennie e Sarr, oltre agli indisponibili Yildiz, Ekhator, Thuram e Cabal; convocati anche Owusu e Pagnucco.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-milan-i-convocati",
+      "published_at": "2026-09-06",
+      "significant": true
+    },
+    {
+      "category": "Conferenza stampa",
+      "title": "Spalletti: nessun recupero, Woltemade partira dalla panchina",
+      "summary": "Il tecnico ha confermato sette indisponibili e ha escluso recuperi dell'ultima ora. Woltemade non dovrebbe partire titolare ma puo subentrare; contro il Milan serviranno velocita nei ribaltamenti e attenzione ai duelli.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/juventus-milan-la-conferenza-stampa-di-luciano-spalletti",
+      "published_at": "2026-09-05",
+      "significant": true
+    },
     {
       "category": "Infortuni",
       "title": "Thuram operato, lesione muscolare per Cabal",
@@ -42,15 +60,6 @@
       "source": "Sky Sport",
       "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-3/juventus-milan/formazioni",
       "published_at": "2026-09-04",
-      "significant": true
-    },
-    {
-      "category": "Infortuni",
-      "title": "Yildiz operato, lesione muscolare per Ekhator",
-      "summary": "La Juventus ha comunicato che Yildiz ha iniziato la riabilitazione dopo l'intervento al piede sinistro. Per Ekhator gli esami hanno evidenziato una lesione di medio grado del semitendinoso destro.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/bollettino-medico-le-condizioni-di-yildiz-ed-ekhator",
-      "published_at": "2026-08-31",
       "significant": true
     }
   ]

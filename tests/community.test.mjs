@@ -15,7 +15,7 @@ test("Juventus-Parma conserva il 2-0 e i marcatori senza inventare minuti", asyn
   assert.equal(fallback.awayScore, 0);
   assert.equal(fallback.mvp, "González");
   const [match] = normalize([{match_id:"558619", status:"finished", source_payload:{homeTeam:{name:"Juventus FC"},awayTeam:{name:"Parma Calcio 1913"},score:{fullTime:{home:2,away:0}},goals:[]}}]);
-  assert.equal(match.scorers, "Juventus: González, Koopmeiners");
+  assert.equal(match.scorers, "González · Koopmeiners");
   assert.equal(match.mvp, "González");
   assert.deepEqual(match.goals.map(label), ["González", "Koopmeiners"]);
   assert.ok(match.goals.every(goal => goal.minute === null));
@@ -32,7 +32,7 @@ test("Juventus-Milan conserva il pareggio, i marcatori e Gatti MVP", async () =>
   assert.equal(fallback.mvp, "Gatti");
   assert.equal(fallback.worst, "Kolo Muani");
   const [match] = normalize([{match_id:"558618", status:"finished", source_payload:{homeTeam:{name:"Juventus FC"},awayTeam:{name:"AC Milan"},score:{fullTime:{home:1,away:1}},goals:[]}}]);
-  assert.equal(match.scorers, "Juventus: Gatti · Milan: Cisse");
+  assert.equal(match.scorers, "Gatti · Cisse");
   assert.equal(match.mvp, "Gatti");
   assert.equal(match.worst, "Kolo Muani");
   assert.deepEqual(match.goals.map(label), ["Gatti", "Cisse"]);
@@ -46,8 +46,8 @@ test("i marcatori sono sotto il risultato e spariscono senza dati", async () => 
   const element = {textContent:"", hidden:true};
   const source = html.slice(html.indexOf("function renderMatchHubScorers("), html.indexOf("function renderMatchHubProbable("));
   const render = new Function("document", source + ";return renderMatchHubScorers")({getElementById:() => element});
-  render({scorers:"Juventus: González, Koopmeiners"});
-  assert.equal(element.textContent, "Juventus: González, Koopmeiners");
+  render({scorers:"González · Koopmeiners"});
+  assert.equal(element.textContent, "González · Koopmeiners");
   assert.equal(element.hidden, false);
   render(null);
   assert.equal(element.textContent, "");

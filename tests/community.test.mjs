@@ -21,6 +21,24 @@ test("Juventus-Parma conserva il 2-0 e i marcatori senza inventare minuti", asyn
   assert.ok(match.goals.every(goal => goal.minute === null));
 });
 
+test("Juventus-Milan conserva il pareggio, i marcatori e Gatti MVP", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("var ICV_MATCH_FALLBACKS ="), html.indexOf("function allMatchHubRows("));
+  const { fallbacks, normalize, label } = new Function(source + ";return {fallbacks:ICV_MATCH_FALLBACKS,normalize:normalizeMatchHubRows,label:matchHubEventLabel}")();
+  const fallback = fallbacks.find(match => match.matchday === 3 && match.competition === "Serie A");
+  assert.equal(fallback.status, "finished");
+  assert.equal(fallback.homeScore, 1);
+  assert.equal(fallback.awayScore, 1);
+  assert.equal(fallback.mvp, "Gatti");
+  assert.equal(fallback.worst, "Kolo Muani");
+  const [match] = normalize([{match_id:"558618", status:"finished", source_payload:{homeTeam:{name:"Juventus FC"},awayTeam:{name:"AC Milan"},score:{fullTime:{home:1,away:1}},goals:[]}}]);
+  assert.equal(match.scorers, "Juventus: Gatti · Milan: Cisse");
+  assert.equal(match.mvp, "Gatti");
+  assert.equal(match.worst, "Kolo Muani");
+  assert.deepEqual(match.goals.map(label), ["Gatti", "Cisse"]);
+  assert.ok(match.goals.every(goal => goal.minute === null));
+});
+
 test("i marcatori sono sotto il risultato e spariscono senza dati", async () => {
   const html = await read("index.html");
   assert.match(html, /id="matchHubVersus"[\s\S]*?id="matchHubResultScorers"[\s\S]*?<\/section>/);
@@ -36,12 +54,12 @@ test("i marcatori sono sotto il risultato e spariscono senza dati", async () => 
   assert.equal(element.hidden, true);
 });
 
-test("dopo Parma le prossime tre includono il debutto in Europa League", async () => {
+test("dopo Milan le prossime tre includono il debutto in Europa League", async () => {
   const html = await read("index.html");
   const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function matchHubFreshness("));
   const panel = {hidden:true};
   const box = {innerHTML:""};
-  class MatchDate extends Date { static now() { return Date.parse("2026-08-29T22:00:00Z"); } }
+  class MatchDate extends Date { static now() { return Date.parse("2026-09-06T21:00:00Z"); } }
   const {allRows, render} = new Function("document", "Date", source + ";return {allRows:allMatchHubRows,render:renderMatchHubUpcoming}")({
     getElementById:id => id === "matchHubUpcomingPanel" ? panel : box,
   }, MatchDate);
@@ -51,9 +69,9 @@ test("dopo Parma le prossime tre includono il debutto in Europa League", async (
   render(allRows([]));
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.match(box.innerHTML, /Milan[\s\S]*Sassuolo[\s\S]*NEC Nijmegen/);
+  assert.match(box.innerHTML, /Sassuolo[\s\S]*NEC Nijmegen[\s\S]*Atalanta/);
   assert.match(box.innerHTML, /Europa League/);
-  assert.doesNotMatch(box.innerHTML, /Atalanta/);
+  assert.doesNotMatch(box.innerHTML, /Milan/);
   assert.doesNotMatch(box.innerHTML, /Parma/);
   const api = await read("functions/api/[[path]].js");
   assert.match(api, /dateTo = isoDateOffset\(now, 60\)/);
@@ -222,6 +240,8 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(api, /body\.type === "match_override"/);
   assert.match(api, /icv_manual/);
   assert.match(admin, /Salva correzione/);
+  assert.match(admin, /id="matchOverrideWorst"/);
+  assert.match(html, /id="receiptWorstSection"/);
   assert.match(admin, /Ripristina fonte/);
   assert.match(cron, /const MATCH_CRON = "\* \* \* \* \*"/);
   assert.match(cron, /\["home", "market", "match", "all"\]\.includes\(job\)/);

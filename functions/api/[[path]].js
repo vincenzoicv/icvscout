@@ -2005,6 +2005,7 @@ async function adminNews(request, env) {
         minute,
         scorers: cleanText(body.scorers).slice(0, 500),
         mvp: cleanText(body.mvp).slice(0, 120),
+        worst: cleanText(body.worst).slice(0, 120),
         note: cleanText(body.note).slice(0, 300),
         updated_at: new Date().toISOString(),
       };

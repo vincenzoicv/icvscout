@@ -967,6 +967,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
           <div class="receipt-rule"></div>
           <div class="receipt-section"><span>MARCATORI</span><p id="receiptScorers">Dati al termine della gara</p></div>
           <div class="receipt-section" id="receiptMvpSection" hidden><span>MVP ICV</span><p id="receiptMvp"></p></div>
+          <div class="receipt-section" id="receiptWorstSection" hidden><span>PEGGIORE ICV</span><p id="receiptWorst"></p></div>
           <div class="receipt-rule"></div>
           <div class="receipt-footer"><span id="receiptMatchId">MATCH #558635</span><span>FINO ALLA FINE.</span></div>
         </article>
@@ -1601,7 +1602,7 @@ var ICV_MATCH_FALLBACKS = [
   {date:"2026-08-17T00:00:00+02:00",dateOnly:true,status:"finished",competition:"Amichevole",home:"Juventus",away:"Next Gen",homeScore:2,awayScore:0,venue:"Allianz Stadium",scorers:"Juve: Conceicao, McKennie"},
   {date:"2026-08-23T18:30:00+02:00",status:"finished",competition:"Serie A",home:"Frosinone",away:"Juventus",homeScore:0,awayScore:1,venue:"Stadio Benito Stirpe",matchday:1,scorers:"Juventus: Bremer 22'"},
   {date:"2026-08-29T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Parma Calcio 1913",homeScore:2,awayScore:0,venue:"Allianz Stadium · Torino",matchday:2,scorers:"Juventus: González, Koopmeiners",mvp:"González"},
-  {date:"2026-09-06T20:45:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"AC Milan",venue:"Allianz Stadium · Torino",matchday:3},
+  {date:"2026-09-06T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"AC Milan",homeScore:1,awayScore:1,venue:"Allianz Stadium · Torino",matchday:3,scorers:"Juventus: Gatti · Milan: Cisse",mvp:"Gatti",worst:"Kolo Muani"},
   {date:"2026-09-13T20:45:00+02:00",status:"scheduled",competition:"Serie A",home:"US Sassuolo Calcio",away:"Juventus FC",matchday:4},
   {date:"2026-09-20T18:00:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Atalanta BC",venue:"Allianz Stadium · Torino",matchday:5},
   {date:"2026-10-11T20:45:00+02:00",status:"scheduled",competition:"Serie A",home:"Cagliari Calcio",away:"Juventus FC",matchday:6},
@@ -1622,6 +1623,15 @@ var ICV_MATCH_FALLBACKS = [
 ];
 
 var ICV_VERIFIED_MATCH_DATA = {
+  "558618": {
+    scorers:"Juventus: Gatti · Milan: Cisse",
+    mvp:"Gatti",
+    worst:"Kolo Muani",
+    goals:[
+      {kind:"goal",minute:null,injuryTime:null,player:"Gatti",team:"Juventus FC",type:"REGULAR"},
+      {kind:"goal",minute:null,injuryTime:null,player:"Cisse",team:"AC Milan",type:"REGULAR"}
+    ]
+  },
   "558619": {
     scorers:"Juventus: González, Koopmeiners",
     mvp:"González",
@@ -1706,6 +1716,7 @@ function normalizeMatchHubRows(rows) {
       homeLineup: Array.isArray(homeTeam.lineup) ? homeTeam.lineup : [],
       awayLineup: Array.isArray(awayTeam.lineup) ? awayTeam.lineup : [],
       mvp: String(manual.mvp || verified.mvp || row.tactical_key || "").trim(),
+      worst: String(manual.worst || verified.worst || "").trim(),
       note: String(manual.note || "").trim(),
       source: manual.updated_at ? "ICV + football-data.org" : String(payload.icv_meta && payload.icv_meta.provider || "football-data.org"),
       sourceUrl: String(payload.icv_meta && payload.icv_meta.source_url || ""),
@@ -2063,8 +2074,10 @@ function renderMatchReceipt(match) {
   setMatchHubText("receiptScorers", match.scorers || "Nessun marcatore registrato");
   setMatchHubText("receiptMvp", match.mvp);
   document.getElementById("receiptMvpSection").hidden = !match.mvp;
+  setMatchHubText("receiptWorst", match.worst);
+  document.getElementById("receiptWorstSection").hidden = !match.worst;
   setMatchHubText("receiptMatchId", "MATCH #" + (match.matchId || "ICV"));
-  var signature = [match.matchId, match.homeScore, match.awayScore, match.scorers, match.mvp, match.updatedAt].join("|");
+  var signature = [match.matchId, match.homeScore, match.awayScore, match.scorers, match.mvp, match.worst, match.updatedAt].join("|");
   if (signature !== matchReceiptSignature) {
     matchReceiptSignature = signature;
     replayMatchReceipt();
@@ -2085,7 +2098,7 @@ function replayMatchReceipt() {
 
 function receiptCanvas(match) {
   var canvas = document.createElement("canvas"),ctx=canvas.getContext("2d");
-  canvas.width=1080;canvas.height=1050;
+  canvas.width=1080;canvas.height=1120;
   ctx.fillStyle="#f4f1e9";ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.fillStyle="#171717";ctx.textAlign="center";ctx.font="700 72px Arial";ctx.fillText("ICV MATCH RECEIPT",540,120);
   ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,165);ctx.lineTo(980,165);ctx.stroke();ctx.setLineDash([]);
@@ -2097,8 +2110,9 @@ function receiptCanvas(match) {
   ctx.textAlign="left";ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("MARCATORI",110,610);
   ctx.fillStyle="#171717";ctx.font="700 31px Arial";drawReceiptLines(ctx,match.scorers||"Non disponibili",110,660,850,43);
   if(match.mvp){ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("MVP ICV",110,780);ctx.fillStyle="#171717";ctx.font="700 34px Arial";ctx.fillText(match.mvp,110,830)}
-  ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,890);ctx.lineTo(980,890);ctx.stroke();ctx.setLineDash([]);
-  ctx.font="700 20px Arial";ctx.fillStyle="#666";ctx.fillText("MATCH #"+(match.matchId||"ICV"),110,950);ctx.textAlign="right";ctx.fillText("FINO ALLA FINE.",970,950);
+  if(match.worst){ctx.fillStyle="#666";ctx.font="700 22px Arial";ctx.fillText("PEGGIORE ICV",110,890);ctx.fillStyle="#171717";ctx.font="700 34px Arial";ctx.fillText(match.worst,110,940)}
+  ctx.strokeStyle="#777";ctx.setLineDash([12,10]);ctx.beginPath();ctx.moveTo(100,990);ctx.lineTo(980,990);ctx.stroke();ctx.setLineDash([]);
+  ctx.font="700 20px Arial";ctx.fillStyle="#666";ctx.fillText("MATCH #"+(match.matchId||"ICV"),110,1050);ctx.textAlign="right";ctx.fillText("FINO ALLA FINE.",970,1050);
   return canvas;
 }
 

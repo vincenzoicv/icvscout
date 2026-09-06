@@ -222,8 +222,9 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
             <div><label>Marcatori</label><input id="matchOverrideScorers" placeholder="Es. Yildiz 34' · Kolo Muani 78'"></div>
             <div class="row">
               <div><label>MVP ICV</label><input id="matchOverrideMvp" placeholder="Nome giocatore"></div>
-              <div><label>Nota</label><input id="matchOverrideNote" placeholder="Dato o contesto utile"></div>
+              <div><label>Peggiore ICV</label><input id="matchOverrideWorst" placeholder="Nome giocatore"></div>
             </div>
+            <div><label>Nota</label><input id="matchOverrideNote" placeholder="Dato o contesto utile"></div>
             <div class="item-actions"><button class="primary" onclick="saveMatchOverride()">Salva correzione</button><button class="danger" onclick="clearMatchOverride()">Ripristina fonte</button></div>
           </div>
           <div id="matchList"></div>
@@ -803,6 +804,7 @@ function loadMatchOverride(index){
   document.getElementById("matchOverrideAwayScore").value=score.away==null?"":score.away;
   document.getElementById("matchOverrideScorers").value=manual.scorers||"";
   document.getElementById("matchOverrideMvp").value=manual.mvp||"";
+  document.getElementById("matchOverrideWorst").value=manual.worst||"";
   document.getElementById("matchOverrideNote").value=manual.note||"";
 }
 function saveMatchOverride(){
@@ -818,6 +820,7 @@ function saveMatchOverride(){
     away_score:document.getElementById("matchOverrideAwayScore").value,
     scorers:document.getElementById("matchOverrideScorers").value,
     mvp:document.getElementById("matchOverrideMvp").value,
+    worst:document.getElementById("matchOverrideWorst").value,
     note:document.getElementById("matchOverrideNote").value
   }}).then(function(){showToast("Partita aggiornata");return load()}).catch(function(error){showToast(error.message)});
 }

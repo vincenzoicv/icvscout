@@ -290,13 +290,13 @@ async function publicHome(env) {
   }
 
   const [news, market, marketNews, matches, social, auto, radar, conference, highlights] = await Promise.all([
-    sb(env, "/news?visible=eq.true&order=created_at.desc&limit=48"),
-    sb(env, "/market_items?order=updated_at.desc&limit=12"),
-    sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=18"),
-    sb(env, "/match_reports?order=match_date.asc&limit=80"),
-    sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&post_url=not.is.null&order=published_at.desc.nullslast,created_at.desc&limit=12"),
-    latestAutomationRun(env, "home_autopilot"),
-    getSiteSetting(env, "radar_home", DEFAULT_RADAR),
+    safeAdminRead(() => sb(env, "/news?visible=eq.true&order=created_at.desc&limit=48"), []),
+    safeAdminRead(() => sb(env, "/market_items?order=updated_at.desc&limit=12"), []),
+    safeAdminRead(() => sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=18"), []),
+    safeAdminRead(() => sb(env, "/match_reports?order=match_date.asc&limit=80"), []),
+    safeAdminRead(() => sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&post_url=not.is.null&order=published_at.desc.nullslast,created_at.desc&limit=12"), []),
+    safeAdminRead(() => latestAutomationRun(env, "home_autopilot"), null),
+    safeAdminRead(() => getSiteSetting(env, "radar_home", DEFAULT_RADAR), DEFAULT_RADAR),
     safeAdminRead(() => publicConferences(env), null),
     safeAdminRead(() => readHighlightsSetting(env), null),
   ]);
@@ -3885,24 +3885,38 @@ async function sb(env, path, options = {}) {
     throw new Error("Body JSON mancante per " + method + " " + path);
   }
 
-  const response = await fetch(url.replace(/\/$/, "") + "/rest/v1" + path, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "apikey": key,
-      "Authorization": "Bearer " + key,
-      ...(options.prefer ? { "Prefer": options.prefer } : {}),
-    },
-    body: requestBody,
-  });
+  const attempts = method === "GET" ? 3 : 1;
+  let lastError;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      const response = await fetch(url.replace(/\/$/, "") + "/rest/v1" + path, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": key,
+          "Authorization": "Bearer " + key,
+          ...(options.prefer ? { "Prefer": options.prefer } : {}),
+        },
+        body: requestBody,
+      });
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error("Supabase " + response.status + " " + method + " " + path + ": " + text);
+      if (!response.ok) {
+        const text = await response.text();
+        const error = new Error("Supabase " + response.status + " " + method + " " + path + ": " + text);
+        error.upstreamStatus = response.status;
+        throw error;
+      }
+      if (response.status === 204) return [];
+      const text = await response.text();
+      return text ? JSON.parse(text) : [];
+    } catch (error) {
+      lastError = error;
+      const transient = !Number(error && error.upstreamStatus) || [502, 503, 504].includes(Number(error.upstreamStatus));
+      if (!transient || attempt === attempts - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 150 * (attempt + 1)));
+    }
   }
-  if (response.status === 204) return [];
-  const text = await response.text();
-  return text ? JSON.parse(text) : [];
+  throw lastError;
 }
 
 function normalizeSupabaseBody(value) {

@@ -3885,9 +3885,11 @@ async function sb(env, path, options = {}) {
     throw new Error("Body JSON mancante per " + method + " " + path);
   }
 
-  const attempts = method === "GET" ? 3 : 1;
+  const attempts = method === "GET" ? 2 : 1;
   let lastError;
   for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), method === "GET" ? 3500 : 8000);
     try {
       const response = await fetch(url.replace(/\/$/, "") + "/rest/v1" + path, {
         method,
@@ -3898,6 +3900,7 @@ async function sb(env, path, options = {}) {
           ...(options.prefer ? { "Prefer": options.prefer } : {}),
         },
         body: requestBody,
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -3914,6 +3917,8 @@ async function sb(env, path, options = {}) {
       const transient = !Number(error && error.upstreamStatus) || [502, 503, 504].includes(Number(error.upstreamStatus));
       if (!transient || attempt === attempts - 1) throw error;
       await new Promise(resolve => setTimeout(resolve, 150 * (attempt + 1)));
+    } finally {
+      clearTimeout(timeout);
     }
   }
   throw lastError;

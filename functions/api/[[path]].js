@@ -163,7 +163,7 @@ export async function onRequest(context) {
     }
     if (path === 'public/match-gallery' && request.method === 'GET') return json({ gallery: publicMatchGallery(await readMatchGallery(env, sb)) });
     if (path === 'public/match-photo' && request.method === 'GET') return await matchPhotoResponse(request, env, sb);
-    if (path === "public/home") return publicHome(env);
+    if (path === "public/home") return await publicHome(env, request, context);
     if (path === 'public/standings' && request.method === 'GET') return await standingsResponse(url,env);
     if (path === 'public/media' && request.method === 'GET') return await publicMedia(env);
     if (path === "public/conference-thumbnail" && request.method === "GET") return await publicConferenceThumbnail(env, url);
@@ -270,7 +270,7 @@ async function runScheduledAutomations({ env, cron = "", scheduledTime = Date.no
   return result;
 }
 
-async function publicHome(env) {
+async function publicHome(env, request, context) {
   if (!hasSupabase(env)) {
     return json({
       news: [],
@@ -311,7 +311,7 @@ async function publicHome(env) {
   const orderedMatches = orderPublicMatches(matches).slice(0, 12);
   const playerIndex = buildPlayerIndex(aggregatedMarket, cleanNews);
   const linkedNews = cleanNews.map(row => ({ ...row, related_players: playerEntitiesInText([row.title, row.body].join(" "), playerIndex) }));
-  return json({
+  const payload = {
     news: linkedNews,
     market: aggregatedMarket,
     matches: orderedMatches,
@@ -323,7 +323,26 @@ async function publicHome(env) {
     graphics: [],
     radar,
     auto: { enabled: true, interval_hours: Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1), last_run_at: auto && auto.created_at },
-  });
+  };
+  const cache = typeof caches !== "undefined" ? caches.default : null;
+  const cacheKey = cache && request ? new Request(new URL("/api/cache/public-home", request.url), { method: "GET" }) : null;
+  const hasContent = linkedNews.length || aggregatedMarket.length || orderedMatches.length || payload.social.length || conference?.featured || highlights;
+  if (!hasContent && cache && cacheKey) {
+    try {
+      const cached = await cache.match(cacheKey);
+      if (cached) return new Response(await cached.text(), { headers: { ...JSON_HEADERS, "X-ICV-Data": "stale" } });
+    } catch {}
+  }
+  const response = json(payload);
+  if (hasContent && cache && cacheKey) {
+    const stored = new Response(JSON.stringify(payload), { headers: { ...JSON_HEADERS, "Cache-Control": "public, max-age=604800" } });
+    try {
+      const write = cache.put(cacheKey, stored);
+      if (context && typeof context.waitUntil === "function") context.waitUntil(write);
+      else await write;
+    } catch {}
+  }
+  return response;
 }
 
 async function readHighlightsSetting(env) {

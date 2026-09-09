@@ -300,7 +300,21 @@ async function publicHome(env, request, context) {
     safeAdminRead(() => publicConferences(env), null),
     safeAdminRead(() => readHighlightsSetting(env), null),
   ]);
-  const allCleanNews = publicNewsRows(news);
+  let allCleanNews = publicNewsRows(news);
+  const orderedMatches = orderPublicMatches(matches).slice(0, 12);
+  let resolvedMatches = orderedMatches;
+  let socialRows = publicSocialRows(social);
+  const needsEmergencyData = !allCleanNews.length || !resolvedMatches.length || !socialRows.length;
+  if (needsEmergencyData) {
+    const emergency = await emergencyPublicHome(env, {
+      news: !allCleanNews.length,
+      matches: !resolvedMatches.length,
+      social: !socialRows.length,
+    });
+    if (!allCleanNews.length) allCleanNews = publicNewsRows(emergency.news);
+    if (!resolvedMatches.length) resolvedMatches = orderPublicMatches(emergency.matches).slice(0, 12);
+    if (!socialRows.length) socialRows = publicSocialRows(emergency.social);
+  }
   const cleanNews = allCleanNews.slice(0, 6);
   const cleanMarketNews = publicNewsRows(marketNews);
   const cleanMarket = publicMarketRows([
@@ -308,15 +322,14 @@ async function publicHome(env, request, context) {
     ...(market || []),
   ]);
   const aggregatedMarket = aggregateMarketItems(cleanMarket);
-  const orderedMatches = orderPublicMatches(matches).slice(0, 12);
   const playerIndex = buildPlayerIndex(aggregatedMarket, cleanNews);
   const linkedNews = cleanNews.map(row => ({ ...row, related_players: playerEntitiesInText([row.title, row.body].join(" "), playerIndex) }));
   const payload = {
     news: linkedNews,
     market: aggregatedMarket,
-    matches: orderedMatches,
-    live_desk: buildLiveDeskEntries({ news: publicNewsRows(news), market: aggregatedMarket, matches: orderedMatches }, 6),
-    social: publicSocialRows(social),
+    matches: resolvedMatches,
+    live_desk: buildLiveDeskEntries({ news: allCleanNews, market: aggregatedMarket, matches: resolvedMatches }, 6),
+    social: socialRows,
     featured_conference: conference?.featured || null,
     recent_conferences: conference?.recent || [],
     featured_highlights: publicHighlights(highlights),
@@ -326,7 +339,7 @@ async function publicHome(env, request, context) {
   };
   const cache = typeof caches !== "undefined" ? caches.default : null;
   const cacheKey = cache && request ? new Request(new URL("/api/cache/public-home", request.url), { method: "GET" }) : null;
-  const hasContent = linkedNews.length || aggregatedMarket.length || orderedMatches.length || payload.social.length || conference?.featured || highlights;
+  const hasContent = linkedNews.length || aggregatedMarket.length || resolvedMatches.length || payload.social.length || conference?.featured || highlights;
   if (!hasContent && cache && cacheKey) {
     try {
       const cached = await cache.match(cacheKey);
@@ -343,6 +356,113 @@ async function publicHome(env, request, context) {
     } catch {}
   }
   return response;
+}
+
+async function emergencyPublicHome(env, requested) {
+  const tasks = await Promise.all([
+    requested.news ? emergencyOfficialNews() : [],
+    requested.matches ? emergencyMatchReports(env) : [],
+    requested.social ? emergencyInstagramRows(env) : [],
+  ]);
+  return { news: tasks[0], matches: tasks[1], social: tasks[2] };
+}
+
+async function emergencyOfficialNews() {
+  const source = DEFAULT_SOURCES.find(item => item.reliability === "official" && isNewsRssSource(item.url));
+  if (!source) return [];
+  try {
+    const xml = await emergencyFetchText(source.url);
+    return parseRss(xml).slice(0, 24).map(item => {
+      const normalized = normalizeGoogleTitle(item.title);
+      const title = normalized.title;
+      const sourceName = normalized.source || item.source || source.name;
+      const body = cleanNewsDescription(item.description || title, sourceName, title).slice(0, 500);
+      if (newsItemRejectionReason(item, title, body, source, sourceName)) return null;
+      return {
+        id: "emergency-" + canonicalNewsTitle(title),
+        title,
+        body,
+        category: source.category || inferCategory(title),
+        urgency: inferUrgency(title, body, source.category, "official"),
+        source: sourceName,
+        source_url: item.link || source.url,
+        reliability: "official",
+        editorial_status: "verified",
+        visible: true,
+        created_at: item.pubDate || null,
+      };
+    }).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+async function emergencyMatchReports(env) {
+  if (!env.FOOTBALL_DATA_KEY) return [];
+  const now = new Date();
+  const dateFrom = isoDateOffset(now, -3);
+  const dateTo = isoDateOffset(now, 60);
+  const sourceUrl = "https://api.football-data.org/v4/teams/109/matches?dateFrom=" + dateFrom + "&dateTo=" + dateTo + "&limit=30";
+  try {
+    const data = await emergencyFetchJson(sourceUrl, {
+      "X-Auth-Token": env.FOOTBALL_DATA_KEY,
+      "X-Unfold-Lineups": "true",
+      "X-Unfold-Bookings": "true",
+      "X-Unfold-Subs": "true",
+      "X-Unfold-Goals": "true",
+    });
+    return (data.matches || []).map(match => matchReportFromFootballData(match, { sourceUrl })).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+async function emergencyInstagramRows(env) {
+  if (!env.IG_ACCESS_TOKEN) return [];
+  const fields = "id,caption,media_type,media_url,permalink,timestamp,thumbnail_url";
+  const url = "https://graph.instagram.com/me/media?fields=" + encodeURIComponent(fields) + "&limit=8&access_token=" + encodeURIComponent(env.IG_ACCESS_TOKEN);
+  try {
+    const data = await emergencyFetchJson(url, { "User-Agent": "ICV Scout/1.0" });
+    return (Array.isArray(data.data) ? data.data : []).filter(item => item.permalink).map(item => ({
+      id: "emergency-instagram-" + item.id,
+      platform: "instagram",
+      hook: hookFromCaption(item.caption) || labelInstagramMedia(item.media_type),
+      caption: item.caption || "",
+      card_text: item.caption || labelInstagramMedia(item.media_type),
+      post_url: item.permalink,
+      media_type: String(item.media_type || "post").toLowerCase(),
+      instagram_id: item.id,
+      media_url: item.media_url || item.thumbnail_url || "",
+      thumbnail_url: item.thumbnail_url || item.media_url || "",
+      published_at: item.timestamp || null,
+      status: "published",
+      visible: true,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function emergencyFetchText(url, headers = {}) {
+  const response = await emergencyFetch(url, headers);
+  return response.text();
+}
+
+async function emergencyFetchJson(url, headers = {}) {
+  const response = await emergencyFetch(url, headers);
+  return response.json();
+}
+
+async function emergencyFetch(url, headers) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  try {
+    const response = await fetch(url, { headers: { ...fetchHeadersForUrl(url), ...headers }, signal: controller.signal });
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    return response;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function readHighlightsSetting(env) {

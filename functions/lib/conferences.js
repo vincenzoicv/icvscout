@@ -25,7 +25,7 @@ export function conferenceSetting(input = {}) {
 export function chooseConference(rows, input, now = Date.now()) {
   const setting = conferenceSetting(input);
   if (setting.mode === 'off') return null;
-  const candidates = (Array.isArray(rows) ? rows : []).filter(row => row && row.platform === 'instagram' && String(row.media_type).toLowerCase() === 'video' && row.visible !== false && row.status === 'published' && instagramPost(row.post_url) && Number.isFinite(Date.parse(row.published_at)) && Date.parse(row.published_at) <= now + 300000);
+  const candidates = (Array.isArray(rows) ? rows : []).filter(row => row && row.platform === 'instagram' && /^(video|reel|reels)$/.test(String(row.media_type).toLowerCase()) && row.visible !== false && row.status === 'published' && instagramPost(row.post_url) && Number.isFinite(Date.parse(row.published_at)) && Date.parse(row.published_at) <= now + 300000);
   const selected = setting.mode === 'manual'
     ? candidates.find(row => Number(row.id) === setting.post_id)
     : candidates.filter(row => row.instagram_id && conferencePhase(row)).sort((a,b)=>Date.parse(b.published_at)-Date.parse(a.published_at) || Number(b.id)-Number(a.id))[0];

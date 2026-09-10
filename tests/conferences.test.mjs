@@ -24,6 +24,12 @@ test('l ultima conferenza post partita sostituisce la pre, non gli altri reel',(
   assert.equal(conferencePhase({caption:'Conferenza stampa alla vigilia di Juve Milan'}),'pre');
   assert.equal(conferencePhase({caption:'Nuovo acquisto ufficiale'}),null);
 });
+
+test('un contenuto Instagram salvato come reel viene riconosciuto come conferenza',()=>{
+  const reel={...post,media_type:'reel'};
+  assert.equal(chooseConference([reel],{mode:'auto'}).post_url,post.post_url);
+  assert.equal(chooseConference([reel],{mode:'auto'}).phase,'post');
+});
 test('controlli editoriali: manuale, nascosta, video non pubblicati e date future',()=>{
   assert.equal(chooseConference([pre,post],{mode:'manual',post_id:1,phase:'pre'},now).id,1);
   assert.equal(chooseConference([pre],{mode:'off'},now),null);

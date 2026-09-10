@@ -103,10 +103,10 @@ test('miniature delle conferenze secondarie disponibili, nascoste e modalita off
 });
 
 test('importazione aggiorna la miniatura ma non riattiva un contenuto nascosto',async(t)=>{
-  let payload;
+  let payload,scanLimit;
   t.mock.method(globalThis,'fetch',async(input,options={})=>{
     const url=new URL(input);
-    if(url.hostname==='graph.instagram.com')return Response.json({data:[{id:'ig1',permalink:pre.post_url,caption:pre.caption,media_type:'VIDEO',thumbnail_url:'https://scontent.cdninstagram.com/new.jpg',timestamp:pre.published_at}]});
+    if(url.hostname==='graph.instagram.com'){scanLimit=url.searchParams.get('limit');return Response.json({data:[{id:'ig1',permalink:pre.post_url,caption:pre.caption,media_type:'VIDEO',thumbnail_url:'https://scontent.cdninstagram.com/new.jpg',timestamp:pre.published_at}]});}
     if(url.pathname.endsWith('/social_drafts')){
       if(options.method==='PATCH'){payload=JSON.parse(options.body);return Response.json([]);}
       return Response.json([{id:1,visible:false}]);
@@ -115,5 +115,5 @@ test('importazione aggiorna la miniatura ma non riattiva un contenuto nascosto',
   });
   const env={ADMIN_TOKEN:'test',IG_ACCESS_TOKEN:'test',SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test'};
   const response=await onRequest({request:new Request('https://example.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':'test','Content-Type':'application/json'},body:JSON.stringify({action:'instagram_import'})}),env});
-  assert.equal(response.status,200);assert.equal(payload.visible,false);assert.match(payload.thumbnail_url,/new.jpg/);
+  assert.equal(response.status,200);assert.equal(scanLimit,'25');assert.equal(payload.visible,false);assert.match(payload.thumbnail_url,/new.jpg/);
 });

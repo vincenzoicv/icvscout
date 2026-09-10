@@ -420,7 +420,7 @@ async function emergencyMatchReports(env) {
 async function emergencyInstagramRows(env) {
   if (!env.IG_ACCESS_TOKEN) return [];
   const fields = "id,caption,media_type,media_url,permalink,timestamp,thumbnail_url";
-  const url = "https://graph.instagram.com/me/media?fields=" + encodeURIComponent(fields) + "&limit=8&access_token=" + encodeURIComponent(env.IG_ACCESS_TOKEN);
+  const url = "https://graph.instagram.com/me/media?fields=" + encodeURIComponent(fields) + "&limit=25&access_token=" + encodeURIComponent(env.IG_ACCESS_TOKEN);
   try {
     const data = await emergencyFetchJson(url, { "User-Agent": "ICV Scout/1.0" });
     return (Array.isArray(data.data) ? data.data : []).filter(item => item.permalink).map(item => ({
@@ -2906,7 +2906,7 @@ async function generateYoutubeScoutDrafts(env) {
 async function importInstagramMedia(env) {
   if (!env.IG_ACCESS_TOKEN) throw new Error("Configura IG_ACCESS_TOKEN per importare Instagram");
   const fields = "id,caption,media_type,media_url,permalink,timestamp,thumbnail_url";
-  const url = "https://graph.instagram.com/me/media?fields=" + encodeURIComponent(fields) + "&limit=8&access_token=" + encodeURIComponent(env.IG_ACCESS_TOKEN);
+  const url = "https://graph.instagram.com/me/media?fields=" + encodeURIComponent(fields) + "&limit=25&access_token=" + encodeURIComponent(env.IG_ACCESS_TOKEN);
   const data = await fetchInstagramJson(url);
   const media = Array.isArray(data.data) ? data.data : [];
   let inserted = 0;

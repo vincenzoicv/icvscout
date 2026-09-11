@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-11T18:52:00Z",
+  "updated_at": "2026-09-11T20:52:00Z",
   "match": {
     "home": "Sassuolo",
     "away": "Juventus",
@@ -9,12 +9,12 @@
   },
   "updates": [
     {
-      "category": "Infortuni",
-      "title": "Locatelli e Boga indisponibili per Sassuolo-Juventus",
-      "summary": "Bollettino ufficiale Juventus: Locatelli è stato operato al menisco esterno del ginocchio destro e ha iniziato la riabilitazione. Boga ha riportato una lesione di medio grado del bicipite femorale sinistro e sarà rivalutato tra due settimane.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/bollettino-medico-le-condizioni-di-locatelli-e-boga",
-      "published_at": "2026-09-08",
+      "category": "Avversaria",
+      "title": "Sassuolo, Volpato indisponibile contro la Juventus",
+      "summary": "Il Sassuolo ha comunicato una lesione di grado moderato al flessore della gamba destra per Cristian Volpato. L'attaccante ha già iniziato il percorso riabilitativo.",
+      "source": "SassuoloCalcio.it",
+      "source_url": "https://www.sassuolocalcio.it/prima-squadra/report-medico-cristian-volpato/",
+      "published_at": "2026-09-09",
       "significant": true
     },
     {
@@ -24,6 +24,15 @@
       "source": "Lega Serie A",
       "source_url": "https://en.legaseriea.it/serie-a/news/the-referees-for-the-4th-round-x3477",
       "published_at": "2026-09-09",
+      "significant": true
+    },
+    {
+      "category": "Infortuni",
+      "title": "Locatelli e Boga indisponibili per Sassuolo-Juventus",
+      "summary": "Bollettino ufficiale Juventus: Locatelli è stato operato al menisco esterno del ginocchio destro e ha iniziato la riabilitazione. Boga ha riportato una lesione di medio grado del bicipite femorale sinistro e sarà rivalutato tra due settimane.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/bollettino-medico-le-condizioni-di-locatelli-e-boga",
+      "published_at": "2026-09-08",
       "significant": true
     }
   ]

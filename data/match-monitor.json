@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-12T17:38:58Z",
+  "updated_at": "2026-09-12T18:07:08Z",
   "match": {
     "home": "Sassuolo",
     "away": "Juventus",
@@ -12,18 +12,18 @@
     "status": "Probabile",
     "source": "Sky Sport / La Gazzetta dello Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-4/sassuolo-juventus/formazioni",
-    "updated_at": "2026-09-12T17:38:58Z",
+    "updated_at": "2026-09-12T18:07:08Z",
     "players": [
       { "name": "Vicario", "x": 0, "z": 6.2 },
       { "name": "Kalulu", "x": -3.25, "z": 3.25 },
-      { "name": "Bremer", "x": -1.1, "z": 3.25 },
-      { "name": "Lucumi", "x": 1.1, "z": 3.25 },
+      { "name": "Bremer", "x": 1.1, "z": 3.25 },
+      { "name": "Lucumi", "x": -1.1, "z": 3.25 },
       { "name": "Celik", "x": 3.25, "z": 3.25 },
       { "name": "Douglas Luiz", "x": -1.45, "z": 0.45 },
       { "name": "Koopmeiners", "x": 1.45, "z": 0.45 },
-      { "name": "Conceicao", "x": -2.85, "z": -2.35 },
+      { "name": "Conceicao", "x": 2.85, "z": -2.35 },
       { "name": "Nico Gonzalez", "x": 0, "z": -2.35 },
-      { "name": "Alajbegovic", "x": 2.85, "z": -2.35 },
+      { "name": "Alajbegovic", "x": -2.85, "z": -2.35 },
       { "name": "Kolo Muani", "x": 0, "z": -5.05 }
     ],
     "details": [

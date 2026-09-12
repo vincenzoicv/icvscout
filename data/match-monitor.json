@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-12T11:55:00Z",
+  "updated_at": "2026-09-12T17:38:58Z",
   "match": {
     "home": "Sassuolo",
     "away": "Juventus",
@@ -9,9 +9,18 @@
   },
   "updates": [
     {
+      "category": "Conferenza stampa",
+      "title": "Spalletti: Sarr disponibile, McKennie e Cambiaso difficilmente in campo",
+      "summary": "Spalletti ha confermato Sarr tra i disponibili. McKennie difficilmente ci sarà, mentre Cambiaso farà un provino domattina. Woltemade è già inserito nel gruppo e, secondo il tecnico, sarà della partita prima o dopo. Senza Locatelli la Juventus potrà comunque cambiare sistema tattico durante la gara.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/la-conferenza-stampa-di-luciano-spalletti-alla-vigilia-di-sassuolo-juventus",
+      "published_at": "2026-09-12",
+      "significant": true
+    },
+    {
       "category": "Probabile formazione",
       "title": "Juventus verso il 4-2-3-1 contro il Sassuolo",
-      "summary": "Sky Sport e La Gazzetta dello Sport indicano un 4-2-3-1 con Vicario; Kalulu, Bremer, Lucumi, Celik; Douglas Luiz, Koopmeiners; Conceicao, Nico Gonzalez, Alajbegovic; Kolo Muani. La formazione non è ufficiale e può cambiare dopo la conferenza stampa.",
+      "summary": "Sky Sport e La Gazzetta dello Sport indicano un 4-2-3-1 con Vicario; Kalulu, Bremer, Lucumi, Celik; Douglas Luiz, Koopmeiners; Conceicao, Nico Gonzalez, Alajbegovic; Kolo Muani. La formazione non è ufficiale; Spalletti ha sottolineato che la rosa consente di utilizzare sistemi diversi anche senza Locatelli.",
       "source": "Sky Sport / La Gazzetta dello Sport",
       "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-4/sassuolo-juventus/formazioni",
       "published_at": "2026-09-12",
@@ -19,10 +28,10 @@
     },
     {
       "category": "Recuperi",
-      "title": "Sarr recuperato: previsto in panchina contro il Sassuolo",
-      "summary": "Secondo Sky Sport, Pape Matar Sarr ha completato il recupero ed è atteso tra i disponibili per la trasferta, inizialmente in panchina. Cambiaso e McKennie restano invece meno probabili.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/video/2026/09/12/juventus-allenamento-news-1123986",
+      "title": "Sarr recuperato e ufficialmente a disposizione",
+      "summary": "Spalletti ha confermato che Pape Matar Sarr sarà a disposizione contro il Sassuolo. Il centrocampista ha completato il recupero ed è atteso inizialmente in panchina.",
+      "source": "Juventus.com / Sky Sport",
+      "source_url": "https://www.juventus.com/it/news/articoli/la-conferenza-stampa-di-luciano-spalletti-alla-vigilia-di-sassuolo-juventus",
       "published_at": "2026-09-12",
       "significant": true
     },

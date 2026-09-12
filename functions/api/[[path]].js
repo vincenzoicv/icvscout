@@ -2909,11 +2909,16 @@ async function importInstagramMedia(env) {
   const url = "https://graph.instagram.com/me/media?fields=" + encodeURIComponent(fields) + "&limit=25&access_token=" + encodeURIComponent(env.IG_ACCESS_TOKEN);
   const data = await fetchInstagramJson(url);
   const media = Array.isArray(data.data) ? data.data : [];
-  let inserted = 0;
+  const existingRows = await sb(env, "/social_drafts?platform=eq.instagram&post_url=not.is.null&select=id,post_url,visible&limit=200");
+  const existingByUrl = new Map();
+  for (const row of existingRows) {
+    if (row.post_url && !existingByUrl.has(row.post_url)) existingByUrl.set(row.post_url, row);
+  }
+  const newRows = [];
 
   for (const item of media) {
     if (!item.permalink) continue;
-    const existing = await sb(env, "/social_drafts?post_url=eq." + encodeURIComponent(item.permalink) + "&select=id,visible&limit=1");
+    const existing = existingByUrl.get(item.permalink);
     const payload = {
       platform: "instagram",
       hook: hookFromCaption(item.caption) || labelInstagramMedia(item.media_type),
@@ -2926,19 +2931,20 @@ async function importInstagramMedia(env) {
       thumbnail_url: item.thumbnail_url || item.media_url || "",
       published_at: item.timestamp || null,
       status: "published",
-      visible: existing.length ? existing[0].visible !== false : true,
+      visible: existing ? existing.visible !== false : true,
       updated_at: new Date().toISOString(),
     };
 
-    if (existing.length) {
-      await sb(env, "/social_drafts?id=eq." + existing[0].id, { method: "PATCH", body: payload });
+    if (existing) {
+      await sb(env, "/social_drafts?id=eq." + existing.id, { method: "PATCH", body: payload });
     } else {
-      await sb(env, "/social_drafts", { method: "POST", body: [payload] });
-      inserted++;
+      newRows.push(payload);
     }
   }
 
-  return { ok: true, imported: media.length, inserted };
+  if (newRows.length) await sb(env, "/social_drafts", { method: "POST", body: newRows });
+
+  return { ok: true, imported: media.length, inserted: newRows.length };
 }
 
 async function fetchInstagramJson(url) {

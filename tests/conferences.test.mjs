@@ -109,17 +109,51 @@ test('miniature delle conferenze secondarie disponibili, nascoste e modalita off
 });
 
 test('importazione aggiorna la miniatura ma non riattiva un contenuto nascosto',async(t)=>{
-  let payload,scanLimit;
+  let payload,scanLimit,socialLookups=0;
   t.mock.method(globalThis,'fetch',async(input,options={})=>{
     const url=new URL(input);
     if(url.hostname==='graph.instagram.com'){scanLimit=url.searchParams.get('limit');return Response.json({data:[{id:'ig1',permalink:pre.post_url,caption:pre.caption,media_type:'VIDEO',thumbnail_url:'https://scontent.cdninstagram.com/new.jpg',timestamp:pre.published_at}]});}
     if(url.pathname.endsWith('/social_drafts')){
       if(options.method==='PATCH'){payload=JSON.parse(options.body);return Response.json([]);}
-      return Response.json([{id:1,visible:false}]);
+      socialLookups++;
+      return Response.json([{id:1,post_url:pre.post_url,visible:false}]);
     }
     return Response.json([]);
   });
   const env={ADMIN_TOKEN:'test',IG_ACCESS_TOKEN:'test',SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test'};
   const response=await onRequest({request:new Request('https://example.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':'test','Content-Type':'application/json'},body:JSON.stringify({action:'instagram_import'})}),env});
   assert.equal(response.status,200);assert.equal(scanLimit,'25');assert.equal(payload.visible,false);assert.match(payload.thumbnail_url,/new.jpg/);
+  assert.equal(socialLookups,1);
+});
+
+test('importazione Instagram salva 25 nuovi contenuti con una lettura e un inserimento',async(t)=>{
+  const media=Array.from({length:25},(_,index)=>({
+    id:'ig'+index,
+    permalink:'https://www.instagram.com/p/test'+index+'/',
+    caption:'Post '+index,
+    media_type:'IMAGE',
+    media_url:'https://scontent.cdninstagram.com/'+index+'.jpg',
+    timestamp:'2026-09-12T12:00:00Z'
+  }));
+  let socialLookups=0,socialInserts=0,insertedRows=0,totalRequests=0;
+  t.mock.method(globalThis,'fetch',async(input,options={})=>{
+    totalRequests++;
+    const url=new URL(input);
+    if(url.hostname==='graph.instagram.com')return Response.json({data:media});
+    if(url.pathname.endsWith('/social_drafts')){
+      if(options.method==='POST'){
+        socialInserts++;
+        insertedRows=JSON.parse(options.body).length;
+        return Response.json([]);
+      }
+      socialLookups++;
+      return Response.json([]);
+    }
+    return Response.json([]);
+  });
+  const env={ADMIN_TOKEN:'test',IG_ACCESS_TOKEN:'test',SUPABASE_URL:'https://db.test',SUPABASE_SERVICE_ROLE_KEY:'test'};
+  const response=await onRequest({request:new Request('https://example.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':'test','Content-Type':'application/json'},body:JSON.stringify({action:'instagram_import'})}),env});
+  const result=await response.json();
+  assert.equal(response.status,200);assert.equal(result.imported,25);assert.equal(result.inserted,25);
+  assert.equal(socialLookups,1);assert.equal(socialInserts,1);assert.equal(insertedRows,25);assert.ok(totalRequests<10);
 });

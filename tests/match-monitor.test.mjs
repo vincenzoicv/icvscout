@@ -30,12 +30,36 @@ test('monitor registry validates empty and populated states',()=>{
   assert.ok(Number.isFinite(Date.parse(monitor.updated_at)));
   for(const key of ['home','away','competition']) assert.equal(typeof monitor.match[key],'string');
   assert.ok(Number.isFinite(Date.parse(monitor.match.kickoff)));
+  assert.equal(typeof monitor.formation.module,'string');
+  assert.equal(monitor.formation.players.length,11);
+  assert.equal(new Set(monitor.formation.players.map(player=>player.name)).size,11);
+  for(const player of monitor.formation.players){
+    assert.equal(typeof player.name,'string');
+    assert.ok(Number.isFinite(player.x));
+    assert.ok(Number.isFinite(player.z));
+  }
   for(const update of monitor.updates){
     for(const key of ['category','title','summary','source','source_url','published_at']) assert.equal(typeof update[key],'string');
     assert.equal(new URL(update.source_url).protocol,'https:');
     assert.ok(Number.isFinite(Date.parse(update.published_at)));
     assert.equal(update.significant,true);
   }
+});
+
+test('probable lineup is data-driven and loads the 3D pitch only when active',()=>{
+  const html=read('index.html');
+  const scene=read('src/lineup-pitch-3d.js');
+  const bundle=read('assets/lineup-pitch-3d.js');
+  assert.match(html,/id="matchHubLineupCanvas"/);
+  assert.match(html,/data-lineup-view="3d"/);
+  assert.match(html,/data-lineup-view="2d"/);
+  assert.match(html,/players\.length === 11/);
+  assert.match(html,/import\("\/assets\/lineup-pitch-3d\.js/);
+  assert.match(scene,/from "three"/);
+  assert.match(scene,/new THREE\.WebGLRenderer/);
+  assert.match(scene,/new THREE\.PerspectiveCamera/);
+  assert.match(scene,/prefers-reduced-motion: reduce/);
+  assert.ok(bundle.length>100000);
 });
 
 test('monitor helper only matches the same fixture and a nearby kickoff',()=>{

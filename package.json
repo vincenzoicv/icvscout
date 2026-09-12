@@ -3,14 +3,17 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build:lineup": "esbuild src/lineup-pitch-3d.js --bundle --minify --format=esm --target=es2020 --outfile=assets/lineup-pitch-3d.js",
     "test": "node --test tests/*.test.mjs",
-    "check": "npm test && node --check 'functions/api/[[path]].js'",
+    "check": "npm run build:lineup && npm test && node --check 'functions/api/[[path]].js'",
     "test:e2e": "playwright test"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0"
+    "@playwright/test": "^1.55.0",
+    "esbuild": "^0.28.2"
   },
   "dependencies": {
-    "animejs": "^4.5.0"
+    "animejs": "^4.5.0",
+    "three": "^0.186.0"
   }
 }

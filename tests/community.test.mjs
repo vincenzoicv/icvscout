@@ -192,21 +192,12 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /Juventus FC",away:"AC Milan"/);
   assert.match(html, /US Sassuolo Calcio",away:"Juventus FC"/);
   assert.match(html, /<h4>Probabile formazione<\/h4>/);
-  assert.match(html, /match-hub-probable-module">4-2-3-1/);
-  for (const player of ["Kolo Muani", "Conceicao", "Koopmeiners", "Boga", "Locatelli", "Douglas Luiz", "Cambiaso", "Bremer", "Kelly", "Kalulu", "Vicario"]) {
-    assert.ok(html.includes(player), `manca ${player} nella probabile formazione`);
-  }
-  assert.match(html, /13<\/b>Boga[\s\S]*8<\/b>Koopmeiners[\s\S]*7<\/b>Conceicao/);
-  assert.match(html, /5<\/b>Locatelli[\s\S]*12<\/b>Douglas Luiz/);
-  assert.match(html, /20<\/b>Cambiaso[\s\S]*3<\/b>Bremer[\s\S]*6<\/b>Kelly[\s\S]*15<\/b>Kalulu/);
-  assert.match(html, /match-hub-probable-number">25<\/b>Vicario/);
-  assert.match(html, /Aggiornata dopo la conferenza del 28 agosto/);
-  assert.match(html, /Cambiaso \/ Celik/);
-  assert.match(html, /Koopmeiners \/ Alajbegovic/);
-  assert.match(html, /<b>Assenti<\/b>Yildiz, McKennie/);
-  assert.match(html, /<b>Da valutare<\/b>Thuram/);
-  assert.match(html, /!\/parma\/i\.test\(teams\)/);
-  assert.match(html, /\["buildup", "matchday"\]\.includes\(phase\)/);
+  assert.match(html, /id="matchHubProbableModule">Modulo da confermare/);
+  assert.match(html, /id="matchHubLineupCanvas"/);
+  assert.match(html, /id="matchHubLineup2d"/);
+  assert.match(html, /id="matchHubLineupText"/);
+  assert.match(html, /function renderMatchHubProbable\(data, active\)/);
+  assert.match(html, /window\.ICV_LINEUP_DATA = safeFormation/);
   assert.match(html, /calendarDays === 1\) return "Domani"/);
   assert.match(html, /timeZone: "Europe\/Rome"/);
   assert.match(html, /\.match-hub-next\{[^}]*align-items:center[^}]*text-align:center/);

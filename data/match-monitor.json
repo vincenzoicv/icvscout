@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-11T20:52:00Z",
+  "updated_at": "2026-09-12T11:55:00Z",
   "match": {
     "home": "Sassuolo",
     "away": "Juventus",
@@ -8,6 +8,24 @@
     "competition": "Serie A"
   },
   "updates": [
+    {
+      "category": "Probabile formazione",
+      "title": "Juventus verso il 4-2-3-1 contro il Sassuolo",
+      "summary": "Sky Sport e La Gazzetta dello Sport indicano un 4-2-3-1 con Vicario; Kalulu, Bremer, Lucumi, Celik; Douglas Luiz, Koopmeiners; Conceicao, Nico Gonzalez, Alajbegovic; Kolo Muani. La formazione non è ufficiale e può cambiare dopo la conferenza stampa.",
+      "source": "Sky Sport / La Gazzetta dello Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-4/sassuolo-juventus/formazioni",
+      "published_at": "2026-09-12",
+      "significant": true
+    },
+    {
+      "category": "Recuperi",
+      "title": "Sarr recuperato: previsto in panchina contro il Sassuolo",
+      "summary": "Secondo Sky Sport, Pape Matar Sarr ha completato il recupero ed è atteso tra i disponibili per la trasferta, inizialmente in panchina. Cambiaso e McKennie restano invece meno probabili.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/video/2026/09/12/juventus-allenamento-news-1123986",
+      "published_at": "2026-09-12",
+      "significant": true
+    },
     {
       "category": "Avversaria",
       "title": "Sassuolo, Volpato indisponibile contro la Juventus",

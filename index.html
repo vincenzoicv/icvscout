@@ -268,6 +268,12 @@ main{padding-top:58px;position:relative;z-index:1;}
 .receipt-footer{display:flex;justify-content:space-between;gap:10px;font-size:8px;font-weight:800;color:#666;letter-spacing:.8px;}
 @keyframes receiptFeed{0%{opacity:0;transform:translateY(-88%)}22%{opacity:1;transform:translateY(-72%)}36%{transform:translateY(-72%)}52%{transform:translateY(-48%)}64%{transform:translateY(-48%)}82%{transform:translateY(-20%)}100%{opacity:1;transform:translateY(0)}}
 .home-panel h3{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:3px;color:var(--gold-l);text-transform:uppercase;margin-bottom:10px;}
+.home-news-panel,.home-market-panel{grid-column:span 2;}
+.home-panel-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px;}
+.home-panel-head h3{margin:0;}
+.home-panel-link{min-height:36px;padding:0;border:0;background:transparent;color:var(--gold-l);font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.2px;text-decoration:underline;text-underline-offset:4px;text-transform:uppercase;cursor:pointer;}
+.home-panel-link:hover{color:var(--white);}
+.home-panel-link:focus-visible{outline:2px solid var(--gold-l);outline-offset:4px;}
 .home-main-title{font-family:"Barlow Condensed";font-size:20px;font-weight:800;color:var(--white);line-height:1.15;margin-bottom:6px;}
 .home-text{font-size:14px;color:var(--t2);line-height:1.45;}
 .live-desk-panel{grid-column:1/-1;padding:0;min-height:auto;border-color:rgba(196,150,42,.3);}
@@ -622,6 +628,7 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .home-dash{grid-template-columns:1fr;margin-top:0;padding:0 14px;}
 .home-panel{min-height:auto;}
 .home-match-hub{grid-column:auto;min-height:0;}
+.home-news-panel,.home-market-panel{grid-column:auto;}
 .match-hub-head{align-items:flex-start;padding:14px 15px;}
 .match-hub-tools{gap:8px;}
 .match-hub-brand{align-items:flex-start;flex-direction:column;gap:7px;}
@@ -806,7 +813,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
 }
 </style>
 <link rel="stylesheet" href="/assets/featured-conference.css?v=20260831-4">
-<script defer src="/assets/featured-conference.js?v=20260831-4"></script>
+<script defer src="/assets/featured-conference.js?v=20260913-1"></script>
 <link rel="stylesheet" href="/assets/featured-highlights.css?v=20260831-1">
 <script defer src="/assets/featured-highlights.js?v=20260831-1"></script>
 <link rel="stylesheet" href="/assets/match-gallery.css?v=20260830-1">
@@ -983,6 +990,28 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
       <span class="match-hub-record" id="matchHubRecord">4 vittorie · 0 pareggi · 1 sconfitta</span>
     </footer>
   </article>
+  <div class="home-panel live-desk-panel" id="homeLiveDeskPanel">
+    <div class="live-desk-head">
+      <h3><span class="live-desk-pulse"></span>ICV Live Desk</h3>
+      <span class="live-desk-note">Aggiornato automaticamente da fonti selezionate</span>
+    </div>
+    <div class="live-desk-list" id="homeLiveDesk"><div class="home-text" style="padding:18px 20px">Caricamento aggiornamenti...</div></div>
+  </div>
+  <div class="home-panel home-news-panel">
+    <div class="home-panel-head"><h3>Ultime News</h3><button class="home-panel-link" type="button" onclick="showSection('news')">Tutte le news</button></div>
+    <div class="home-list" id="homeNewsList"><div class="home-text">Nessuna news approvata al momento.</div></div>
+  </div>
+  <div class="home-panel">
+    <h3>Scorciatoie</h3>
+    <div class="quick-actions">
+      <button onclick="showSection('news')">News</button>
+      <button onclick="location.href='/calendario-juventus'">Calendario</button>
+      <button onclick="location.href='/community'">Community</button>
+      <button onclick="location.href='/quiz'">Quiz</button>
+      <button onclick="location.href='/grafiche'">Grafiche</button>
+      <button onclick="location.href='/media'">Media</button>
+    </div>
+  </div>
   <section class="featured-highlights" id="featuredHighlights" aria-labelledby="highlightsHeading" hidden>
     <div class="highlights-header">
       <div><span class="highlights-eyebrow">Highlights</span><h2 id="highlightsHeading"></h2></div>
@@ -1050,29 +1079,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
     <p id="icvStoryError" class="icv-story-error" role="status" hidden>Il video non riesce a partire. <a href="/assets/nascita-juventus-20260831.mp4?v=1">Apri il video</a></p>
     <noscript><p><a href="/assets/nascita-juventus-20260831.mp4?v=1">Guarda Come nasce la Juventus</a></p></noscript>
   </section>
-  <div class="home-panel live-desk-panel" id="homeLiveDeskPanel">
-    <div class="live-desk-head">
-      <h3><span class="live-desk-pulse"></span>ICV Live Desk</h3>
-      <span class="live-desk-note">Aggiornato automaticamente da fonti selezionate</span>
-    </div>
-    <div class="live-desk-list" id="homeLiveDesk"><div class="home-text" style="padding:18px 20px">Caricamento aggiornamenti...</div></div>
-  </div>
-  <div class="home-panel">
-    <h3>Scorciatoie</h3>
-    <div class="quick-actions">
-      <button onclick="showSection('news')">News</button>
-      <button onclick="location.href='/calendario-juventus'">Calendario</button>
-      <button onclick="location.href='/community'">Community</button>
-      <button onclick="location.href='/quiz'">Quiz</button>
-      <button onclick="location.href='/grafiche'">Grafiche</button>
-      <button onclick="location.href='/media'">Media</button>
-    </div>
-  </div>
-  <div class="home-panel">
-    <h3>Ultime News</h3>
-    <div class="home-list" id="homeNewsList"><div class="home-text">Nessuna news approvata al momento.</div></div>
-  </div>
-  <div class="home-panel">
+  <div class="home-panel home-market-panel">
     <h3>Mercato Live</h3>
     <div class="home-list" id="homeMarketList"><div class="home-text">Nessun tema mercato pubblicato al momento.</div></div>
   </div>

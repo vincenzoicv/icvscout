@@ -6,9 +6,10 @@ import vm from 'node:vm';
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const script = readFileSync(new URL('../assets/icv-stories.js', import.meta.url), 'utf8');
 
-test('story follows gallery and precedes live desk, without autoplay or eager video source', () => {
-  const section = html.slice(html.indexOf('<section id="storieBianconere"'), html.indexOf('<div class="home-panel live-desk-panel"'));
+test('story follows gallery and the priority news area, without autoplay or eager video source', () => {
+  const section = html.slice(html.indexOf('<section id="storieBianconere"'), html.indexOf('<div class="home-panel home-market-panel"'));
   assert.ok(section.length > 0);
+  assert.ok(html.indexOf('id="homeLiveDeskPanel"') < html.indexOf('id="matchGallery"'));
   assert.ok(html.indexOf('id="matchGallery"') < html.indexOf('id="storieBianconere"'));
   const tag = section.match(/<video\b[^>]+>/)[0];
   assert.match(tag, /preload="none"/);

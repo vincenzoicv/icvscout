@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-12T19:46:50Z",
+  "updated_at": "2026-09-13T10:46:54Z",
   "match": {
     "home": "Sassuolo",
     "away": "Juventus",
@@ -12,7 +12,7 @@
     "status": "Probabile",
     "source": "Sky Sport / La Gazzetta dello Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-4/sassuolo-juventus/formazioni",
-    "updated_at": "2026-09-12T19:46:50Z",
+    "updated_at": "2026-09-13T10:46:54Z",
     "players": [
       { "name": "Vicario", "x": 0, "z": 6.2 },
       { "name": "Kalulu", "x": -3.25, "z": 3.25 },
@@ -27,7 +27,8 @@
       { "name": "Kolo Muani", "x": 0, "z": -5.05 }
     ],
     "details": [
-      { "label": "Ballottaggio", "text": "Nico Gonzalez-Woltemade (60-40)" },
+      { "label": "Ballottaggio", "text": "Lucumi-Kelly (60-40)" },
+      { "label": "Ballottaggio", "text": "Alajbegovic-Woltemade (55-45)" },
       { "label": "Disponibile", "text": "Sarr" },
       { "label": "Da valutare", "text": "Cambiaso" },
       { "label": "Difficilmente", "text": "McKennie" },
@@ -47,7 +48,7 @@
     {
       "category": "Probabile formazione",
       "title": "Juventus verso il 4-2-3-1 contro il Sassuolo",
-      "summary": "Sky Sport e La Gazzetta dello Sport indicano un 4-2-3-1 con Vicario; Kalulu, Bremer, Lucumi, Celik; Douglas Luiz, Koopmeiners; Conceicao, Nico Gonzalez, Alajbegovic; Kolo Muani. La Gazzetta segnala ora il ballottaggio Nico Gonzalez-Woltemade al 60-40. La formazione non è ufficiale.",
+      "summary": "Sky Sport e La Gazzetta dello Sport indicano un 4-2-3-1 con Vicario; Kalulu, Bremer, Lucumi, Celik; Douglas Luiz, Koopmeiners; Conceicao, Nico Gonzalez, Alajbegovic; Kolo Muani. Nell'aggiornamento del 13 settembre La Gazzetta segnala i ballottaggi Lucumi-Kelly (60-40) e Alajbegovic-Woltemade (55-45). La formazione non è ufficiale.",
       "source": "Sky Sport / La Gazzetta dello Sport",
       "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-4/sassuolo-juventus/formazioni",
       "published_at": "2026-09-12",

@@ -344,7 +344,8 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
   assert.match(page, /data-calendar-filter="europa"/);
   assert.match(page, /body\.light\{--bg:#f5f5f2/);
   assert.match(page, /localStorage\.getItem\('icv-theme'\)/);
-  assert.match(page, /function toggleTheme\(\)/);
+  assert.match(page, /section-pages\.js\?v=20260913-1/);
+  assert.match(page, /id="pageTheme"/);
   assert.match(page, /aria-label="Cambia tema"/);
   assert.match(page, /body\.light h1\{background:linear-gradient\(135deg,#181713/);
   assert.doesNotMatch(page, /orari in attesa UEFA|non sono ancora abbinate|Finestre della fase campionato/);

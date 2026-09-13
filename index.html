@@ -1614,7 +1614,7 @@ var ICV_MATCH_FALLBACKS = [
   {date:"2026-08-23T18:30:00+02:00",status:"finished",competition:"Serie A",home:"Frosinone",away:"Juventus",homeScore:0,awayScore:1,venue:"Stadio Benito Stirpe",matchday:1,scorers:"Bremer 22'"},
   {date:"2026-08-29T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Parma Calcio 1913",homeScore:2,awayScore:0,venue:"Allianz Stadium · Torino",matchday:2,scorers:"González · Koopmeiners",mvp:"González"},
   {date:"2026-09-06T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"AC Milan",homeScore:1,awayScore:1,venue:"Allianz Stadium · Torino",matchday:3,scorers:"Gatti · Cisse",mvp:"Gatti",worst:"Kolo Muani"},
-  {date:"2026-09-13T20:45:00+02:00",status:"scheduled",competition:"Serie A",home:"US Sassuolo Calcio",away:"Juventus FC",matchday:4},
+  {date:"2026-09-13T20:45:00+02:00",status:"finished",competition:"Serie A",home:"US Sassuolo Calcio",away:"Juventus FC",homeScore:3,awayScore:2,venue:"Mapei Stadium · Reggio Emilia",matchday:4,scorers:"Esposito 65' · Zhegrova 82' · Bowie 89' · Zhegrova 90+1' · Adzic 90+4'",mvp:"Zhegrova"},
   {date:"2026-09-20T18:00:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Atalanta BC",venue:"Allianz Stadium · Torino",matchday:5},
   {date:"2026-10-11T20:45:00+02:00",status:"scheduled",competition:"Serie A",home:"Cagliari Calcio",away:"Juventus FC",matchday:6},
   {date:"2026-10-18T20:45:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Lazio",venue:"Allianz Stadium · Torino",matchday:7},
@@ -1634,6 +1634,17 @@ var ICV_MATCH_FALLBACKS = [
 ];
 
 var ICV_VERIFIED_MATCH_DATA = {
+  "558608": {
+    scorers:"Esposito 65' · Zhegrova 82' · Bowie 89' · Zhegrova 90+1' · Adzic 90+4'",
+    mvp:"Zhegrova",
+    goals:[
+      {kind:"goal",minute:65,injuryTime:null,player:"Esposito",team:"US Sassuolo Calcio",type:"REGULAR"},
+      {kind:"goal",minute:82,injuryTime:null,player:"Zhegrova",team:"Juventus FC",type:"REGULAR"},
+      {kind:"goal",minute:89,injuryTime:null,player:"Bowie",team:"US Sassuolo Calcio",type:"REGULAR"},
+      {kind:"goal",minute:90,injuryTime:1,player:"Zhegrova",team:"Juventus FC",type:"REGULAR"},
+      {kind:"goal",minute:90,injuryTime:4,player:"Adzic",team:"US Sassuolo Calcio",type:"REGULAR"}
+    ]
+  },
   "558618": {
     scorers:"Gatti · Cisse",
     mvp:"Gatti",

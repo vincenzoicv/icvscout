@@ -39,6 +39,21 @@ test("Juventus-Milan conserva il pareggio, i marcatori e Gatti MVP", async () =>
   assert.ok(match.goals.every(goal => goal.minute === null));
 });
 
+test("Sassuolo-Juventus conserva il 3-2, la doppietta di Zhegrova e i minuti", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("var ICV_MATCH_FALLBACKS ="), html.indexOf("function allMatchHubRows("));
+  const { fallbacks, normalize, label } = new Function(source + ";return {fallbacks:ICV_MATCH_FALLBACKS,normalize:normalizeMatchHubRows,label:matchHubEventLabel}")();
+  const fallback = fallbacks.find(match => match.matchday === 4 && match.competition === "Serie A");
+  assert.equal(fallback.status, "finished");
+  assert.equal(fallback.homeScore, 3);
+  assert.equal(fallback.awayScore, 2);
+  assert.equal(fallback.mvp, "Zhegrova");
+  const [match] = normalize([{match_id:"558608", status:"finished", source_payload:{homeTeam:{name:"US Sassuolo Calcio"},awayTeam:{name:"Juventus FC"},score:{fullTime:{home:3,away:2}},goals:[]}}]);
+  assert.equal(match.scorers, "Esposito 65' · Zhegrova 82' · Bowie 89' · Zhegrova 90+1' · Adzic 90+4'");
+  assert.equal(match.mvp, "Zhegrova");
+  assert.deepEqual(match.goals.map(label), ["65' Esposito", "82' Zhegrova", "89' Bowie", "90+1' Zhegrova", "90+4' Adzic"]);
+});
+
 test("i marcatori sono sotto il risultato e spariscono senza dati", async () => {
   const html = await read("index.html");
   assert.match(html, /id="matchHubVersus"[\s\S]*?id="matchHubResultScorers"[\s\S]*?<\/section>/);
@@ -54,12 +69,12 @@ test("i marcatori sono sotto il risultato e spariscono senza dati", async () => 
   assert.equal(element.hidden, true);
 });
 
-test("dopo Milan le prossime tre includono il debutto in Europa League", async () => {
+test("dopo Sassuolo le prossime tre iniziano dal debutto in Europa League", async () => {
   const html = await read("index.html");
   const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function matchHubFreshness("));
   const panel = {hidden:true};
   const box = {innerHTML:""};
-  class MatchDate extends Date { static now() { return Date.parse("2026-09-06T21:00:00Z"); } }
+  class MatchDate extends Date { static now() { return Date.parse("2026-09-13T21:00:00Z"); } }
   const {allRows, render} = new Function("document", "Date", source + ";return {allRows:allMatchHubRows,render:renderMatchHubUpcoming}")({
     getElementById:id => id === "matchHubUpcomingPanel" ? panel : box,
   }, MatchDate);
@@ -69,8 +84,9 @@ test("dopo Milan le prossime tre includono il debutto in Europa League", async (
   render(allRows([]));
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.match(box.innerHTML, /Sassuolo[\s\S]*NEC Nijmegen[\s\S]*Atalanta/);
+  assert.match(box.innerHTML, /NEC Nijmegen[\s\S]*Atalanta[\s\S]*Cagliari/);
   assert.match(box.innerHTML, /Europa League/);
+  assert.doesNotMatch(box.innerHTML, /Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Milan/);
   assert.doesNotMatch(box.innerHTML, /Parma/);
   const api = await read("functions/api/[[path]].js");

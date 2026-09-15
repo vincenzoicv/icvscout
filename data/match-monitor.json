@@ -1,93 +1,30 @@
 {
   "version": 1,
-  "updated_at": "2026-09-13T10:46:54Z",
+  "updated_at": "2026-09-15T19:00:00Z",
   "match": {
-    "home": "Sassuolo",
-    "away": "Juventus",
-    "kickoff": "2026-09-13T18:45:00Z",
-    "competition": "Serie A"
+    "home": "Juventus",
+    "away": "NEC Nijmegen",
+    "kickoff": "2026-09-17T19:00:00Z",
+    "competition": "Europa League"
   },
-  "formation": {
-    "module": "4-2-3-1",
-    "status": "Probabile",
-    "source": "Sky Sport / La Gazzetta dello Sport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-4/sassuolo-juventus/formazioni",
-    "updated_at": "2026-09-13T10:46:54Z",
-    "players": [
-      { "name": "Vicario", "x": 0, "z": 6.2 },
-      { "name": "Kalulu", "x": -3.25, "z": 3.25 },
-      { "name": "Bremer", "x": 1.1, "z": 3.25 },
-      { "name": "Lucumi", "x": -1.1, "z": 3.25 },
-      { "name": "Celik", "x": 3.25, "z": 3.25 },
-      { "name": "Douglas Luiz", "x": -1.45, "z": 0.45 },
-      { "name": "Koopmeiners", "x": 1.45, "z": 0.45 },
-      { "name": "Conceicao", "x": 2.85, "z": -2.35 },
-      { "name": "Nico Gonzalez", "x": 0, "z": -2.35 },
-      { "name": "Alajbegovic", "x": -2.85, "z": -2.35 },
-      { "name": "Kolo Muani", "x": 0, "z": -5.05 }
-    ],
-    "details": [
-      { "label": "Ballottaggio", "text": "Lucumi-Kelly (60-40)" },
-      { "label": "Ballottaggio", "text": "Alajbegovic-Woltemade (55-45)" },
-      { "label": "Disponibile", "text": "Sarr" },
-      { "label": "Da valutare", "text": "Cambiaso" },
-      { "label": "Difficilmente", "text": "McKennie" },
-      { "label": "Indisponibili", "text": "Locatelli, Boga" }
-    ]
-  },
+  "formation": null,
   "updates": [
     {
-      "category": "Conferenza stampa",
-      "title": "Spalletti: Sarr disponibile, McKennie e Cambiaso difficilmente in campo",
-      "summary": "Spalletti ha confermato Sarr tra i disponibili. McKennie difficilmente ci sarà, mentre Cambiaso farà un provino domattina. Woltemade è già inserito nel gruppo e, secondo il tecnico, sarà della partita prima o dopo. Senza Locatelli la Juventus potrà comunque cambiare sistema tattico durante la gara.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/la-conferenza-stampa-di-luciano-spalletti-alla-vigilia-di-sassuolo-juventus",
-      "published_at": "2026-09-12",
-      "significant": true
-    },
-    {
-      "category": "Probabile formazione",
-      "title": "Juventus verso il 4-2-3-1 contro il Sassuolo",
-      "summary": "Sky Sport e La Gazzetta dello Sport indicano un 4-2-3-1 con Vicario; Kalulu, Bremer, Lucumi, Celik; Douglas Luiz, Koopmeiners; Conceicao, Nico Gonzalez, Alajbegovic; Kolo Muani. Nell'aggiornamento del 13 settembre La Gazzetta segnala i ballottaggi Lucumi-Kelly (60-40) e Alajbegovic-Woltemade (55-45). La formazione non è ufficiale.",
-      "source": "Sky Sport / La Gazzetta dello Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-4/sassuolo-juventus/formazioni",
-      "published_at": "2026-09-12",
-      "significant": true
-    },
-    {
       "category": "Recuperi",
-      "title": "Sarr recuperato e ufficialmente a disposizione",
-      "summary": "Spalletti ha confermato che Pape Matar Sarr sarà a disposizione contro il Sassuolo. Il centrocampista ha completato il recupero ed è atteso inizialmente in panchina.",
-      "source": "Juventus.com / Sky Sport",
-      "source_url": "https://www.juventus.com/it/news/articoli/la-conferenza-stampa-di-luciano-spalletti-alla-vigilia-di-sassuolo-juventus",
-      "published_at": "2026-09-12",
+      "title": "McKennie e Cambiaso sono tornati ad allenarsi in gruppo",
+      "summary": "Sky Sport riferisce che entrambi hanno ripreso il lavoro con la squadra. Filtra ottimismo per una loro convocazione contro il N.E.C., ma la disponibilita non e ancora stata ufficializzata dalla Juventus.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/europa-league/2026/09/15/juve-mckennie-cambiaso-news",
+      "published_at": "2026-09-15T13:34:00+02:00",
       "significant": true
     },
     {
-      "category": "Avversaria",
-      "title": "Sassuolo, Volpato indisponibile contro la Juventus",
-      "summary": "Il Sassuolo ha comunicato una lesione di grado moderato al flessore della gamba destra per Cristian Volpato. L'attaccante ha già iniziato il percorso riabilitativo.",
-      "source": "SassuoloCalcio.it",
-      "source_url": "https://www.sassuolocalcio.it/prima-squadra/report-medico-cristian-volpato/",
-      "published_at": "2026-09-09",
-      "significant": true
-    },
-    {
-      "category": "Ufficiale",
-      "title": "Designata la squadra arbitrale di Sassuolo-Juventus",
-      "summary": "La gara sarà diretta da Juan Luca Sacchi, assistito da Imperiale e Miniutti. Zufferli sarà il quarto ufficiale, Ghersini al VAR e Piccinini all'AVAR.",
-      "source": "Lega Serie A",
-      "source_url": "https://en.legaseriea.it/serie-a/news/the-referees-for-the-4th-round-x3477",
-      "published_at": "2026-09-09",
-      "significant": true
-    },
-    {
-      "category": "Infortuni",
-      "title": "Locatelli e Boga indisponibili per Sassuolo-Juventus",
-      "summary": "Bollettino ufficiale Juventus: Locatelli è stato operato al menisco esterno del ginocchio destro e ha iniziato la riabilitazione. Boga ha riportato una lesione di medio grado del bicipite femorale sinistro e sarà rivalutato tra due settimane.",
+      "category": "Lista UEFA",
+      "title": "Zhegrova non e utilizzabile in Europa League",
+      "summary": "La lista ufficiale consegnata dalla Juventus alla UEFA non comprende Edon Zhegrova. L'attaccante, autore della doppietta contro il Sassuolo, non potra quindi essere impiegato contro il N.E.C.",
       "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/bollettino-medico-le-condizioni-di-locatelli-e-boga",
-      "published_at": "2026-09-08",
+      "source_url": "https://www.juventus.com/it/news/articoli/ufficiale-la-lista-uefa-della-juventus-per-l-europa-league-2026-27",
+      "published_at": "2026-09-02T19:00:00+02:00",
       "significant": true
     }
   ]

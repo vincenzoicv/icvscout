@@ -30,13 +30,15 @@ test('monitor registry validates empty and populated states',()=>{
   assert.ok(Number.isFinite(Date.parse(monitor.updated_at)));
   for(const key of ['home','away','competition']) assert.equal(typeof monitor.match[key],'string');
   assert.ok(Number.isFinite(Date.parse(monitor.match.kickoff)));
-  assert.equal(typeof monitor.formation.module,'string');
-  assert.equal(monitor.formation.players.length,11);
-  assert.equal(new Set(monitor.formation.players.map(player=>player.name)).size,11);
-  for(const player of monitor.formation.players){
-    assert.equal(typeof player.name,'string');
-    assert.ok(Number.isFinite(player.x));
-    assert.ok(Number.isFinite(player.z));
+  if(monitor.formation!==null){
+    assert.equal(typeof monitor.formation.module,'string');
+    assert.equal(monitor.formation.players.length,11);
+    assert.equal(new Set(monitor.formation.players.map(player=>player.name)).size,11);
+    for(const player of monitor.formation.players){
+      assert.equal(typeof player.name,'string');
+      assert.ok(Number.isFinite(player.x));
+      assert.ok(Number.isFinite(player.z));
+    }
   }
   for(const update of monitor.updates){
     for(const key of ['category','title','summary','source','source_url','published_at']) assert.equal(typeof update[key],'string');

@@ -16,7 +16,7 @@ test('editorial pages share the same complete navigation and brand treatment',()
       assert.match(html,new RegExp(`href="${href.replace(/[?]/g,'\\?')}"`));
     }
     assert.match(html,/id="pageTheme"/);
-    assert.match(html,/section-pages\.css\?v=20260913-1/);
+    assert.match(html,/section-pages\.css\?v=20260916-1/);
     assert.match(html,/section-pages\.js\?v=20260913-1/);
   }
 });
@@ -29,4 +29,14 @@ test('shared header stays visible and synchronizes the browser theme color',()=>
   assert.match(css,/backdrop-filter:blur\(20px\)/);
   assert.match(js,/replace\(\/\\\.html\$\//);
   assert.match(js,/getElementById\('themeColor'\)/);
+});
+
+test('main editorial pages expose the Google preferred-source action',()=>{
+  const pages=['index.html',...editorialPages];
+  for(const page of pages){
+    const html=file(page);
+    assert.match(html,/https:\/\/www\.google\.com\/preferences\/source\?q=ilcalciodivince\.com/);
+    assert.match(html,/Segui su Google/);
+    assert.match(html,/rel="noopener noreferrer"/);
+  }
 });

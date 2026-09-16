@@ -117,8 +117,8 @@ test('new pages keep semantic navigation, stats deep link and existing privacy-a
   assert.match(pageCss,/border-radius:999px/);
   assert.match(pageCss,/min-height:44px/);
   assert.match(pageCss,/prefers-reduced-motion:reduce/);
-  assert.match(file('classifica.html'),/section-pages\.css\?v=20260913-1/);
-  assert.match(file('media.html'),/section-pages\.css\?v=20260913-1/);
+  assert.match(file('classifica.html'),/section-pages\.css\?v=20260916-1/);
+  assert.match(file('media.html'),/section-pages\.css\?v=20260916-1/);
   for(const name of ['section-pages','standings-page','media-page','featured-conference','match-gallery'])assert.doesNotThrow(()=>new vm.Script(file('assets/'+name+'.js')));
 });
 test('new official kickoffs replace stale provider placeholders',async(t)=>{

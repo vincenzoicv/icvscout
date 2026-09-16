@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-15T19:00:00Z",
+  "updated_at": "2026-09-16T14:55:24Z",
   "match": {
     "home": "Juventus",
     "away": "NEC Nijmegen",
@@ -10,12 +10,12 @@
   "formation": null,
   "updates": [
     {
-      "category": "Recuperi",
-      "title": "McKennie e Cambiaso sono tornati ad allenarsi in gruppo",
-      "summary": "Sky Sport riferisce che entrambi hanno ripreso il lavoro con la squadra. Filtra ottimismo per una loro convocazione contro il N.E.C., ma la disponibilita non e ancora stata ufficializzata dalla Juventus.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/europa-league/2026/09/15/juve-mckennie-cambiaso-news",
-      "published_at": "2026-09-15T13:34:00+02:00",
+      "category": "Conferenza stampa",
+      "title": "Spalletti annuncia McKennie titolare contro il N.E.C.",
+      "summary": "Nella conferenza della vigilia Luciano Spalletti ha confermato che Weston McKennie partira titolare. Il centrocampista rientra quindi direttamente nell'undici iniziale dopo essere tornato ad allenarsi in gruppo.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/video/conferenze-stampa",
+      "published_at": "2026-09-16T16:45:00+02:00",
       "significant": true
     },
     {

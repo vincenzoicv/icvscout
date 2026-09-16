@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-16T17:34:43Z",
+  "updated_at": "2026-09-16T20:01:45Z",
   "match": {
     "home": "Juventus",
     "away": "NEC Nijmegen",
@@ -34,6 +34,15 @@
     ]
   },
   "updates": [
+    {
+      "category": "Indicazioni tattiche",
+      "title": "Spalletti chiede compattezza e ritmo mentale contro il N.E.C.",
+      "summary": "Nel resoconto ufficiale della conferenza Spalletti ha indicato le priorita: squadra piu compatta, attenzione alle linee di passaggio e capacita di alternare pressione e blocco. Il tecnico ha avvertito che il N.E.C. segna in media due reti a partita e attacca con esterni a piede invertito, citando Tadic tra i pericoli principali.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/le-parole-di-kalulu-e-spalletti-alla-vigilia-di-juventus-nec",
+      "published_at": "2026-09-16",
+      "significant": true
+    },
     {
       "category": "Probabile formazione",
       "title": "Juventus verso il 3-4-2-1 contro il N.E.C.",

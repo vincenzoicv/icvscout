@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-16T14:55:24Z",
+  "updated_at": "2026-09-16T15:04:37Z",
   "match": {
     "home": "Juventus",
     "away": "NEC Nijmegen",
@@ -11,11 +11,11 @@
   "updates": [
     {
       "category": "Conferenza stampa",
-      "title": "Spalletti annuncia McKennie titolare contro il N.E.C.",
-      "summary": "Nella conferenza della vigilia Luciano Spalletti ha confermato che Weston McKennie partira titolare. Il centrocampista rientra quindi direttamente nell'undici iniziale dopo essere tornato ad allenarsi in gruppo.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/video/conferenze-stampa",
-      "published_at": "2026-09-16T16:45:00+02:00",
+      "title": "Spalletti conferma McKennie e Gatti titolari contro il N.E.C.",
+      "summary": "Spalletti ha annunciato McKennie e Gatti dal primo minuto. Cambiaso si e allenato con il gruppo ma ha avvertito un leggero fastidio: la decisione sul suo impiego sara presa giovedi mattina.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/europa-league/2026/09/16/juventus-nec-spalletti-video-conferenza",
+      "published_at": "2026-09-16T15:53:17+02:00",
       "significant": true
     },
     {

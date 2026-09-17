@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-16T20:01:45Z",
+  "updated_at": "2026-09-17T16:00:33Z",
   "match": {
     "home": "Juventus",
     "away": "NEC Nijmegen",
@@ -30,10 +30,20 @@
       { "label": "Confermati", "text": "Gatti e McKennie titolari" },
       { "label": "Ballottaggio", "text": "Sarr-Koopmeiners" },
       { "label": "Squalificato", "text": "Kelly" },
-      { "label": "Fuori lista", "text": "Zhegrova" }
+      { "label": "Fuori lista", "text": "Zhegrova" },
+      { "label": "Indisponibile", "text": "Cambiaso" }
     ]
   },
   "updates": [
+    {
+      "category": "Convocati",
+      "title": "McKennie convocato, Cambiaso assente contro il N.E.C.",
+      "summary": "La Juventus ha pubblicato l'elenco ufficiale dei 20 convocati. McKennie torna a disposizione ed e stato annunciato titolare da Spalletti; Cambiaso non compare nella lista per il persistente fastidio alla caviglia. Assenti anche Kelly, squalificato, e Zhegrova, fuori dalla lista UEFA.",
+      "source": "Juventus.com / ANSA",
+      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-juventus-nec-i-convocati",
+      "published_at": "2026-09-17",
+      "significant": true
+    },
     {
       "category": "Indicazioni tattiche",
       "title": "Spalletti chiede compattezza e ritmo mentale contro il N.E.C.",

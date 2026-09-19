@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-19T12:01:38Z",
+  "updated_at": "2026-09-19T17:01:09Z",
   "match": {
     "home": "Juventus FC",
     "away": "Atalanta BC",
@@ -9,6 +9,15 @@
   },
   "formation": null,
   "updates": [
+    {
+      "category": "Avversario",
+      "title": "Atalanta, Kossounou fuori: gioca Kristensen",
+      "summary": "Maurizio Sarri ha confermato l'assenza di Kossounou e l'impiego di Kristensen nella difesa a quattro. La notizia e riportata da ANSA con le parole del tecnico ed e confermata dall'ultimo aggiornamento di Sky Sport.",
+      "source": "ANSA / Sky Sport",
+      "source_url": "https://www.ansa.it/sito/notizie/sport/calcio/2026/09/19/atalanta-sarri-con-la-juve-non-e-partita-tra-spalletti-e-me_5ac28d22-15bc-4783-accb-7d65e4d7b81c.html",
+      "published_at": "2026-09-19T15:35:00+02:00",
+      "significant": true
+    },
     {
       "category": "Probabile formazione",
       "title": "Juventus verso il 3-4-2-1 contro l'Atalanta",

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-17T21:01:04Z",
+  "updated_at": "2026-09-19T12:01:38Z",
   "match": {
     "home": "Juventus FC",
     "away": "Atalanta BC",
@@ -8,5 +8,15 @@
     "competition": "Serie A"
   },
   "formation": null,
-  "updates": []
+  "updates": [
+    {
+      "category": "Probabile formazione",
+      "title": "Juventus verso il 3-4-2-1 contro l'Atalanta",
+      "summary": "Sky Sport e La Gazzetta dello Sport indicano il 3-4-2-1. Vicario, Bremer, Lucumi, Douglas Luiz, Sarr e Kolo Muani sono tra i favoriti; restano da chiarire i ballottaggi Lucumi-Kelly, Sarr-Koopmeiners e Kolo Muani-Woltemade. Sky propone Nico Gonzalez e Alajbegovic alle spalle della punta, mentre la Gazzetta segnala il possibile ritorno di Conceicao dal primo minuto: lo schieramento completo non e ancora concorde.",
+      "source": "Sky Sport / La Gazzetta dello Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/2026/09/18/probabili-formazioni-serie-a-giornata-5-ultime-news",
+      "published_at": "2026-09-19T12:01:38Z",
+      "significant": true
+    }
+  ]
 }

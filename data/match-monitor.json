@@ -1,84 +1,12 @@
 {
   "version": 1,
-  "updated_at": "2026-09-17T16:00:33Z",
+  "updated_at": "2026-09-17T21:01:04Z",
   "match": {
-    "home": "Juventus",
-    "away": "NEC Nijmegen",
-    "kickoff": "2026-09-17T19:00:00Z",
-    "competition": "Europa League"
+    "home": "Juventus FC",
+    "away": "Atalanta BC",
+    "kickoff": "2026-09-20T16:00:00Z",
+    "competition": "Serie A"
   },
-  "formation": {
-    "module": "3-4-2-1",
-    "status": "Probabile",
-    "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/europa-league/2026/09/16/juventus-nec-probabili-formazioni-1-giornata",
-    "updated_at": "2026-09-16T17:34:43Z",
-    "players": [
-      { "name": "Vicario", "x": 0, "z": 6.2 },
-      { "name": "Gatti", "x": -2.8, "z": 3.25 },
-      { "name": "Bremer", "x": 0, "z": 3.25 },
-      { "name": "Lucumi", "x": 2.8, "z": 3.25 },
-      { "name": "Kalulu", "x": -3.4, "z": 0.35 },
-      { "name": "Douglas Luiz", "x": -1.2, "z": 0.35 },
-      { "name": "Sarr", "x": 1.2, "z": 0.35 },
-      { "name": "Celik", "x": 3.4, "z": 0.35 },
-      { "name": "McKennie", "x": -1.6, "z": -2.55 },
-      { "name": "Kolo Muani", "x": 1.6, "z": -2.55 },
-      { "name": "Woltemade", "x": 0, "z": -5.1 }
-    ],
-    "details": [
-      { "label": "Confermati", "text": "Gatti e McKennie titolari" },
-      { "label": "Ballottaggio", "text": "Sarr-Koopmeiners" },
-      { "label": "Squalificato", "text": "Kelly" },
-      { "label": "Fuori lista", "text": "Zhegrova" },
-      { "label": "Indisponibile", "text": "Cambiaso" }
-    ]
-  },
-  "updates": [
-    {
-      "category": "Convocati",
-      "title": "McKennie convocato, Cambiaso assente contro il N.E.C.",
-      "summary": "La Juventus ha pubblicato l'elenco ufficiale dei 20 convocati. McKennie torna a disposizione ed e stato annunciato titolare da Spalletti; Cambiaso non compare nella lista per il persistente fastidio alla caviglia. Assenti anche Kelly, squalificato, e Zhegrova, fuori dalla lista UEFA.",
-      "source": "Juventus.com / ANSA",
-      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-juventus-nec-i-convocati",
-      "published_at": "2026-09-17",
-      "significant": true
-    },
-    {
-      "category": "Indicazioni tattiche",
-      "title": "Spalletti chiede compattezza e ritmo mentale contro il N.E.C.",
-      "summary": "Nel resoconto ufficiale della conferenza Spalletti ha indicato le priorita: squadra piu compatta, attenzione alle linee di passaggio e capacita di alternare pressione e blocco. Il tecnico ha avvertito che il N.E.C. segna in media due reti a partita e attacca con esterni a piede invertito, citando Tadic tra i pericoli principali.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/le-parole-di-kalulu-e-spalletti-alla-vigilia-di-juventus-nec",
-      "published_at": "2026-09-16",
-      "significant": true
-    },
-    {
-      "category": "Probabile formazione",
-      "title": "Juventus verso il 3-4-2-1 contro il N.E.C.",
-      "summary": "Sky Sport indica Vicario; Gatti, Bremer, Lucumi; Kalulu, Douglas Luiz, Sarr, Celik; McKennie, Kolo Muani; Woltemade. Gatti e McKennie sono stati confermati titolari da Spalletti; Sarr resta in ballottaggio con Koopmeiners. La formazione non e ufficiale.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/europa-league/2026/09/16/juventus-nec-probabili-formazioni-1-giornata",
-      "published_at": "2026-09-16T17:31:00+02:00",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Spalletti conferma McKennie e Gatti titolari contro il N.E.C.",
-      "summary": "Spalletti ha annunciato McKennie e Gatti dal primo minuto. Cambiaso si e allenato con il gruppo ma ha avvertito un leggero fastidio: la decisione sul suo impiego sara presa giovedi mattina.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/europa-league/2026/09/16/juventus-nec-spalletti-video-conferenza",
-      "published_at": "2026-09-16T15:53:17+02:00",
-      "significant": true
-    },
-    {
-      "category": "Lista UEFA",
-      "title": "Zhegrova non e utilizzabile in Europa League",
-      "summary": "La lista ufficiale consegnata dalla Juventus alla UEFA non comprende Edon Zhegrova. L'attaccante, autore della doppietta contro il Sassuolo, non potra quindi essere impiegato contro il N.E.C.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/ufficiale-la-lista-uefa-della-juventus-per-l-europa-league-2026-27",
-      "published_at": "2026-09-02T19:00:00+02:00",
-      "significant": true
-    }
-  ]
+  "formation": null,
+  "updates": []
 }

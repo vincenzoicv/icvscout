@@ -54,6 +54,18 @@ test("Sassuolo-Juventus conserva il 3-2, la doppietta di Zhegrova e i minuti", a
   assert.deepEqual(match.goals.map(label), ["65' Esposito", "82' Zhegrova", "89' Bowie", "90+1' Zhegrova", "90+4' Adzic"]);
 });
 
+test("Juventus-NEC conserva il 5-0 e tutti i marcatori con i minuti", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("var ICV_MATCH_FALLBACKS ="), html.indexOf("function allMatchHubRows("));
+  const { fallbacks } = new Function(source + ";return {fallbacks:ICV_MATCH_FALLBACKS}")();
+  const match = fallbacks.find(item => item.matchday === 1 && item.competition === "Europa League");
+  assert.equal(match.status, "finished");
+  assert.equal(match.homeScore, 5);
+  assert.equal(match.awayScore, 0);
+  assert.equal(match.scorers, "Nico González 9' · Alajbegovic 24' · Woltemade 35' (rig.) · Celik 75' · Kolo Muani 82'");
+  assert.equal(match.mvp, undefined);
+});
+
 test("i marcatori sono sotto il risultato e spariscono senza dati", async () => {
   const html = await read("index.html");
   assert.match(html, /id="matchHubVersus"[\s\S]*?id="matchHubResultScorers"[\s\S]*?<\/section>/);
@@ -69,23 +81,22 @@ test("i marcatori sono sotto il risultato e spariscono senza dati", async () => 
   assert.equal(element.hidden, true);
 });
 
-test("dopo Sassuolo le prossime tre iniziano dal debutto in Europa League", async () => {
+test("dopo il NEC le prossime tre iniziano da Juventus-Atalanta", async () => {
   const html = await read("index.html");
   const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function matchHubFreshness("));
   const panel = {hidden:true};
   const box = {innerHTML:""};
-  class MatchDate extends Date { static now() { return Date.parse("2026-09-13T21:00:00Z"); } }
+  class MatchDate extends Date { static now() { return Date.parse("2026-09-17T21:15:00Z"); } }
   const {allRows, render} = new Function("document", "Date", source + ";return {allRows:allMatchHubRows,render:renderMatchHubUpcoming}")({
     getElementById:id => id === "matchHubUpcomingPanel" ? panel : box,
   }, MatchDate);
   const merged = allRows([{match_id:'uel-nec',match_date:'2026-09-17T19:00:00Z',status:'scheduled',competition:'Europa League',source_payload:{homeTeam:{name:'Juventus FC'},awayTeam:{name:'N.E.C.'},matchday:1}}]);
   assert.equal(merged.filter(match => match.date === '2026-09-17T19:00:00Z').length, 1);
-  assert.equal(merged.find(match => match.matchId === 'uel-nec').away, 'N.E.C.');
+  assert.equal(merged.find(match => match.date === '2026-09-17T19:00:00Z').status, 'finished');
   render(allRows([]));
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.match(box.innerHTML, /NEC Nijmegen[\s\S]*Atalanta[\s\S]*Cagliari/);
-  assert.match(box.innerHTML, /Europa League/);
+  assert.match(box.innerHTML, /Atalanta[\s\S]*Cagliari[\s\S]*Celta Vigo/);
   assert.doesNotMatch(box.innerHTML, /Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Milan/);
   assert.doesNotMatch(box.innerHTML, /Parma/);
@@ -473,7 +484,7 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     assert.match(previews.europaPreview.innerHTML, /1ª giornata[\s\S]*8ª giornata/);
     assert.doesNotMatch(previews.europaPreview.innerHTML, /Serie A|orario da confermare/);
     assert.doesNotMatch(previews.matchPreview.innerHTML, /NEC Nijmegen|Rennes/);
-    assert.match(previews.allPreview.innerHTML, /Juventus - Milan[\s\S]*Sassuolo - Juventus[\s\S]*Juventus - NEC Nijmegen[\s\S]*Juventus - Atalanta/);
+    assert.match(previews.allPreview.innerHTML, /Sassuolo - Juventus[\s\S]*Juventus - NEC Nijmegen[\s\S]*Juventus - Atalanta/);
     assert.match(previews.allPreview.innerHTML, /Prossima partita/);
   } finally {
     globalThis.fetch = originalFetch;

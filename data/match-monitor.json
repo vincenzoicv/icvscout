@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-19T17:01:09Z",
+  "updated_at": "2026-09-19T18:29:26Z",
   "match": {
     "home": "Juventus FC",
     "away": "Atalanta BC",
@@ -9,6 +9,15 @@
   },
   "formation": null,
   "updates": [
+    {
+      "category": "Infortunio",
+      "title": "Grabara, lesione del crociato anteriore",
+      "summary": "Gli esami svolti al J|medical hanno evidenziato una lesione del legamento crociato anteriore del ginocchio destro. Grabara sara sottoposto nei prossimi giorni a consulti ortopedici per definire l'iter terapeutico; la Juventus non ha ancora comunicato tempi di recupero.",
+      "source": "Juventus",
+      "source_url": "https://www.juventus.com/en/news/articles/medical-update-kamil-grabara-19-09-26",
+      "published_at": "2026-09-19T18:37:00+02:00",
+      "significant": true
+    },
     {
       "category": "Avversario",
       "title": "Atalanta, Kossounou fuori: gioca Kristensen",

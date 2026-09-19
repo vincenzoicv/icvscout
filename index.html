@@ -214,7 +214,9 @@ main{padding-top:58px;position:relative;z-index:1;}
 .lineup-view-toggle button:focus-visible{outline:2px solid var(--gold-l);outline-offset:2px;}
 .lineup-view-toggle button.is-active{background:var(--gold);color:#0b0b0b;box-shadow:0 4px 12px rgba(0,0,0,.2);}
 .match-hub-lineup-stage{position:relative;width:calc(100% + 40px);aspect-ratio:16/8.2;margin:0 -20px;overflow:hidden;background:#06110c;isolation:isolate;}
+.match-hub-lineup-stage.is-graphic{width:min(100%,860px);aspect-ratio:1280/1206;margin:0 auto;background:#050505;}
 .match-hub-lineup-stage::after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 22px 38px rgba(0,0,0,.28),inset 0 -24px 42px rgba(0,0,0,.38);z-index:3;}
+.match-hub-lineup-graphic{position:absolute;inset:0;display:none;width:100%;height:100%;object-fit:contain;background:#050505;}
 .match-hub-lineup-canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab;}
 .match-hub-lineup-canvas:active{cursor:grabbing;}
 .match-hub-lineup-2d{position:absolute;inset:0;display:none;background:repeating-linear-gradient(0deg,#185e40 0,#185e40 8.333%,#15563a 8.333%,#15563a 16.666%);}
@@ -222,6 +224,8 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-lineup-2d::after{content:"";position:absolute;left:50%;top:50%;width:18%;aspect-ratio:1;border:2px solid rgba(245,249,242,.82);border-radius:50%;transform:translate(-50%,-50%);}
 .match-hub-lineup-stage.is-2d .match-hub-lineup-canvas{display:none;}
 .match-hub-lineup-stage.is-2d .match-hub-lineup-2d{display:block;}
+.match-hub-lineup-stage.is-graphic .match-hub-lineup-canvas,.match-hub-lineup-stage.is-graphic .match-hub-lineup-2d{display:none;}
+.match-hub-lineup-stage.is-graphic .match-hub-lineup-graphic{display:block;}
 .lineup-2d-player{position:absolute;z-index:2;display:grid;place-items:center;min-width:68px;min-height:28px;padding:2px 7px;border:1px solid rgba(232,184,75,.9);border-radius:4px;background:rgba(7,9,8,.9);box-shadow:0 4px 12px rgba(0,0,0,.34);color:#fff;font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:0;line-height:1;white-space:nowrap;transform:translate(-50%,-50%);}
 .lineup-text-list{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
 .match-hub-probable-info{display:flex;justify-content:flex-start;gap:8px;flex-wrap:wrap;margin:12px 0 0;}
@@ -661,6 +665,7 @@ nav{display:none;}.mob-nav{display:flex;height:calc(60px + env(safe-area-inset-b
 .match-hub-probable-head{align-items:flex-start;}
 .match-hub-probable-title{align-items:flex-start;flex-direction:column;gap:2px;}
 .match-hub-lineup-stage{width:calc(100% + 28px);margin:0 -14px;aspect-ratio:4/4.3;}
+.match-hub-lineup-stage.is-graphic{width:100%;margin:0;aspect-ratio:1280/1206;}
 .lineup-2d-player{min-width:54px;min-height:25px;padding:2px 5px;font-size:9px;}
 .match-hub-form{grid-template-columns:1fr auto;padding:13px 15px;gap:10px;}
 .match-hub-form-label{grid-column:1/-1;}
@@ -948,12 +953,14 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
           <span class="match-hub-probable-module" id="matchHubProbableModule">Modulo da confermare</span>
         </div>
         <div class="lineup-view-toggle" role="group" aria-label="Vista della formazione">
+          <button type="button" data-lineup-view="graphic" aria-pressed="false" title="Grafica della probabile formazione" hidden>Grafica</button>
           <button type="button" class="is-active" data-lineup-view="3d" aria-pressed="true" title="Vista tridimensionale">3D</button>
           <button type="button" data-lineup-view="2d" aria-pressed="false" title="Vista dall'alto">2D</button>
         </div>
       </div>
       <p class="match-hub-probable-note" id="matchHubProbableNote">In attesa di fonti concordi</p>
       <div class="match-hub-lineup-stage" id="matchHubLineupStage">
+        <img class="match-hub-lineup-graphic" id="matchHubLineupGraphic" width="1280" height="1206" alt="Probabile formazione della Juventus contro l'Atalanta disposta con il modulo 3-4-2-1" loading="eager" decoding="async">
         <canvas class="match-hub-lineup-canvas" id="matchHubLineupCanvas" aria-hidden="true"></canvas>
         <div class="match-hub-lineup-2d" id="matchHubLineup2d" aria-hidden="true"></div>
         <ol class="lineup-text-list" id="matchHubLineupText" aria-label="Undici probabile"></ol>
@@ -2005,6 +2012,9 @@ function renderMatchHubProbable(data, active) {
   var note = document.getElementById("matchHubProbableNote");
   var info = document.getElementById("matchHubProbableInfo");
   var textList = document.getElementById("matchHubLineupText");
+  var stage = document.getElementById("matchHubLineupStage");
+  var graphic = document.getElementById("matchHubLineupGraphic");
+  var graphicButton = document.querySelector('[data-lineup-view="graphic"]');
   var formation = data && data.formation;
   var players = Array.isArray(formation && formation.players) ? formation.players.filter(function(player) {
     return player && typeof player.name === "string" && player.name.trim() && Number.isFinite(Number(player.x)) && Number.isFinite(Number(player.z));
@@ -2016,6 +2026,21 @@ function renderMatchHubProbable(data, active) {
     window.ICV_LINEUP_DATA = null;
     return;
   }
+  var graphicUrl = typeof formation.graphic_url === "string" && /^\/assets\/[a-z0-9._/-]+$/i.test(formation.graphic_url) ? formation.graphic_url : "";
+  if (graphic) {
+    if (graphicUrl) graphic.src = graphicUrl;
+    else graphic.removeAttribute("src");
+  }
+  if (graphicButton) graphicButton.hidden = !graphicUrl;
+  if (stage) {
+    stage.classList.toggle("is-graphic", !!graphicUrl);
+    stage.classList.remove("is-2d");
+  }
+  document.querySelectorAll("[data-lineup-view]").forEach(function(button) {
+    var active = button.dataset.lineupView === (graphicUrl ? "graphic" : "3d");
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
   var safeFormation = {
     module: formation.module,
     players: players.map(function(player) { return {name:player.name.trim(), x:Number(player.x), z:Number(player.z)}; })

@@ -32,6 +32,7 @@ test('monitor registry validates empty and populated states',()=>{
   assert.ok(Number.isFinite(Date.parse(monitor.match.kickoff)));
   if(monitor.formation!==null){
     assert.equal(typeof monitor.formation.module,'string');
+    if(monitor.formation.graphic_url!==undefined) assert.match(monitor.formation.graphic_url,/^\/assets\/[a-z0-9._/-]+$/i);
     assert.equal(monitor.formation.players.length,11);
     assert.equal(new Set(monitor.formation.players.map(player=>player.name)).size,11);
     for(const player of monitor.formation.players){
@@ -53,8 +54,11 @@ test('probable lineup is data-driven and loads the 3D pitch only when active',()
   const scene=read('src/lineup-pitch-3d.js');
   const bundle=read('assets/lineup-pitch-3d.js');
   assert.match(html,/id="matchHubLineupCanvas"/);
+  assert.match(html,/data-lineup-view="graphic"/);
   assert.match(html,/data-lineup-view="3d"/);
   assert.match(html,/data-lineup-view="2d"/);
+  assert.match(html,/matchHubLineupGraphic/);
+  assert.match(html,/formation\.graphic_url/);
   assert.match(html,/players\.length === 11/);
   assert.match(html,/import\("\/assets\/lineup-pitch-3d\.js/);
   assert.match(scene,/from "three"/);

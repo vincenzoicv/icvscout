@@ -243,13 +243,15 @@ function render(formation) {
 function setView(mode) {
   if (!stage) return;
   const use2d = mode === "2d";
+  const useGraphic = mode === "graphic";
   stage.classList.toggle("is-2d", use2d);
+  stage.classList.toggle("is-graphic", useGraphic);
   document.querySelectorAll("[data-lineup-view]").forEach((button) => {
-    const active = button.dataset.lineupView === (use2d ? "2d" : "3d");
+    const active = button.dataset.lineupView === (useGraphic ? "graphic" : use2d ? "2d" : "3d");
     button.classList.toggle("is-active", active);
     button.setAttribute("aria-pressed", String(active));
   });
-  if (!use2d) draw();
+  if (!use2d && !useGraphic) draw();
 }
 
 document.querySelectorAll("[data-lineup-view]").forEach((button) => {

@@ -1,13 +1,39 @@
 {
   "version": 1,
-  "updated_at": "2026-09-19T18:29:26Z",
+  "updated_at": "2026-09-19T18:36:02Z",
   "match": {
     "home": "Juventus FC",
     "away": "Atalanta BC",
     "kickoff": "2026-09-20T16:00:00Z",
     "competition": "Serie A"
   },
-  "formation": null,
+  "formation": {
+    "module": "3-4-2-1",
+    "status": "Probabile",
+    "source": "Sky Sport / Tuttosport",
+    "source_url": "https://sport.sky.it/calcio/serie-a/2026/09/19/juventus-atalanta-probabili-formazioni-5-giornata",
+    "updated_at": "2026-09-19T18:36:02Z",
+    "players": [
+      { "name": "Vicario", "x": 0, "z": 6.4 },
+      { "name": "Kalulu", "x": -3.1, "z": 4.1 },
+      { "name": "Bremer", "x": 0, "z": 4.5 },
+      { "name": "Lucumi", "x": 3.1, "z": 4.1 },
+      { "name": "Celik", "x": -4.2, "z": 1.1 },
+      { "name": "Douglas Luiz", "x": -1.35, "z": 1.4 },
+      { "name": "Sarr", "x": 1.35, "z": 1.4 },
+      { "name": "McKennie", "x": 4.2, "z": 1.1 },
+      { "name": "Nico Gonzalez", "x": -1.8, "z": -1.8 },
+      { "name": "Alajbegovic", "x": 1.8, "z": -1.8 },
+      { "name": "Kolo Muani", "x": 0, "z": -4.7 }
+    ],
+    "details": [
+      { "label": "Difesa", "text": "Kalulu, Bremer e Lucumi davanti a Vicario." },
+      { "label": "Fasce", "text": "Celik a destra e McKennie a sinistra." },
+      { "label": "Mediana", "text": "Douglas Luiz con Sarr, favorito su Koopmeiners." },
+      { "label": "Trequarti", "text": "Nico Gonzalez e Alajbegovic, con Conceicao alternativa." },
+      { "label": "Punta", "text": "Kolo Muani favorito su Woltemade." }
+    ]
+  },
   "updates": [
     {
       "category": "Infortunio",
@@ -29,11 +55,11 @@
     },
     {
       "category": "Probabile formazione",
-      "title": "Juventus verso il 3-4-2-1 contro l'Atalanta",
-      "summary": "Sky Sport e La Gazzetta dello Sport indicano il 3-4-2-1. Vicario, Bremer, Lucumi, Douglas Luiz, Sarr e Kolo Muani sono tra i favoriti; restano da chiarire i ballottaggi Lucumi-Kelly, Sarr-Koopmeiners e Kolo Muani-Woltemade. Sky propone Nico Gonzalez e Alajbegovic alle spalle della punta, mentre la Gazzetta segnala il possibile ritorno di Conceicao dal primo minuto: lo schieramento completo non e ancora concorde.",
-      "source": "Sky Sport / La Gazzetta dello Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/2026/09/18/probabili-formazioni-serie-a-giornata-5-ultime-news",
-      "published_at": "2026-09-19T12:01:38Z",
+      "title": "Probabile formazione: Juventus con il 3-4-2-1",
+      "summary": "Sky Sport e Tuttosport concordano sugli undici favoriti: Vicario; Kalulu, Bremer, Lucumi; Celik, Douglas Luiz, Sarr, McKennie; Nico Gonzalez, Alajbegovic; Kolo Muani. Restano aperti soprattutto i ballottaggi Sarr-Koopmeiners e Alajbegovic-Conceicao.",
+      "source": "Sky Sport / Tuttosport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/2026/09/19/juventus-atalanta-probabili-formazioni-5-giornata",
+      "published_at": "2026-09-19T16:30:00+02:00",
       "significant": true
     }
   ]

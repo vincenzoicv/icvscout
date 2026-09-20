@@ -789,7 +789,10 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
 /* ── NEWS SECTION ── */
 .news-section{padding:44px 20px 52px;max-width:1100px;margin:0 auto;}
 .news-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px;}
-.news-card{background:var(--surface);border:1px solid var(--bdr2);border-radius:10px;padding:24px;transition:all 0.25s;cursor:default;position:relative;overflow:hidden;}
+.news-card{background:var(--surface);border:1px solid var(--bdr2);border-radius:10px;transition:all 0.25s;position:relative;overflow:hidden;}
+.news-card-link,.news-card-static{display:block;height:100%;padding:24px;color:inherit;text-decoration:none;}
+.news-card-link{cursor:pointer;}
+.news-card-link:focus-visible{outline:3px solid var(--gold);outline-offset:-3px;}
 .news-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity 0.3s;}
 .news-card:hover{background:var(--surface-hi);border-color:rgba(196,150,42,0.22);transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,0.28);}
 .news-card:hover::before{opacity:1;}
@@ -800,7 +803,8 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
 .news-card-title{font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:var(--white);letter-spacing:0.5px;margin-bottom:8px;line-height:1.3;}
 .news-card-body{font-family:'Barlow';font-size:14px;color:var(--t2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .news-card-meta{font-family:'Barlow Condensed';font-size:11px;color:var(--t3);letter-spacing:1px;margin-top:10px;}
-.news-card.featured{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;}
+.news-card.featured{grid-column:1/-1;}
+.news-card.featured .news-card-link,.news-card.featured .news-card-static{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;}
 .news-card.featured .news-card-title{font-size:24px;}
 .news-card.featured .news-card-body{-webkit-line-clamp:4;}
 .news-empty-state{font-family:'Barlow Condensed';font-size:15px;color:var(--t3);letter-spacing:1px;text-align:center;padding:44px 24px;background:var(--surface-soft);border:1px solid var(--bdr2);border-radius:10px;grid-column:1/-1;}
@@ -816,7 +820,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
 @media(max-width:768px){
   .news-grid{grid-template-columns:1fr;}
   .graphics-grid{grid-template-columns:1fr;}
-  .news-card.featured{grid-template-columns:1fr;}
+  .news-card.featured .news-card-link,.news-card.featured .news-card-static{grid-template-columns:1fr;}
   .news-section{padding:24px 12px 40px;}
 }
 </style>
@@ -903,33 +907,33 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
   <a class="hero-scroll-cue" href="#homeDash">Entra nel match <span aria-hidden="true"></span></a>
 </div>
 <section class="home-dash" id="homeDash">
-  <article class="home-panel home-match-hub" id="homeMatchHub" data-state="buildup" aria-live="polite">
+  <article class="home-panel home-match-hub" id="homeMatchHub" data-state="loading" aria-live="polite" aria-busy="true">
     <div class="match-hub-head">
       <div class="match-hub-brand">
         <h3>ICV Match Hub</h3>
-        <span class="match-hub-state" id="matchHubState">Avvicinamento</span>
+        <span class="match-hub-state" id="matchHubState">Sincronizzazione</span>
       </div>
       <div class="match-hub-tools">
-        <span class="match-hub-updated" id="matchHubUpdated">Controllo dati in corso</span>
+        <span class="match-hub-updated" id="matchHubUpdated">Dati in arrivo</span>
         <a class="match-hub-calendar-link" href="/calendario-juventus">Calendario</a>
       </div>
     </div>
     <div class="match-hub-phase">
-      <span id="matchHubPhaseEyebrow">Serie A · 2ª giornata</span>
-      <strong id="matchHubPhaseTitle">Verso Juventus FC-Parma Calcio 1913</strong>
+      <span id="matchHubPhaseEyebrow">Calendario Juventus</span>
+      <strong id="matchHubPhaseTitle">Caricamento prossima partita</strong>
     </div>
     <div class="match-hub-main">
       <section class="match-hub-next" aria-label="Prossima partita della Juventus">
         <div class="match-hub-kicker" id="matchHubPrimaryKicker">Prossimo incontro</div>
-        <div class="match-hub-date" id="matchHubNextDate">29 agosto 2026 · 20:45</div>
+        <div class="match-hub-date" id="matchHubNextDate">Aggiornamento in corso</div>
         <div class="match-hub-teams">
           <strong class="match-hub-team" id="matchHubNextHome">Juventus FC</strong>
           <span class="match-hub-vs" id="matchHubVersus">VS</span>
-          <strong class="match-hub-team" id="matchHubNextAway">Parma Calcio 1913</strong>
+          <strong class="match-hub-team" id="matchHubNextAway">Avversario</strong>
         </div>
         <p class="match-hub-result-scorers" id="matchHubResultScorers" aria-label="Marcatori" hidden></p>
-        <div class="match-hub-meta"><span id="matchHubCompetition">Serie A</span><span id="matchHubVenue">Allianz Stadium · Torino</span></div>
-        <div class="match-hub-countdown" id="matchHubCountdownWrap"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Tra 5 giorni</strong></div>
+        <div class="match-hub-meta"><span id="matchHubCompetition">Calendario ufficiale</span><span id="matchHubVenue">Verifica dati in corso</span></div>
+        <div class="match-hub-countdown" id="matchHubCountdownWrap"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Attendi</strong></div>
       </section>
     </div>
     <section class="match-hub-upcoming" id="matchHubUpcomingPanel" aria-label="Prossime tre partite della Juventus" hidden>
@@ -997,7 +1001,7 @@ footer{justify-content:center;overflow:hidden;padding-left:14px;padding-right:14
     <footer class="match-hub-form">
       <span class="match-hub-form-label">Forma recente</span>
       <div class="match-hub-form-list" id="matchHubForm" aria-label="Forma recente della Juventus"></div>
-      <span class="match-hub-record" id="matchHubRecord">4 vittorie · 0 pareggi · 1 sconfitta</span>
+      <span class="match-hub-record" id="matchHubRecord">Forma in aggiornamento</span>
     </footer>
   </article>
   <div class="home-panel live-desk-panel" id="homeLiveDeskPanel">
@@ -2076,6 +2080,7 @@ var currentReceiptMatch = null;
 function renderMatchHub(apiRows) {
   var hub = document.getElementById("homeMatchHub");
   if (!hub) return;
+  hub.setAttribute("aria-busy", "false");
   var matches = allMatchHubRows(apiRows);
   var now = Date.now();
   var live = matches.find(function(match) { return match.status === "live"; });
@@ -2289,7 +2294,8 @@ function loadHomeDashboard() {
     renderRadar(data.radar);
     renderHomeList("homeNewsList", news, function(n) {
       var player=n.related_players&&n.related_players[0];
-      return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : ""), url:player?"/giocatore?slug="+player.slug:""};
+      var sourceUrl=/^https:\/\//i.test(String(n.source_url||""))?String(n.source_url):"";
+      return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : ""), url:player?"/giocatore?slug="+player.slug:sourceUrl};
     }, "Nessuna news approvata al momento.");
     renderHomeList("homeMarketList", market, function(m) {
       var title = m.note || m.player_name || "Mercato Juve";
@@ -2381,7 +2387,10 @@ function renderHomeList(id, rows, map, emptyText) {
   el.innerHTML = rows.slice(0, 3).map(function(row) {
     var item = map(row);
     var content="<strong>" + icvEsc(item.title) + "</strong><span>" + icvEsc(item.meta) + "</span>";
-    if(item.url)content="<a href='"+icvEsc(item.url)+"'>"+content+"</a>";
+    if(item.url){
+      var external=/^https:\/\//i.test(item.url);
+      content="<a href='"+icvEsc(item.url)+"'"+(external?" target='_blank' rel='noopener noreferrer'":"")+">"+content+"</a>";
+    }
     return "<div class='home-mini'>" + content + "</div>";
   }).join("");
 }
@@ -2433,7 +2442,7 @@ function loadAndRenderNews() {
     }
     grid.innerHTML = "";
     news.forEach(function(n, i) {
-      var card = document.createElement("div");
+      var card = document.createElement("article");
       var isFeatured = i === 0 && news.length > 1;
       var isBreaking = n.urgency === "breaking";
       var isImportant = n.urgency === "important";
@@ -2441,18 +2450,23 @@ function loadAndRenderNews() {
       var d = new Date(n.created_at);
       var dateStr = d.toLocaleDateString("it-IT",{day:"2-digit",month:"short"}) + " " + d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
       var meta = dateStr + (n.source ? " &middot; " + icvEsc(n.source) : "");
+      var sourceUrl = /^https:\/\//i.test(String(n.source_url || "")) ? String(n.source_url) : "";
+      var content = "";
       if (isFeatured) {
-        card.innerHTML =
+        content =
           "<div>" +
           "<div class='news-card-title'>" + icvEsc(n.title) + "</div>" +
           "<div class='news-card-meta'>" + meta + "</div></div>" +
           "<div><div class='news-card-body'>" + icvEsc(n.body) + "</div></div>";
       } else {
-        card.innerHTML =
+        content =
           "<div class='news-card-title'>" + icvEsc(n.title) + "</div>" +
           "<div class='news-card-body'>" + icvEsc(n.body) + "</div>" +
           "<div class='news-card-meta'>" + meta + "</div>";
       }
+      card.innerHTML = sourceUrl
+        ? "<a class='news-card-link' href='" + icvEsc(sourceUrl) + "' target='_blank' rel='noopener noreferrer' aria-label='Apri la fonte: " + icvEsc(n.title) + "'>" + content + "</a>"
+        : "<div class='news-card-static'>" + content + "</div>";
       grid.appendChild(card);
     });
   })

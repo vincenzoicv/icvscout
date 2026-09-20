@@ -204,12 +204,14 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
     "function animateMatchHub",
     "ICV_VERIFIED_MATCH_DATA",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
-  assert.match(html, /id="matchHubNextDate">29 agosto 2026 · 20:45/);
+  assert.match(html, /id="homeMatchHub"[^>]*data-state="loading"[^>]*aria-busy="true"/);
+  assert.match(html, /id="matchHubPhaseTitle">Caricamento prossima partita/);
+  assert.match(html, /id="matchHubNextDate">Aggiornamento in corso/);
   assert.match(html, /id="matchHubNextHome">Juventus FC/);
-  assert.match(html, /id="matchHubNextAway">Parma Calcio 1913/);
-  assert.match(html, /id="matchHubCompetition">Serie A/);
-  assert.match(html, /id="matchHubVenue">Allianz Stadium · Torino/);
-  assert.match(html, /id="matchHubCountdown">Tra 5 giorni/);
+  assert.match(html, /id="matchHubNextAway">Avversario/);
+  assert.match(html, /id="matchHubCompetition">Calendario ufficiale/);
+  assert.match(html, /id="matchHubVenue">Verifica dati in corso/);
+  assert.match(html, /id="matchHubCountdown">Attendi/);
   assert.match(html, /id="matchHubCountdownWrap"/);
   assert.match(html, /id="matchHubUpcomingPanel"/);
   assert.match(html, /id="matchHubUpcoming"/);

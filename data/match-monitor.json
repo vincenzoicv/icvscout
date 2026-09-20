@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-09-19T18:36:02Z",
+  "updated_at": "2026-09-20T13:10:05Z",
   "match": {
     "home": "Juventus FC",
     "away": "Atalanta BC",
@@ -36,6 +36,15 @@
     ]
   },
   "updates": [
+    {
+      "category": "Convocati",
+      "title": "Juventus-Atalanta, 22 bianconeri convocati",
+      "summary": "Luciano Spalletti ha convocato 22 giocatori: Celik, Bremer, Gatti, Kelly, Conceicao, Koopmeiners, Kolo Muani, Zhegrova, Douglas Luiz, Kalulu, Alajbegovic, McKennie, Pinsoglio, Rugani, Vicario, Lucumi, Woltemade, Sarr, Nico Gonzalez, Radu, Pagnucco e Makiobo. Confermata l'assenza di Grabara; non figurano nella lista neppure Yildiz, Ekhator, Cabal, Thuram, Locatelli, Boga e Cambiaso. Tutti gli undici della probabile formazione pubblicata risultano convocati.",
+      "source": "Juventus",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-atalanta-i-convocati",
+      "published_at": "2026-09-20T15:10:00+02:00",
+      "significant": true
+    },
     {
       "category": "Infortunio",
       "title": "Grabara, lesione del crociato anteriore",

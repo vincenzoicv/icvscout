@@ -1,76 +1,12 @@
 {
   "version": 1,
-  "updated_at": "2026-09-20T13:10:05Z",
+  "updated_at": "2026-09-20T18:02:04Z",
   "match": {
-    "home": "Juventus FC",
-    "away": "Atalanta BC",
-    "kickoff": "2026-09-20T16:00:00Z",
+    "home": "Cagliari Calcio",
+    "away": "Juventus FC",
+    "kickoff": "2026-10-11T18:45:00Z",
     "competition": "Serie A"
   },
-  "formation": {
-    "module": "3-4-2-1",
-    "status": "Probabile",
-    "source": "Sky Sport / Tuttosport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/2026/09/19/juventus-atalanta-probabili-formazioni-5-giornata",
-    "graphic_url": "/assets/juventus-atalanta-probabile-2026-09-20.jpg",
-    "updated_at": "2026-09-19T18:36:02Z",
-    "players": [
-      { "name": "Vicario", "x": 0, "z": 6.4 },
-      { "name": "Kalulu", "x": -3.1, "z": 4.1 },
-      { "name": "Bremer", "x": 0, "z": 4.5 },
-      { "name": "Lucumi", "x": 3.1, "z": 4.1 },
-      { "name": "Celik", "x": -4.2, "z": 1.1 },
-      { "name": "Douglas Luiz", "x": -1.35, "z": 1.4 },
-      { "name": "Sarr", "x": 1.35, "z": 1.4 },
-      { "name": "McKennie", "x": 4.2, "z": 1.1 },
-      { "name": "Nico Gonzalez", "x": -1.8, "z": -1.8 },
-      { "name": "Alajbegovic", "x": 1.8, "z": -1.8 },
-      { "name": "Kolo Muani", "x": 0, "z": -4.7 }
-    ],
-    "details": [
-      { "label": "Difesa", "text": "Kalulu, Bremer e Lucumi davanti a Vicario." },
-      { "label": "Fasce", "text": "Celik a destra e McKennie a sinistra." },
-      { "label": "Mediana", "text": "Douglas Luiz con Sarr, favorito su Koopmeiners." },
-      { "label": "Trequarti", "text": "Nico Gonzalez e Alajbegovic, con Conceicao alternativa." },
-      { "label": "Punta", "text": "Kolo Muani favorito su Woltemade." }
-    ]
-  },
-  "updates": [
-    {
-      "category": "Convocati",
-      "title": "Juventus-Atalanta, 22 bianconeri convocati",
-      "summary": "Luciano Spalletti ha convocato 22 giocatori: Celik, Bremer, Gatti, Kelly, Conceicao, Koopmeiners, Kolo Muani, Zhegrova, Douglas Luiz, Kalulu, Alajbegovic, McKennie, Pinsoglio, Rugani, Vicario, Lucumi, Woltemade, Sarr, Nico Gonzalez, Radu, Pagnucco e Makiobo. Confermata l'assenza di Grabara; non figurano nella lista neppure Yildiz, Ekhator, Cabal, Thuram, Locatelli, Boga e Cambiaso. Tutti gli undici della probabile formazione pubblicata risultano convocati.",
-      "source": "Juventus",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-atalanta-i-convocati",
-      "published_at": "2026-09-20T15:10:00+02:00",
-      "significant": true
-    },
-    {
-      "category": "Infortunio",
-      "title": "Grabara, lesione del crociato anteriore",
-      "summary": "Gli esami svolti al J|medical hanno evidenziato una lesione del legamento crociato anteriore del ginocchio destro. Grabara sara sottoposto nei prossimi giorni a consulti ortopedici per definire l'iter terapeutico; la Juventus non ha ancora comunicato tempi di recupero.",
-      "source": "Juventus",
-      "source_url": "https://www.juventus.com/en/news/articles/medical-update-kamil-grabara-19-09-26",
-      "published_at": "2026-09-19T18:37:00+02:00",
-      "significant": true
-    },
-    {
-      "category": "Avversario",
-      "title": "Atalanta, Kossounou fuori: gioca Kristensen",
-      "summary": "Maurizio Sarri ha confermato l'assenza di Kossounou e l'impiego di Kristensen nella difesa a quattro. La notizia e riportata da ANSA con le parole del tecnico ed e confermata dall'ultimo aggiornamento di Sky Sport.",
-      "source": "ANSA / Sky Sport",
-      "source_url": "https://www.ansa.it/sito/notizie/sport/calcio/2026/09/19/atalanta-sarri-con-la-juve-non-e-partita-tra-spalletti-e-me_5ac28d22-15bc-4783-accb-7d65e4d7b81c.html",
-      "published_at": "2026-09-19T15:35:00+02:00",
-      "significant": true
-    },
-    {
-      "category": "Probabile formazione",
-      "title": "Probabile formazione: Juventus con il 3-4-2-1",
-      "summary": "Sky Sport e Tuttosport concordano sugli undici favoriti: Vicario; Kalulu, Bremer, Lucumi; Celik, Douglas Luiz, Sarr, McKennie; Nico Gonzalez, Alajbegovic; Kolo Muani. Restano aperti soprattutto i ballottaggi Sarr-Koopmeiners e Alajbegovic-Conceicao.",
-      "source": "Sky Sport / Tuttosport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/2026/09/19/juventus-atalanta-probabili-formazioni-5-giornata",
-      "published_at": "2026-09-19T16:30:00+02:00",
-      "significant": true
-    }
-  ]
+  "formation": null,
+  "updates": []
 }

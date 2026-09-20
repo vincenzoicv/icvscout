@@ -66,6 +66,23 @@ test("Juventus-NEC conserva il 5-0 e tutti i marcatori con i minuti", async () =
   assert.equal(match.mvp, undefined);
 });
 
+test("Juventus-Atalanta conserva il 2-0 e i marcatori verificati", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("var ICV_MATCH_FALLBACKS ="), html.indexOf("function allMatchHubRows("));
+  const { fallbacks, normalize, label } = new Function(source + ";return {fallbacks:ICV_MATCH_FALLBACKS,normalize:normalizeMatchHubRows,label:matchHubEventLabel}")();
+  const fallback = fallbacks.find(match => match.matchday === 5 && match.competition === "Serie A");
+  assert.equal(fallback.status, "finished");
+  assert.equal(fallback.homeScore, 2);
+  assert.equal(fallback.awayScore, 0);
+  assert.equal(fallback.scorers, "Conceicao 28' · Bremer 77'");
+  assert.equal(fallback.mvp, undefined);
+  const [match] = normalize([{match_id:"558595", status:"finished", source_payload:{homeTeam:{name:"Juventus FC"},awayTeam:{name:"Atalanta BC"},score:{fullTime:{home:2,away:0}},goals:[]}}]);
+  assert.equal(match.scorers, "Conceicao 28' · Bremer 77'");
+  assert.deepEqual(match.goals.map(label), ["28' Conceicao", "77' Bremer"]);
+  assert.equal(match.mvp, "");
+  assert.equal(match.worst, "");
+});
+
 test("i marcatori sono sotto il risultato e spariscono senza dati", async () => {
   const html = await read("index.html");
   assert.match(html, /id="matchHubVersus"[\s\S]*?id="matchHubResultScorers"[\s\S]*?<\/section>/);
@@ -81,12 +98,12 @@ test("i marcatori sono sotto il risultato e spariscono senza dati", async () => 
   assert.equal(element.hidden, true);
 });
 
-test("dopo il NEC le prossime tre iniziano da Juventus-Atalanta", async () => {
+test("dopo Juventus-Atalanta le prossime tre iniziano da Cagliari-Juventus", async () => {
   const html = await read("index.html");
   const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function matchHubFreshness("));
   const panel = {hidden:true};
   const box = {innerHTML:""};
-  class MatchDate extends Date { static now() { return Date.parse("2026-09-17T21:15:00Z"); } }
+  class MatchDate extends Date { static now() { return Date.parse("2026-09-20T18:05:00Z"); } }
   const {allRows, render} = new Function("document", "Date", source + ";return {allRows:allMatchHubRows,render:renderMatchHubUpcoming}")({
     getElementById:id => id === "matchHubUpcomingPanel" ? panel : box,
   }, MatchDate);
@@ -96,7 +113,8 @@ test("dopo il NEC le prossime tre iniziano da Juventus-Atalanta", async () => {
   render(allRows([]));
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.match(box.innerHTML, /Atalanta[\s\S]*Cagliari[\s\S]*Celta Vigo/);
+  assert.match(box.innerHTML, /Cagliari[\s\S]*Celta Vigo[\s\S]*Lazio/);
+  assert.doesNotMatch(box.innerHTML, /Atalanta/);
   assert.doesNotMatch(box.innerHTML, /Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Milan/);
   assert.doesNotMatch(box.innerHTML, /Parma/);

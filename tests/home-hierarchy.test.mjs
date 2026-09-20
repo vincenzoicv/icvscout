@@ -33,3 +33,8 @@ test('news open a real destination with safe external-link behavior',()=>{
   assert.ok(home.includes('var sourceUrl=/^https:\\/\\//i.test(String(n.source_url||""))?String(n.source_url):"";'));
   assert.ok(home.includes('external?" target=\'_blank\' rel=\'noopener noreferrer\'":""'));
 });
+
+test('mobile footer clears the fixed navigation and the device safe area',()=>{
+  assert.match(home,/@media\(max-width:768px\)[\s\S]*?footer\{[^}]*padding:20px 14px calc\(96px \+ env\(safe-area-inset-bottom,0px\)\)/);
+  assert.match(home,/\.mob-nav\{display:flex;height:calc\(60px \+ env\(safe-area-inset-bottom,0px\)\)/);
+});

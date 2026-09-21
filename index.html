@@ -790,7 +790,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 .news-section{padding:44px 20px 52px;max-width:1100px;margin:0 auto;}
 .news-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:28px;}
 .news-card{background:var(--surface);border:1px solid var(--bdr2);border-radius:10px;transition:all 0.25s;position:relative;overflow:hidden;}
-.news-card-link,.news-card-static{display:block;height:100%;padding:24px;color:inherit;text-decoration:none;}
+.news-card-link{display:block;height:100%;padding:24px;color:inherit;text-decoration:none;}
 .news-card-link{cursor:pointer;}
 .news-card-link:focus-visible{outline:3px solid var(--gold);outline-offset:-3px;}
 .news-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity 0.3s;}
@@ -803,8 +803,10 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 .news-card-title{font-family:'Barlow Condensed';font-size:18px;font-weight:800;color:var(--white);letter-spacing:0.5px;margin-bottom:8px;line-height:1.3;}
 .news-card-body{font-family:'Barlow';font-size:14px;color:var(--t2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .news-card-meta{font-family:'Barlow Condensed';font-size:11px;color:var(--t3);letter-spacing:1px;margin-top:10px;}
+.news-card-action{display:inline-flex;align-items:center;gap:5px;margin-top:14px;font-family:'Barlow Condensed';font-size:12px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--gold-l);}
+.news-card-action svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .news-card.featured{grid-column:1/-1;}
-.news-card.featured .news-card-link,.news-card.featured .news-card-static{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;}
+.news-card.featured .news-card-link{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center;}
 .news-card.featured .news-card-title{font-size:24px;}
 .news-card.featured .news-card-body{-webkit-line-clamp:4;}
 .news-empty-state{font-family:'Barlow Condensed';font-size:15px;color:var(--t3);letter-spacing:1px;text-align:center;padding:44px 24px;background:var(--surface-soft);border:1px solid var(--bdr2);border-radius:10px;grid-column:1/-1;}
@@ -820,7 +822,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 @media(max-width:768px){
   .news-grid{grid-template-columns:1fr;}
   .graphics-grid{grid-template-columns:1fr;}
-  .news-card.featured .news-card-link,.news-card.featured .news-card-static{grid-template-columns:1fr;}
+  .news-card.featured .news-card-link{grid-template-columns:1fr;}
   .news-section{padding:24px 12px 40px;}
 }
 </style>
@@ -2302,7 +2304,8 @@ function loadHomeDashboard() {
     renderHomeList("homeNewsList", news, function(n) {
       var player=n.related_players&&n.related_players[0];
       var sourceUrl=/^https:\/\//i.test(String(n.source_url||""))?String(n.source_url):"";
-      return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : ""), url:player?"/giocatore?slug="+player.slug:sourceUrl};
+      var detailUrl=n.id?"/community?news="+encodeURIComponent(n.id):"/#news";
+      return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : ""), url:player?"/giocatore?slug="+player.slug:(sourceUrl||detailUrl)};
     }, "Nessuna news approvata al momento.");
     renderHomeList("homeMarketList", market, function(m) {
       var title = m.note || m.player_name || "Mercato Juve";
@@ -2458,22 +2461,26 @@ function loadAndRenderNews() {
       var dateStr = d.toLocaleDateString("it-IT",{day:"2-digit",month:"short"}) + " " + d.toLocaleTimeString("it-IT",{hour:"2-digit",minute:"2-digit"});
       var meta = dateStr + (n.source ? " &middot; " + icvEsc(n.source) : "");
       var sourceUrl = /^https:\/\//i.test(String(n.source_url || "")) ? String(n.source_url) : "";
+      var destination = sourceUrl || (n.id ? "/community?news=" + encodeURIComponent(n.id) : "/#news");
+      var external = Boolean(sourceUrl);
+      var action = "<span class='news-card-action'>" + (external ? "Apri fonte" : "Leggi su ICV") +
+        "<svg viewBox='0 0 24 24' aria-hidden='true'>" + (external ? "<path d='M15 3h6v6'/><path d='M10 14 21 3'/><path d='M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6'/>" : "<path d='m9 18 6-6-6-6'/>") + "</svg></span>";
       var content = "";
       if (isFeatured) {
         content =
           "<div>" +
           "<div class='news-card-title'>" + icvEsc(n.title) + "</div>" +
           "<div class='news-card-meta'>" + meta + "</div></div>" +
-          "<div><div class='news-card-body'>" + icvEsc(n.body) + "</div></div>";
+          "<div><div class='news-card-body'>" + icvEsc(n.body) + "</div>" + action + "</div>";
       } else {
         content =
           "<div class='news-card-title'>" + icvEsc(n.title) + "</div>" +
           "<div class='news-card-body'>" + icvEsc(n.body) + "</div>" +
-          "<div class='news-card-meta'>" + meta + "</div>";
+          "<div class='news-card-meta'>" + meta + "</div>" + action;
       }
-      card.innerHTML = sourceUrl
-        ? "<a class='news-card-link' href='" + icvEsc(sourceUrl) + "' target='_blank' rel='noopener noreferrer' aria-label='Apri la fonte: " + icvEsc(n.title) + "'>" + content + "</a>"
-        : "<div class='news-card-static'>" + content + "</div>";
+      card.innerHTML = "<a class='news-card-link' href='" + icvEsc(destination) + "'" +
+        (external ? " target='_blank' rel='noopener noreferrer'" : "") +
+        " aria-label='" + (external ? "Apri la fonte: " : "Leggi la notizia: ") + icvEsc(n.title) + "'>" + content + "</a>";
       grid.appendChild(card);
     });
   })

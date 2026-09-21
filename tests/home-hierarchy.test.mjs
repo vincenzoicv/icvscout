@@ -26,11 +26,15 @@ test('Match Hub starts neutral and only becomes ready after current data renders
   assert.match(home,/function renderMatchHub\(apiRows\)[\s\S]*?hub\.setAttribute\("aria-busy", "false"\)/);
 });
 
-test('news open a real destination with safe external-link behavior',()=>{
+test('every news card opens its source or an internal detail with safe external-link behavior',()=>{
   assert.ok(home.includes('var sourceUrl = /^https:\\/\\//i.test(String(n.source_url || "")) ? String(n.source_url) : "";'));
+  assert.ok(home.includes('var destination = sourceUrl || (n.id ? "/community?news=" + encodeURIComponent(n.id) : "/#news");'));
   assert.ok(home.includes("class='news-card-link'"));
-  assert.ok(home.includes("target='_blank' rel='noopener noreferrer'"));
+  assert.ok(home.includes('(external ? " target=\'_blank\' rel=\'noopener noreferrer\'" : "")'));
+  assert.ok(home.includes('external ? "Apri fonte" : "Leggi su ICV"'));
+  assert.ok(!home.includes("class='news-card-static'"));
   assert.ok(home.includes('var sourceUrl=/^https:\\/\\//i.test(String(n.source_url||""))?String(n.source_url):"";'));
+  assert.ok(home.includes('var detailUrl=n.id?"/community?news="+encodeURIComponent(n.id):"/#news";'));
   assert.ok(home.includes('external?" target=\'_blank\' rel=\'noopener noreferrer\'":""'));
 });
 

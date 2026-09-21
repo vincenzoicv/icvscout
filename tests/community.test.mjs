@@ -495,10 +495,15 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     });
     const previews = {matchPreview:{innerHTML:''}, europaPreview:{innerHTML:''}, allPreview:{innerHTML:''}};
     const previewSource = page.slice(page.indexOf('function escapeHtml('), page.lastIndexOf('loadPreview();'));
-    await new Function('document', 'fetch', 'calendarPath', previewSource + '; return loadPreview();')(
+    class PreviewDate extends Date {
+      constructor(value) { super(arguments.length ? value : '2026-09-18T12:00:00Z'); }
+      static now() { return Date.parse('2026-09-18T12:00:00Z'); }
+    }
+    await new Function('document', 'fetch', 'calendarPath', 'Date', previewSource + '; return loadPreview();')(
       {getElementById:id => previews[id]},
       async () => new Response(fallbackCalendar),
       '/api/juventus/calendar.ics',
+      PreviewDate,
     );
     assert.equal((previews.europaPreview.innerHTML.match(/<article/g) || []).length, 8);
     assert.match(previews.europaPreview.innerHTML, /1ª giornata[\s\S]*8ª giornata/);

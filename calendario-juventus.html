@@ -36,6 +36,14 @@
     .hero{position:relative;overflow:hidden;min-height:calc(100vh - 58px);display:grid;place-items:center;padding:64px 24px}
     .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 50% 0,rgba(201,152,55,.16),transparent 70%);pointer-events:none}
     .hero-inner{position:relative;width:min(940px,100%);text-align:center}
+    .next-match{display:flex;align-items:center;justify-content:space-between;gap:24px;width:min(760px,100%);margin:30px auto 0;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:left}
+    .next-match-copy{min-width:0}
+    .next-match-label{display:block;margin-bottom:5px;color:var(--gold2);font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase}
+    .next-match strong{display:block;font-family:'Barlow Condensed',sans-serif;font-size:25px;line-height:1.15}
+    .next-match-detail{display:block;margin-top:6px;color:var(--muted);font-size:13px;line-height:1.5}
+    .next-match-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;flex:none;padding:10px 16px;border:1px solid var(--gold);border-radius:6px;color:var(--gold2);font-size:12px;font-weight:700;text-decoration:none;text-align:center}
+    .next-match-link:hover{background:rgba(201,152,55,.12)}
+    .next-match-link:focus-visible{outline:3px solid var(--gold2);outline-offset:3px}
     .eyebrow{margin-bottom:16px;color:var(--gold);font-size:11px;font-weight:700;letter-spacing:5px;text-transform:uppercase}
     h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(66px,13vw,138px);line-height:.86;letter-spacing:2px;background:linear-gradient(135deg,#fff 0%,#eee 35%,var(--gold2) 70%,var(--gold) 100%);background-clip:text;-webkit-background-clip:text;color:transparent}
     .lead{max-width:640px;margin:24px auto 0;color:var(--muted);font-size:clamp(15px,2vw,19px);line-height:1.65}
@@ -43,7 +51,7 @@
     .fact{display:flex;gap:8px;align-items:baseline;padding:9px 15px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
     .fact strong{font-family:'Bebas Neue',sans-serif;color:var(--gold2);font-size:22px;letter-spacing:1px}
     .fact span{font-size:12px;color:var(--muted)}
-    .calendar-box{width:min(760px,100%);margin:auto;padding:26px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.035);text-align:left;box-shadow:0 24px 80px rgba(0,0,0,.28)}
+    .calendar-box{width:min(760px,100%);margin:auto;padding:26px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.035);text-align:left;box-shadow:0 24px 80px rgba(0,0,0,.28);scroll-margin-top:80px}
     .calendar-box h2{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:1px}
     .calendar-box>p{margin:5px 0 20px;color:var(--muted);font-size:13px;line-height:1.55}
     .platforms{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -120,7 +128,8 @@
     body.light .uel-date{background:rgba(255,255,255,.5)}
     body.light .newsletter input{background:#fff;color:#181713}
     body.light footer{background:#efefeb}
-    @media(max-width:720px){.page-header-inner{padding:12px 15px}.badge{font-size:16px}.theme-toggle{padding:8px}.theme-toggle span{display:none}.platforms,.uel-grid,.uel-heading{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}.competition-tabs{margin-bottom:42px}.uel-section{margin-top:62px;padding-top:48px}.uel-heading{gap:22px}.uel-dates{grid-template-columns:repeat(2,1fr)}.uel-windows-head{display:block}.uel-windows-head p{margin-top:8px;text-align:left}}
+    @media(max-width:900px){.hero{min-height:0;display:block;padding:40px 24px 48px}}
+    @media(max-width:720px){.page-header-inner{padding:12px 15px}.badge{font-size:16px}.theme-toggle{padding:8px}.theme-toggle span{display:none}.platforms,.uel-grid,.uel-heading{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{min-height:0;display:block;padding:32px 15px 42px}.hero h1{font-size:clamp(56px,18vw,82px)}.next-match{display:block;margin-top:24px}.next-match strong{font-size:23px}.next-match-link{width:100%;margin-top:15px}.lead{margin-top:18px}.facts{gap:8px;margin:20px 0}.fact{padding:7px 10px}.calendar-box>p{margin-bottom:14px}main{padding:46px 15px}.competition-tabs{margin-bottom:42px}.uel-section{margin-top:62px;padding-top:48px}.uel-heading{gap:22px}.uel-dates{grid-template-columns:repeat(2,1fr)}.uel-windows-head{display:block}.uel-windows-head p{margin-top:8px;text-align:left}}
     .match.next-fixture{border-color:var(--gold);border-left-width:3px}.next-fixture-label{display:block;color:var(--gold);font-size:12px;line-height:1.5;margin-bottom:4px}.match{border-radius:6px}.match strong,.match span{overflow-wrap:anywhere}.match time{font-size:13px}@media(max-width:720px){.match{grid-template-columns:minmax(0,1fr)}.match span{justify-self:start}}
   </style>
 </head>
@@ -136,6 +145,10 @@
     <div class="hero-inner">
       <div class="eyebrow">Il Calcio di Vince</div>
       <h1>Calendario<br>Juventus</h1>
+      <div class="next-match" id="nextMatch" aria-live="polite" aria-busy="true">
+        <div class="next-match-copy"><span class="next-match-label">Prossima partita</span><strong>Calendario in aggiornamento</strong></div>
+        <a class="next-match-link" href="#calendarOptions">Aggiungi al calendario</a>
+      </div>
       <p class="lead">Serie A ed Europa League 2026/27 in un’unica agenda: eventi scaricabili solo quando date e orari sono ufficiali.</p>
       <div class="facts">
         <div class="fact"><strong>38</strong><span>gare di Serie A</span></div>
@@ -143,7 +156,7 @@
         <div class="fact"><strong>1</strong><span>agenda ICV</span></div>
       </div>
 
-      <div class="calendar-box">
+      <div class="calendar-box" id="calendarOptions">
         <h2>Scegli il tuo calendario</h2>
         <div class="platforms">
           <button class="platform primary" type="button" onclick="openAppleCalendar()">Apple Calendar<small>Abbonamento aggiornabile su iPhone, iPad e Mac</small></button>
@@ -285,6 +298,21 @@
         const nextIndex = serieA.findIndex(event => event.date >= today);
         const start = Math.max(0, (nextIndex < 0 ? serieA.length : nextIndex) - 2);
         const nextEvent = events.find(event => event.date >= new Date() || event.allDay && event.date >= today);
+        const nextMatch = document.getElementById('nextMatch');
+        nextMatch.querySelector('.next-match-detail')?.remove();
+        if (nextEvent) {
+          const nextDate = new Intl.DateTimeFormat('it-IT', nextEvent.allDay
+            ? {day:'numeric',month:'long',timeZone:'Europe/Rome'}
+            : {day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'}).format(nextEvent.date);
+          nextMatch.querySelector('strong').textContent = nextEvent.title;
+          const detail = document.createElement('span');
+          detail.className = 'next-match-detail';
+          detail.textContent = (nextEvent.competition === 'europa' ? 'Europa League' : 'Serie A') + ' · ' + nextDate + (nextEvent.allDay ? ' · orario da confermare' : '');
+          nextMatch.querySelector('.next-match-copy').appendChild(detail);
+        } else {
+          nextMatch.querySelector('strong').textContent = 'Nessuna partita in programma';
+        }
+        nextMatch.setAttribute('aria-busy', 'false');
         const renderEvent = event => {
           const options = event.allDay
             ? {day:'2-digit',month:'short',timeZone:'Europe/Rome'}
@@ -299,6 +327,9 @@
         const allIndex = events.findIndex(event => event.date >= today);
         document.getElementById('allPreview').innerHTML = events.slice(Math.max(0,(allIndex < 0 ? events.length : allIndex)-2)).map(renderEvent).join('');
       } catch {
+        const nextMatch = document.getElementById('nextMatch');
+        nextMatch.querySelector('strong').textContent = 'Calendario momentaneamente non disponibile';
+        nextMatch.setAttribute('aria-busy', 'false');
         document.getElementById('allPreview').innerHTML = '<div class="loading">Calendario momentaneamente non disponibile. Riprova tra poco.</div>';
         container.innerHTML = '<div class="loading">Il calendario resta disponibile. L’anteprima live tornerà al prossimo aggiornamento.</div>';
         europaContainer.innerHTML = '<div class="loading">Calendario momentaneamente non disponibile. Consulta le date e gli orari nella fonte ufficiale qui sotto.</div>';

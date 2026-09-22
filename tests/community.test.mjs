@@ -493,19 +493,25 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
       assert.equal(new Intl.DateTimeFormat('it-IT', {timeZone:'Europe/Rome', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'}).format(new Date(homeEurope[index].date)), local);
       assert.equal(homeEurope[index].home + ' - ' + homeEurope[index].away, teams);
     });
-    const previews = {matchPreview:{innerHTML:''}, europaPreview:{innerHTML:''}, allPreview:{innerHTML:''}};
+    const nextTitle = {textContent:''};
+    const nextCopy = {detail:null,appendChild(detail){this.detail=detail}};
+    const nextMatch = {busy:'true',querySelector(selector){return selector==='strong'?nextTitle:selector==='.next-match-copy'?nextCopy:nextCopy.detail},setAttribute(name,value){if(name==='aria-busy')this.busy=value}};
+    const previews = {matchPreview:{innerHTML:''}, europaPreview:{innerHTML:''}, allPreview:{innerHTML:''}, nextMatch};
     const previewSource = page.slice(page.indexOf('function escapeHtml('), page.lastIndexOf('loadPreview();'));
     class PreviewDate extends Date {
       constructor(value) { super(arguments.length ? value : '2026-09-18T12:00:00Z'); }
       static now() { return Date.parse('2026-09-18T12:00:00Z'); }
     }
     await new Function('document', 'fetch', 'calendarPath', 'Date', previewSource + '; return loadPreview();')(
-      {getElementById:id => previews[id]},
+      {getElementById:id => previews[id],createElement:()=>({className:'',textContent:'',remove(){}})},
       async () => new Response(fallbackCalendar),
       '/api/juventus/calendar.ics',
       PreviewDate,
     );
     assert.equal((previews.europaPreview.innerHTML.match(/<article/g) || []).length, 8);
+    assert.equal(nextTitle.textContent, 'Juventus - Atalanta');
+    assert.match(nextCopy.detail.textContent, /Serie A · 20 settembre/);
+    assert.equal(nextMatch.busy, 'false');
     assert.match(previews.europaPreview.innerHTML, /1ª giornata[\s\S]*8ª giornata/);
     assert.doesNotMatch(previews.europaPreview.innerHTML, /Serie A|orario da confermare/);
     assert.doesNotMatch(previews.matchPreview.innerHTML, /NEC Nijmegen|Rennes/);

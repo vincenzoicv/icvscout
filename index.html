@@ -601,8 +601,8 @@ body.light .mob-btn.active{color:var(--gold-l);background:rgba(118,81,0,.11);box
 .reveal-item{opacity:0;will-change:transform,opacity,filter;}
 .reveal-item.is-visible{opacity:1;transform:translateY(0) scale(1);filter:blur(0);animation:revealRise .62s cubic-bezier(.2,.8,.2,1) both;animation-delay:var(--reveal-delay,0ms);}
 @media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;scroll-behavior:auto !important;transition-duration:.01ms !important;}
-  .reveal-item{opacity:1;filter:none;}
+  *,*::before,*::after{animation:none !important;scroll-behavior:auto !important;transition:none !important;}
+  .reveal-item{opacity:1 !important;transform:none !important;filter:none !important;will-change:auto !important;}
 }
 @media(max-width:768px){
 header{padding:0 14px;height:54px;}main{padding-top:54px;padding-bottom:calc(72px + env(safe-area-inset-bottom,0px));}
@@ -826,7 +826,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   .news-section{padding:24px 12px 40px;}
 }
 </style>
-<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-2">
+<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-3">
 <link rel="stylesheet" href="/assets/featured-conference.css?v=20260831-4">
 <script defer src="/assets/featured-conference.js?v=20260913-1"></script>
 <link rel="stylesheet" href="/assets/featured-highlights.css?v=20260831-1">
@@ -1261,11 +1261,12 @@ function renderLineup(){
 }
 function scrollSectionIntoView(section, behavior){
   if (!section) return;
+  var motion = icvReducedMotion() ? "auto" : (behavior || "smooth");
   window.requestAnimationFrame(function(){
     var header = document.querySelector("header");
     var offset = (header ? header.offsetHeight : 58) + 12;
     var top = Math.max(0, window.scrollY + section.getBoundingClientRect().top - offset);
-    window.scrollTo({top:top,behavior:behavior || "smooth"});
+    window.scrollTo({top:top,behavior:motion});
   });
 }
 function alignHashedSection(){
@@ -1281,7 +1282,7 @@ function showSection(id,btn,scrollBehavior){
   if(id==="home"){
     if(btn)btn.classList.add("active");
     if (location.hash) history.replaceState(null, "", location.pathname);
-    window.scrollTo({top:0,behavior:"smooth"});
+    window.scrollTo({top:0,behavior:icvReducedMotion()?"auto":"smooth"});
     return;
   }
   var el=document.getElementById(id);
@@ -2573,7 +2574,8 @@ function setupImmersiveHero() {
   if (!hero || !canvas) return;
   var context = canvas.getContext("2d", { alpha: true });
   if (!context) return;
-  var reduced = icvReducedMotion();
+  var motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var reduced = motionQuery.matches;
   var points = [];
   var width = 0;
   var height = 0;
@@ -2632,7 +2634,26 @@ function setupImmersiveHero() {
     hero.style.setProperty("--hero-shift-y", (-y * 8).toFixed(2) + "px");
   }
 
-  if (!reduced && window.matchMedia("(pointer:fine)").matches) hero.addEventListener("pointermove", setPointerDepth, { passive: true });
+  function syncMotionPreference(event) {
+    reduced = event.matches;
+    if (reduced) {
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = 0;
+      hero.style.removeProperty("--hero-shift-x");
+      hero.style.removeProperty("--hero-shift-y");
+      renderHeroAtmosphere(performance.now());
+    } else if (visible && !frame) {
+      frame = window.requestAnimationFrame(tick);
+    }
+    if (!reduced && window.matchMedia("(pointer:fine)").matches) {
+      hero.addEventListener("pointermove", setPointerDepth, { passive: true });
+    } else {
+      hero.removeEventListener("pointermove", setPointerDepth);
+    }
+  }
+
+  if (motionQuery.addEventListener) motionQuery.addEventListener("change", syncMotionPreference);
+  else motionQuery.addListener(syncMotionPreference);
   if (window.IntersectionObserver) {
     new IntersectionObserver(function(entries) {
       visible = entries[0].isIntersecting;
@@ -2643,7 +2664,7 @@ function setupImmersiveHero() {
   if (window.ResizeObserver) new ResizeObserver(resizeHeroCanvas).observe(hero);
   else window.addEventListener("resize", resizeHeroCanvas, { passive: true });
   resizeHeroCanvas();
-  if (!reduced) frame = window.requestAnimationFrame(tick);
+  syncMotionPreference(motionQuery);
 }
 
 function animateLiveDeskRows() {

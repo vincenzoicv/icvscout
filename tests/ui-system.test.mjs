@@ -14,7 +14,7 @@ const ui=readFileSync(new URL('assets/icv-ui-system.css',root),'utf8');
 test('le pagine pubbliche usano la base visiva condivisa',()=>{
   for(const page of publicPages){
     const html=readFileSync(new URL(page,root),'utf8');
-    assert.match(html,/\/assets\/icv-ui-system\.css\?v=20260923-2/,page);
+    assert.match(html,/\/assets\/icv-ui-system\.css\?v=20260923-3/,page);
   }
 });
 
@@ -29,6 +29,21 @@ test('il sistema visivo definisce ruoli, spazi, controlli e movimento coerenti',
   assert.match(ui,/--icv-motion-reveal:520ms;[\s\S]*--icv-motion-hero:680ms/);
   assert.match(ui,/min-height:var\(--icv-control-height\)!important/);
   assert.match(ui,/@media\(prefers-reduced-motion:reduce\)/);
+});
+
+test('Riduci movimento disattiva animazioni, transizioni e scorrimenti fluidi anche via JavaScript',()=>{
+  assert.match(ui,/animation:none!important/);
+  assert.match(ui,/transition:none!important/);
+  assert.match(ui,/scroll-behavior:auto!important/);
+  const home=readFileSync(new URL('index.html',root),'utf8');
+  const community=readFileSync(new URL('community.html',root),'utf8');
+  const quiz=readFileSync(new URL('quiz.html',root),'utf8');
+  const lineup=readFileSync(new URL('src/lineup-pitch-3d.js',root),'utf8');
+  assert.match(home,/icvReducedMotion\(\)\?"auto":"smooth"/);
+  assert.match(home,/motionQuery\.addEventListener\("change",\s*syncMotionPreference\)/);
+  assert.match(community,/matchMedia\("\(prefers-reduced-motion: reduce\)"\)\.matches\?"auto":"smooth"/);
+  assert.match(quiz,/matchMedia\("\(prefers-reduced-motion: reduce\)"\)\.matches\?"auto":"smooth"/);
+  assert.match(lineup,/stopIntroForReducedMotion/);
 });
 
 test('le animazioni di ingresso della home usano ritmi condivisi',()=>{

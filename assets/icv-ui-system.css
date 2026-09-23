@@ -77,6 +77,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 }
 
 @media(prefers-reduced-motion:reduce){
-  html{scroll-behavior:auto}
-  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important;transition-delay:0ms!important}
+  html{scroll-behavior:auto!important}
+  *,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}
+  .reveal-item{opacity:1!important;transform:none!important;filter:none!important;will-change:auto!important}
+  :where(.home-panel,.stat-card,.result-item,.market-card,.news-card,.graphic-card,.graphics-more,.platform,.card,.deal-card,.answer,.group-card,.advance-btn,.match-entry,.match-gallery-photo img,.hsocial a,.theme-toggle,.install-app-btn,.install-close,.quick-actions button):hover{transform:none!important}
 }

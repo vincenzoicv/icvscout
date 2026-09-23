@@ -310,7 +310,7 @@ h1 em{font-style:normal;color:var(--gold-2)}
   .mail-box{grid-template-columns:1fr}
 }
 </style>
-<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-2">
+<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-3">
 </head>
 <body>
   <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
@@ -565,7 +565,7 @@ function showResult(){
   formStatus.style.color = "var(--green)";
   quizArea.style.display = "none";
   resultCard.classList.add("show");
-  resultCard.scrollIntoView({behavior:"smooth",block:"start"});
+  resultCard.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
 }
 
 prevBtn.addEventListener("click",()=>{
@@ -594,7 +594,7 @@ document.getElementById("restartBtn").addEventListener("click",()=>{
   resultCard.classList.remove("show");
   quizArea.style.display = "grid";
   renderQuestion();
-  quizArea.scrollIntoView({behavior:"smooth",block:"start"});
+  quizArea.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
 });
 
 document.getElementById("leadForm").addEventListener("submit",async(event)=>{

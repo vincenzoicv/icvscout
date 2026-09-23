@@ -278,6 +278,13 @@ window.addEventListener("resize", draw, { passive: true });
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && currentFormation) draw();
 });
+const stopIntroForReducedMotion = (event) => {
+  if (!event.matches || !animationFrame) return;
+  cancelAnimationFrame(animationFrame);
+  animationFrame = 0;
+};
+if (reduceMotion.addEventListener) reduceMotion.addEventListener("change", stopIntroForReducedMotion);
+else reduceMotion.addListener(stopIntroForReducedMotion);
 
 window.ICVLineupPitch = { render, setView };
 if (window.ICV_LINEUP_DATA) render(window.ICV_LINEUP_DATA);

@@ -1,0 +1,74 @@
+@import url('/assets/fonts.css');
+
+:root{
+  --icv-font-display:'Bebas Neue',Impact,sans-serif;
+  --icv-font-body:'Barlow',Arial,sans-serif;
+  --icv-font-label:'Barlow Condensed','Arial Narrow',sans-serif;
+  --icv-font-editorial:'Playfair Display',Georgia,serif;
+  --icv-space-1:4px;
+  --icv-space-2:8px;
+  --icv-space-3:12px;
+  --icv-space-4:16px;
+  --icv-space-5:24px;
+  --icv-space-6:32px;
+  --icv-space-7:48px;
+  --icv-page-gutter:clamp(16px,3vw,24px);
+  --icv-radius-control:6px;
+  --icv-control-height:44px;
+  --icv-motion-fast:150ms;
+  --icv-motion-ui:180ms;
+  --icv-motion-menu:200ms;
+  --icv-motion-media:240ms;
+  --icv-motion-reveal:520ms;
+  --icv-motion-hero:680ms;
+  --icv-ease:cubic-bezier(.2,.8,.2,1);
+}
+
+html{scroll-behavior:smooth}
+body{font-family:var(--icv-font-body)!important}
+button{font-family:var(--icv-font-body)!important}
+input,select,textarea{font-family:inherit}
+
+:where(.hero h1,.page-main>h1,.sec-title,.section-title,.board-title,.market-section-title,.panel-title){font-family:var(--icv-font-display)}
+:where(.eyebrow,.page-kicker,.section-eye,.sec-tag,.field-label,.board-updated,.match-hub-kicker){font-family:var(--icv-font-label)}
+.manifesto{font-family:var(--icv-font-editorial)}
+
+:where(
+  button.primary,button.secondary,button.confirm,button.cancel,button.publish,
+  button.auth-submit,button.google-btn,button.small-btn,button.control-btn,
+  button.filter-btn,button.reset-btn,button.platform,button.competition-tab,
+  button.tab-btn,button.tool-btn,button.mode,button.install-app-btn,
+  button.mobile-match-entry,button.conference-primary,button.conference-stop,
+  a.next-match-link,a.agenda-btn,a.back-btn,a.hero-season-link,
+  a.match-hub-calendar-link,a.preferred-source-link
+){
+  min-height:var(--icv-control-height)!important;
+  border-radius:var(--icv-radius-control)!important;
+  font-family:var(--icv-font-body);
+  transition-duration:var(--icv-motion-ui)!important;
+  transition-timing-function:var(--icv-ease)!important;
+}
+
+:where(button,a,summary,[role='button']){transition-duration:var(--icv-motion-ui)!important;transition-timing-function:var(--icv-ease)!important}
+:where(nav a,nav button,.page-tabs a,.page-tabs button,.tabs button){transition-duration:var(--icv-motion-menu)!important}
+:where(.modal-wrap,.modal,.lightbox,.conference-player,.match-gallery-viewer,.icv-story-viewer){transition-duration:var(--icv-motion-media)!important}
+:where(.install-card.show,.section.active,.pane){animation-duration:var(--icv-motion-media)!important;animation-timing-function:var(--icv-ease)!important}
+:where(.reveal-item.is-visible){animation-duration:var(--icv-motion-reveal)!important;animation-timing-function:var(--icv-ease)!important}
+:where(.icon-btn,.page-theme,.theme-toggle,.install-close,.close){min-width:var(--icv-control-height);min-height:var(--icv-control-height)}
+
+:where(button,a,summary,[role='button']):focus-visible{
+  outline:2px solid var(--gold-l,var(--gold,#edbd49));
+  outline-offset:3px;
+}
+
+:where(.profile-actions,.quick-actions,.competition-tabs,.page-tabs,.composer-tools,.match-receipt-actions){gap:var(--icv-space-2)}
+:where(.page-main,.wrap){padding-inline:var(--icv-page-gutter)}
+
+@media(max-width:720px){
+  :root{--icv-page-gutter:16px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important;transition-delay:0ms!important}
+}

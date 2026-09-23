@@ -826,6 +826,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   .news-section{padding:24px 12px 40px;}
 }
 </style>
+<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-1">
 <link rel="stylesheet" href="/assets/featured-conference.css?v=20260831-4">
 <script defer src="/assets/featured-conference.js?v=20260913-1"></script>
 <link rel="stylesheet" href="/assets/featured-highlights.css?v=20260831-1">
@@ -2675,7 +2676,7 @@ function animateMatchHub() {
   if (score) window.anime.animate(score, {
     opacity: { from: 0 },
     scale: { from: .72 },
-    duration: 620,
+    duration: 520,
     delay: 190,
     ease: "outBack(1.6)",
     onComplete: function() { clearIcvMotionStyles(score); }
@@ -2684,7 +2685,7 @@ function animateMatchHub() {
   if (dots.length) window.anime.animate(dots, {
     opacity: { from: 0 },
     scale: { from: .45 },
-    duration: 440,
+    duration: 520,
     delay: window.anime.stagger(70, { start: 290 }),
     ease: "outBack(1.8)",
     onComplete: function() { dots.forEach(clearIcvMotionStyles); }
@@ -2709,7 +2710,7 @@ function setupIcvAnimations() {
   animate(silhouette, {
     opacity: { from: 0 },
     x: { from: 34 },
-    duration: 920,
+    duration: 680,
     delay: 160,
     ease: "out(3)",
     onComplete: function() { clearIcvMotionStyles(silhouette); }
@@ -2720,7 +2721,7 @@ function setupIcvAnimations() {
     animate(strip, {
       opacity: { from: 0 },
       y: { from: 10 },
-      duration: 480,
+      duration: 520,
       delay: 430 + stripIndex * 130,
       ease: "out(4)",
       onComplete: function() { clearIcvMotionStyles(strip); }
@@ -2728,7 +2729,7 @@ function setupIcvAnimations() {
     animate(items, {
       opacity: { from: 0 },
       x: { from: -10 },
-      duration: 460,
+      duration: 520,
       delay: stagger(65, { start: 520 + stripIndex * 140 }),
       ease: "out(4)",
       onComplete: function() { items.forEach(clearIcvMotionStyles); }
@@ -2739,7 +2740,7 @@ function setupIcvAnimations() {
   animate(results, {
     opacity: { from: 0 },
     scale: { from: .72 },
-    duration: 440,
+    duration: 520,
     delay: stagger(75, { start: 700 }),
     ease: "outBack(1.5)",
     onComplete: function() { results.forEach(clearIcvMotionStyles); }
@@ -2757,7 +2758,7 @@ function setupIcvAnimations() {
       animate(panel, {
         opacity: 1,
         y: { from: 18 },
-        duration: 560,
+        duration: 520,
         delay: Math.min(220, panels.indexOf(panel) * 55),
         ease: "out(4)",
         onComplete: function() { clearIcvMotionStyles(panel); }

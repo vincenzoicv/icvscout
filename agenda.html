@@ -74,7 +74,7 @@
     footer a{color:var(--muted);text-decoration:none}
     @media(max-width:720px){.platforms,.features{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}}
   </style>
-  <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-3">
+  <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-4">
   <script defer src="/assets/turnstile.js"></script>
 </head>
 <body>
@@ -123,7 +123,7 @@
     <section class="preview">
       <div class="section-eye">Anteprima live</div>
       <div class="section-title">Le prossime partite</div>
-      <div class="matches" id="matchPreview"><div class="loading">Caricamento del calendario in corso...</div></div>
+      <div class="matches" id="matchPreview"><div class="loading loading--orbit" role="status"><span class="icv-orbit-loader" aria-hidden="true"></span><span>Caricamento del calendario in corso...</span></div></div>
     </section>
 
     <section class="newsletter">

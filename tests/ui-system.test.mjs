@@ -14,7 +14,7 @@ const ui=readFileSync(new URL('assets/icv-ui-system.css',root),'utf8');
 test('le pagine pubbliche usano la base visiva condivisa',()=>{
   for(const page of publicPages){
     const html=readFileSync(new URL(page,root),'utf8');
-    assert.match(html,/\/assets\/icv-ui-system\.css\?v=20260923-3/,page);
+    assert.match(html,/\/assets\/icv-ui-system\.css\?v=20260923-4/,page);
   }
 });
 
@@ -44,6 +44,19 @@ test('Riduci movimento disattiva animazioni, transizioni e scorrimenti fluidi an
   assert.match(community,/matchMedia\("\(prefers-reduced-motion: reduce\)"\)\.matches\?"auto":"smooth"/);
   assert.match(quiz,/matchMedia\("\(prefers-reduced-motion: reduce\)"\)\.matches\?"auto":"smooth"/);
   assert.match(lineup,/stopIntroForReducedMotion/);
+});
+
+test('Orbit accompagna solo gli stati iniziali di caricamento e resta fermo con Riduci movimento',()=>{
+  assert.match(ui,/\.icv-orbit-loader::before/);
+  assert.match(ui,/\.icv-orbit-loader::after/);
+  assert.match(ui,/\.icv-orbit-loader\{border-color:/);
+  assert.match(ui,/\.loading--orbit\{display:flex/);
+  const home=readFileSync(new URL('index.html',root),'utf8');
+  const calendar=readFileSync(new URL('calendario-juventus.html',root),'utf8');
+  const agenda=readFileSync(new URL('agenda.html',root),'utf8');
+  assert.match(home,/<span class="match-hub-updated" id="matchHubUpdated"><span class="icv-orbit-loader" aria-hidden="true"><\/span>Dati in arrivo<\/span>/);
+  assert.equal((calendar.match(/class="loading loading--orbit" role="status"><span class="icv-orbit-loader" aria-hidden="true">/g)||[]).length,3);
+  assert.match(agenda,/class="loading loading--orbit" role="status"><span class="icv-orbit-loader" aria-hidden="true">/);
 });
 
 test('le animazioni di ingresso della home usano ritmi condivisi',()=>{

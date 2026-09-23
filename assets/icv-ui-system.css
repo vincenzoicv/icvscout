@@ -72,6 +72,13 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 :where(.profile-actions,.quick-actions,.competition-tabs,.page-tabs,.composer-tools,.match-receipt-actions){gap:var(--icv-space-2)}
 :where(.page-main,.wrap){padding-inline:var(--icv-page-gutter)}
 
+.icv-orbit-loader{position:relative;display:inline-block;width:18px;height:18px;flex:0 0 18px;vertical-align:-4px;border:1.5px solid rgba(237,189,73,.24);border-top-color:var(--gold-l,var(--gold,#edbd49));border-radius:50%;animation:icv-orbit-turn 1.5s linear infinite}
+.icv-orbit-loader::before{position:absolute;inset:3px;border:1.5px solid rgba(237,189,73,.2);border-top-color:var(--gold-l,var(--gold,#edbd49));border-radius:50%;content:"";animation:icv-orbit-turn .9s linear infinite reverse}
+.icv-orbit-loader::after{position:absolute;top:-2px;left:7px;width:4px;height:4px;border-radius:50%;background:var(--gold-l,var(--gold,#edbd49));box-shadow:0 0 7px rgba(237,189,73,.55);content:""}
+@keyframes icv-orbit-turn{to{transform:rotate(360deg)}}
+.loading--orbit{display:flex;align-items:center;justify-content:center;gap:10px}
+.match-hub-updated .icv-orbit-loader{margin-right:7px}
+
 @media(max-width:720px){
   :root{--icv-page-gutter:16px}
 }
@@ -79,6 +86,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto!important}
   *,*::before,*::after{animation:none!important;scroll-behavior:auto!important;transition:none!important}
+  .icv-orbit-loader{border-color:rgba(237,189,73,.42)}
+  .icv-orbit-loader::before{display:none}
+  .icv-orbit-loader::after{top:5px;left:5px;width:5px;height:5px;box-shadow:none}
   .reveal-item{opacity:1!important;transform:none!important;filter:none!important;will-change:auto!important}
   :where(.home-panel,.stat-card,.result-item,.market-card,.news-card,.graphic-card,.graphics-more,.platform,.card,.deal-card,.answer,.group-card,.advance-btn,.match-entry,.match-gallery-photo img,.hsocial a,.theme-toggle,.install-app-btn,.install-close,.quick-actions button):hover{transform:none!important}
 }

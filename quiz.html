@@ -310,9 +310,10 @@ h1 em{font-style:normal;color:var(--gold-2)}
   .mail-box{grid-template-columns:1fr}
 }
 </style>
-<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-1">
+<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-2">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
 <header class="topbar">
   <a class="brand" href="/">
     <strong>ICV</strong>
@@ -325,7 +326,7 @@ h1 em{font-style:normal;color:var(--gold-2)}
   </div>
 </header>
 
-<main>
+<main id="main-content" tabindex="-1">
   <section class="hero">
     <div class="wrap hero-inner">
       <div class="eyebrow">Il Calcio di Vince</div>
@@ -359,6 +360,7 @@ h1 em{font-style:normal;color:var(--gold-2)}
     <p>Inserisci la mail: ti mandiamo il profilo finale e tutti i link ICV per restare aggiornato sulla Juventus.</p>
     <form class="mail-box" id="leadForm">
       <label class="hidden-field">Non compilare <input name="website" autocomplete="off"></label>
+      <label class="visually-hidden" for="emailInput">Indirizzo email</label>
       <input id="emailInput" type="email" name="email" placeholder="La tua email" autocomplete="email" required>
       <button type="submit">Ricevi risultato</button>
     </form>

@@ -14,7 +14,7 @@ const ui=readFileSync(new URL('assets/icv-ui-system.css',root),'utf8');
 test('le pagine pubbliche usano la base visiva condivisa',()=>{
   for(const page of publicPages){
     const html=readFileSync(new URL(page,root),'utf8');
-    assert.match(html,/\/assets\/icv-ui-system\.css\?v=20260923-1/,page);
+    assert.match(html,/\/assets\/icv-ui-system\.css\?v=20260923-2/,page);
   }
 });
 

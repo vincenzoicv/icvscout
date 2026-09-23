@@ -24,10 +24,15 @@
   --icv-ease:cubic-bezier(.2,.8,.2,1);
 }
 
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;scroll-padding-block:88px}
 body{font-family:var(--icv-font-body)!important}
 button{font-family:var(--icv-font-body)!important}
 input,select,textarea{font-family:inherit}
+
+.skip-link{position:fixed;z-index:10000;top:8px;left:8px;padding:12px 16px;border:2px solid var(--gold-l,var(--gold,#edbd49));border-radius:6px;background:#111;color:#fff;font-weight:700;transform:translateY(calc(-100% - 16px));transition:transform var(--icv-motion-fast) var(--icv-ease)}
+.skip-link:focus{transform:translateY(0)}
+.visually-hidden{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+main[id='main-content']{scroll-margin-block:88px}
 
 :where(.hero h1,.page-main>h1,.sec-title,.section-title,.board-title,.market-section-title,.panel-title){font-family:var(--icv-font-display)}
 :where(.eyebrow,.page-kicker,.section-eye,.sec-tag,.field-label,.board-updated,.match-hub-kicker){font-family:var(--icv-font-label)}
@@ -59,7 +64,10 @@ input,select,textarea{font-family:inherit}
 :where(button,a,summary,[role='button']):focus-visible{
   outline:2px solid var(--gold-l,var(--gold,#edbd49));
   outline-offset:3px;
+  scroll-margin-block:88px;
 }
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--gold-l,var(--gold,#edbd49))!important;outline-offset:2px!important;scroll-margin-block:88px}
+:where(button,a,summary,input,select,textarea,[role='button']):focus-visible{scroll-margin-bottom:calc(104px + env(safe-area-inset-bottom))}
 
 :where(.profile-actions,.quick-actions,.competition-tabs,.page-tabs,.composer-tools,.match-receipt-actions){gap:var(--icv-space-2)}
 :where(.page-main,.wrap){padding-inline:var(--icv-page-gutter)}

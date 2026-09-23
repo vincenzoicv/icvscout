@@ -271,10 +271,10 @@ main{padding-top:58px;position:relative;z-index:1;}
 .receipt-section p{margin-top:5px;font-size:10px;font-weight:700;line-height:1.45;}
 .receipt-footer{display:flex;justify-content:space-between;gap:10px;font-size:8px;font-weight:800;color:#666;letter-spacing:.8px;}
 @keyframes receiptFeed{0%{opacity:0;transform:translateY(-88%)}22%{opacity:1;transform:translateY(-72%)}36%{transform:translateY(-72%)}52%{transform:translateY(-48%)}64%{transform:translateY(-48%)}82%{transform:translateY(-20%)}100%{opacity:1;transform:translateY(0)}}
-.home-panel h3{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:3px;color:var(--gold-l);text-transform:uppercase;margin-bottom:10px;}
+.home-panel h2,.home-panel h3{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:3px;color:var(--gold-l);text-transform:uppercase;margin-bottom:10px;}
 .home-news-panel,.home-market-panel{grid-column:span 2;}
 .home-panel-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px;}
-.home-panel-head h3{margin:0;}
+.home-panel-head h2,.home-panel-head h3{margin:0;}
 .home-panel-link{min-height:36px;padding:0;border:0;background:transparent;color:var(--gold-l);font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.2px;text-decoration:underline;text-underline-offset:4px;text-transform:uppercase;cursor:pointer;}
 .home-panel-link:hover{color:var(--white);}
 .home-panel-link:focus-visible{outline:2px solid var(--gold-l);outline-offset:4px;}
@@ -282,7 +282,7 @@ main{padding-top:58px;position:relative;z-index:1;}
 .home-text{font-size:14px;color:var(--t2);line-height:1.45;}
 .live-desk-panel{grid-column:1/-1;padding:0;min-height:auto;border-color:rgba(196,150,42,.3);}
 .live-desk-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 20px;border-bottom:1px solid var(--bdr2);}
-.live-desk-head h3{margin:0;display:flex;align-items:center;gap:9px;}
+.live-desk-head h2,.live-desk-head h3{margin:0;display:flex;align-items:center;gap:9px;}
 .live-desk-pulse{width:7px;height:7px;border-radius:50%;background:#58d68d;box-shadow:0 0 0 5px rgba(88,214,141,.1);animation:pulse 1.8s ease infinite;}
 .live-desk-note{font-family:"Barlow Condensed";font-size:10px;font-weight:700;letter-spacing:1.4px;color:var(--t3);text-transform:uppercase;}
 .live-desk-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -826,7 +826,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   .news-section{padding:24px 12px 40px;}
 }
 </style>
-<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-1">
+<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-2">
 <link rel="stylesheet" href="/assets/featured-conference.css?v=20260831-4">
 <script defer src="/assets/featured-conference.js?v=20260913-1"></script>
 <link rel="stylesheet" href="/assets/featured-highlights.css?v=20260831-1">
@@ -839,6 +839,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 <script defer src="/assets/section-pages.js?v=20260831-1"></script>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Vai al contenuto principale</a>
 <header>
   <div class="hlogo">
     <img src="/assets/icv-logo-160.jpg" width="80" height="80" alt="ICV Scout">
@@ -889,7 +890,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
     </div>
   </div>
 </aside>
-<main>
+<main id="main-content" tabindex="-1">
 <div class="hero" id="immersiveHero">
   <div class="hero-stadium-media" aria-hidden="true">
     <picture>
@@ -913,7 +914,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   <article class="home-panel home-match-hub" id="homeMatchHub" data-state="loading" aria-live="polite" aria-busy="true">
     <div class="match-hub-head">
       <div class="match-hub-brand">
-        <h3>ICV Match Hub</h3>
+        <h2>ICV Match Hub</h2>
         <span class="match-hub-state" id="matchHubState">Sincronizzazione</span>
       </div>
       <div class="match-hub-tools">
@@ -1009,17 +1010,17 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   </article>
   <div class="home-panel live-desk-panel" id="homeLiveDeskPanel">
     <div class="live-desk-head">
-      <h3><span class="live-desk-pulse"></span>ICV Live Desk</h3>
+      <h2><span class="live-desk-pulse"></span>ICV Live Desk</h2>
       <span class="live-desk-note">Aggiornato automaticamente da fonti selezionate</span>
     </div>
     <div class="live-desk-list" id="homeLiveDesk"><div class="home-text" style="padding:18px 20px">Caricamento aggiornamenti...</div></div>
   </div>
   <div class="home-panel home-news-panel">
-    <div class="home-panel-head"><h3>Ultime News</h3><button class="home-panel-link" type="button" onclick="showSection('news')">Tutte le news</button></div>
+    <div class="home-panel-head"><h2>Ultime News</h2><button class="home-panel-link" type="button" onclick="showSection('news')">Tutte le news</button></div>
     <div class="home-list" id="homeNewsList"><div class="home-text">Nessuna news approvata al momento.</div></div>
   </div>
   <div class="home-panel">
-    <h3>Scorciatoie</h3>
+    <h2>Scorciatoie</h2>
     <div class="quick-actions">
       <button onclick="showSection('news')">News</button>
       <button onclick="location.href='/calendario-juventus'">Calendario</button>
@@ -1097,11 +1098,11 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
     <noscript><p><a href="/assets/nascita-juventus-20260831.mp4?v=1">Guarda Come nasce la Juventus</a></p></noscript>
   </section>
   <div class="home-panel home-market-panel">
-    <h3>Mercato Live</h3>
+    <h2>Mercato Live</h2>
     <div class="home-list" id="homeMarketList"><div class="home-text">Nessun tema mercato pubblicato al momento.</div></div>
   </div>
   <div class="home-panel">
-    <h3>Da Instagram</h3>
+    <h2>Da Instagram</h2>
     <div class="home-list" id="homeInstagramList"><div class="home-text">Nessun post importato al momento.</div></div>
   </div>
 </section>

@@ -56,9 +56,10 @@ footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-fa
 @media(max-width:940px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){header{height:auto;min-height:62px;padding:12px 14px;gap:12px;align-items:flex-start}nav{flex-wrap:wrap;justify-content:flex-end}.grid{grid-template-columns:1fr}main{padding:36px 14px 64px}.hero h1{font-size:76px}.board-head,.market-section-head{align-items:flex-start;flex-direction:column;gap:5px}.market-section-copy{text-align:left}footer{flex-direction:column}}
 </style>
-<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-1">
+<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-2">
 </head>
 <body>
+<a class="skip-link" href="#main-content">Vai al contenuto principale</a>
 <header>
   <a class="brand" href="/"><strong>ICV Scout</strong><span>Il Calcio di Vince</span></a>
   <nav>
@@ -71,7 +72,7 @@ footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-fa
     <button class="mode" type="button" onclick="toggleTheme()" id="themeButton">Day</button>
   </nav>
 </header>
-<main>
+<main id="main-content" tabindex="-1">
   <section class="hero">
     <div class="eyebrow">Estate 2026</div>
     <h1>Mercato</h1>

@@ -74,10 +74,11 @@
     footer a{color:var(--muted);text-decoration:none}
     @media(max-width:720px){.platforms,.features{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{padding:48px 15px}main{padding:58px 15px}}
   </style>
-  <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-1">
+  <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-2">
   <script defer src="/assets/turnstile.js"></script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
   <header>
     <a href="/mondiali" class="back">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3 5 8l5 5"/></svg>
@@ -110,7 +111,7 @@
     </div>
   </section>
 
-  <main>
+  <main id="main-content" tabindex="-1">
     <div class="section-eye">Come funziona</div>
     <div class="section-title">Un solo calendario,<br>tre modi per usarlo</div>
     <div class="features">
@@ -129,7 +130,8 @@
       <h2>Ricevi gli aggiornamenti ICV</h2>
       <p>L’iscrizione è facoltativa e non serve per scaricare il calendario.</p>
       <form id="subscribeForm">
-        <input type="email" name="email" placeholder="la.tua@email.it" autocomplete="email" required>
+        <label class="visually-hidden" for="agendaEmail">Indirizzo email</label>
+        <input id="agendaEmail" type="email" name="email" placeholder="la.tua@email.it" autocomplete="email" required>
         <input type="text" name="website" tabindex="-1" autocomplete="off" hidden>
         <button type="submit">Iscriviti</button>
       </form>

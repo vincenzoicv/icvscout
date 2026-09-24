@@ -3,11 +3,22 @@
   var section = document.getElementById('matchGallery');
   if (!section) return;
   var gallery = null, index = 0, opener = null, scrollStyle = '', startX = null;
+  var photoObserver = 'IntersectionObserver' in window ? new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) loadThumbnail(entry.target);
+    });
+  }, { rootMargin: '200px 0px' }) : null;
   var dialog = document.createElement('dialog');
   dialog.className = 'match-lightbox'; dialog.setAttribute('aria-labelledby','matchPhotoTitle');
   dialog.innerHTML = '<div class="match-lightbox-bar"><h2 id="matchPhotoTitle"></h2><button type="button" data-close aria-label="Chiudi galleria" title="Chiudi galleria"><img src="/assets/x.svg" alt=""></button></div><div class="match-lightbox-image"><p role="status">Caricamento foto...</p><img alt="" hidden></div><div class="match-lightbox-caption"><p id="matchPhotoCaption"></p></div><div class="match-lightbox-controls"><button type="button" data-prev aria-label="Foto precedente" title="Foto precedente"><img src="/assets/chevron-left.svg" alt=""></button><span id="matchPhotoPosition" aria-live="polite"></span><button type="button" data-next aria-label="Foto successiva" title="Foto successiva"><img src="/assets/chevron-right.svg" alt=""></button></div>';
   document.body.appendChild(dialog);
   var image = dialog.querySelector('.match-lightbox-image>img'), status = dialog.querySelector('[role=status]');
+  function loadThumbnail(img) {
+    if (!img.dataset.src) return;
+    img.src = img.dataset.src;
+    delete img.dataset.src;
+    if (photoObserver) photoObserver.unobserve(img);
+  }
   function show(number) {
     index = Math.max(0, Math.min(gallery.photos.length - 1, number));
     var photo = gallery.photos[index];
@@ -37,15 +48,18 @@
       document.getElementById('matchGalleryHeading').textContent = gallery.title;
       document.getElementById('matchGalleryMeta').textContent = new Date(gallery.date + 'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'}) + ' · ' + gallery.photos.length + ' foto';
       document.getElementById('matchGalleryCredit').textContent = gallery.credit ? 'Foto: ' + gallery.credit : '';
-      var grid = document.getElementById('matchGalleryPhotos'); grid.replaceChildren(); grid.dataset.count = String(Math.min(5, gallery.photos.length));
+      var grid = document.getElementById('matchGalleryPhotos');
+      if (photoObserver) photoObserver.disconnect();
+      grid.replaceChildren(); grid.dataset.count = String(Math.min(5, gallery.photos.length));
       gallery.photos.slice(0,5).forEach(function(photo, number) {
         var button = document.createElement('button'), img = document.createElement('img');
         button.type = 'button'; button.className = 'match-gallery-photo'; button.setAttribute('aria-label','Apri foto ' + (number + 1) + ' di ' + gallery.photos.length + ': ' + (photo.caption || gallery.title));
-        img.src = photo.url; img.alt = photo.caption || gallery.title; img.width = photo.width; img.height = photo.height; img.loading = 'lazy'; img.decoding = 'async';
+        img.dataset.src = photo.url; img.alt = photo.caption || gallery.title; img.width = photo.width; img.height = photo.height; img.loading = 'lazy'; img.decoding = 'async';
         button.appendChild(img);
         if (number === 4 && gallery.photos.length > 5) { var more = document.createElement('span'); more.textContent = '+' + (gallery.photos.length - 5) + ' foto'; button.appendChild(more); }
-        button.addEventListener('click',function() { opener = button; scrollStyle = document.body.style.overflow; document.body.style.overflow = 'hidden'; dialog.showModal(); show(number); });
+        button.addEventListener('click',function() { loadThumbnail(img); opener = button; scrollStyle = document.body.style.overflow; document.body.style.overflow = 'hidden'; dialog.showModal(); show(number); });
         grid.appendChild(button);
+        if (photoObserver) photoObserver.observe(img); else loadThumbnail(img);
       });
       section.hidden = false;
   }

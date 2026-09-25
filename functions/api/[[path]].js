@@ -3486,7 +3486,7 @@ const JUVENTUS_COPPA_ITALIA_2026_27 = [{
   uidKey:"coppa-italia",
   roundKey:"ottavi",
   roundLabel:"Ottavi di finale",
-  sourceUrl:"https://www.juventus.com/it/news/articoli/",
+  source:"Lega Serie A, Comunicato Ufficiale n. 41",
   updatedAt:"2026-09-25T00:00:00Z",
 }];
 
@@ -3611,6 +3611,8 @@ async function juventusCalendar(request, env) {
       fixture.broadcaster ? `Diretta: ${fixture.broadcaster}.` : "",
       fixture.code === "EL"
         ? "Calendario ufficiale: https://www.juventus.com/it/news/articoli/uefa-europa-league-date-e-orari-delle-partite-della-juventus"
+        : fixture.code === "CI"
+          ? "Programmazione da Comunicato Ufficiale n. 41 della Lega Serie A, 25 settembre 2026."
         : `Calendario ufficiale: ${fixture.sourceUrl || "https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27"}`,
     ].join("\n");
     const modified = match && match.lastUpdated ? new Date(match.lastUpdated) : null;

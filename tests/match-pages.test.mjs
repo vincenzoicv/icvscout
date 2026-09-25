@@ -75,3 +75,8 @@ test('search requires at least two characters and the homepage exposes search', 
   assert.match(home, /href="\/cerca" class="header-search"/);
   assert.match(readFileSync(new URL('../cerca.html', import.meta.url), 'utf8'), /match-pages\.js\?v=20260925-1/);
 });
+
+test('clean match URLs rely on Pages clean-URL handling without redirect loops', () => {
+  const redirects = readFileSync(new URL('../_redirects', import.meta.url), 'utf8');
+  assert.doesNotMatch(redirects, /^\/(?:cerca|partita)(?:\.html)?\s+\/(?:cerca|partita)(?:\.html)?\s+\d+$/m);
+});

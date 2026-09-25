@@ -80,3 +80,8 @@ test('clean match URLs rely on Pages clean-URL handling without redirect loops',
   const redirects = readFileSync(new URL('../_redirects', import.meta.url), 'utf8');
   assert.doesNotMatch(redirects, /^\/(?:cerca|partita)(?:\.html)?\s+\/(?:cerca|partita)(?:\.html)?\s+\d+$/m);
 });
+
+test('match pages localize the scheduled provider states', () => {
+  const script = readFileSync(new URL('../assets/match-pages.js', import.meta.url), 'utf8');
+  assert.match(script, /timed:'In programma',pre_match:'In programma'/);
+});

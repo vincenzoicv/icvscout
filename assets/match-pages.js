@@ -2,7 +2,7 @@
   'use strict';
   const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const formatDate=value=>{const date=new Date(value);return Number.isFinite(date.getTime())?new Intl.DateTimeFormat('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'}).format(date):'Data da confermare';};
-  const cleanStatus=status=>({finished:'Finale',awarded:'Omologata',live:'In corso',in_play:'In corso',paused:'Intervallo',halftime:'Intervallo',scheduled:'In programma',postponed:'Rinviata',cancelled:'Annullata',suspended:'Sospesa'}[String(status||'').toLowerCase()]||status||'');
+  const cleanStatus=status=>({finished:'Finale',awarded:'Omologata',live:'In corso',in_play:'In corso',paused:'Intervallo',halftime:'Intervallo',scheduled:'In programma',timed:'In programma',pre_match:'In programma',postponed:'Rinviata',cancelled:'Annullata',suspended:'Sospesa'}[String(status||'').toLowerCase()]||status||'');
   const minuteLabel=item=>item.injuryTime?`${item.minute}+${item.injuryTime}'`:`${item.minute}'`;
   function resultLabel(type){return ({news:'News',match:'Partita',player:'Giocatore',market:'Mercato',social:'Social'}[type]||'Contenuto');}
   async function loadSearch(){

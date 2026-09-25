@@ -922,7 +922,6 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
         <span class="match-hub-state" id="matchHubState">Sincronizzazione</span>
       </div>
       <div class="match-hub-tools">
-        <span class="match-hub-updated" id="matchHubUpdated"><span class="icv-orbit-loader" aria-hidden="true"></span>Dati in arrivo</span>
         <a class="match-hub-calendar-link" href="/calendario-juventus">Calendario</a>
       </div>
     </div>
@@ -2041,15 +2040,6 @@ function loadMatchMonitor(matches) {
     .catch(function() { renderMatchMonitor(null, matches); });
 }
 
-function matchHubFreshness(match) {
-  var updated = new Date(match && match.updatedAt || 0);
-  if (isNaN(updated.getTime())) return "Fonte in sincronizzazione";
-  var mins = Math.max(0, Math.floor((Date.now() - updated.getTime()) / 60000));
-  if (mins < 2) return "Verificato ora";
-  if (mins < 60) return "Verificato " + mins + " min fa";
-  return "Verificato alle " + updated.toLocaleTimeString("it-IT", {hour:"2-digit", minute:"2-digit"});
-}
-
 function renderMatchHubScorers(match) {
   var scorers = document.getElementById("matchHubResultScorers");
   if (!scorers) return;
@@ -2145,7 +2135,6 @@ function renderMatchHub(apiRows) {
   setMatchHubText("matchHubState", phaseCopy.state);
   setMatchHubText("matchHubPhaseEyebrow", phaseCopy.eyebrow);
   setMatchHubText("matchHubPhaseTitle", phaseCopy.title);
-  setMatchHubText("matchHubUpdated", matchHubFreshness(display));
   var freshnessTime = new Date(display && display.updatedAt || 0).getTime();
   hub.classList.toggle("is-stale", phase === "live" && (!freshnessTime || Date.now() - freshnessTime > 5 * 60000));
   renderMatchHubUpcoming(matches);

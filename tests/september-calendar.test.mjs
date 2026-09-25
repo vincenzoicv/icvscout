@@ -26,7 +26,7 @@ test('September: correct stale import and stored rows, without duplicating Sassu
   const rows = orderPublicMatches([staleRow],{now:'2026-08-31T10:00:00Z'});
   assert.equal(rows[0].match_date,report.match_date);
   const html = readFileSync(new URL('../index.html',import.meta.url),'utf8');
-  const source = html.slice(html.indexOf('function icvEsc('),html.indexOf('function matchHubFreshness('));
+  const source = html.slice(html.indexOf('function icvEsc('),html.indexOf('function renderMatchHubScorers('));
   const allRows = new Function(source + ';return allMatchHubRows')();
   const september = allRows(rows).filter(m => /^2026-09-/.test(m.date));
   assert.equal(september.length,4);

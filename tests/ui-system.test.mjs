@@ -54,7 +54,7 @@ test('Orbit accompagna solo gli stati iniziali di caricamento e resta fermo con 
   const home=readFileSync(new URL('index.html',root),'utf8');
   const calendar=readFileSync(new URL('calendario-juventus.html',root),'utf8');
   const agenda=readFileSync(new URL('agenda.html',root),'utf8');
-  assert.match(home,/<span class="match-hub-updated" id="matchHubUpdated"><span class="icv-orbit-loader" aria-hidden="true"><\/span>Dati in arrivo<\/span>/);
+  assert.doesNotMatch(home,/Verificato ora|matchHubUpdated/);
   assert.equal((calendar.match(/class="loading loading--orbit" role="status"><span class="icv-orbit-loader" aria-hidden="true">/g)||[]).length,3);
   assert.match(agenda,/class="loading loading--orbit" role="status"><span class="icv-orbit-loader" aria-hidden="true">/);
 });

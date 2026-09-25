@@ -100,7 +100,7 @@ test("i marcatori sono sotto il risultato e spariscono senza dati", async () => 
 
 test("dopo Juventus-Atalanta le prossime tre iniziano da Cagliari-Juventus", async () => {
   const html = await read("index.html");
-  const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function matchHubFreshness("));
+  const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function renderMatchHubScorers("));
   const panel = {hidden:true};
   const box = {innerHTML:""};
   class MatchDate extends Date { static now() { return Date.parse("2026-09-20T18:05:00Z"); } }
@@ -206,7 +206,6 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
     "downloadMatchReceipt",
     "shareMatchReceipt",
     "function matchHubPhase",
-    "function matchHubFreshness",
     "function homeDashboardInterval",
     "cache:\"no-store\"",
     "Forma recente",
@@ -222,6 +221,7 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
     "function animateMatchHub",
     "ICV_VERIFIED_MATCH_DATA",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
+  assert.doesNotMatch(html, /Verificato ora|matchHubUpdated/);
   assert.match(html, /id="homeMatchHub"[^>]*data-state="loading"[^>]*aria-busy="true"/);
   assert.match(html, /id="matchHubPhaseTitle">Caricamento prossima partita/);
   assert.match(html, /id="matchHubNextDate">Aggiornamento in corso/);

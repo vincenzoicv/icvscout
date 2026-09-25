@@ -767,7 +767,49 @@ async function publicMatch(env, url) {
     if (fixture) return json(fixture);
     return json({ error: "Dettaglio partita non trovato" }, 404);
   }
-  const row = rows[0];
+  let row = rows[0];
+  const storedPayload = matchSourcePayload(row.source_payload);
+  const storedStatus = cleanText(storedPayload.icv_manual?.status || row.status || storedPayload.status || "").toLowerCase();
+  const needsDetails = !Array.isArray(storedPayload.goals) || !storedPayload.goals.length
+    || !Array.isArray(storedPayload.homeTeam?.lineup) || !storedPayload.homeTeam.lineup.length
+    || !Array.isArray(storedPayload.awayTeam?.lineup) || !storedPayload.awayTeam.lineup.length;
+  if (env.FOOTBALL_DATA_KEY && /^\d+$/.test(String(row.match_id || ""))
+      && footballDataMatchStatus(storedStatus) === "finished" && needsDetails) {
+    try {
+      const id = encodeURIComponent(String(row.match_id));
+      const detailUrl = "https://api.football-data.org/v4/matches/" + id;
+      const detail = await fetchJson(detailUrl, {
+        "X-Auth-Token": env.FOOTBALL_DATA_KEY,
+        "X-Unfold-Lineups": "true",
+        "X-Unfold-Bookings": "true",
+        "X-Unfold-Goals": "true",
+      });
+      const detailedReport = matchReportFromFootballData(detail, { sourceUrl: detailUrl });
+      if (detailedReport) {
+        const detailedPayload = matchSourcePayload(detailedReport.source_payload);
+        row = {
+          ...row,
+          source_payload: {
+            ...storedPayload,
+            ...detailedPayload,
+            homeTeam: { ...storedPayload.homeTeam, ...detailedPayload.homeTeam,
+              lineup: storedPayload.homeTeam?.lineup?.length ? storedPayload.homeTeam.lineup : detailedPayload.homeTeam?.lineup || [],
+              formation: storedPayload.homeTeam?.formation || detailedPayload.homeTeam?.formation || "" },
+            awayTeam: { ...storedPayload.awayTeam, ...detailedPayload.awayTeam,
+              lineup: storedPayload.awayTeam?.lineup?.length ? storedPayload.awayTeam.lineup : detailedPayload.awayTeam?.lineup || [],
+              formation: storedPayload.awayTeam?.formation || detailedPayload.awayTeam?.formation || "" },
+            goals: storedPayload.goals?.length ? storedPayload.goals : detailedPayload.goals || [],
+            bookings: storedPayload.bookings?.length ? storedPayload.bookings : detailedPayload.bookings || [],
+            icv_manual: storedPayload.icv_manual,
+            icv_meta: { ...detailedPayload.icv_meta, ...storedPayload.icv_meta,
+              source_url: detailUrl, provider: "football-data.org", fetched_at: detailedPayload.icv_meta?.fetched_at },
+          },
+        };
+      }
+    } catch {
+      // Keep the stored result available if the provider cannot supply the full report.
+    }
+  }
   const payload = matchSourcePayload(row.source_payload);
   const manual = payload.icv_manual && payload.icv_manual.active !== false ? payload.icv_manual : {};
   const score = payload.score?.fullTime || payload.score?.regularTime || {};

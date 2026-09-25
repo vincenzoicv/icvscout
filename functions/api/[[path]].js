@@ -810,6 +810,7 @@ async function publicMatch(env, url) {
       // Keep the stored result available if the provider cannot supply the full report.
     }
   }
+  row = applyVerifiedMatchDetails(row);
   const payload = matchSourcePayload(row.source_payload);
   const manual = payload.icv_manual && payload.icv_manual.active !== false ? payload.icv_manual : {};
   const score = payload.score?.fullTime || payload.score?.regularTime || {};
@@ -846,7 +847,9 @@ async function publicMatch(env, url) {
       minute: item.minute ?? null,
       player: cleanText(item.player?.name || ""),
       card: cleanText(item.card || "YELLOW_CARD"),
+      team: cleanText(item.team?.name || ""),
     })) : [],
+    substitutions: Array.isArray(payload.icv_verified_details?.substitutions) ? payload.icv_verified_details.substitutions : [],
     homeFormation: cleanText(payload.homeTeam?.formation || ""),
     awayFormation: cleanText(payload.awayTeam?.formation || ""),
     homeLineup: Array.isArray(payload.homeTeam?.lineup) ? payload.homeTeam.lineup.map(player => ({ name: cleanText(player.name || ""), position: cleanText(player.position || "") })) : [],
@@ -856,6 +859,59 @@ async function publicMatch(env, url) {
     updatedAt: manual.updated_at || payload.icv_meta?.fetched_at || row.updated_at || null,
     mvp: cleanText(manual.mvp || ""),
   });
+}
+
+const VERIFIED_PUBLIC_MATCH_DETAILS = {
+  "558595": {
+    sourceUrl: "https://www.juventus.com/it/news/articoli/serie-a-juventus-atalanta-il-tabellino-x3128",
+    homeFormation: "4-2-3-1",
+    awayFormation: "4-3-3",
+    goals: [
+      { minute: 28, injuryTime: null, scorer: { name: "Francisco Conceicao" }, team: { name: "Juventus FC" }, type: "REGULAR" },
+      { minute: 77, injuryTime: null, scorer: { name: "Bremer" }, team: { name: "Juventus FC" }, type: "REGULAR" },
+    ],
+    bookings: [
+      { minute: 17, player: { name: "Thomas Kristensen" }, card: "YELLOW_CARD", team: { name: "Atalanta BC" } },
+      { minute: 22, player: { name: "Francisco Conceicao" }, card: "YELLOW_CARD", team: { name: "Juventus FC" } },
+      { minute: 43, player: { name: "Franck Kessie" }, card: "YELLOW_CARD", team: { name: "Atalanta BC" } },
+    ],
+    homeLineup: [
+      ["Guglielmo Vicario", "Goalkeeper"], ["Pierre Kalulu", "Defence"], ["Bremer", "Defence"], ["Jhon Lucumi", "Defence"], ["Zeki Celik", "Defence"],
+      ["Weston McKennie", "Midfield"], ["Douglas Luiz", "Midfield"], ["Francisco Conceicao", "Forward"], ["Nico Gonzalez", "Forward"], ["Kerim Alajbegovic", "Forward"], ["Randal Kolo Muani", "Forward"],
+    ].map(([name, position]) => ({ name, position })),
+    awayLineup: [
+      ["Marco Carnesecchi", "Goalkeeper"], ["Raoul Bellanova", "Defence"], ["Giorgio Scalvini", "Defence"], ["Thomas Kristensen", "Defence"], ["Lorenzo Bernasconi", "Defence"],
+      ["Lazar Samardzic", "Midfield"], ["Franck Kessie", "Midfield"], ["Ederson", "Midfield"], ["Charles De Ketelaere", "Forward"], ["Nikola Krstovic", "Forward"], ["Jon Rowe", "Forward"],
+    ].map(([name, position]) => ({ name, position })),
+    substitutions: [
+      [46, "Pape Sarr", "Kerim Alajbegovic", "Juventus FC"], [63, "Giacomo Raspadori", "Lazar Samardzic", "Atalanta BC"],
+      [73, "Edon Zhegrova", "Francisco Conceicao", "Juventus FC"], [73, "Teun Koopmeiners", "Nico Gonzalez", "Juventus FC"],
+      [73, "Roberto Gaetano", "Franck Kessie", "Atalanta BC"], [73, "Gianluca Scamacca", "Nikola Krstovic", "Atalanta BC"],
+      [84, "Eljif Elmas", "Jon Rowe", "Atalanta BC"], [86, "Nick Woltemade", "Weston McKennie", "Juventus FC"],
+      [89, "Lloyd Kelly", "Randal Kolo Muani", "Juventus FC"],
+    ].map(([minute, player, replacedPlayer, team]) => ({ minute, player, replacedPlayer, team })),
+  },
+};
+
+function applyVerifiedMatchDetails(row) {
+  const details = VERIFIED_PUBLIC_MATCH_DETAILS[String(row.match_id || "")];
+  if (!details) return row;
+  const payload = matchSourcePayload(row.source_payload);
+  return {
+    ...row,
+    source_payload: {
+      ...payload,
+      homeTeam: { ...payload.homeTeam, formation: payload.homeTeam?.formation || details.homeFormation,
+        lineup: payload.homeTeam?.lineup?.length ? payload.homeTeam.lineup : details.homeLineup },
+      awayTeam: { ...payload.awayTeam, formation: payload.awayTeam?.formation || details.awayFormation,
+        lineup: payload.awayTeam?.lineup?.length ? payload.awayTeam.lineup : details.awayLineup },
+      goals: payload.goals?.length ? payload.goals : details.goals,
+      bookings: payload.bookings?.length ? payload.bookings : details.bookings,
+      icv_verified_details: { ...payload.icv_verified_details, substitutions: payload.icv_verified_details?.substitutions?.length
+        ? payload.icv_verified_details.substitutions : details.substitutions },
+      icv_meta: { ...payload.icv_meta, provider: "Juventus.com", source_url: details.sourceUrl },
+    },
+  };
 }
 
 async function publicSearch(env, url) {

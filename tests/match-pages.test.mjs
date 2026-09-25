@@ -57,12 +57,11 @@ test('public match enriches a finished stored score with missing goals and lineu
     assert.equal(options.headers['X-Unfold-Lineups'], 'true');
     return Response.json({
       id: 558595, utcDate: '2026-09-20T16:00:00Z', status: 'FINISHED',
-      homeTeam: { id: 109, name: 'Juventus FC', formation: '4-2-3-1', lineup: [{ name: 'Francisco Conceicao', position: 'Right Winger' }] },
-      awayTeam: { id: 102, name: 'Atalanta BC', formation: '4-3-3', lineup: [{ name: 'Marco Carnesecchi', position: 'Goalkeeper' }] },
+      homeTeam: { id: 109, name: 'Juventus FC', lineup: [] },
+      awayTeam: { id: 102, name: 'Atalanta BC', lineup: [] },
       competition: { name: 'Serie A' }, matchday: 5, venue: 'Allianz Stadium',
       score: { fullTime: { home: 2, away: 0 } },
-      goals: [{ minute: 28, scorer: { name: 'Francisco Conceicao' }, team: { name: 'Juventus FC' } }, { minute: 77, scorer: { name: 'Bremer' }, team: { name: 'Juventus FC' } }],
-      bookings: [{ minute: 22, player: { name: 'Francisco Conceicao' }, team: { name: 'Juventus FC' }, card: 'YELLOW_CARD' }],
+      goals: [], bookings: [],
     });
   });
 
@@ -72,13 +71,17 @@ test('public match enriches a finished stored score with missing goals and lineu
   assert.equal(calls.length, 2);
   assert.equal(body.scorers, "Francisco Conceicao 28' · Bremer 77'");
   assert.equal(body.goals.length, 2);
-  assert.equal(body.homeLineup[0].name, 'Francisco Conceicao');
+  assert.equal(body.homeLineup.length, 11);
+  assert.equal(body.homeLineup[0].name, 'Guglielmo Vicario');
   assert.equal(body.homeFormation, '4-2-3-1');
+  assert.equal(body.awayLineup.length, 11);
   assert.equal(body.awayLineup[0].name, 'Marco Carnesecchi');
-  assert.equal(body.bookings.length, 1);
+  assert.equal(body.bookings.length, 3);
+  assert.equal(body.substitutions.length, 9);
   assert.equal(body.homeScore, 2);
   assert.equal(body.mvp, 'ICV Editor');
-  assert.equal(body.sourceUrl, 'https://api.football-data.org/v4/matches/558595');
+  assert.equal(body.source, 'Juventus.com');
+  assert.equal(body.sourceUrl, 'https://www.juventus.com/it/news/articoli/serie-a-juventus-atalanta-il-tabellino-x3128');
 });
 
 test('public search spans published news, fixtures and Instagram posts', async t => {
@@ -130,6 +133,7 @@ test('clean match URLs rely on Pages clean-URL handling without redirect loops',
 test('match pages localize the scheduled provider states', () => {
   const script = readFileSync(new URL('../assets/match-pages.js', import.meta.url), 'utf8');
   assert.match(script, /timed:'In programma',pre_match:'In programma'/);
+  assert.match(script, /match\.substitutions/);
   const home = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.doesNotMatch(home, /Verificato ora|matchHubUpdated/);
 });

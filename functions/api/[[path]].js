@@ -174,6 +174,8 @@ export async function onRequest(context) {
     }
     if (path === "public/players") return publicPlayers(env, url);
     if (/^public\/players\/[a-z0-9-]+$/i.test(path)) return publicPlayer(env, path.split("/").pop());
+    if (path === "public/match" && request.method === "GET") return publicMatch(env, url);
+    if (path === "public/search" && request.method === "GET") return publicSearch(env, url);
     if (path === "public/graphics") return publicGraphics(env, url);
     if (path === "public/news") return publicNews(env, url);
     if (path === "world-cup/overview") return worldCupOverview(request, env, context);
@@ -710,6 +712,165 @@ async function publicNews(env, url) {
     return json(publicNewsRows(rows).slice(0, limit));
   } catch {
     return json([]);
+  }
+}
+
+async function publicMatch(env, url) {
+  const matchId = cleanText(url.searchParams.get("match_id") || "");
+  const dateValue = cleanText(url.searchParams.get("date") || "");
+  if (!matchId && !Number.isFinite(Date.parse(dateValue))) return json({ error: "Partita non valida" }, 400);
+  if (!hasSupabase(env)) {
+    const fixture = scheduledJuventusFixture(dateValue, url.searchParams.get("home"), url.searchParams.get("away"));
+    return fixture ? json(fixture) : json({ error: "Referto non disponibile" }, 404);
+  }
+  let rows = [];
+  if (matchId) {
+    rows = await safeAdminRead(() => sb(env, "/match_reports?match_id=eq." + encodeURIComponent(matchId) + "&limit=1"), []);
+  } else {
+    const date = new Date(dateValue);
+    const start = new Date(date); start.setUTCHours(0, 0, 0, 0);
+    const end = new Date(date); end.setUTCHours(23, 59, 59, 999);
+    rows = await safeAdminRead(() => sb(env, "/match_reports?match_date=gte." + encodeURIComponent(start.toISOString()) + "&match_date=lte." + encodeURIComponent(end.toISOString()) + "&limit=20"), []);
+    const homeQuery = normalizeEntityText(url.searchParams.get("home") || "");
+    const awayQuery = normalizeEntityText(url.searchParams.get("away") || "");
+    if (homeQuery || awayQuery) rows = rows.filter(row => {
+      const payload = matchSourcePayload(row.source_payload);
+      return (!homeQuery || normalizeEntityText(payload.homeTeam?.name || "").includes(homeQuery))
+        && (!awayQuery || normalizeEntityText(payload.awayTeam?.name || "").includes(awayQuery));
+    });
+    rows.sort((a, b) => Math.abs(new Date(a.match_date).getTime() - date.getTime()) - Math.abs(new Date(b.match_date).getTime() - date.getTime()));
+  }
+  if (!rows.length && env.FOOTBALL_DATA_KEY) {
+    try {
+      const headers = { "X-Auth-Token": env.FOOTBALL_DATA_KEY, "X-Unfold-Lineups": "true", "X-Unfold-Bookings": "true", "X-Unfold-Goals": "true" };
+      let candidate = null;
+      if (matchId && /^\d+$/.test(matchId)) {
+        candidate = await fetchJson("https://api.football-data.org/v4/matches/" + encodeURIComponent(matchId), headers);
+      } else {
+        const day = new Date(dateValue).toISOString().slice(0, 10);
+        const data = await fetchJson("https://api.football-data.org/v4/teams/109/matches?dateFrom=" + day + "&dateTo=" + day, headers);
+        const homeQuery = normalizeEntityText(url.searchParams.get("home") || "");
+        const awayQuery = normalizeEntityText(url.searchParams.get("away") || "");
+        candidate = (data.matches || []).find(item => {
+          const home = normalizeEntityText(item.homeTeam?.name || ""), away = normalizeEntityText(item.awayTeam?.name || "");
+          return (!homeQuery || home.includes(homeQuery)) && (!awayQuery || away.includes(awayQuery));
+        }) || null;
+      }
+      const report = matchReportFromFootballData(correctScheduledJuventusMatch(candidate), { sourceUrl: "https://api.football-data.org/v4/teams/109/matches" });
+      if (report) rows = [report];
+    } catch {
+      // The match archive remains authoritative when the upstream provider is unavailable.
+    }
+  }
+  if (!rows.length) {
+    const fixture = scheduledJuventusFixture(dateValue, url.searchParams.get("home"), url.searchParams.get("away"));
+    if (fixture) return json(fixture);
+    return json({ error: "Dettaglio partita non trovato" }, 404);
+  }
+  const row = rows[0];
+  const payload = matchSourcePayload(row.source_payload);
+  const manual = payload.icv_manual && payload.icv_manual.active !== false ? payload.icv_manual : {};
+  const score = payload.score?.fullTime || payload.score?.regularTime || {};
+  const scheduledFixture = scheduledJuventusFixture(row.match_date || payload.utcDate, payload.homeTeam?.name, payload.awayTeam?.name);
+  const status = cleanText(manual.status || row.status || payload.status || "scheduled").toLowerCase();
+  return json({
+    match_id: String(row.match_id || payload.id || ""),
+    date: scheduledFixture && ["scheduled", "timed", "pre_match"].includes(status) ? scheduledFixture.date : row.match_date || payload.utcDate || null,
+    status,
+    competition: cleanText(row.competition || payload.competition?.name || "Match Center"),
+    matchday: payload.matchday || null,
+    roundLabel: cleanText(payload.icv_meta?.round_label || scheduledFixture?.roundLabel || ""),
+    broadcaster: cleanText(payload.icv_meta?.broadcaster || scheduledFixture?.broadcaster || ""),
+    home: cleanText(payload.homeTeam?.name || "Juventus"),
+    away: cleanText(payload.awayTeam?.name || ""),
+    homeScore: manual.home_score ?? score.home ?? null,
+    awayScore: manual.away_score ?? score.away ?? null,
+    venue: cleanText(payload.venue || scheduledFixture?.venue || ""),
+    scorers: cleanText(manual.scorers || (Array.isArray(payload.goals) ? payload.goals.map(goal => {
+      const name = cleanText(goal.scorer?.name || "");
+      if (!name) return "";
+      const minute = goal.minute == null ? "" : " " + goal.minute + (goal.injuryTime ? "+" + goal.injuryTime : "") + "'";
+      const type = goal.type === "OWN_GOAL" ? " (aut.)" : goal.type === "PENALTY" ? " (rig.)" : "";
+      return name + minute + type;
+    }).filter(Boolean).join(" · ") : "") || ""),
+    goals: Array.isArray(payload.goals) ? payload.goals.map(goal => ({
+      minute: goal.minute ?? null,
+      injuryTime: goal.injuryTime ?? null,
+      player: cleanText(goal.scorer?.name || ""),
+      team: cleanText(goal.team?.name || ""),
+      type: cleanText(goal.type || "REGULAR"),
+    })) : [],
+    bookings: Array.isArray(payload.bookings) ? payload.bookings.map(item => ({
+      minute: item.minute ?? null,
+      player: cleanText(item.player?.name || ""),
+      card: cleanText(item.card || "YELLOW_CARD"),
+    })) : [],
+    homeFormation: cleanText(payload.homeTeam?.formation || ""),
+    awayFormation: cleanText(payload.awayTeam?.formation || ""),
+    homeLineup: Array.isArray(payload.homeTeam?.lineup) ? payload.homeTeam.lineup.map(player => ({ name: cleanText(player.name || ""), position: cleanText(player.position || "") })) : [],
+    awayLineup: Array.isArray(payload.awayTeam?.lineup) ? payload.awayTeam.lineup.map(player => ({ name: cleanText(player.name || ""), position: cleanText(player.position || "") })) : [],
+    source: cleanText(payload.icv_meta?.provider || "football-data.org"),
+    sourceUrl: publicSearchHref(payload.icv_meta?.source_url || "", ""),
+    updatedAt: manual.updated_at || payload.icv_meta?.fetched_at || row.updated_at || null,
+    mvp: cleanText(manual.mvp || ""),
+  });
+}
+
+async function publicSearch(env, url) {
+  const query = cleanText(url.searchParams.get("q") || "").slice(0, 100);
+  const normalizedQuery = normalizeEntityText(query);
+  if (normalizedQuery.length < 2) return json({ query, results: [] });
+  if (!hasSupabase(env)) return json({ query, results: [] });
+  const [newsRows, marketRows, matchRows, socialRows] = await Promise.all([
+    safeAdminRead(() => sb(env, "/news?visible=eq.true&order=created_at.desc&limit=120"), []),
+    safeAdminRead(() => sb(env, "/market_items?order=updated_at.desc&limit=100"), []),
+    safeAdminRead(() => sb(env, "/match_reports?order=match_date.desc&limit=160"), []),
+    safeAdminRead(() => sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&post_url=not.is.null&order=published_at.desc.nullslast,created_at.desc&limit=80"), []),
+  ]);
+  const news = publicNewsRows(newsRows);
+  const market = aggregateMarketItems(publicMarketRows([
+    ...publicMarketFromNews(news), ...(marketRows || []),
+  ]));
+  const players = buildPlayerIndex(market, news);
+  const matches = orderPublicMatches(matchRows).map(row => {
+    const payload = matchSourcePayload(row.source_payload);
+    const home = cleanText(payload.homeTeam?.name || "");
+    const away = cleanText(payload.awayTeam?.name || "");
+    return {
+      type: "match", id: String(row.match_id || payload.id || ""),
+      title: home + " – " + away,
+      summary: [row.competition, payload.matchday ? payload.matchday + "ª giornata" : "", row.summary].filter(Boolean).join(" · "),
+      date: row.match_date, href: "/partita?match_id=" + encodeURIComponent(row.match_id || payload.id || ""),
+      haystack: [home, away, row.competition, row.summary, payload.status].join(" "),
+    };
+  });
+  const records = [
+    ...matches,
+    ...news.map(row => ({ type: "news", id: String(row.id), title: row.title, summary: cleanText(row.body).slice(0, 220), date: row.created_at, href: publicSearchHref(row.source_url, "/community?news=" + encodeURIComponent(row.id)), haystack: [row.title, row.body, row.source, row.category].join(" ") })),
+    ...players.map(row => ({ type: "player", id: row.slug, title: row.name, summary: [row.position, row.club].filter(Boolean).join(" · "), href: "/giocatore?slug=" + encodeURIComponent(row.slug), haystack: [row.name, ...(row.aliases || []), row.position, row.club].join(" ") })),
+    ...market.map(row => ({ type: "market", id: String(row.id || row.player_name), title: row.player_name || "Mercato Juventus", summary: [row.status, row.note, row.source_name].filter(Boolean).join(" · "), date: row.updated_at, href: publicSearchHref(row.source_url, "/#news"), haystack: [row.player_name, row.status, row.note, row.source_name, row.category].join(" ") })),
+    ...publicSocialRows(socialRows).map(row => ({ type: "social", id: String(row.id), title: cleanText(row.caption).split("\n")[0] || "Post ICV", summary: cleanText(row.caption).slice(0, 220), date: row.published_at || row.created_at, href: publicSearchHref(row.post_url, "/#news"), haystack: [row.caption, row.platform].join(" ") })),
+  ];
+  const words = normalizedQuery.split(/\s+/).filter(Boolean);
+  const results = records.filter(record => {
+    const text = normalizeEntityText([record.title, record.summary, record.haystack].join(" "));
+    return words.every(word => text.includes(word));
+  }).map(record => {
+    const title = normalizeEntityText(record.title);
+    return { ...record, score: (title.includes(normalizedQuery) ? 4 : 0) + words.reduce((total, word) => total + (title.includes(word) ? 2 : 0), 0) };
+  }).sort((a, b) => b.score - a.score || new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 50)
+    .map(({ haystack, score, ...record }) => record);
+  return json({ query, results });
+}
+
+function publicSearchHref(value, fallback) {
+  const candidate = cleanText(value);
+  if (candidate.startsWith("/") && !candidate.startsWith("//")) return candidate;
+  try {
+    const url = new URL(candidate);
+    return url.protocol === "https:" ? url.href : fallback;
+  } catch {
+    return fallback;
   }
 }
 
@@ -3221,14 +3382,14 @@ const JUVENTUS_SERIE_A_2026_27 = [
   [9, "2026-10-28", "Genoa", "Juventus", "2026-10-28T19:45:00Z"],
   [10, "2026-11-01", "Juventus", "Napoli", "2026-11-01T19:45:00Z"],
   [11, "2026-11-08", "Fiorentina", "Juventus", "2026-11-08T19:45:00Z"],
-  [12, "2026-11-23", "Juventus", "Venezia", "2026-11-23T19:45:00Z"],
-  [13, "2026-11-29", "Como", "Juventus", null],
-  [14, "2026-12-06", "Juventus", "Udinese", null],
-  [15, "2026-12-13", "Juventus", "Monza", null],
-  [16, "2026-12-20", "Roma", "Juventus", null],
-  [17, "2027-01-03", "Bologna", "Juventus", null],
-  [18, "2027-01-06", "Juventus", "Torino", null],
-  [19, "2027-01-10", "Inter", "Juventus", null],
+  [12, "2026-11-22", "Juventus", "Venezia", "2026-11-22T11:30:00Z"],
+  [13, "2026-11-29", "Como", "Juventus", "2026-11-29T19:45:00Z"],
+  [14, "2026-12-06", "Juventus", "Udinese", "2026-12-06T17:00:00Z"],
+  [15, "2026-12-14", "Juventus", "Monza", "2026-12-14T19:45:00Z"],
+  [16, "2026-12-19", "Roma", "Juventus", "2026-12-19T19:45:00Z"],
+  [17, "2027-01-03", "Bologna", "Juventus", "2027-01-03T19:45:00Z"],
+  [18, "2027-01-06", "Juventus", "Torino", "2027-01-06T11:30:00Z"],
+  [19, "2027-01-10", "Inter", "Juventus", "2027-01-10T19:45:00Z"],
   [20, "2027-01-17", "Juventus", "Genoa", null],
   [21, "2027-01-24", "Juventus", "Cagliari", null],
   [22, "2027-01-31", "Milan", "Juventus", null],
@@ -3251,11 +3412,58 @@ const JUVENTUS_SERIE_A_2026_27 = [
 ].map(([matchday, date, home, away, kickoff]) => ({
   matchday, date, home, away, kickoff,
   ...(matchday === 4 ? { previousKickoff:"2026-09-12T16:00:00Z", updatedAt:"2026-08-31T10:44:56Z" } : {}),
-  ...(matchday >= 6 && matchday <= 12 ? {
+  ...(matchday >= 6 && matchday <= 11 ? {
     updatedAt:"2026-09-03T12:46:00Z",
-    sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-2026-27-anticipi-e-posticipi-dalla-giornata-sei-alla-dodici",
+    sourceUrl:"https://www.legaseriea.it/serie-a/news/quando-si-gioca-anticipi-e-posticipi-fino-alla-12a-giornata",
+  } : {}),
+  ...(matchday === 12 ? {
+    previousKickoff:"2026-11-23T19:45:00Z",
+    updatedAt:"2026-09-25T00:00:00Z",
+    sourceUrl:"https://www.legaseriea.it/serie-a/news",
+    broadcaster:"DAZN",
+  } : {}),
+  ...(matchday >= 13 && matchday <= 19 ? {
+    ...(matchday === 15 ? { previousDate:"2026-12-13" } : {}),
+    updatedAt:"2026-09-25T00:00:00Z",
+    sourceUrl:"https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27",
   } : {}),
 }));
+
+function scheduledJuventusFixture(dateValue, home, away) {
+  const day = new Date(dateValue).toISOString().slice(0, 10);
+  const homeName = cleanText(home || "");
+  const awayName = cleanText(away || "");
+  if (!homeName || !awayName) return null;
+  const fixture = ALL_JUVENTUS_FIXTURES.find(item => (item.date === day
+      || item.previousDate === day
+      || item.previousKickoff && new Date(item.previousKickoff).getTime() === new Date(dateValue).getTime())
+    && normalizedClubName(item.home) === normalizedClubName(homeName)
+    && normalizedClubName(item.away) === normalizedClubName(awayName));
+  if (!fixture) return null;
+  return {
+    date: fixture.kickoff,
+    status: "scheduled",
+    competition: fixture.competition,
+    roundLabel: fixture.roundLabel || "",
+    matchday: fixture.matchday,
+    home: fixture.home,
+    away: fixture.away,
+    homeScore: null,
+    awayScore: null,
+    venue: fixture.home === "Juventus" ? "Allianz Stadium · Torino" : "",
+    goals: [],
+    bookings: [],
+    homeFormation: "",
+    awayFormation: "",
+    homeLineup: [],
+    awayLineup: [],
+    broadcaster: fixture.broadcaster || "",
+    source: "Lega Serie A",
+    sourceUrl: fixture.sourceUrl || "",
+    updatedAt: fixture.updatedAt || null,
+    mvp: "",
+  };
+}
 
 const JUVENTUS_EUROPA_LEAGUE_2026_27 = [
   [1, "2026-09-17T19:00:00Z", "Juventus", "NEC Nijmegen"],
@@ -3266,7 +3474,27 @@ const JUVENTUS_EUROPA_LEAGUE_2026_27 = [
   [6, "2026-12-10T17:45:00Z", "Hapoel Beer-Sheva", "Juventus"],
   [7, "2027-01-21T17:45:00Z", "Ferencvárosi", "Juventus"],
   [8, "2027-01-28T20:00:00Z", "Juventus", "Real Sociedad"],
-].map(([matchday, kickoff, home, away]) => ({ matchday, kickoff, home, away, competition:"Europa League", code:"EL", uidKey:"europa-league" }));
+].map(([matchday, kickoff, home, away]) => ({ matchday, kickoff, home, away, competition:"Europa League", code:"EL", uidKey:"europa-league", roundKey:"g" + matchday, roundLabel:matchday + "ª giornata" }));
+
+const JUVENTUS_COPPA_ITALIA_2026_27 = [{
+  date:"2026-12-03",
+  kickoff:"2026-12-03T20:00:00Z",
+  home:"Juventus",
+  away:"Sassuolo",
+  competition:"Coppa Italia",
+  code:"CI",
+  uidKey:"coppa-italia",
+  roundKey:"ottavi",
+  roundLabel:"Ottavi di finale",
+  sourceUrl:"https://www.juventus.com/it/news/articoli/",
+  updatedAt:"2026-09-25T00:00:00Z",
+}];
+
+const ALL_JUVENTUS_FIXTURES = [
+  ...JUVENTUS_SERIE_A_2026_27.map(fixture => ({...fixture, competition:"Serie A", code:"SA", uidKey:"serie-a", roundKey:"g" + fixture.matchday, roundLabel:fixture.matchday + "ª giornata"})),
+  ...JUVENTUS_EUROPA_LEAGUE_2026_27,
+  ...JUVENTUS_COPPA_ITALIA_2026_27,
+];
 
 function normalizedClubName(value) {
   const normalized = String(value || "")
@@ -3293,7 +3521,7 @@ function normalizedClubName(value) {
 
 function officialFixtureMatch(match, fixture) {
   if (match && match.competition && match.competition.code && match.competition.code !== fixture.code) return false;
-  if (Number(match && match.matchday) !== fixture.matchday) return false;
+  if (fixture.matchday != null && Number(match && match.matchday) !== fixture.matchday) return false;
   const home = worldCupTeamName(match && match.homeTeam, "");
   const away = worldCupTeamName(match && match.awayTeam, "");
   return normalizedClubName(home) === normalizedClubName(fixture.home)
@@ -3310,6 +3538,7 @@ function correctScheduledJuventusMatch(match) {
   const fixture = JUVENTUS_SERIE_A_2026_27.find(item => {
     if (!item.kickoff || !officialFixtureMatch(match, { ...item, code:"SA" })) return false;
     if (item.previousKickoff && new Date(match.utcDate).getTime() === new Date(item.previousKickoff).getTime()) return true;
+    if (item.previousDate && String(match.utcDate || "").slice(0, 10) === item.previousDate) return true;
     const status = String(match.status || "").toLowerCase();
     if (status === "scheduled" || status === "pre_match") return true;
     const sameOfficialDay = String(match.utcDate || "").slice(0, 10) === item.date;
@@ -3354,8 +3583,9 @@ async function juventusCalendar(request, env) {
   ];
 
   const fixtures = [
-    ...JUVENTUS_SERIE_A_2026_27.map(fixture => ({...fixture, competition:"Serie A", code:"SA", uidKey:"serie-a"})),
+    ...JUVENTUS_SERIE_A_2026_27.map(fixture => ({...fixture, competition:"Serie A", code:"SA", uidKey:"serie-a", roundKey:"g" + fixture.matchday, roundLabel:fixture.matchday + "ª giornata"})),
     ...JUVENTUS_EUROPA_LEAGUE_2026_27,
+    ...JUVENTUS_COPPA_ITALIA_2026_27,
   ];
   for (const fixture of fixtures) {
     const match = correctScheduledJuventusMatch(providerMatches.find(candidate => officialFixtureMatch(candidate, fixture)));
@@ -3376,8 +3606,9 @@ async function juventusCalendar(request, env) {
     const result = finished ? `${home} ${score.home}-${score.away} ${away}` : "";
     const summary = finished ? `Juventus: ${result}` : `${fixture.competition}: ${home} - ${away}`;
     const description = [
-      `${fixture.matchday}ª giornata di ${fixture.competition} 2026/27`,
+      `${fixture.roundLabel || fixture.matchday + "ª giornata"} di ${fixture.competition} 2026/27`,
       finished ? `Risultato finale: ${result}` : kickoff ? "Data e orario confermati." : "Data del turno; giorno e orario da confermare.",
+      fixture.broadcaster ? `Diretta: ${fixture.broadcaster}.` : "",
       fixture.code === "EL"
         ? "Calendario ufficiale: https://www.juventus.com/it/news/articoli/uefa-europa-league-date-e-orari-delle-partite-della-juventus"
         : `Calendario ufficiale: ${fixture.sourceUrl || "https://www.juventus.com/it/news/articoli/il-calendario-della-juventus-nella-serie-a-2026-27"}`,
@@ -3391,7 +3622,7 @@ async function juventusCalendar(request, env) {
 
     lines.push(
       "BEGIN:VEVENT",
-      `UID:juventus-${fixture.uidKey}-2026-27-g${fixture.matchday}@ilcalciodivince.com`,
+      `UID:juventus-${fixture.uidKey}-2026-27-${fixture.roundKey || "g" + fixture.matchday}@ilcalciodivince.com`,
       `DTSTAMP:${formatIcsDate(now)}`,
       `LAST-MODIFIED:${formatIcsDate(validModified)}`,
       `SEQUENCE:${sequence}`,

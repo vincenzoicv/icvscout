@@ -1,0 +1,77 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { onRequest } from '../functions/api/[[path]].js';
+
+const env = { SUPABASE_URL: 'https://db.test', SUPABASE_SERVICE_ROLE_KEY: 'test' };
+
+test('public match endpoint only returns the requested match fields', async t => {
+  t.mock.method(globalThis, 'fetch', async input => {
+    const url = new URL(input);
+    assert.match(url.pathname, /match_reports$/);
+    assert.equal(url.searchParams.get('match_id'), 'eq.match-42');
+    return Response.json([{
+      match_id: 'match-42', match_date: '2026-09-20T16:00:00Z', status: 'FINISHED',
+      competition: 'Serie A', summary: 'Risultato e marcatori', updated_at: '2026-09-20T18:00:00Z',
+      tactical_key: 'internal-key', private_column: 'must not leak',
+      source_payload: {
+        id: 42, utcDate: '2026-09-20T16:00:00Z', status: 'FINISHED',
+        homeTeam: { name: 'Juventus FC', formation: '4-3-3', lineup: [{ name: 'Player One', position: 'Goalkeeper', shirtNumber: 1 }] },
+        awayTeam: { name: 'Atalanta BC', lineup: [] },
+        competition: { name: 'Serie A' }, matchday: 5, venue: 'Allianz Stadium',
+        score: { fullTime: { home: 2, away: 0 } }, goals: [{ minute: 28, scorer: { name: 'Player One' }, team: { name: 'Juventus FC' } }],
+        icv_meta: { provider: 'football-data.org', source_url: 'https://example.test/source' },
+      },
+    }]);
+  });
+  const response = await onRequest({ request: new Request('https://site.test/api/public/match?match_id=match-42'), env });
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.home, 'Juventus FC');
+  assert.equal(body.homeScore, 2);
+  assert.equal(body.goals[0].player, 'Player One');
+  assert.equal(body.homeLineup.length, 1);
+  assert.equal('private_column' in body, false);
+  assert.equal('tactical_key' in body, false);
+});
+
+test('public search spans published news, fixtures and Instagram posts', async t => {
+  t.mock.method(globalThis, 'fetch', async input => {
+    const url = new URL(input);
+    if (url.pathname.endsWith('/news')) return Response.json([{
+      id: 8, title: 'Yildiz guida la Juventus', body: 'La notizia pubblica su Kenan Yildiz.',
+      source: 'Juventus.com', source_url: 'https://www.juventus.com/it/news/yildiz',
+      category: 'juventus', visible: true, created_at: '2026-09-25T10:00:00Z', reliability: 'official',
+    }]);
+    if (url.pathname.endsWith('/market_items')) return Response.json([]);
+    if (url.pathname.endsWith('/match_reports')) return Response.json([{
+      match_id: 'fixture-7', match_date: '2026-10-11T18:45:00Z', status: 'SCHEDULED', competition: 'Serie A', summary: '',
+      source_payload: { id: 7, utcDate: '2026-10-11T18:45:00Z', status: 'TIMED', homeTeam: { name: 'Cagliari' }, awayTeam: { name: 'Juventus FC' }, competition: { name: 'Serie A' } },
+    }]);
+    if (url.pathname.endsWith('/social_drafts')) return Response.json([{
+      id: 9, platform: 'instagram', visible: true, post_url: 'https://www.instagram.com/p/POST/',
+      caption: 'Juventus e Kenan Yildiz in allenamento', published_at: '2026-09-24T10:00:00Z',
+    }]);
+    return Response.json([]);
+  });
+  const response = await onRequest({ request: new Request('https://site.test/api/public/search?q=Juventus'), env });
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.ok(body.results.some(result => result.type === 'news' && result.href === 'https://www.juventus.com/it/news/yildiz'));
+  assert.ok(body.results.some(result => result.type === 'match' && result.href === '/partita?match_id=fixture-7'));
+  assert.ok(body.results.some(result => result.type === 'social' && result.href === 'https://www.instagram.com/p/POST/'));
+});
+
+test('search requires at least two characters and the homepage exposes search', async t => {
+  let called = false;
+  t.mock.method(globalThis, 'fetch', async () => { called = true; return Response.json([]); });
+  const response = await onRequest({ request: new Request('https://site.test/api/public/search?q=a'), env });
+  assert.deepEqual(await response.json(), { query: 'a', results: [] });
+  assert.equal(called, false);
+  const home = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const calendar = readFileSync(new URL('../calendario-juventus.html', import.meta.url), 'utf8');
+  assert.match(home, /href="\/cerca" class="header-search"/);
+  assert.match(calendar, /detailHref = '\/partita\?date='/);
+  assert.match(home, /href="\/cerca" class="header-search"/);
+  assert.match(readFileSync(new URL('../cerca.html', import.meta.url), 'utf8'), /match-pages\.js\?v=20260925-1/);
+});

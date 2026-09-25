@@ -7,6 +7,10 @@ https://www.ilcalciodivince.com/* https://ilcalciodivince.com/:splat 301
 /agenda.html / 301
 /agenda / 301
 /calendario-juventus.html /calendario-juventus 301
+/partita /partita.html 200
+/cerca /cerca.html 200
+/partita.html /partita 301
+/cerca.html /cerca 301
 /quiz.html /quiz 301
 /mercato.html /calendario-juventus 301
 /mercato /calendario-juventus 301

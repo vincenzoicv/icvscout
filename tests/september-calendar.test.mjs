@@ -53,7 +53,8 @@ test('Subscription: all four confirmed slots, stable UID and increased revision 
       const response = await onRequest({request:new Request('https://ilcalciodivince.com/api/juventus/calendar.ics'),env});
       const text = (await response.text()).replace(/\r\n /g,'');
       assert.equal(response.status,200);
-      assert.equal((text.match(/BEGIN:VEVENT/g)||[]).length,46);
+      assert.equal((text.match(/BEGIN:VEVENT/g)||[]).length,47);
+      assert.match(text,/UID:juventus-coppa-italia-2026-27-ottavi@ilcalciodivince\.com/);
       for (const [competition,day,kickoff] of expected) {
         const uid = `juventus-${competition}-2026-27-g${day}@ilcalciodivince.com`;
         const events = text.split('BEGIN:VEVENT').filter(event=>event.includes('UID:'+uid));

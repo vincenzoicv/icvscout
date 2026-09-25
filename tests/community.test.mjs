@@ -449,7 +449,8 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     const unfoldedCalendar = calendar.replace(/\r\n /g, "");
     assert.equal(response.status, 200);
     assert.match(response.headers.get("content-type"), /text\/calendar/);
-    assert.equal((unfoldedCalendar.match(/BEGIN:VEVENT/g) || []).length, 46);
+    assert.equal((unfoldedCalendar.match(/BEGIN:VEVENT/g) || []).length, 47);
+    assert.match(unfoldedCalendar, /UID:juventus-coppa-italia-2026-27-ottavi@ilcalciodivince\.com/);
     assert.match(unfoldedCalendar, /UID:juventus-serie-a-2026-27-g1@ilcalciodivince\.com/);
     assert.match(unfoldedCalendar, /SUMMARY:Juventus: Frosinone 0-2 Juventus/);
     assert.match(unfoldedCalendar, /Risultato finale: Frosinone 0-2 Juventus/);
@@ -466,7 +467,7 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     });
     const fallbackCalendar = (await fallbackResponse.text()).replace(/\r\n /g, "");
     assert.equal(fallbackResponse.status, 200);
-    assert.equal((fallbackCalendar.match(/BEGIN:VEVENT/g) || []).length, 46);
+    assert.equal((fallbackCalendar.match(/BEGIN:VEVENT/g) || []).length, 47);
     const europeanEvents = [...fallbackCalendar.matchAll(/BEGIN:VEVENT\r\n([\s\S]*?)END:VEVENT/g)]
       .map(match => match[1]).filter(event => event.includes('CATEGORIES:Europa League,Juventus'));
     assert.equal(europeanEvents.length, 8);

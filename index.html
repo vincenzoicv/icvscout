@@ -61,6 +61,7 @@ nav{display:flex;align-items:center;gap:6px;}
 nav button{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.58);font-family:"Barlow Condensed";font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:8px 16px;cursor:pointer;border-radius:999px;transition:all 0.22s ease;}
 nav button:hover,nav button.active{color:var(--gold-l);background:rgba(196,150,42,0.15);border-color:rgba(196,150,42,0.42);box-shadow:inset 0 1px 0 rgba(255,255,255,0.14),0 9px 24px rgba(0,0,0,0.24);}
 .hsocial{display:flex;align-items:center;gap:6px;}
+.hsocial .header-search{display:none;}
 .hsocial a{display:flex;align-items:center;justify-content:center;width:34px;height:34px;color:rgba(196,150,42,0.82);text-decoration:none;border:1px solid rgba(196,150,42,0.28);border-radius:999px;background:rgba(255,255,255,0.04);transition:all 0.22s ease;}
 .hsocial a:hover{color:var(--gold-l);border-color:rgba(196,150,42,0.58);background:rgba(196,150,42,0.13);transform:translateY(-1px);}
 .theme-toggle{height:34px;min-width:98px;border:1px solid rgba(196,150,42,0.34);border-radius:999px;background:rgba(255,255,255,0.055);color:rgba(255,255,255,0.84);cursor:pointer;display:flex;align-items:center;gap:8px;padding:3px 11px 3px 3px;font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;transition:all 0.22s ease;box-shadow:inset 0 1px 0 rgba(255,255,255,0.16),inset 0 -10px 22px rgba(0,0,0,0.26),0 8px 22px rgba(0,0,0,0.22);}
@@ -756,7 +757,8 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 }
 @media(max-width:400px){.stat-val{font-size:40px;}.hero h1 strong{font-size:88px;}}
 @media(max-width:360px){.match-hub-teams{gap:6px;}.match-hub-team{font-size:24px;}}
-@media(max-width:520px){.hsocial a{display:none;}.theme-toggle{min-width:72px;}}
+@media(max-width:768px){.hsocial .header-search{display:inline-flex;}}
+@media(max-width:520px){.hsocial a:not(.header-search){display:none;}.theme-toggle{min-width:72px;}}
 
 .standings-table { width:100%; border-collapse:collapse; margin-top:4px; }
 .standings-table th { font-family:"Barlow Condensed"; font-size:11px; font-weight:700; letter-spacing:2px; color:var(--t3); text-transform:uppercase; padding:8px 10px; text-align:center; border-bottom:1px solid var(--bdr2); }
@@ -855,8 +857,10 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
     <button onclick="location.href='/media'">Media</button>
     <button onclick="location.href='/community'">Community</button>
     <button onclick="showSection('news',this)">News</button>
+    <button onclick="location.href='/cerca'" aria-label="Cerca nel sito"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Cerca</button>
   </nav>
   <div class="hsocial">
+    <a href="/cerca" class="header-search" aria-label="Cerca nel sito" title="Cerca nel sito"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></a>
     <a href="https://instagram.com/ilcalciodivince_" target="_blank" title="Instagram"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
     <a href="https://www.tiktok.com/@ilcalciodivince" target="_blank" title="TikTok"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.77 1.52V6.76a4.84 4.84 0 0 1-1-.07z"/></svg></a>
     <a href="https://x.com/VikBrancato" target="_blank" title="X"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
@@ -1428,6 +1432,16 @@ function renderNoNextMatch() {
 }
 
 function renderNextMatch(match) {
+  var officialKickoffs = {
+    12:"2026-11-22T11:30:00Z",13:"2026-11-29T19:45:00Z",14:"2026-12-06T17:00:00Z",
+    15:"2026-12-14T19:45:00Z",16:"2026-12-19T19:45:00Z",17:"2027-01-03T19:45:00Z",
+    18:"2027-01-06T11:30:00Z",19:"2027-01-10T19:45:00Z"
+  };
+  var competitionCode = match.competition && match.competition.code;
+  var confirmedKickoff = officialKickoffs[Number(match.matchday)];
+  if (competitionCode === "SA" && confirmedKickoff && ["SCHEDULED","TIMED"].includes(String(match.status || "").toUpperCase())) {
+    match = Object.assign({}, match, {utcDate:confirmedKickoff});
+  }
   var isHome = match.homeTeam.id === JUVE_ID;
   var opponent = isHome ? match.awayTeam.name : match.homeTeam.name;
   var date = new Date(match.utcDate);
@@ -1642,7 +1656,15 @@ var ICV_MATCH_FALLBACKS = [
   {date:"2026-10-28T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Genoa",away:"Juventus FC",matchday:9},
   {date:"2026-11-01T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Napoli",venue:"Allianz Stadium · Torino",matchday:10},
   {date:"2026-11-08T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Fiorentina",away:"Juventus FC",matchday:11},
-  {date:"2026-11-23T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Venezia FC",venue:"Allianz Stadium · Torino",matchday:12},
+  {date:"2026-11-22T12:30:00+01:00",previousKickoff:"2026-11-23T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Venezia FC",venue:"Allianz Stadium · Torino",matchday:12,broadcaster:"DAZN"},
+  {date:"2026-11-29T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Como",away:"Juventus FC",matchday:13},
+  {date:"2026-12-06T18:00:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Udinese",venue:"Allianz Stadium · Torino",matchday:14},
+  {date:"2026-12-14T20:45:00+01:00",previousKickoff:"2026-12-13T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Monza",venue:"Allianz Stadium · Torino",matchday:15},
+  {date:"2026-12-19T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Roma",away:"Juventus FC",matchday:16},
+  {date:"2027-01-03T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Bologna",away:"Juventus FC",matchday:17},
+  {date:"2027-01-06T12:30:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Torino",venue:"Allianz Stadium · Torino",matchday:18},
+  {date:"2027-01-10T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Inter",away:"Juventus FC",matchday:19},
+  {date:"2026-12-03T21:00:00+01:00",status:"scheduled",competition:"Coppa Italia",home:"Juventus",away:"Sassuolo",venue:"Allianz Stadium · Torino",roundLabel:"Ottavi di finale"},
   {date:"2026-09-17T19:00:00Z",status:"finished",competition:"Europa League",home:"Juventus",away:"NEC Nijmegen",homeScore:5,awayScore:0,venue:"Allianz Stadium · Torino",matchday:1,scorers:"Nico González 9' · Alajbegovic 24' · Woltemade 35' (rig.) · Celik 75' · Kolo Muani 82'"},
   {date:"2026-10-15T19:00:00Z",status:"scheduled",competition:"Europa League",home:"Celta Vigo",away:"Juventus",matchday:2},
   {date:"2026-10-22T16:45:00Z",status:"scheduled",competition:"Europa League",home:"Juventus",away:"Rennes",matchday:3},
@@ -1742,20 +1764,30 @@ function normalizeMatchHubRows(rows) {
       : /in_play|extra_time|penalty_shootout|live/.test(status) ? "live"
       : /postponed|cancelled|suspended/.test(status) ? status
       : "scheduled";
+    var officialFixture = normalizedStatus === "scheduled" && ICV_MATCH_FALLBACKS.find(function(fixture) {
+      var fixtureCompetition = String(fixture.competition || "").toLowerCase();
+      var payloadCompetition = String(row.competition || payload.competition && payload.competition.name || "").toLowerCase();
+      return fixtureCompetition === payloadCompetition
+        && (fixture.matchday == null || Number(fixture.matchday) === Number(payload.matchday))
+        && matchHubTeamKey(fixture.home) === matchHubTeamKey(home)
+        && matchHubTeamKey(fixture.away) === matchHubTeamKey(away);
+    });
     var summaryParts = String(row.summary || "").split("·").map(function(part) { return part.trim(); }).filter(Boolean);
     var summaryScorers = summaryParts.length > 2 ? summaryParts.slice(2).join(" · ") : "";
     var goalLabels = goals.map(matchHubEventLabel).join(" · ");
     return {
       matchId: matchId,
-      date: row.match_date || payload.utcDate,
+      date: officialFixture ? officialFixture.date : row.match_date || payload.utcDate,
       status: normalizedStatus,
       competition: row.competition || payload.competition && payload.competition.name || "Match Center",
       home: home,
       away: away,
+      roundLabel: officialFixture ? officialFixture.roundLabel || "" : "",
       homeScore: manual.home_score != null && Number.isFinite(Number(manual.home_score)) ? Number(manual.home_score) : score.home != null && Number.isFinite(Number(score.home)) ? Number(score.home) : null,
       awayScore: manual.away_score != null && Number.isFinite(Number(manual.away_score)) ? Number(manual.away_score) : score.away != null && Number.isFinite(Number(score.away)) ? Number(score.away) : null,
-      venue: payload.venue || "",
+      venue: payload.venue || officialFixture && officialFixture.venue || "",
       matchday: payload.matchday || null,
+      broadcaster: officialFixture ? officialFixture.broadcaster || "" : "",
       minute: manual.minute != null ? Number(manual.minute) : Number.isFinite(Number(payload.minute)) ? Number(payload.minute) : null,
       scorers: String(manual.scorers || verified.scorers || goalLabels || summaryScorers || "").trim(),
       goals: goals,
@@ -1815,6 +1847,9 @@ function allMatchHubRows(apiRows) {
     if (previous.status === "finished" && match.status !== "finished") return;
     var next = Object.assign({}, previous, match);
     if (!match.scorers && previous.scorers) next.scorers = previous.scorers;
+    if (!match.roundLabel && previous.roundLabel) next.roundLabel = previous.roundLabel;
+    if (!match.broadcaster && previous.broadcaster) next.broadcaster = previous.broadcaster;
+    if (!match.venue && previous.venue) next.venue = previous.venue;
     merged.set(key, next);
   }
   ICV_MATCH_FALLBACKS.forEach(mergeMatch);
@@ -1948,12 +1983,12 @@ function renderMatchHubUpcoming(matches) {
   box.innerHTML = upcoming.map(function(match) {
     var home = matchHubCompactTeam(match.home);
     var away = matchHubCompactTeam(match.away);
-    var round = match.competition + (match.matchday ? " · " + match.matchday + "ª giornata" : "");
+    var round = match.competition + (match.roundLabel ? " · " + match.roundLabel : match.matchday ? " · " + match.matchday + "ª giornata" : "");
     var side = matchHubIsJuve(match.home) ? "Casa" : "Trasferta";
     return "<div class=\"match-hub-upcoming-item\">" +
       "<span class=\"match-hub-upcoming-round\">" + icvEsc(round) + "</span>" +
       "<strong class=\"match-hub-upcoming-fixture\">" + icvEsc(home) + " <em>vs</em> " + icvEsc(away) + "</strong>" +
-      "<span class=\"match-hub-upcoming-meta\">" + icvEsc(matchHubUpcomingDate(match)) + " · " + side + "</span>" +
+      "<span class=\"match-hub-upcoming-meta\">" + icvEsc(matchHubUpcomingDate(match)) + " · " + side + (match.broadcaster ? " · " + icvEsc(match.broadcaster) : "") + "</span>" +
     "</div>";
   }).join("");
 }

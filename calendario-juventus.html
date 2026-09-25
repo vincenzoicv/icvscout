@@ -133,13 +133,14 @@
     .match.next-fixture{border-color:var(--gold);border-left-width:3px}.next-fixture-label{display:block;color:var(--gold);font-size:12px;line-height:1.5;margin-bottom:4px}.match{border-radius:6px}.match strong,.match span{overflow-wrap:anywhere}.match time{font-size:13px}@media(max-width:720px){.match{grid-template-columns:minmax(0,1fr)}.match span{justify-self:start}}
   </style>
   <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-4">
+  <link rel="stylesheet" href="/assets/match-pages.css?v=20260925-1">
 </head>
 <body>
   <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
   <script>try{if(localStorage.getItem('icv-theme')==='light')document.body.classList.add('light')}catch(error){}</script>
   <header class="page-header"><div class="page-header-inner">
     <a class="page-brand" href="/"><img src="/assets/icv-logo-160.jpg" alt="" width="40" height="40"><span class="page-brand-copy"><strong>ICV Scout</strong><small>Il Calcio di Vince</small></span></a>
-    <nav aria-label="Menu principale"><a href="/">Home</a><details class="classifica-menu"><summary>Classifica</summary><div><a href="/classifica?competizione=serie-a">Serie A</a><a href="/classifica?competizione=europa-league">Europa League</a></div></details><a href="/calendario-juventus" aria-current="page">Calendario</a><a href="/media">Media</a><a href="/community">Community</a><a href="/#news">News</a></nav>
+    <nav aria-label="Menu principale"><a href="/">Home</a><details class="classifica-menu"><summary>Classifica</summary><div><a href="/classifica?competizione=serie-a">Serie A</a><a href="/classifica?competizione=europa-league">Europa League</a></div></details><a href="/calendario-juventus" aria-current="page">Calendario</a><a href="/media">Media</a><a href="/community">Community</a><a href="/#news">News</a><a href="/cerca">Cerca</a></nav>
     <button class="page-theme" id="pageTheme" type="button" aria-label="Cambia tema" aria-pressed="false" title="Cambia tema"><i data-lucide="sun-moon" aria-hidden="true"></i></button>
   </div></header>
 
@@ -285,10 +286,14 @@
             ? new Date(rawDate.slice(0,4) + '-' + rawDate.slice(4,6) + '-' + rawDate.slice(6,8) + 'T12:00:00')
             : new Date(rawDate.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/, '$1-$2-$3T$4:$5:$6Z'));
           const description = String(fields.DESCRIPTION || '').replace(/\\n/g, ' ');
+          const title = String(fields.SUMMARY || '').replace(/^(Serie A|Europa League|Juventus): /, '');
+          const sides = title.match(/^(.+?)\s+(?:\d+\s*[-–]\s*\d+\s+)?(?:-\s+)(.+)$/);
           return {
             date,
             allDay,
-            title: String(fields.SUMMARY || '').replace(/^(Serie A|Europa League|Juventus): /, ''),
+            title,
+            home: sides ? sides[1].trim() : '',
+            away: sides ? sides[2].trim() : '',
             competition: String(fields.CATEGORIES || '').includes('Europa League') ? 'europa' : 'seriea',
             round: (description.match(/\d+ª giornata/) || ['Serie A'])[0],
           };
@@ -322,7 +327,8 @@
           const date = new Intl.DateTimeFormat('it-IT', options).format(event.date);
           const label = event.allDay ? event.round + ' · orario da confermare' : event.round;
           const upcoming = event === nextEvent;
-          return `<article class="match${upcoming ? ' next-fixture' : ''}"><time>${escapeHtml(date)}</time><strong>${upcoming ? '<small class="next-fixture-label">Prossima partita</small>' : ''}${escapeHtml(event.title)}</strong><span>${event.competition === 'europa' ? 'Europa League' : 'Serie A'} &middot; ${escapeHtml(label)}</span></article>`;
+          const detailHref = '/partita?date=' + encodeURIComponent(event.date.toISOString()) + (event.home && event.away ? '&home=' + encodeURIComponent(event.home) + '&away=' + encodeURIComponent(event.away) : '');
+          return `<article class="match${upcoming ? ' next-fixture' : ''}"><time>${escapeHtml(date)}</time><strong><a class="match-detail-link" href="${escapeHtml(detailHref)}">${upcoming ? '<small class="next-fixture-label">Prossima partita</small>' : ''}${escapeHtml(event.title)}</a></strong><span>${event.competition === 'europa' ? 'Europa League' : 'Serie A'} &middot; ${escapeHtml(label)}</span></article>`;
         };
         container.innerHTML = serieA.slice(start, start + 8).map(renderEvent).join('');
         europaContainer.innerHTML = events.filter(event => event.competition === 'europa').map(renderEvent).join('');

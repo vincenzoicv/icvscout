@@ -122,7 +122,8 @@ test('search requires at least two characters and the homepage exposes search', 
   assert.match(home, /href="\/cerca" class="header-search"/);
   assert.match(calendar, /detailHref = '\/partita\?date='/);
   assert.match(home, /href="\/cerca" class="header-search"/);
-  assert.match(readFileSync(new URL('../cerca.html', import.meta.url), 'utf8'), /match-pages\.js\?v=20260925-2/);
+  assert.match(readFileSync(new URL('../cerca.html', import.meta.url), 'utf8'), /match-pages\.js\?v=20260925-3/);
+  assert.match(readFileSync(new URL('../partita.html', import.meta.url), 'utf8'), /match-pages\.js\?v=20260925-3/);
 });
 
 test('clean match URLs rely on Pages clean-URL handling without redirect loops', () => {

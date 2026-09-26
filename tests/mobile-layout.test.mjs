@@ -20,7 +20,20 @@ test('featured highlights remain bounded by their mobile container',()=>{
 test('calendar puts the next fixture and subscription action ahead of the longer introduction',()=>{
   const hero=calendar.slice(calendar.indexOf('<section class="hero">'),calendar.indexOf('<main>'));
   assert.ok(hero.indexOf('id="nextMatch"')<hero.indexOf('class="lead"'));
-  assert.ok(hero.indexOf('Aggiungi al calendario')<hero.indexOf('id="calendarOptions"'));
+  assert.ok(hero.indexOf('Scarica .ics')<hero.indexOf('id="calendarOptions"'));
+  assert.match(hero,/href="#calendarOptions">Altre opzioni/);
   assert.match(calendar,/@media\(max-width:900px\)\{\.hero\{min-height:0;display:block/);
-  assert.match(calendar,/\.next-match-link\{width:100%;margin-top:15px\}/);
+  assert.match(calendar,/\.next-match-actions\{justify-content:flex-start;margin-top:12px\}/);
+});
+
+test('header brand stays on one line on the narrowest phones',()=>{
+  assert.match(home,/\.hlogo-sub\{[^}]*white-space:nowrap/);
+  assert.match(home,/max-width:360px\)\{\.hlogo-sub\{display:none/);
+});
+
+test('Instagram metadata uses reader-friendly labels instead of API values',()=>{
+  assert.match(home,/type\.indexOf\("carousel"\) >= 0 \? "Carosello"/);
+  assert.match(home,/type === "image" \|\| type === "photo" \? "Foto"/);
+  assert.match(home,/mediaLabel \+ " · Instagram"/);
+  assert.doesNotMatch(home,/s\.media_type \|\| s\.platform/);
 });

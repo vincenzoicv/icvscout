@@ -12,13 +12,26 @@ test('editorial pages share the same complete navigation and brand treatment',()
     assert.match(html,/class="page-brand-copy"/);
     assert.match(html,/<small>Il Calcio di Vince<\/small>/);
     assert.match(html,/<nav aria-label="Menu principale">/);
-    for(const href of ['/','/classifica?competizione=serie-a','/classifica?competizione=europa-league','/calendario-juventus','/media','/community','/#news']){
+    for(const href of ['/','/classifica?competizione=serie-a','/classifica?competizione=europa-league','/calendario-juventus','/media','/community','/news']){
       assert.match(html,new RegExp(`href="${href.replace(/[?]/g,'\\?')}"`));
     }
     assert.match(html,/id="pageTheme"/);
     assert.match(html,/section-pages\.css\?v=20260916-1/);
     assert.match(html,/section-pages\.js\?v=20260913-1/);
   }
+});
+
+test('News ha un archivio dedicato con ricerca e link espliciti a fonte e discussione',()=>{
+  const html=file('news.html');
+  const js=file('assets/news-page.js');
+  assert.match(html,/<title>News Juventus/);
+  assert.match(html,/id="newsSearch"/);
+  assert.match(html,/href="\/news" aria-current="page"/);
+  assert.match(js,/\/api\/public\/news\?limit=30/);
+  assert.match(js,/Apri la fonte/);
+  assert.match(js,/<h2><a href=/);
+  assert.match(js,/Discussione ICV/);
+  assert.match(js,/url\.protocol==='https:'/);
 });
 
 test('shared header stays visible and synchronizes the browser theme color',()=>{

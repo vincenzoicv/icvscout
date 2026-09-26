@@ -5,6 +5,9 @@
   --icv-font-body:'Barlow',Arial,sans-serif;
   --icv-font-label:'Barlow Condensed','Arial Narrow',sans-serif;
   --icv-font-editorial:'Playfair Display',Georgia,serif;
+  --icv-type-body:16px;
+  --icv-type-secondary:14px;
+  --icv-type-caption:12px;
   --icv-space-1:4px;
   --icv-space-2:8px;
   --icv-space-3:12px;
@@ -19,13 +22,13 @@
   --icv-motion-ui:180ms;
   --icv-motion-menu:200ms;
   --icv-motion-media:240ms;
-  --icv-motion-reveal:520ms;
-  --icv-motion-hero:680ms;
+  --icv-motion-reveal:240ms;
+  --icv-motion-hero:420ms;
   --icv-ease:cubic-bezier(.2,.8,.2,1);
 }
 
 html{scroll-behavior:smooth;scroll-padding-block:88px}
-body{font-family:var(--icv-font-body)!important}
+body{font-family:var(--icv-font-body)!important;font-size:var(--icv-type-body)}
 button{font-family:var(--icv-font-body)!important}
 input,select,textarea{font-family:inherit}
 
@@ -59,7 +62,10 @@ main[id='main-content']{scroll-margin-block:88px}
 :where(.modal-wrap,.modal,.lightbox,.conference-player,.match-gallery-viewer,.icv-story-viewer){transition-duration:var(--icv-motion-media)!important}
 :where(.install-card.show,.section.active,.pane){animation-duration:var(--icv-motion-media)!important;animation-timing-function:var(--icv-ease)!important}
 :where(.reveal-item.is-visible){animation-duration:var(--icv-motion-reveal)!important;animation-timing-function:var(--icv-ease)!important}
-:where(.icon-btn,.page-theme,.theme-toggle,.install-close,.close){min-width:var(--icv-control-height);min-height:var(--icv-control-height)}
+:where(.icon-btn,.page-theme,.theme-toggle,.install-close,.close,.hsocial a,.mob-btn){min-width:var(--icv-control-height);min-height:var(--icv-control-height)}
+:where(.home-dash,.home-dash>*,.featured-highlights,.featured-conference,.match-gallery,.icv-stories,.highlights-stage,#highlightsPoster){min-width:0;max-width:100%}
+:where(.home-dash,.home-panel,.featured-highlights,.featured-conference,.match-gallery,.icv-stories){overflow-wrap:anywhere}
+:where(.live-desk-time,.live-desk-tag,.live-desk-copy>span,.match-hub-updated,.match-hub-kicker,.match-hub-date,.match-hub-upcoming-head span,.news-card-meta,.news-card-action,.hero-stadium-meta,.hero-scroll-cue){font-size:11px!important;letter-spacing:.5px!important}
 
 :where(button,a,summary,[role='button']):focus-visible{
   outline:2px solid var(--gold-l,var(--gold,#edbd49));
@@ -81,6 +87,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 
 @media(max-width:720px){
   :root{--icv-page-gutter:16px}
+  .home-dash{width:100%;padding-inline:12px}
+  .highlights-stage{aspect-ratio:16/9;min-height:0}
 }
 
 @media(prefers-reduced-motion:reduce){

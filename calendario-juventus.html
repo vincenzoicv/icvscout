@@ -44,6 +44,9 @@
     .next-match-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;flex:none;padding:10px 16px;border:1px solid var(--gold);border-radius:6px;color:var(--gold2);font-size:12px;font-weight:700;text-decoration:none;text-align:center}
     .next-match-link:hover{background:rgba(201,152,55,.12)}
     .next-match-link:focus-visible{outline:3px solid var(--gold2);outline-offset:3px}
+    .next-match-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap}
+    .next-match-secondary{display:inline-flex;align-items:center;min-height:44px;padding:8px 4px;color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px}
+    .next-match-actions .next-match-link{background:var(--gold);color:#110e07;cursor:pointer}
     .eyebrow{margin-bottom:16px;color:var(--gold);font-size:11px;font-weight:700;letter-spacing:5px;text-transform:uppercase}
     h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(66px,13vw,138px);line-height:.86;letter-spacing:2px;background:linear-gradient(135deg,#fff 0%,#eee 35%,var(--gold2) 70%,var(--gold) 100%);background-clip:text;-webkit-background-clip:text;color:transparent}
     .lead{max-width:640px;margin:24px auto 0;color:var(--muted);font-size:clamp(15px,2vw,19px);line-height:1.65}
@@ -129,10 +132,10 @@
     body.light .newsletter input{background:#fff;color:#181713}
     body.light footer{background:#efefeb}
     @media(max-width:900px){.hero{min-height:0;display:block;padding:40px 24px 48px}}
-    @media(max-width:720px){.page-header-inner{padding:12px 15px}.badge{font-size:16px}.theme-toggle{padding:8px}.theme-toggle span{display:none}.platforms,.uel-grid,.uel-heading{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{min-height:0;display:block;padding:32px 15px 42px}.hero h1{font-size:clamp(56px,18vw,82px)}.next-match{display:block;margin-top:24px}.next-match strong{font-size:23px}.next-match-link{width:100%;margin-top:15px}.lead{margin-top:18px}.facts{gap:8px;margin:20px 0}.fact{padding:7px 10px}.calendar-box>p{margin-bottom:14px}main{padding:46px 15px}.competition-tabs{margin-bottom:42px}.uel-section{margin-top:62px;padding-top:48px}.uel-heading{gap:22px}.uel-dates{grid-template-columns:repeat(2,1fr)}.uel-windows-head{display:block}.uel-windows-head p{margin-top:8px;text-align:left}}
+    @media(max-width:720px){.page-header-inner{padding:12px 15px}.badge{font-size:16px}.theme-toggle{padding:8px}.theme-toggle span{display:none}.platforms,.uel-grid,.uel-heading{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{min-height:0;display:block;padding:32px 15px 42px}.hero h1{font-size:clamp(56px,18vw,82px)}.next-match{display:block;margin-top:24px}.next-match strong{font-size:23px}.next-match-actions{justify-content:flex-start;margin-top:12px}.lead{margin-top:18px}.facts{gap:8px;margin:20px 0}.fact{padding:7px 10px}.calendar-box>p{margin-bottom:14px}main{padding:46px 15px}.competition-tabs{margin-bottom:42px}.uel-section{margin-top:62px;padding-top:48px}.uel-heading{gap:22px}.uel-dates{grid-template-columns:repeat(2,1fr)}.uel-windows-head{display:block}.uel-windows-head p{margin-top:8px;text-align:left}}
     .match.next-fixture{border-color:var(--gold);border-left-width:3px}.next-fixture-label{display:block;color:var(--gold);font-size:12px;line-height:1.5;margin-bottom:4px}.match{border-radius:6px}.match strong,.match span{overflow-wrap:anywhere}.match time{font-size:13px}@media(max-width:720px){.match{grid-template-columns:minmax(0,1fr)}.match span{justify-self:start}}
   </style>
-  <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-4">
+  <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260925-1">
   <link rel="stylesheet" href="/assets/match-pages.css?v=20260925-1">
 </head>
 <body>
@@ -140,7 +143,7 @@
   <script>try{if(localStorage.getItem('icv-theme')==='light')document.body.classList.add('light')}catch(error){}</script>
   <header class="page-header"><div class="page-header-inner">
     <a class="page-brand" href="/"><img src="/assets/icv-logo-160.jpg" alt="" width="40" height="40"><span class="page-brand-copy"><strong>ICV Scout</strong><small>Il Calcio di Vince</small></span></a>
-    <nav aria-label="Menu principale"><a href="/">Home</a><details class="classifica-menu"><summary>Classifica</summary><div><a href="/classifica?competizione=serie-a">Serie A</a><a href="/classifica?competizione=europa-league">Europa League</a></div></details><a href="/calendario-juventus" aria-current="page">Calendario</a><a href="/media">Media</a><a href="/community">Community</a><a href="/#news">News</a><a href="/cerca">Cerca</a></nav>
+    <nav aria-label="Menu principale"><a href="/">Home</a><details class="classifica-menu"><summary>Classifica</summary><div><a href="/classifica?competizione=serie-a">Serie A</a><a href="/classifica?competizione=europa-league">Europa League</a></div></details><a href="/calendario-juventus" aria-current="page">Calendario</a><a href="/media">Media</a><a href="/community">Community</a><a href="/news">News</a><a href="/cerca">Cerca</a></nav>
     <button class="page-theme" id="pageTheme" type="button" aria-label="Cambia tema" aria-pressed="false" title="Cambia tema"><i data-lucide="sun-moon" aria-hidden="true"></i></button>
   </div></header>
 
@@ -150,7 +153,7 @@
       <h1>Calendario<br>Juventus</h1>
       <div class="next-match" id="nextMatch" aria-live="polite" aria-busy="true">
         <div class="next-match-copy"><span class="next-match-label">Prossima partita</span><strong>Calendario in aggiornamento</strong></div>
-        <a class="next-match-link" href="#calendarOptions">Aggiungi al calendario</a>
+        <div class="next-match-actions"><button class="next-match-link" type="button" onclick="downloadCalendar()">Scarica .ics</button><a class="next-match-secondary" href="#calendarOptions">Altre opzioni</a></div>
       </div>
       <p class="lead">Serie A ed Europa League 2026/27 in un’unica agenda: eventi scaricabili solo quando date e orari sono ufficiali.</p>
       <div class="facts">

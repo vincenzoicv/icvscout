@@ -176,6 +176,7 @@ test("la home propone l'installazione PWA senza essere invadente", async () => {
     "Porta ICV Scout nella Home",
     "Senza store · sempre con te",
     "function scheduleInstallCard()",
+    'matchMedia("(max-width: 768px)").matches',
     "icv_install_prompt_dismissed_v1",
     "installPromptDelay = 7000",
     "installPromptCooldown = 14 * 24 * 60 * 60 * 1000",
@@ -233,7 +234,7 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /id="matchHubCountdownWrap"/);
   assert.match(html, /id="matchHubUpcomingPanel"/);
   assert.match(html, /id="matchHubUpcoming"/);
-  assert.match(html, /<h4>Prossime 3<\/h4>/);
+  assert.match(html, /<h3>Prossime 3<\/h3>/);
   assert.match(html, /Allianz Stadium · Torino/);
   assert.match(html, /Juventus FC",away:"Parma Calcio 1913"/);
   assert.match(html, /Juventus FC",away:"AC Milan"/);

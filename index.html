@@ -56,7 +56,7 @@ header{position:fixed;top:0;left:0;right:0;z-index:100;height:58px;padding:0 20p
 .hlogo img{width:36px;height:36px;border-radius:50%;object-fit:cover;}
 .hlogo-text{display:flex;flex-direction:column;line-height:1.1;}
 .hlogo-main{font-family:"Bebas Neue";font-size:17px;letter-spacing:2px;background:linear-gradient(135deg,#E8B84B,#C4862A);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hlogo-sub{font-family:"Barlow Condensed";font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,0.45);text-transform:uppercase;}
+.hlogo-sub{font-family:"Barlow Condensed";font-size:11px;font-weight:700;letter-spacing:1.4px;white-space:nowrap;color:rgba(255,255,255,0.68);text-transform:uppercase;}
 nav{display:flex;align-items:center;gap:6px;}
 nav button{background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.58);font-family:"Barlow Condensed";font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:8px 16px;cursor:pointer;border-radius:999px;transition:all 0.22s ease;}
 nav button:hover,nav button.active{color:var(--gold-l);background:rgba(196,150,42,0.15);border-color:rgba(196,150,42,0.42);box-shadow:inset 0 1px 0 rgba(255,255,255,0.14),0 9px 24px rgba(0,0,0,0.24);}
@@ -180,7 +180,7 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-upcoming{padding:0 20px 18px;border-top:1px solid var(--bdr2);background:rgba(196,150,42,.025);}
 .match-hub-upcoming[hidden]{display:none;}
 .match-hub-upcoming-head{display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px;}
-.match-hub-upcoming-head h4{margin:0;font-family:"Bebas Neue";font-size:18px;font-weight:400;letter-spacing:1.5px;color:var(--gold-l);text-transform:uppercase;}
+.match-hub-upcoming-head h3{margin:0;font-family:"Bebas Neue";font-size:18px;font-weight:400;letter-spacing:1.5px;color:var(--gold-l);text-transform:uppercase;}
 .match-hub-upcoming-head span{font-family:"Barlow Condensed";font-size:9px;font-weight:800;letter-spacing:1.3px;color:var(--t3);text-transform:uppercase;}
 .match-hub-upcoming-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid rgba(196,150,42,.16);border-bottom:1px solid rgba(196,150,42,.16);}
 .match-hub-upcoming-item{display:flex;min-width:0;flex-direction:column;gap:4px;padding:13px 16px;}
@@ -276,7 +276,7 @@ main{padding-top:58px;position:relative;z-index:1;}
 .home-news-panel,.home-market-panel{grid-column:span 2;}
 .home-panel-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px;}
 .home-panel-head h2,.home-panel-head h3{margin:0;}
-.home-panel-link{min-height:36px;padding:0;border:0;background:transparent;color:var(--gold-l);font-family:"Barlow Condensed";font-size:11px;font-weight:800;letter-spacing:1.2px;text-decoration:underline;text-underline-offset:4px;text-transform:uppercase;cursor:pointer;}
+.home-panel-link{display:inline-flex;align-items:center;min-height:44px;padding:0;border:0;background:transparent;color:var(--gold-l);font-family:"Barlow Condensed";font-size:13px;font-weight:800;letter-spacing:0;text-decoration:underline;text-underline-offset:4px;text-transform:uppercase;cursor:pointer;}
 .home-panel-link:hover{color:var(--white);}
 .home-panel-link:focus-visible{outline:2px solid var(--gold-l);outline-offset:4px;}
 .home-main-title{font-family:"Barlow Condensed";font-size:20px;font-weight:800;color:var(--white);line-height:1.15;margin-bottom:6px;}
@@ -425,9 +425,9 @@ main{padding-top:58px;position:relative;z-index:1;}
 .attr-track{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;}
 .attr-fill{height:100%;border-radius:3px;width:0%;transition:width 1.2s cubic-bezier(0.4,0,0.2,1);}
 footer{padding:20px;border-top:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:16px;}
-.fcopy{font-family:"Barlow Condensed";font-size:13px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;}
+.fcopy{font-family:"Barlow Condensed";font-size:13px;letter-spacing:2px;color:rgba(255,255,255,.72);text-transform:uppercase;}
 .flinks{display:flex;gap:14px;}
-.flink{display:inline-flex;align-items:center;gap:6px;font-family:"Barlow Condensed";font-size:13px;font-weight:700;letter-spacing:2px;color:rgba(196,150,42,0.55);text-decoration:none;text-transform:uppercase;transition:color 0.2s;}
+.flink{display:inline-flex;align-items:center;gap:6px;font-family:"Barlow Condensed";font-size:13px;font-weight:700;letter-spacing:2px;color:var(--gold-l);text-decoration:none;text-transform:uppercase;transition:color 0.2s;}
 .flink:hover{color:var(--gold-l);}
 .flink.preferred-source{min-height:36px;padding:7px 11px;border:1px solid rgba(196,150,42,.32);border-radius:6px;color:var(--gold-l);background:rgba(196,150,42,.07);}
 .flink.preferred-source:hover{border-color:rgba(196,150,42,.62);background:rgba(196,150,42,.13);}
@@ -528,7 +528,7 @@ body.light .standings-source{color:rgba(0,0,0,0.50);}
 body.light .tooltip{background:#f8f5ed;border-color:rgba(196,150,42,0.24);box-shadow:0 8px 28px rgba(65,48,16,0.18);}
 body.light .tt-name{color:#111;}
 body.light footer{border-top-color:rgba(196,150,42,0.15);}
-body.light .fcopy{color:rgba(0,0,0,0.30);}
+body.light .fcopy{color:rgba(0,0,0,0.72);}
 body.light .mob-nav{background:rgba(244,242,236,0.97);}
 body.light .mob-btn{color:rgba(0,0,0,0.32);}
 body.light .mob-btn.active{color:var(--gold);background:rgba(196,150,42,0.10);box-shadow:inset 0 1px 0 rgba(255,255,255,0.70);}
@@ -584,7 +584,7 @@ body.light .standings-table tr.juve-row td{color:var(--gold-l);}
 body.light .tooltip{background:#fff;border-color:var(--bdr);box-shadow:0 8px 28px rgba(24,23,19,.16);}
 body.light .tt-name{color:#181713;}
 body.light footer{border-top-color:var(--bdr);}
-body.light .fcopy{color:var(--t3);}
+body.light .fcopy{color:rgba(24,23,19,.72);}
 body.light .mob-nav{background:rgba(252,252,249,.98);border-top:1px solid rgba(24,23,19,.14);box-shadow:0 -10px 30px rgba(24,23,19,.1);}
 body.light .mob-btn{color:var(--t3);}
 body.light .mob-btn.active{color:var(--gold-l);background:rgba(118,81,0,.11);box-shadow:inset 0 1px 0 #fff;}
@@ -756,7 +756,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 .gold-bar{height:3px;margin-top:12px;}
 }
 @media(max-width:400px){.stat-val{font-size:40px;}.hero h1 strong{font-size:88px;}}
-@media(max-width:360px){.match-hub-teams{gap:6px;}.match-hub-team{font-size:24px;}}
+@media(max-width:360px){.hlogo-sub{display:none;}.hlogo-main{font-size:15px;letter-spacing:1px;}.hlogo{gap:7px;}.match-hub-teams{gap:6px;}.match-hub-team{font-size:24px;}}
 @media(max-width:768px){.hsocial .header-search{display:inline-flex;}}
 @media(max-width:520px){.hsocial a:not(.header-search){display:none;}.theme-toggle{min-width:72px;}}
 
@@ -828,7 +828,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   .news-section{padding:24px 12px 40px;}
 }
 </style>
-<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260923-4">
+<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260925-1">
 <link rel="stylesheet" href="/assets/featured-conference.css?v=20260831-4">
 <script defer src="/assets/featured-conference.js?v=20260913-1"></script>
 <link rel="stylesheet" href="/assets/featured-highlights.css?v=20260831-1">
@@ -856,7 +856,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
     <button onclick="location.href='/calendario-juventus'">Calendario</button>
     <button onclick="location.href='/media'">Media</button>
     <button onclick="location.href='/community'">Community</button>
-    <button onclick="showSection('news',this)">News</button>
+    <button onclick="location.href='/news'">News</button>
     <button onclick="location.href='/cerca'" aria-label="Cerca nel sito"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Cerca</button>
   </nav>
   <div class="hsocial">
@@ -865,7 +865,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
     <a href="https://www.tiktok.com/@ilcalciodivince" target="_blank" title="TikTok"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.77 1.52V6.76a4.84 4.84 0 0 1-1-.07z"/></svg></a>
     <a href="https://x.com/VikBrancato" target="_blank" title="X"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
     <button class="install-app-btn" id="installAppBtn" onclick="openInstallCard()" type="button">App</button>
-    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" type="button" aria-label="Cambia tema" aria-pressed="false">
+    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" type="button" aria-label="NIGHT, cambia tema" aria-pressed="false">
       <span class="theme-toggle-knob" aria-hidden="true">
         <svg class="theme-icon moon-icon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         <svg class="theme-icon sun-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
@@ -945,7 +945,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
     </div>
     <section class="match-hub-upcoming" id="matchHubUpcomingPanel" aria-label="Prossime tre partite della Juventus" hidden>
       <div class="match-hub-upcoming-head">
-        <h4>Prossime 3</h4>
+        <h3>Prossime 3</h3>
         <span>Serie A · Europa League</span>
       </div>
       <div class="match-hub-upcoming-list" id="matchHubUpcoming"></div>
@@ -1019,13 +1019,13 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
     <div class="live-desk-list" id="homeLiveDesk"><div class="home-text" style="padding:18px 20px">Caricamento aggiornamenti...</div></div>
   </div>
   <div class="home-panel home-news-panel">
-    <div class="home-panel-head"><h2>Ultime News</h2><button class="home-panel-link" type="button" onclick="showSection('news')">Tutte le news</button></div>
+    <div class="home-panel-head"><h2>Ultime News</h2><a class="home-panel-link" href="/news">Tutte le news</a></div>
     <div class="home-list" id="homeNewsList"><div class="home-text">Nessuna news approvata al momento.</div></div>
   </div>
   <div class="home-panel">
     <h2>Scorciatoie</h2>
     <div class="quick-actions">
-      <button onclick="showSection('news')">News</button>
+      <button onclick="location.href='/news'">News</button>
       <button onclick="location.href='/calendario-juventus'">Calendario</button>
       <button onclick="location.href='/community'">Community</button>
       <button onclick="location.href='/quiz'">Quiz</button>
@@ -1160,7 +1160,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
     <a href="/cookie-policy" class="flink">Cookie</a>
     <a href="/regolamento-community" class="flink">Regolamento</a>
     <a href="#" class="flink" data-privacy-settings>Preferenze privacy</a>
-    <a href="https://www.google.com/preferences/source?q=ilcalciodivince.com" class="flink preferred-source" target="_blank" rel="noopener noreferrer" aria-label="Aggiungi Il Calcio di Vince alle fonti preferite di Google"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z"/></svg>Segui su Google</a>
+    <a href="https://www.google.com/preferences/source?q=ilcalciodivince.com" class="flink preferred-source" target="_blank" rel="noopener noreferrer" aria-label="Segui su Google"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2Z"/></svg>Segui su Google</a>
     <a href="https://instagram.com/ilcalciodivince_" class="flink" target="_blank"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>@ilcalciodivince_</a>
     <a href="https://www.tiktok.com/@ilcalciodivince" class="flink" target="_blank"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.77 1.52V6.76a4.84 4.84 0 0 1-1-.07z"/></svg>TikTok</a>
     <a href="https://x.com/VikBrancato" class="flink" target="_blank"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>X</a>
@@ -1171,7 +1171,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   <button class="mob-btn" onclick="location.href='/classifica'"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Classifica</button>
   <button class="mob-btn" onclick="location.href='/calendario-juventus'"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="3" y1="11" x2="21" y2="11"/></svg>Calendario</button>
   <button class="mob-btn" onclick="location.href='/community'"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 1-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Community</button>
-  <button class="mob-btn" onclick="showSec('news',this)"><svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><line x1="11" y1="6" x2="17" y2="6"/><line x1="11" y1="10" x2="17" y2="10"/><line x1="11" y1="14" x2="13" y2="14"/></svg>News</button>
+  <button class="mob-btn" onclick="location.href='/news'"><svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><line x1="11" y1="6" x2="17" y2="6"/><line x1="11" y1="10" x2="17" y2="10"/><line x1="11" y1="14" x2="13" y2="14"/></svg>News</button>
 </nav>
 <div class="tooltip" id="tooltip"><div class="tt-name" id="ttName"></div><div class="tt-pos" id="ttPos"></div></div>
 <script src="/assets/anime.umd.min.js?v=4.5.0"></script>
@@ -2340,7 +2340,9 @@ function loadHomeDashboard() {
       return {title:title, meta:(m.source_name || "ICV") + player, url:m.player_slug?"/giocatore?slug="+m.player_slug:""};
     }, "Nessun tema mercato pubblicato al momento.");
     renderHomeLinks("homeInstagramList", uniqueSocialRows(social), function(s) {
-      return {title:s.hook || "Post Instagram", meta:(s.media_type || s.platform || "instagram") + (s.status ? " · " + s.status : ""), url:s.post_url || "https://www.instagram.com/ilcalciodivince_/"};
+      var type = String(s.media_type || "").toLowerCase();
+      var mediaLabel = type.indexOf("carousel") >= 0 ? "Carosello" : (type === "image" || type === "photo" ? "Foto" : (type === "video" || type === "reel" || type === "reels" ? "Video" : "Post"));
+      return {title:s.hook || "Post Instagram", meta:mediaLabel + " · Instagram", url:s.post_url || "https://www.instagram.com/ilcalciodivince_/"};
     }, "Nessun post importato al momento.");
     alignHashedSection();
     scheduleHomeDashboard(homeDashboardInterval(matches));
@@ -2691,6 +2693,8 @@ function setupImmersiveHero() {
   syncMotionPreference(motionQuery);
 }
 
+var ICV_MOTION = { reveal: 240, hero: 420 };
+
 function animateLiveDeskRows() {
   if (icvReducedMotion() || !window.anime || typeof window.anime.animate !== "function") return;
   var rows = document.querySelectorAll("#homeLiveDesk .live-desk-row");
@@ -2698,7 +2702,7 @@ function animateLiveDeskRows() {
   window.anime.animate(rows, {
     opacity: { from: 0 },
     x: { from: -12 },
-    duration: 520,
+    duration: ICV_MOTION.reveal,
     delay: window.anime.stagger(70),
     ease: "out(4)",
     onComplete: function() {
@@ -2713,7 +2717,7 @@ function animateMatchHub() {
   if (reveal.length) window.anime.animate(reveal, {
     opacity: { from: 0 },
     y: { from: 10 },
-    duration: 520,
+    duration: ICV_MOTION.reveal,
     delay: window.anime.stagger(45),
     ease: "out(4)",
     onComplete: function() { reveal.forEach(clearIcvMotionStyles); }
@@ -2722,7 +2726,7 @@ function animateMatchHub() {
   if (score) window.anime.animate(score, {
     opacity: { from: 0 },
     scale: { from: .72 },
-    duration: 520,
+    duration: ICV_MOTION.reveal,
     delay: 190,
     ease: "outBack(1.6)",
     onComplete: function() { clearIcvMotionStyles(score); }
@@ -2731,7 +2735,7 @@ function animateMatchHub() {
   if (dots.length) window.anime.animate(dots, {
     opacity: { from: 0 },
     scale: { from: .45 },
-    duration: 520,
+    duration: ICV_MOTION.reveal,
     delay: window.anime.stagger(70, { start: 290 }),
     ease: "outBack(1.8)",
     onComplete: function() { dots.forEach(clearIcvMotionStyles); }
@@ -2746,7 +2750,7 @@ function setupIcvAnimations() {
   animate(heroCopy, {
     opacity: { from: 0 },
     y: { from: 18 },
-    duration: 680,
+    duration: ICV_MOTION.hero,
     delay: stagger(90, { start: 70 }),
     ease: "out(4)",
     onComplete: function() { heroCopy.forEach(clearIcvMotionStyles); }
@@ -2756,7 +2760,7 @@ function setupIcvAnimations() {
   animate(silhouette, {
     opacity: { from: 0 },
     x: { from: 34 },
-    duration: 680,
+    duration: ICV_MOTION.hero,
     delay: 160,
     ease: "out(3)",
     onComplete: function() { clearIcvMotionStyles(silhouette); }
@@ -2767,7 +2771,7 @@ function setupIcvAnimations() {
     animate(strip, {
       opacity: { from: 0 },
       y: { from: 10 },
-      duration: 520,
+      duration: ICV_MOTION.reveal,
       delay: 430 + stripIndex * 130,
       ease: "out(4)",
       onComplete: function() { clearIcvMotionStyles(strip); }
@@ -2775,7 +2779,7 @@ function setupIcvAnimations() {
     animate(items, {
       opacity: { from: 0 },
       x: { from: -10 },
-      duration: 520,
+      duration: ICV_MOTION.reveal,
       delay: stagger(65, { start: 520 + stripIndex * 140 }),
       ease: "out(4)",
       onComplete: function() { items.forEach(clearIcvMotionStyles); }
@@ -2786,7 +2790,7 @@ function setupIcvAnimations() {
   animate(results, {
     opacity: { from: 0 },
     scale: { from: .72 },
-    duration: 520,
+    duration: ICV_MOTION.reveal,
     delay: stagger(75, { start: 700 }),
     ease: "outBack(1.5)",
     onComplete: function() { results.forEach(clearIcvMotionStyles); }
@@ -2804,7 +2808,7 @@ function setupIcvAnimations() {
       animate(panel, {
         opacity: 1,
         y: { from: 18 },
-        duration: 520,
+        duration: ICV_MOTION.reveal,
         delay: Math.min(220, panels.indexOf(panel) * 55),
         ease: "out(4)",
         onComplete: function() { clearIcvMotionStyles(panel); }
@@ -2925,6 +2929,7 @@ function canAutoOpenInstallCard(){
   }
 }
 function scheduleInstallCard(){
+  if (window.matchMedia("(max-width: 768px)").matches) return;
   if (!canAutoOpenInstallCard()) return;
   window.setTimeout(function(){
     if (document.visibilityState === "visible" && canAutoOpenInstallCard()) openInstallCard();

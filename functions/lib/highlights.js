@@ -23,7 +23,14 @@ export function highlightsSetting(input) {
   const title = String(input?.title || '').replace(/\s+/g, ' ').trim().slice(0, 120);
   const id = highlightsVideoId(input?.video_url);
   if (mode === 'manual' && (!title || !id)) throw new Error('Inserisci titolo e link HTTPS di un video YouTube valido');
-  return {mode, title, video_url: id ? 'https://www.youtube.com/watch?v=' + id : ''};
+  const setting = {mode, title, video_url: id ? 'https://www.youtube.com/watch?v=' + id : ''};
+  if (/^[a-z0-9_-]{1,80}$/i.test(String(input?.match_id || ''))) setting.match_id = String(input.match_id);
+  if (input?.match_date) {
+    const date = String(input.match_date);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date) throw new Error('Data della partita non valida');
+    setting.match_date = date;
+  }
+  return setting;
 }
 
 export function publicHighlights(input) {

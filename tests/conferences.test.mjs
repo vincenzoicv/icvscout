@@ -70,6 +70,7 @@ test('miniatura: risposta immagine e redirect disabilitati in modo compatibile c
 });
 
 test('API home seleziona la conferenza oltre il limite dei tre post; salvataggio manuale persistente',async(t)=>{
+  t.mock.method(Date,'now',()=>now);
   let setting=null;
   const calls=[];
   t.mock.method(globalThis,'fetch',async(input,options={})=>{
@@ -94,6 +95,7 @@ test('API home seleziona la conferenza oltre il limite dei tre post; salvataggio
 });
 
 test('miniature delle conferenze secondarie disponibili, nascoste e modalita off escluse',async(t)=>{
+  t.mock.method(Date,'now',()=>now);
   let hidden=false,off=false;
   t.mock.method(globalThis,'fetch',async(input)=>{
     const url=new URL(input);

@@ -314,7 +314,8 @@ test("Community e API mostrano la prossima partita, non una gara successiva", as
     read("functions/api/[[path]].js"),
   ]);
   assert.match(community, /function selectCommunityMatch\(rows\)/);
-  assert.match(community, /var match=selectCommunityMatch\(data\.matches\)/);
+  assert.match(community, /:selectCommunityMatch\(data\.matches\)/);
+  assert.match(community, /id:data\.community_key/);
   assert.doesNotMatch(community, /var match=data\.matches&&data\.matches\[0\]/);
   assert.match(api, /const orderedMatches = orderPublicMatches\(matches\)\.slice\(0, 12\)/);
 

@@ -10,10 +10,17 @@
   <link rel="stylesheet" href="/assets/fonts.css?v=20260728-1">
   <link rel="stylesheet" href="/assets/section-pages.css?v=20260916-1">
   <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260925-1">
-  <link rel="stylesheet" href="/assets/match-pages.css?v=20260925-1">
+  <link rel="stylesheet" href="/assets/match-pages.css?v=20261001-1">
+  <link rel="stylesheet" href="/assets/featured-highlights.css?v=20260831-1">
+  <link rel="stylesheet" href="/assets/featured-conference.css?v=20260831-4">
+  <link rel="stylesheet" href="/assets/match-gallery.css?v=20260830-1">
   <script defer src="/assets/lucide.min.js"></script>
   <script defer src="/assets/section-pages.js?v=20260913-1"></script>
-  <script defer src="/assets/match-pages.js?v=20260925-3"></script>
+  <script defer src="/assets/privacy-controls.js"></script>
+  <script defer src="/assets/featured-highlights.js"></script>
+  <script defer src="/assets/featured-conference.js"></script>
+  <script defer src="/assets/match-gallery.js?v=20261001-1"></script>
+  <script defer src="/assets/match-pages.js?v=20261001-1"></script>
 </head>
 <body class="match-page match-detail-page">
   <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
@@ -27,6 +34,29 @@
     <a class="back" href="/calendario-juventus"><i data-lucide="arrow-left" aria-hidden="true"></i>Calendario Juventus</a>
     <p class="page-kicker">ICV Match Center</p>
     <div id="matchDetail" aria-live="polite" aria-busy="true"><div class="loading" role="status">Caricamento del referto…</div></div>
+    <div id="matchExtras" hidden>
+      <nav class="match-section-nav" aria-label="Contenuti della partita"><a href="#matchDetail">Referto</a><a href="#matchVideos">Video</a><a href="#matchPhotos">Foto</a><a href="#matchDiscussion">Discussione</a></nav>
+      <p id="matchContentStatus" class="match-empty" role="status">Caricamento dei contenuti...</p>
+      <button id="matchContentRetry" class="match-primary-link" type="button" hidden>Riprova</button>
+      <section id="matchVideos" class="match-extra-section" aria-labelledby="matchVideosHeading">
+        <h2 id="matchVideosHeading">Video della partita</h2><p id="matchVideosEmpty" class="match-empty" hidden>Non ci sono ancora video pubblicati per questo incontro.</p>
+        <section class="featured-highlights" id="featuredHighlights" aria-labelledby="highlightsHeading" hidden>
+          <div class="highlights-header"><div><span class="highlights-eyebrow">Highlights</span><h3 id="highlightsHeading"></h3></div><a id="highlightsOriginal" target="_blank" rel="noopener noreferrer">Guarda su YouTube</a></div>
+          <div class="highlights-stage" id="highlightsStage"><img id="highlightsPoster" alt="" width="480" height="360" loading="lazy" decoding="async"><button id="highlightsPlay" type="button" aria-label="Consenti e carica highlights YouTube" aria-describedby="highlightsPrivacy"><i class="conference-icon play" aria-hidden="true"></i></button><div id="highlightsEmbed" hidden></div></div>
+          <div class="highlights-footer"><p id="highlightsPrivacy">Video YouTube. Il caricamento attiva i contenuti esterni. <a href="#" data-privacy-settings>Preferenze privacy</a></p><button id="highlightsStop" type="button" hidden>Chiudi video</button></div><p id="highlightsStatus" role="status"></p>
+        </section>
+        <section class="featured-conference" id="featuredConference" aria-labelledby="conferenceHeading" hidden>
+          <div class="conference-header"><h3 id="conferenceHeading">Sala stampa</h3></div>
+          <div class="conference-layout"><div class="conference-stage" id="conferenceStage"><img id="conferencePoster" width="720" height="720" loading="lazy" decoding="async" alt="Conferenza stampa"><button class="conference-poster-play" id="conferencePosterPlay" type="button" aria-label="Carica la conferenza su Instagram" aria-describedby="conferencePrivacy"><i class="conference-icon play" aria-hidden="true"></i></button><div class="conference-embed" id="conferenceEmbed" hidden></div></div>
+            <div class="conference-copy"><span class="conference-eyebrow" id="conferencePhase"></span><h3 id="conferenceTitle"></h3><time id="conferenceDate"></time><p id="conferenceSummary"></p><div class="conference-actions"><button class="conference-primary" id="conferenceLoad" type="button" aria-describedby="conferencePrivacy"><i class="conference-icon play" aria-hidden="true"></i><span>Consenti e carica video</span></button><button class="conference-stop" id="conferenceStop" type="button" hidden>Chiudi video</button><a id="conferenceOriginal" target="_blank" rel="noopener noreferrer">Guarda su Instagram</a></div><p class="conference-privacy" id="conferencePrivacy">Il player Instagram riceve dati di navigazione e puo usare cookie. <a href="#" data-privacy-settings>Preferenze privacy</a></p><p class="conference-status" id="conferenceStatus" role="status"></p></div>
+          </div><div id="conferenceRecent" class="conference-recent" role="group" aria-label="Conferenze della partita" hidden><h3>Conferenze della partita</h3><div id="conferenceChoices" class="conference-choices"></div></div>
+        </section>
+      </section>
+      <section id="matchPhotos" class="match-extra-section" aria-labelledby="matchPhotosHeading"><h2 id="matchPhotosHeading">Foto della partita</h2><p id="matchPhotosEmpty" class="match-empty" hidden>Non ci sono ancora foto pubblicate per questo incontro.</p><label id="matchAlbumLabel" hidden>Album <select id="matchAlbumSelect"></select></label>
+        <section id="matchGallery" class="match-gallery" data-manual="true" aria-labelledby="matchGalleryHeading" hidden><div class="match-gallery-heading"><div><h3 id="matchGalleryHeading"></h3></div><span id="matchGalleryMeta"></span></div><div id="matchGalleryPhotos" class="match-gallery-photos"></div><p id="matchGalleryCredit" class="match-gallery-credit"></p></section>
+      </section>
+      <section id="matchDiscussion" class="match-extra-section" aria-labelledby="matchDiscussionHeading"><h2 id="matchDiscussionHeading">Discussione</h2><div id="matchMessages" class="match-messages"></div><p><a id="matchRoomLink" class="match-primary-link" href="/community">Entra nella Match Room</a></p></section>
+    </div>
   </main>
   <footer class="page-footer"><a href="/">ICV Scout · Il Calcio di Vince</a><a href="/privacy">Privacy</a><a href="/calendario-juventus">Calendario Juventus</a><a href="/cerca">Cerca</a></footer>
 </body>

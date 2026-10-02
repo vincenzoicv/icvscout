@@ -10,7 +10,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",
-    "esbuild": "^0.28.2"
+    "esbuild": "^0.28.2",
+    "web-vitals": "^6.2.2"
   },
   "dependencies": {
     "animejs": "^4.5.0",

@@ -41,8 +41,40 @@
     const params=new URLSearchParams(location.search),id=params.get('match_id'),date=params.get('date');
     if(!id&&!date){root.innerHTML='<p class="match-empty">Link partita incompleto. Apri il calendario per scegliere un incontro.</p>';root.setAttribute('aria-busy','false');return;}
     const query=id?'match_id='+encodeURIComponent(id):'date='+encodeURIComponent(date)+(params.get('home')?'&home='+encodeURIComponent(params.get('home')):'')+(params.get('away')?'&away='+encodeURIComponent(params.get('away')):'');
-    try{const response=await fetch('/api/public/match?'+query,{headers:{Accept:'application/json'}});if(!response.ok)throw new Error('Dettaglio partita non disponibile. Puoi tornare al calendario e riprovare.');renderMatch(await response.json());}
+    try{const response=await fetch('/api/public/match?'+query,{headers:{Accept:'application/json'}});if(!response.ok)throw new Error('Dettaglio partita non disponibile. Puoi tornare al calendario e riprovare.');const match=await response.json();renderMatch(match);loadContents(query,match);}
     catch(error){root.innerHTML=`<div class="page-error"><p class="match-empty">${escapeHtml(error.message||'Referto non disponibile.')}</p><p style="margin-top:12px"><a class="match-primary-link" href="/calendario-juventus">Apri il calendario</a></p></div>`;root.setAttribute('aria-busy','false');}
+  }
+  function loadContents(query,match){
+    const extras=document.getElementById('matchExtras');if(!extras)return;
+    extras.hidden=false;
+    const status=document.getElementById('matchContentStatus'),retry=document.getElementById('matchContentRetry');
+    const roomLink=document.getElementById('matchRoomLink');roomLink.href='/community?'+query;
+    async function run(){
+      retry.hidden=true;status.textContent='Caricamento dei contenuti...';
+      try{
+        const response=await fetch('/api/public/match-content?'+query,{headers:{Accept:'application/json'}});
+        if(!response.ok)throw new Error();
+        const data=await response.json(),conferences=data.conferences||[],albums=data.albums||[];
+        window.ICVHighlights?.render(data.highlights||null);
+        window.ICVConference?.render(conferences[0]||null,conferences.slice(1));
+        document.getElementById('matchVideosEmpty').hidden=!!data.highlights||conferences.length>0;
+        document.getElementById('matchPhotosEmpty').hidden=albums.length>0;
+        const select=document.getElementById('matchAlbumSelect');select.replaceChildren();
+        albums.forEach((album,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=album.title;select.appendChild(option);});
+        select.onchange=()=>window.ICVGallery?.render(albums[Number(select.value)]);
+        document.getElementById('matchAlbumLabel').hidden=albums.length<2;
+        window.ICVGallery?.render(albums[0]||null);
+        status.textContent=data.partial?'Alcuni contenuti non sono raggiungibili. Puoi riprovare.':'';retry.hidden=!data.partial;
+        if(data.community_key||match.community_key){
+          const room=await fetch('/api/community/match-room?match_key='+encodeURIComponent(data.community_key||match.community_key));
+          if(!room.ok)throw new Error('room');
+          const messages=(await room.json()).messages||[],box=document.getElementById('matchMessages');
+          box.innerHTML=messages.length?messages.slice(-5).map(item=>`<article class="match-message-preview"><strong>${escapeHtml(item.author?.display_name||item.author?.username||'Tifoso ICV')}</strong><p>${escapeHtml(item.body)}</p><time>${escapeHtml(formatDate(item.created_at))}</time></article>`).join(''):'<p class="match-empty">Nessun messaggio per questo incontro. Apri la Match Room per partecipare.</p>';
+        }else document.getElementById('matchMessages').textContent='La discussione non e ancora disponibile per questo incontro.';
+      }catch(error){status.textContent=error.message==='room'?'Discussione temporaneamente non disponibile.':'Contenuti temporaneamente non disponibili.';retry.hidden=false;}
+    }
+    retry.addEventListener('click',run);
+    if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>{if(entries.some(entry=>entry.isIntersecting)){observer.disconnect();run();}},{rootMargin:'200px'});observer.observe(extras);}else run();
   }
   loadSearch();loadMatch();
 })();

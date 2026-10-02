@@ -1,5 +1,6 @@
 import { chooseConference, conferenceCollection, conferenceArchive, conferenceSetting, instagramThumbnail } from '../lib/conferences.js';
 import { DEFAULT_HIGHLIGHTS, highlightsSetting, publicHighlights, highlightsThumbnail } from '../lib/highlights.js';
+import { belongsToMatch, namesMatch, matchDay, communityMatchKey } from '../lib/match-content.js';
 import { adminMatchGallery, readMatchGallery, publicMatchGallery, publicMatchAlbums, matchPhotoResponse } from '../lib/match-gallery.js';
 import { standingsResponse } from '../lib/standings.js';
 
@@ -169,12 +170,16 @@ export async function onRequest(context) {
     if (path === "public/conference-thumbnail" && request.method === "GET") return await publicConferenceThumbnail(env, url);
     if (path === 'public/highlights-thumbnail' && request.method === 'GET') {
       const highlights = publicHighlights(await readHighlightsSetting(env));
-      if (!highlights || url.searchParams.get('id') !== highlights.video_id) return json({error:'Anteprima non disponibile'},404);
-      return await highlightsThumbnail(highlights.video_id);
+      const id = url.searchParams.get('id');
+      const archive = highlights ? await getSiteSetting(env, 'match_highlights', []) : [];
+      const allowed = highlights && (id === highlights.video_id || Array.isArray(archive) && archive.some(item => publicHighlights(item)?.video_id === id));
+      if (!allowed) return json({error:'Anteprima non disponibile'},404);
+      return await highlightsThumbnail(id);
     }
     if (path === "public/players") return publicPlayers(env, url);
     if (/^public\/players\/[a-z0-9-]+$/i.test(path)) return publicPlayer(env, path.split("/").pop());
     if (path === "public/match" && request.method === "GET") return publicMatch(env, url);
+    if (path === "public/match-content" && request.method === "GET") return publicMatchContent(env, url);
     if (path === "public/search" && request.method === "GET") return publicSearch(env, url);
     if (path === "public/graphics") return publicGraphics(env, url);
     if (path === "public/news") return publicNews(env, url);
@@ -715,7 +720,34 @@ async function publicNews(env, url) {
   }
 }
 
-async function publicMatch(env, url) {
+async function publicMatchContent(env, url) {
+  const response = await publicMatch(env, url, true);
+  if (!response.ok) return response;
+  const match = await response.json();
+  const results = await Promise.allSettled([
+    publicMedia(env).then(response => response.json()),
+    readHighlightsSetting(env),
+    hasSupabase(env) ? sb(env, '/match_reports?status=in.(finished,FINISHED,awarded,AWARDED)&order=match_date.desc&limit=1') : Promise.resolve([]),
+    hasSupabase(env) ? getSiteSetting(env, 'match_highlights', []) : Promise.resolve([]),
+  ]);
+  const media = results[0].status === 'fulfilled' ? results[0].value : { albums: [], conferences: [] };
+  const highlights = results[1].status === 'fulfilled' ? publicHighlights(results[1].value) : null;
+  const latest = results[2].status === 'fulfilled' ? results[2].value[0] : null;
+  const setting = results[1].status === 'fulfilled' ? results[1].value : null;
+  const currentHighlights = highlights && (setting.match_id ? String(setting.match_id) === String(match.match_id)
+    : namesMatch(highlights.title, match) && (setting.match_date ? setting.match_date === matchDay(match.date) : String(latest?.match_id || '') === String(match.match_id)));
+  const archive = results[3].status === 'fulfilled' && Array.isArray(results[3].value) ? results[3].value : [];
+  const archivedHighlights = setting?.mode === 'manual' ? archive.find(item => String(item.match_id) === String(match.match_id)) : null;
+  return json({
+    highlights: currentHighlights ? highlights : publicHighlights(archivedHighlights),
+    conferences: (media.conferences || []).filter(item => belongsToMatch(item, match, 'conference')),
+    albums: (media.albums || []).filter(item => belongsToMatch(item, match, 'album')),
+    community_key: match.community_key || '',
+    partial: results.some(result => result.status === 'rejected'),
+  });
+}
+
+async function publicMatch(env, url, skipEnrichment = false) {
   const matchId = cleanText(url.searchParams.get("match_id") || "");
   const dateValue = cleanText(url.searchParams.get("date") || "");
   if (!matchId && !Number.isFinite(Date.parse(dateValue))) return json({ error: "Partita non valida" }, 400);
@@ -740,7 +772,7 @@ async function publicMatch(env, url) {
     });
     rows.sort((a, b) => Math.abs(new Date(a.match_date).getTime() - date.getTime()) - Math.abs(new Date(b.match_date).getTime() - date.getTime()));
   }
-  if (!rows.length && env.FOOTBALL_DATA_KEY) {
+  if (!rows.length && !skipEnrichment && env.FOOTBALL_DATA_KEY) {
     try {
       const headers = { "X-Auth-Token": env.FOOTBALL_DATA_KEY, "X-Unfold-Lineups": "true", "X-Unfold-Bookings": "true", "X-Unfold-Goals": "true" };
       let candidate = null;
@@ -773,7 +805,7 @@ async function publicMatch(env, url) {
   const needsDetails = !Array.isArray(storedPayload.goals) || !storedPayload.goals.length
     || !Array.isArray(storedPayload.homeTeam?.lineup) || !storedPayload.homeTeam.lineup.length
     || !Array.isArray(storedPayload.awayTeam?.lineup) || !storedPayload.awayTeam.lineup.length;
-  if (env.FOOTBALL_DATA_KEY && /^\d+$/.test(String(row.match_id || ""))
+  if (!skipEnrichment && env.FOOTBALL_DATA_KEY && /^\d+$/.test(String(row.match_id || ""))
       && footballDataMatchStatus(storedStatus) === "finished" && needsDetails) {
     try {
       const id = encodeURIComponent(String(row.match_id));
@@ -818,6 +850,7 @@ async function publicMatch(env, url) {
   const status = cleanText(manual.status || row.status || payload.status || "scheduled").toLowerCase();
   return json({
     match_id: String(row.match_id || payload.id || ""),
+    community_key: communityMatchKey(row),
     date: scheduledFixture && ["scheduled", "timed", "pre_match"].includes(status) ? scheduledFixture.date : row.match_date || payload.utcDate || null,
     status,
     competition: cleanText(row.competition || payload.competition?.name || "Match Center"),
@@ -2179,6 +2212,29 @@ async function adminNews(request, env) {
     let setting;
     try { setting = highlightsSetting(body); }
     catch (error) { return json({error:error.message},400); }
+    if (setting.mode === 'manual') {
+      const [previous, saved, reports] = await Promise.all([
+        readHighlightsSetting(env), getSiteSetting(env, 'match_highlights', []),
+        sb(env, '/match_reports?status=in.(finished,FINISHED,awarded,AWARDED)&order=match_date.desc&limit=80'),
+      ]);
+      const archive = Array.isArray(saved) ? saved : [];
+      for (const item of [previous, setting]) {
+        if (!publicHighlights(item)) continue;
+        if (!item.match_id) {
+          const candidates = reports.filter(row => {
+            const payload = matchSourcePayload(row.source_payload);
+            return (!item.match_date || item.match_date === matchDay(row.match_date)) && namesMatch(item.title, {home:payload.homeTeam?.name,away:payload.awayTeam?.name});
+          });
+          if (candidates.length === 1) item.match_id = String(candidates[0].match_id);
+        }
+        if (item.match_id) {
+          const index = archive.findIndex(entry => String(entry.match_id) === item.match_id);
+          if (index >= 0) archive.splice(index, 1);
+          archive.unshift(item);
+        }
+      }
+      await setSiteSetting(env, 'match_highlights', archive.slice(0, 80));
+    }
     await setSiteSetting(env,'featured_highlights',setting);
     return json({highlights_config:setting,featured_highlights:publicHighlights(setting)});
   }
@@ -4499,11 +4555,20 @@ async function fetchText(url) {
   let lastStatus = 0;
   const retryDelays = [350, 900];
   for (let attempt = 0; attempt < 3; attempt++) {
-    const response = await fetch(url, { headers: fetchHeadersForUrl(url) });
-    if (response.ok) return response.text();
-    lastStatus = response.status;
-    if (response.body) await response.body.cancel();
-    if (!isTransientHttpStatus(response.status) || attempt === 2) break;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(url, { headers: fetchHeadersForUrl(url), signal: controller.signal });
+      if (response.ok) return await response.text();
+      lastStatus = response.status;
+      if (response.body) await response.body.cancel();
+    } catch (error) {
+      if (!controller.signal.aborted) throw error;
+      lastStatus = 504;
+    } finally {
+      clearTimeout(timeout);
+    }
+    if (!isTransientHttpStatus(lastStatus) || attempt === 2) break;
     await delay(retryDelays[attempt]);
   }
   throw new Error("HTTP " + lastStatus);

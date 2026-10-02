@@ -2632,10 +2632,13 @@ function setupImmersiveHero() {
     });
   }
 
-  function resizeHeroCanvas() {
-    var bounds = hero.getBoundingClientRect();
-    width = Math.max(1, Math.round(bounds.width));
-    height = Math.max(1, Math.round(bounds.height));
+  function resizeHeroCanvas(bounds) {
+    bounds = bounds || hero.getBoundingClientRect();
+    var nextWidth = Math.max(1, Math.round(bounds.width));
+    var nextHeight = Math.max(1, Math.round(bounds.height));
+    if (nextWidth === width && nextHeight === height && dpr === Math.min(window.devicePixelRatio || 1, 1.5)) return;
+    width = nextWidth;
+    height = nextHeight;
     dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
@@ -2687,9 +2690,14 @@ function setupImmersiveHero() {
       if (!visible && frame) { window.cancelAnimationFrame(frame); frame = 0; }
     }, { threshold: .05 }).observe(hero);
   }
-  if (window.ResizeObserver) new ResizeObserver(resizeHeroCanvas).observe(hero);
-  else window.addEventListener("resize", resizeHeroCanvas, { passive: true });
-  resizeHeroCanvas();
+  if (window.ResizeObserver) new ResizeObserver(function(entries) {
+    var entry = entries[0], box = entry.borderBoxSize && entry.borderBoxSize[0];
+    resizeHeroCanvas(box ? { width: box.inlineSize, height: box.blockSize } : entry.contentRect);
+  }).observe(hero);
+  else {
+    window.addEventListener("resize", function() { resizeHeroCanvas(); }, { passive: true });
+    window.requestAnimationFrame(function() { resizeHeroCanvas(); });
+  }
   syncMotionPreference(motionQuery);
 }
 

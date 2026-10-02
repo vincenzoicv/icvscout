@@ -44,7 +44,13 @@
   dialog.querySelector('.match-lightbox-image').addEventListener('touchend',function(event) { if (startX !== null) { var distance = event.changedTouches[0].clientX - startX; if (Math.abs(distance) > 60) show(index + (distance < 0 ? 1 : -1)); } startX = null; },{passive:true});
   function render(next) {
       gallery = next;
-      if (!gallery || !gallery.photos.length) return;
+      if (!gallery || !gallery.photos.length) {
+        if (dialog.open) close();
+        if (photoObserver) photoObserver.disconnect();
+        section.hidden = true;
+        document.getElementById('matchGalleryPhotos').replaceChildren();
+        return;
+      }
       document.getElementById('matchGalleryHeading').textContent = gallery.title;
       document.getElementById('matchGalleryMeta').textContent = new Date(gallery.date + 'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'long',year:'numeric'}) + ' · ' + gallery.photos.length + ' foto';
       document.getElementById('matchGalleryCredit').textContent = gallery.credit ? 'Foto: ' + gallery.credit : '';

@@ -62,6 +62,25 @@ test('unauthorized or invalid writes cannot change highlights',async(t)=>{
     assert.equal(response.status,status);assert.equal(state.setting,null);
   }
 });
+test('dated highlights retain the previous fixture and resolve repeated opponents safely',async t=>{
+  const settings={featured_highlights:{...DEFAULT_HIGHLIGHTS,title:'Juventus-Atalanta',match_id:'first'}};
+  const reports=['2026-09-20','2026-12-20'].map((day,index)=>({match_id:index?'second':'first',match_date:day+'T17:00:00Z',source_payload:{homeTeam:{name:'Juventus FC'},awayTeam:{name:'Atalanta BC'}}}));
+  t.mock.method(globalThis,'fetch',async(input,options={})=>{
+    const url=new URL(input);
+    if(url.pathname.endsWith('/match_reports'))return Response.json(reports);
+    if(url.pathname.endsWith('/site_settings')){
+      if(options.method==='POST'){const row=JSON.parse(options.body)[0];settings[row.key]=row.value;return Response.json([row]);}
+      if(options.method==='PATCH'){const key=url.searchParams.get('key').slice(3);settings[key]=JSON.parse(options.body).value;return Response.json([{value:settings[key]}]);}
+      const key=(url.searchParams.get('key')||'').slice(3);return Response.json(settings[key]?[{value:settings[key]}]:[]);
+    }
+    return Response.json([]);
+  });
+  const response=await onRequest({request:req('admin/news',{type:'featured_highlights',...DEFAULT_HIGHLIGHTS,title:'Juventus-Atalanta',match_date:'2026-12-20'}),env});
+  assert.equal(response.status,200);
+  assert.equal(settings.featured_highlights.match_id,'second');
+  assert.deepEqual(settings.match_highlights.map(item=>item.match_id),['second','first']);
+  assert.throws(()=>highlightsSetting({...DEFAULT_HIGHLIGHTS,match_date:'2026-02-31'}));
+});
 test('thumbnail is limited to the published video and a bounded JPEG response',async(t)=>{
   const state=mockDb(t);
   const request=req('public/highlights-thumbnail?id='+id);

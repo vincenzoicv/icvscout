@@ -236,6 +236,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
               <div><label for="highlightsTitle">Titolo highlights</label><input id="highlightsTitle" maxlength="120" placeholder="Juventus - Parma 2-0"></div>
             </div>
             <label for="highlightsUrl">Link YouTube highlights</label><input id="highlightsUrl" type="url" placeholder="https://www.youtube.com/watch?v=...">
+            <label for="highlightsMatchDate">Data della partita (facoltativa)</label><input id="highlightsMatchDate" type="date">
             <p id="highlightsCurrent" class="meta" role="status" aria-live="polite"></p>
             <button class="primary" type="submit" id="saveHighlights">Salva highlights</button>
           </form>
@@ -297,16 +298,30 @@ function markInternalTraffic(){
 }
 function api(path, options){
   options = options || {};
+  var controller = new AbortController();
+  var timeout = setTimeout(function(){controller.abort()}, options.method && options.method !== "GET" ? 90000 : 30000);
   return fetch(path, {
     method: options.method || "GET",
     headers: {"Content-Type":"application/json","X-ICV-Admin-Token": token()},
-    body: options.body ? JSON.stringify(options.body) : undefined
+    body: options.body ? JSON.stringify(options.body) : undefined,
+    signal: controller.signal
   }).then(function(r){ return r.text().then(function(text){
     var data={};
-    if(text){try{data=JSON.parse(text)}catch(error){data={error:r.ok?"Risposta API non valida":text.slice(0,180)}}}
-    if(!r.ok){var apiError=new Error(data.error||("Errore API "+r.status));apiError.status=r.status;throw apiError}
+    if(text){try{data=JSON.parse(text)}catch(error){
+      if(r.ok) throw new Error("Risposta del servizio non valida");
+      data={error:"Risposta del servizio non valida"};
+    }}
+    if(!r.ok){
+      var message = r.status === 524 || r.status === 504 ? "Il servizio non ha risposto in tempo. Verifica lo stato prima di ripetere l'operazione." :
+        r.status === 503 ? "Servizio temporaneamente non disponibile. Riprova tra qualche minuto." :
+        data.error || ("Errore API "+r.status);
+      var apiError=new Error(message);apiError.status=r.status;throw apiError;
+    }
     return data;
-  }); });
+  }); }).catch(function(error){
+    if(error.name === "AbortError") throw new Error("Tempo di attesa superato. L'operazione potrebbe essere ancora in corso: verifica lo stato prima di ripeterla.");
+    throw error;
+  }).finally(function(){clearTimeout(timeout)});
 }
 function apiForm(path, form){
   return fetch(path, {
@@ -320,7 +335,7 @@ function login(){
   var loginError = document.getElementById("loginError");
   if(!typedToken){loginError.textContent="Inserisci il token admin";loginError.style.display="block";return}
   if (typedToken) sessionStorage.setItem("icv_admin_token", typedToken);
-  load().then(function(){
+  load(true).then(function(){
     markInternalTraffic();
     document.getElementById("login").style.display = "none";
     document.getElementById("panel").style.display = "block";
@@ -332,7 +347,7 @@ function login(){
   });
 }
 function logout(){ sessionStorage.removeItem("icv_admin_token"); location.reload(); }
-function load(){
+function load(strict){
   return api("/api/admin/news").then(function(data){
     state.drafts = data.drafts || [];
     state.news = data.news || [];
@@ -357,9 +372,20 @@ function load(){
     state.communityNotes = data.community_context_notes || [];
     restoreContentFilters();
     render();
+  }).catch(function(error){
+    if(strict) throw error;
+    showToast("Elenco non aggiornato: " + error.message);
+    return false;
   });
 }
+var runningAutomations = new Set();
 function runAutomation(action){
+  if(runningAutomations.has(action)) return Promise.resolve();
+  runningAutomations.add(action);
+  var buttons = Array.from(document.querySelectorAll('button[onclick]')).filter(function(button){
+    return button.getAttribute("onclick").indexOf("runAutomation('" + action + "')") !== -1;
+  });
+  buttons.forEach(function(button){button.disabled=true});
   showToast("Automazione in corso");
   return api("/api/admin/automate", {method:"POST", body:{action:action}})
     .then(function(res){
@@ -370,6 +396,9 @@ function runAutomation(action){
     .catch(function(err){
       showToast(action === "instagram_import" ? friendlyAutomationError(err.message) : err.message);
       return load().catch(function(){});
+    }).finally(function(){
+      runningAutomations.delete(action);
+      buttons.forEach(function(button){button.disabled=false});
     });
 }
 function filterValue(id, fallback){var el=document.getElementById(id);return el?el.value:fallback}
@@ -867,18 +896,20 @@ function renderHighlightsSettings(){
   document.getElementById('highlightsMode').value=setting.mode;
   document.getElementById('highlightsTitle').value=setting.title || '';
   document.getElementById('highlightsUrl').value=setting.video_url || '';
+  document.getElementById('highlightsMatchDate').value=setting.match_date || '';
   document.getElementById('highlightsCurrent').textContent=setting.mode==='off'?'Highlights nascosti':'In evidenza: '+setting.title;
   toggleHighlightsFields();
 }
 function toggleHighlightsFields(){
   var active=val('highlightsMode')==='manual';
   ['highlightsTitle','highlightsUrl'].forEach(function(id){var field=document.getElementById(id);field.disabled=!active;field.required=active;});
+  document.getElementById('highlightsMatchDate').disabled=!active;
 }
 function saveHighlightsSelection(){
   var button=document.getElementById('saveHighlights'),status=document.getElementById('highlightsCurrent');
   if(button.disabled)return;
   button.disabled=true;status.textContent='Salvataggio...';
-  return api('/api/admin/news',{method:'PATCH',body:{type:'featured_highlights',mode:val('highlightsMode'),title:val('highlightsTitle'),video_url:val('highlightsUrl')}})
+  return api('/api/admin/news',{method:'PATCH',body:{type:'featured_highlights',mode:val('highlightsMode'),title:val('highlightsTitle'),video_url:val('highlightsUrl'),match_date:val('highlightsMatchDate')}})
     .then(function(data){state.highlightsConfig=data.highlights_config;renderHighlightsSettings();showToast('Highlights salvati');})
     .catch(function(error){status.textContent=error.message;showToast(error.message);})
     .finally(function(){button.disabled=false;});

@@ -124,7 +124,7 @@ test("dopo Juventus-Atalanta le prossime tre iniziano da Cagliari-Juventus", asy
 
 test("la home lascia le amichevoli al calendario ufficiale", async () => {
   const html = await read("index.html");
-  assert.match(html, /class="hero-season-link" href="\/calendario-juventus">Calendario ufficiale 2026\/27/);
+  assert.match(html, /class="hero-season-link vb-beam" href="\/calendario-juventus">Calendario ufficiale 2026\/27/);
   assert.doesNotMatch(html, /<div class="friendly-strip"/);
   assert.doesNotMatch(html, /Risultati e prossime/);
 });
@@ -154,7 +154,7 @@ test("la home apre con fotografie reali dello Stadium su desktop e mobile", asyn
   for (const marker of [
     "/assets/hero-allianz-user-2026.webp",
     "/assets/hero-allianz-user-mobile-2026.jpg",
-    "<h1><span>ICV</span><strong>SCOUT</strong></h1>",
+    'class="vince-wordmark" aria-label="Il Calcio di Vince"',
     'id="heroAtmosphere"',
     "function setupImmersiveHero()",
     "setupImmersiveHero();",
@@ -186,7 +186,9 @@ test("la home propone l'installazione PWA senza essere invadente", async () => {
   assert.match(html, /onclick="closeInstallCard\(true\)"/);
   assert.match(html, /window\.addEventListener\("load", scheduleInstallCard\)/);
   assert.match(manifest, /"display": "standalone"/);
-  assert.match(worker, /const CACHE = 'icv-v21'/);
+  assert.match(worker, /const CACHE = 'icv-v22'/);
+  assert.match(worker, /\/assets\/vince-hero\.css\?v=20261003-1/);
+  assert.match(worker, /\/assets\/vince-hero\.js\?v=20261003-1/);
 });
 
 test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async () => {

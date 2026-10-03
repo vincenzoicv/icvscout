@@ -1,0 +1,56 @@
+.hero { min-height:min(780px,calc(100svh - 92px)); padding:62px 24px 84px; }
+.hero .hero-c { width:min(900px,100%); }
+.hero .hero-tag { margin-bottom:30px; font-size:13px; letter-spacing:0; }
+.hero .vince-wordmark { margin:0 0 32px; width:max-content; max-width:100%; text-shadow:0 6px 30px #0008; }
+.hero .vince-wordmark span { margin:0; text-transform:none; letter-spacing:0; }
+.hero .vince-wordmark .vince-top { display:block; overflow:hidden; padding:4px 10px 6px; font:400 164px/.88 'Bebas Neue',sans-serif; color:#fafafa; }
+.vince-top b { display:inline-block; font-weight:400; }
+.hero .vince-wordmark .vince-signature { display:flex; justify-content:center; align-items:baseline; gap:18px; padding:0 24px 12px; margin-top:0; font:700 italic 112px/1.14 'Playfair Display',serif; color:#e8b84b; }
+.vince-signature i { font-size:46px; font-weight:700; }
+.vince-signature em { position:relative; font:inherit; background:linear-gradient(115deg,#c4962a 10%,#edc768 32%,#fff0c4 48%,#e8b84b 64%,#bd8c28 90%); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.vince-signature em::after { content:'Vince'; position:absolute; inset:0; color:transparent; background:linear-gradient(108deg,transparent 30%,#fff6dc 49%,transparent 64%); background-size:250% 100%; background-position:140% 0; -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; pointer-events:none; opacity:0; }
+.hero .hero-desc { font:400 17px/1.5 Barlow,sans-serif; color:#f5f5f5d6; margin-bottom:8px; max-width:520px; }
+.hero .manifesto { font:500 14px/1.5 Barlow,sans-serif; color:#f5f5f599; margin-bottom:0; }
+.hero .hero-season-link { --vb-beam-a:#d4af37; --vb-beam-b:#fff0c4; --vb-beam-radius:6px; --vb-beam-speed:3.2s; --vb-beam-strength:.8; margin-top:32px; min-height:44px; padding:0 23px; font-size:12px; letter-spacing:0; border-radius:6px; background:#0909098c; border-color:#d4af3759; box-shadow:0 8px 24px #0005; }
+.hero .hero-season-link::after { animation-iteration-count:2; }
+.hero .hero-season-link:hover::after,.hero .hero-season-link:focus-visible::after { animation-iteration-count:infinite; }
+.hero-season-link:focus-visible { outline:2px solid #fff; outline-offset:5px; }
+.hero .hero-scan { animation:none; opacity:.55; }
+.hero .hero-atmosphere { display:none; }
+.hero .hero-scroll-cue span::after { animation:none; }
+.hero.is-entering .vince-top b { animation:vince-rise 950ms cubic-bezier(.16,1,.3,1) both; }
+.hero.is-entering .vince-top b:nth-child(2) { animation-delay:110ms; }
+.hero.is-entering .vince-signature { animation:vince-sign 1050ms cubic-bezier(.16,1,.3,1) 280ms both; }
+.hero.is-entering .vince-signature em::after { animation:vince-light 1200ms ease 1000ms both; }
+.hero.is-entering .hero-tag { animation:vince-detail 600ms ease 40ms both; }
+.hero.is-entering .hero-desc,.hero.is-entering .manifesto,.hero.is-entering .hero-season-link { animation:vince-detail 650ms cubic-bezier(.16,1,.3,1) 650ms both; }
+.hero.is-entering .manifesto { animation-delay:740ms; }
+.hero.is-entering .hero-season-link { animation-delay:830ms; }
+@keyframes vince-rise { from { transform:translateY(115%) rotate(3deg); opacity:0; } to { transform:translateY(0) rotate(0); opacity:1; } }
+@keyframes vince-sign { from { clip-path:inset(0 100% 0 0); transform:translateY(16px); opacity:0; } to { clip-path:inset(0); transform:translateY(0); opacity:1; } }
+@keyframes vince-light { 0% { opacity:0; background-position:140% 0; } 20% { opacity:.9; } 100% { opacity:0; background-position:-40% 0; } }
+@keyframes vince-detail { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@media (max-width:1000px) { .hero .vince-wordmark .vince-top { font-size:140px; } .hero .vince-wordmark .vince-signature { font-size:100px; } }
+@media (max-width:600px) {
+  .hero { min-height:calc(100svh - 180px); padding:48px 18px 74px; }
+  .hero .hero-tag { max-width:250px; margin-bottom:28px; font-size:11px; line-height:1.5; }
+  .hero .vince-wordmark { margin-bottom:25px; }
+  .hero .vince-wordmark .vince-top { font-size:88px; padding-inline:4px; }
+  .hero .vince-wordmark .vince-signature { font-size:70px; gap:12px; padding-inline:15px; margin-top:4px; }
+  .vince-signature i { font-size:30px; }
+  .hero .hero-desc { font-size:15px; max-width:310px; }
+  .hero .manifesto { font-size:12px; max-width:280px; }
+  .hero .hero-season-link { margin-top:26px; }
+}
+@media (max-width:360px) {
+  .hero .vince-wordmark .vince-top { font-size:76px; }
+  .hero .vince-wordmark .vince-signature { font-size:61px; }
+  .hlogo { min-width:0; }
+  .hlogo img { width:28px; height:28px; }
+  .hlogo-main { max-width:68px; font-size:12px; line-height:1.15; letter-spacing:0; }
+}
+@media (max-height:620px) and (min-width:601px) { .hero { min-height:490px; padding-top:32px; } .hero .vince-wordmark .vince-top { font-size:112px; } .hero .vince-wordmark .vince-signature { font-size:80px; } .hero .hero-tag { margin-bottom:18px; } }
+@media (prefers-reduced-motion:reduce) {
+  .hero.is-entering *,.hero.is-entering *::after { animation:none!important; transition:none!important; }
+  .vince-signature em::after { display:none; }
+}

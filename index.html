@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Formazioni, analisi tattiche, statistiche e mercato della Juventus. L'analisi di chi vive davvero il calcio.">
-<title>ICV Scout - Il Calcio di Vince</title>
+<title>Il Calcio di Vince - ICV Scout</title>
 <link rel="canonical" href="https://ilcalciodivince.com/">
 
 <!-- Open Graph / WhatsApp / Facebook -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://ilcalciodivince.com/">
-<meta property="og:title" content="ICV Scout - Il Calcio di Vince">
+<meta property="og:title" content="Il Calcio di Vince - ICV Scout">
 <meta property="og:description" content="Formazioni, analisi tattiche, statistiche e mercato della Juventus. L'analisi di chi vive davvero il calcio.">
 <meta property="og:image" content="https://ilcalciodivince.com/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -21,7 +21,7 @@
 <!-- Twitter / X Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@VikBrancato">
-<meta name="twitter:title" content="ICV Scout - Il Calcio di Vince">
+<meta name="twitter:title" content="Il Calcio di Vince - ICV Scout">
 <meta name="twitter:description" content="Formazioni, analisi tattiche, statistiche e mercato della Juventus.">
 <meta name="twitter:image" content="https://ilcalciodivince.com/og-image.png">
 
@@ -829,6 +829,9 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 }
 </style>
 <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260925-1">
+<link rel="stylesheet" href="/assets/vb-motion-effects.css?v=20261003-1">
+<link rel="stylesheet" href="/assets/vince-hero.css?v=20261003-1">
+<script defer src="/assets/vince-hero.js?v=20261003-1"></script>
 <link rel="stylesheet" href="/assets/featured-conference.css?v=20260831-4">
 <script defer src="/assets/featured-conference.js?v=20260913-1"></script>
 <link rel="stylesheet" href="/assets/featured-highlights.css?v=20260831-1">
@@ -846,8 +849,8 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   <div class="hlogo">
     <img src="/assets/icv-logo-160.jpg" width="80" height="80" alt="ICV Scout">
     <div class="hlogo-text">
-      <span class="hlogo-main">ICV Scout</span>
-      <span class="hlogo-sub">Il Calcio di Vince</span>
+      <span class="hlogo-main">Il Calcio di Vince</span>
+      <span class="hlogo-sub">ICV Scout</span>
     </div>
   </div>
   <nav>
@@ -906,10 +909,10 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   <div class="hero-scan"></div>
   <div class="hero-c">
     <div class="hero-tag">Stagione 2026/27 &middot; Juventus FC &middot; Serie A</div>
-    <h1><span>ICV</span><strong>SCOUT</strong></h1>
+    <h1 class="vince-wordmark" aria-label="Il Calcio di Vince"><span class="vince-top" aria-hidden="true"><b>IL</b> <b>CALCIO</b></span><span class="vince-signature" aria-hidden="true"><i>di</i> <em>Vince</em></span></h1>
     <p class="hero-desc">Formazioni, analisi tattiche e statistiche della Juventus.</p>
     <p class="manifesto">Il calcio vissuto da chi lo vive davvero.</p>
-    <a class="hero-season-link" href="/calendario-juventus">Calendario ufficiale 2026/27</a>
+    <a class="hero-season-link vb-beam" href="/calendario-juventus">Calendario ufficiale 2026/27</a>
   </div>
   <div class="hero-stadium-meta"><b>Allianz Stadium</b><span>Torino</span></div>
   <a class="hero-scroll-cue" href="#homeDash">Entra nel match <span aria-hidden="true"></span></a>
@@ -2595,6 +2598,7 @@ function clearIcvMotionStyles(element) {
 }
 
 function setupImmersiveHero() {
+  if (document.querySelector(".vince-wordmark")) return;
   var hero = document.getElementById("immersiveHero");
   var canvas = document.getElementById("heroAtmosphere");
   if (!hero || !canvas) return;
@@ -2754,26 +2758,27 @@ function setupIcvAnimations() {
   if (icvReducedMotion() || !window.anime || typeof window.anime.animate !== "function") return;
   var animate = window.anime.animate;
   var stagger = window.anime.stagger;
-  var heroCopy = document.querySelectorAll(".hero-tag, .hero h1, .hero-desc, .manifesto");
-  animate(heroCopy, {
-    opacity: { from: 0 },
-    y: { from: 18 },
-    duration: ICV_MOTION.hero,
-    delay: stagger(90, { start: 70 }),
-    ease: "out(4)",
-    onComplete: function() { heroCopy.forEach(clearIcvMotionStyles); }
-  });
+  if (!document.querySelector(".vince-wordmark")) {
+    var heroCopy = document.querySelectorAll(".hero-tag, .hero h1, .hero-desc, .manifesto");
+    animate(heroCopy, {
+      opacity: { from: 0 },
+      y: { from: 18 },
+      duration: ICV_MOTION.hero,
+      delay: stagger(90, { start: 70 }),
+      ease: "out(4)",
+      onComplete: function() { heroCopy.forEach(clearIcvMotionStyles); }
+    });
 
-  var silhouette = document.querySelector(".hero-stadium-img");
-  animate(silhouette, {
-    opacity: { from: 0 },
-    x: { from: 34 },
-    duration: ICV_MOTION.hero,
-    delay: 160,
-    ease: "out(3)",
-    onComplete: function() { clearIcvMotionStyles(silhouette); }
-  });
-
+    var silhouette = document.querySelector(".hero-stadium-img");
+    animate(silhouette, {
+      opacity: { from: 0 },
+      x: { from: 34 },
+      duration: ICV_MOTION.hero,
+      delay: 160,
+      ease: "out(3)",
+      onComplete: function() { clearIcvMotionStyles(silhouette); }
+    });
+  }
   document.querySelectorAll(".friendly-strip").forEach(function(strip, stripIndex) {
     var items = strip.querySelectorAll(".friendly-item");
     animate(strip, {

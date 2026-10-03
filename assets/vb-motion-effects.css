@@ -1,0 +1,41 @@
+/* Border Beam from the installed VB Motion Effects plugin, gold theme via hero tokens. */
+@property --vb-beam-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.vb-beam {
+  --vb-beam-a: #b8ff64;
+  --vb-beam-b: #72f2d2;
+  --vb-beam-radius: 999px;
+  --vb-beam-speed: 3s;
+  --vb-beam-strength: .7;
+  position: relative;
+  isolation: isolate;
+}
+
+.vb-beam::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  padding: 1px;
+  border-radius: var(--vb-beam-radius);
+  pointer-events: none;
+  opacity: var(--vb-beam-strength);
+  background: conic-gradient(from var(--vb-beam-angle), transparent 0 68%, var(--vb-beam-a) 76%, var(--vb-beam-b) 84%, transparent 92%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: vb-beam-rotate var(--vb-beam-speed) linear infinite;
+}
+
+@keyframes vb-beam-rotate { to { --vb-beam-angle: 360deg; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .vb-beam::after {
+    animation: none;
+    transition: none;
+  }
+}

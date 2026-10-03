@@ -10,13 +10,13 @@ test('editorial pages share the same complete navigation and brand treatment',()
     const html=file(page);
     assert.match(html,/class="page-header"/);
     assert.match(html,/class="page-brand-copy"/);
-    assert.match(html,/<small>Il Calcio di Vince<\/small>/);
+    assert.match(html,/<strong>Il Calcio di Vince<\/strong><small>ICV Scout<\/small>/);
     assert.match(html,/<nav aria-label="Menu principale">/);
     for(const href of ['/','/classifica?competizione=serie-a','/classifica?competizione=europa-league','/calendario-juventus','/media','/community','/news']){
       assert.match(html,new RegExp(`href="${href.replace(/[?]/g,'\\?')}"`));
     }
     assert.match(html,/id="pageTheme"/);
-    assert.match(html,/section-pages\.css\?v=20260916-1/);
+    assert.match(html,/section-pages\.css\?v=20261003-2/);
     assert.match(html,/section-pages\.js\?v=20260913-1/);
   }
 });
@@ -42,6 +42,17 @@ test('shared header stays visible and synchronizes the browser theme color',()=>
   assert.match(css,/backdrop-filter:blur\(20px\)/);
   assert.match(js,/replace\(\/\\\.html\$\//);
   assert.match(js,/getElementById\('themeColor'\)/);
+});
+
+test('all editorial destinations expose the same navigation and primary brand',()=>{
+  for(const page of [...editorialPages,'news.html','partita.html','cerca.html','mercato.html','grafiche.html','giocatore.html']){
+    const html=file(page);
+    assert.match(html,/<strong>Il Calcio di Vince<\/strong><small>ICV Scout<\/small>/);
+    for(const href of ['/','/classifica?competizione=serie-a','/classifica?competizione=europa-league','/calendario-juventus','/media','/community','/news','/cerca']){
+      assert.ok(html.includes('href="'+href+'"'),page+' missing '+href);
+    }
+    assert.match(html,/id="pageTheme"/);
+  }
 });
 
 test('main editorial pages expose the Google preferred-source action',()=>{

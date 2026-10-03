@@ -186,7 +186,7 @@ test("la home propone l'installazione PWA senza essere invadente", async () => {
   assert.match(html, /onclick="closeInstallCard\(true\)"/);
   assert.match(html, /window\.addEventListener\("load", scheduleInstallCard\)/);
   assert.match(manifest, /"display": "standalone"/);
-  assert.match(worker, /const CACHE = 'icv-v22'/);
+  assert.match(worker, /const CACHE = 'icv-v23'/);
   assert.match(worker, /\/assets\/vince-hero\.css\?v=20261003-1/);
   assert.match(worker, /\/assets\/vince-hero\.js\?v=20261003-1/);
 });
@@ -623,6 +623,19 @@ test("Mercato Radar seleziona e divide le trattative raccolte", async () => {
     { player_name: "Colpo Juve", note: "Colpo Juve, preso Lucumi dal Bologna" },
     { player_name: "Real Madrid", note: "La Juve cerca un portiere: spunta un nome dal Real Madrid" },
   ]) assert.notEqual(marketTopicName(row), row.player_name);
+});
+
+test("mercato: i titoli introduttivi non diventano nomi di giocatori", async () => {
+  const { marketTopicName, aggregateMarketItems } = await import(new URL("../functions/api/[[path]].js", import.meta.url));
+  const headline = "Quanto guadagna Donnarumma al Manchester City: ingaggio e dettagli del contratto, Juventus e Inter alla finestra";
+  assert.equal(marketTopicName({ player_name: "Quanto Quanto", note: headline }), "Donnarumma");
+  assert.equal(marketTopicName({ player_name: "Quanto", note: headline }), "Donnarumma");
+  assert.equal(marketTopicName({ player_name: "Quanto Quanto", note: "Dettagli del contratto" }), "Mercato Juve");
+  assert.equal(marketTopicName({ player_name: "Ecco", note: "La Juventus ci proverà per Kayode, obiettivo per il 2027" }), "Kayode");
+  assert.equal(marketTopicName({ player_name: "Ufficiale", note: "Neto è un nuovo giocatore della Juventus" }), "Neto");
+  const corrected = aggregateMarketItems([{ player_name: "Quanto Quanto", note: headline, updated_at: new Date().toISOString(), source_name: "Sky Sport", reliability: "trusted" }]);
+  assert.equal(corrected[0].player_name, "Donnarumma");
+  assert.equal(corrected[0].player_slug, "donnarumma");
 });
 
 test("la Community espone le funzioni finali di lancio", async () => {

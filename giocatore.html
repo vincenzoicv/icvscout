@@ -14,10 +14,18 @@
 .tabs::-webkit-scrollbar{display:none}
 </style>
 <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260925-1">
+<link rel="stylesheet" href="/assets/section-pages.css?v=20261003-2">
+<link rel="stylesheet" href="/assets/classifica-nav.css?v=20260831-1">
+<script defer src="/assets/lucide.min.js"></script>
+<script defer src="/assets/section-pages.js?v=20260913-1"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
-<header><a class="brand" href="/">ICV Scout<small>Il Calcio di Vince</small></a><nav><a href="/">Home</a><a href="/calendario-juventus">Calendario</a><a href="/community">Community</a><a href="/news">News</a></nav></header>
+<header class="page-header"><div class="page-header-inner">
+  <a class="page-brand" href="/"><img src="/assets/icv-logo-160.jpg" alt="" width="40" height="40"><span class="page-brand-copy"><strong>Il Calcio di Vince</strong><small>ICV Scout</small></span></a>
+  <nav aria-label="Menu principale"><a href="/">Home</a><details class="classifica-menu"><summary>Classifica</summary><div><a href="/classifica?competizione=serie-a">Serie A</a><a href="/classifica?competizione=europa-league">Europa League</a></div></details><a href="/calendario-juventus">Calendario</a><a href="/media">Media</a><a href="/community">Community</a><a href="/news">News</a><a href="/cerca">Cerca</a></nav>
+  <button class="page-theme" id="pageTheme" type="button" aria-label="Cambia tema" aria-pressed="false" title="Cambia tema"><i data-lucide="sun-moon" aria-hidden="true"></i></button>
+</div></header>
 <main id="main-content" tabindex="-1">
   <section class="hero"><div class="avatar" id="playerAvatar">ICV</div><div><div class="eyebrow">ICV Player Hub</div><h1 id="playerName">Caricamento</h1><div class="summary" id="playerSummary">Notizie, mercato e Community</div></div></section>
   <div class="tabs" role="tablist"><button class="active" data-tab="overview">Panoramica</button><button data-tab="news">News</button><button data-tab="market">Mercato</button><button data-tab="community">Community</button></div>

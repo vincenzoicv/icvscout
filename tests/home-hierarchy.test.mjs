@@ -33,9 +33,9 @@ test('every news card opens its source or an internal detail with safe external-
   assert.ok(home.includes('(external ? " target=\'_blank\' rel=\'noopener noreferrer\'" : "")'));
   assert.ok(home.includes('external ? "Apri fonte" : "Leggi su ICV"'));
   assert.ok(!home.includes("class='news-card-static'"));
-  assert.ok(home.includes('var sourceUrl=/^https:\\/\\//i.test(String(n.source_url||""))?String(n.source_url):"";'));
-  assert.ok(home.includes('var detailUrl=n.id?"/community?news="+encodeURIComponent(n.id):"/#news";'));
-  assert.ok(home.includes('external?" target=\'_blank\' rel=\'noopener noreferrer\'":""'));
+  assert.match(home,/function renderHomeNews\(news\)/);
+  assert.ok(home.includes("class='home-news-story'"));
+  assert.ok(home.includes('sourceUrl ? " target=\'_blank\' rel=\'noopener noreferrer\'" : ""'));
 });
 
 test('mobile footer clears the fixed navigation and the device safe area',()=>{

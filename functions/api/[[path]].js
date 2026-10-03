@@ -5320,6 +5320,10 @@ function marketStageRank(stage) {
 }
 
 const MARKET_PLAYER_PATTERNS = [
+  ["Donnarumma", /\bdonnarumma\b/i],
+  ["Kayode", /\bkayode\b/i],
+  ["Grabara", /\bgrabara\b/i],
+  ["Neto", /\bneto\b/i],
   ["Di Gregorio", /\b(?:michele\s+)?di\s+gregorio\b/i],
   ["Tommaso Mancini", /\btommaso\s+mancini\b/i],
   ["Lucumi", /\blucum[iì]\b/i],
@@ -5390,6 +5394,7 @@ function isIgnoredMarketSignal(row) {
 }
 
 function isBadMarketTopic(value) {
+  if (/^(quanto|come|quando|perche|perché|ecco|ultimissime|rebus|svolta|clamoroso|ufficiale)(?:\s+\1)?$/i.test(cleanText(value))) return true;
   return /^(youtube\s+)?scout$|^pagina(?:\s+\d+)?$|^punto\s+mercato$|^mercato\s+juve$|^ufficiale$|^spalletti$|^comolli$|^marzio$|^di\s+marzio$|^dalla\s+sicilia$|^siamo$|^buonasera$|^buongiorno$|^adesso$|^oggi$|^domenica$|^nodo$|^next\s+gen$|^l['’]ultima$|^colpo\s+juve$|^soldatino\s+celik$|^asse\s+juve$|^perch$|^pap$|^papa$|^inter$|^milan$|^roma$|^napoli$|^udinese$|^real\s+madrid$|^chelsea$|^arsenal$|^psg$|^solet$|^atta$|^greenwood$|^luca\s+toselli$|^romeo\s+agresti$|^gianni\s+balzarini$/i.test(cleanText(value));
 }
 
@@ -6027,8 +6032,11 @@ function isLowValueOfficialText(text) {
 }
 
 function extractPlayer(title) {
+  const text = cleanText(title);
+  const identified = MARKET_PLAYER_PATTERNS.find(([, pattern]) => pattern.test(text));
+  if (identified) return identified[0];
   const ignored = new Set(["Juventus", "Juve", "Mercato", "Calciomercato", "Serie", "Sky", "Sport", "Scout", "YouTube", "Marzio", "Sicilia", "Buongiorno", "Buonasera", "Siamo", "Adesso", "Fonte", "Pap", "Papa", "Inter", "Milan", "Roma", "Napoli", "Udinese", "Solet", "Atta", "Greenwood", "Luca Toselli", "Romeo Agresti", "Gianni Balzarini"]);
-  const names = title.match(/\b[A-ZÀ-Ý][a-zà-ÿ']{2,}(?:\s+[A-ZÀ-Ý][a-zà-ÿ']{2,})?\b/g) || [];
+  const names = text.match(/\b[A-ZÀ-Ý][a-zà-ÿ']{2,}(?:\s+[A-ZÀ-Ý][a-zà-ÿ']{2,})?\b/g) || [];
   return names.find(name => {
     const parts = name.split(" ");
     return !ignored.has(parts[0]) && !ignored.has(name) && !isBadMarketTopic(name) && !isBadYoutubeTopic(name);

@@ -829,6 +829,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 }
 </style>
 <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260925-1">
+<link rel="stylesheet" href="/assets/news-editorial.css?v=20261003-2">
 <link rel="stylesheet" href="/assets/vb-motion-effects.css?v=20261003-1">
 <link rel="stylesheet" href="/assets/vince-hero.css?v=20261003-1">
 <script defer src="/assets/vince-hero.js?v=20261003-1"></script>
@@ -2331,12 +2332,7 @@ function loadHomeDashboard() {
     loadMatchMonitor(allMatchHubRows(matches));
     renderAutoStatus(data.auto);
     renderRadar(data.radar);
-    renderHomeList("homeNewsList", news, function(n) {
-      var player=n.related_players&&n.related_players[0];
-      var sourceUrl=/^https:\/\//i.test(String(n.source_url||""))?String(n.source_url):"";
-      var detailUrl=n.id?"/community?news="+encodeURIComponent(n.id):"/#news";
-      return {title:n.title, meta:(n.editorial_status || "News") + (n.source ? " · " + n.source : ""), url:player?"/giocatore?slug="+player.slug:(sourceUrl||detailUrl)};
-    }, "Nessuna news approvata al momento.");
+    renderHomeNews(news);
     renderHomeList("homeMarketList", market, function(m) {
       var title = m.note || m.player_name || "Mercato Juve";
       var player = m.note && m.player_name ? " · " + m.player_name : "";
@@ -2467,6 +2463,28 @@ function renderGraphics(rows) {
       "<h3>" + icvEsc(g.title || "Grafica ICV") + "</h3>" +
       "</" + tag + ">";
   }).join("") + (rows.length > 6 ? "<a class='graphics-more' href='/grafiche'>Archivio completo</a>" : "");
+}
+
+function renderHomeNews(news) {
+  var list = document.getElementById("homeNewsList");
+  if (!list) return;
+  if (!news.length) {
+    list.innerHTML = "<div class='home-text'>Nessuna news approvata al momento.</div>";
+    return;
+  }
+  list.innerHTML = news.slice(0, 3).map(function(n, index) {
+    var sourceUrl = /^https:\/\//i.test(String(n.source_url || "")) ? String(n.source_url) : "";
+    var destination = sourceUrl || (n.id ? "/community?news=" + encodeURIComponent(n.id) : "/news");
+    var date = new Date(n.created_at || "");
+    var dateHtml = Number.isFinite(date.getTime()) ? "<time datetime='" + icvEsc(date.toISOString()) + "'>" + icvEsc(date.toLocaleDateString("it-IT", {day:"numeric",month:"short"})) + "</time>" : "";
+    var body = index === 0 && n.body && n.body.trim() !== String(n.title || "").trim() ? "<p>" + icvEsc(n.body) + "</p>" : "";
+    var player = n.related_players && n.related_players[0];
+    var profile = player && player.slug ? "<a class='home-news-player' href='/giocatore?slug=" + encodeURIComponent(player.slug) + "'>Scheda " + icvEsc(player.name || "giocatore") + "</a>" : "";
+    return "<article class='home-news-story'><a href='" + icvEsc(destination) + "'" + (sourceUrl ? " target='_blank' rel='noopener noreferrer'" : "") + ">" +
+      (index === 0 ? "<span class='home-news-eyebrow'>In primo piano</span>" : "") +
+      "<div class='home-news-meta'><strong>" + icvEsc(n.editorial_status || n.category || "News") + "</strong>" + dateHtml + "</div>" +
+      "<h3>" + icvEsc(n.title) + "</h3>" + body + "<div class='home-news-source'>" + icvEsc(n.source || "Il Calcio di Vince") + "</div></a>" + profile + "</article>";
+  }).join("");
 }
 
 function loadAndRenderNews() {

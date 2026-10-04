@@ -1,0 +1,36 @@
+header nav.icv-pill-nav,
+.page-header .page-header-inner>nav.icv-pill-nav{
+  position:relative;isolation:isolate;display:flex;align-items:center;flex-wrap:nowrap;
+  gap:2px;padding:5px;border:1px solid #383832;border-radius:999px;
+  background:#111110;box-shadow:0 3px 12px #0003;
+}
+.icv-pill-nav .icv-pill-indicator{
+  position:absolute;left:0;top:5px;width:1px;height:44px;z-index:-1;
+  border-radius:999px;background:#edbd49;pointer-events:none;opacity:0;
+  transform-origin:left center;transition:transform var(--icv-motion-menu,200ms) var(--icv-ease,cubic-bezier(.2,.8,.2,1)),opacity 150ms;
+}
+.icv-pill-nav[data-instant] .icv-pill-indicator{transition:none}
+header nav.icv-pill-nav>a,header nav.icv-pill-nav>button,
+header nav.icv-pill-nav>details>summary,
+.page-header .page-header-inner>nav.icv-pill-nav>a,
+.page-header .page-header-inner>nav.icv-pill-nav>details>summary{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;flex-shrink:0;
+  position:relative;min-height:44px;padding:10px 14px;border:0;border-radius:999px;
+  background:transparent!important;box-shadow:none!important;color:#c5c5be;
+  font:700 13px 'Barlow Condensed',Arial,sans-serif!important;letter-spacing:0;
+  text-transform:uppercase;text-decoration:none;white-space:nowrap;transform:none!important;backdrop-filter:none;
+  transition:color var(--icv-motion-fast,150ms) var(--icv-ease,ease);
+}
+header nav.icv-pill-nav>details{flex-shrink:0}
+header nav.icv-pill-nav>a::before,header nav.icv-pill-nav>button::before,
+header nav.icv-pill-nav>details>summary::before{display:none}
+header nav.icv-pill-nav .icv-pill-target{color:#181810!important}
+header nav.icv-pill-nav :is(a,button,summary):focus-visible{outline:2px solid #edbd49;outline-offset:-2px}
+header nav.icv-pill-nav summary::after{border-color:currentColor}
+@media(max-width:980px){
+  .page-header .page-header-inner>nav.icv-pill-nav{padding:5px;gap:2px;flex-basis:100%;border-radius:28px}
+}
+@media(max-width:768px){header>nav.icv-pill-nav{display:none}}
+@media(prefers-reduced-motion:reduce){
+  .icv-pill-nav .icv-pill-indicator,header nav.icv-pill-nav :is(a,button,summary){transition:none!important}
+}

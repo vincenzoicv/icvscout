@@ -17,7 +17,7 @@ test('editorial pages share the same complete navigation and brand treatment',()
     }
     assert.match(html,/id="pageTheme"/);
     assert.match(html,/section-pages\.css\?v=20261003-2/);
-    assert.match(html,/section-pages\.js\?v=20260913-1/);
+    assert.match(html,/section-pages\.js\?v=20261004-2/);
   }
 });
 

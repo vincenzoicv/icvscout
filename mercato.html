@@ -59,6 +59,7 @@ footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-fa
 <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260925-1">
 <link rel="stylesheet" href="/assets/section-pages.css?v=20261003-2">
 <link rel="stylesheet" href="/assets/classifica-nav.css?v=20260831-1">
+<link rel="stylesheet" href="/assets/market-browser.css?v=20261004-1">
 <script defer src="/assets/lucide.min.js"></script>
 <script defer src="/assets/section-pages.js?v=20261004-2"></script>
 </head>
@@ -71,7 +72,7 @@ footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-fa
 </div></header>
 <main id="main-content" tabindex="-1">
   <section class="hero">
-    <div class="eyebrow">Estate 2026</div>
+    <div class="eyebrow">Juventus · Stagione 2026/27</div>
     <h1>Mercato</h1>
     <div class="bar"></div>
   </section>
@@ -80,7 +81,15 @@ footer{border-top:1px solid var(--bdr);padding:18px 22px;color:var(--t3);font-fa
     <div><div class="eyebrow">ICV Market Intelligence</div><h2 class="board-title">Mercato Radar</h2></div>
     <div class="board-updated" id="boardUpdated">Aggiornamento in corso</div>
   </div>
-  <section class="market-sections" id="marketGroups" aria-live="polite">
+  <form class="market-filters" id="marketFilters" role="search" aria-label="Filtra mercato">
+    <label>Giocatore o fonte<input id="marketQuery" type="search" maxlength="100" placeholder="Cerca nel mercato" autocomplete="off"></label>
+    <label>Direzione<select id="marketDirection" aria-label="Direzione"><option value="">Tutte</option><option value="incoming">Entrata</option><option value="outgoing">Uscita</option><option value="renewal">Rinnovo</option><option value="scenario">Scenario</option></select></label>
+    <label>Stato<select id="marketStage" aria-label="Stato"><option value="">Tutti</option><option value="official">Ufficiale</option><option value="advanced">Fase avanzata</option><option value="negotiation">Trattativa</option><option value="interest">Interesse</option><option value="stalled">Frenata</option></select></label>
+    <button type="button" id="marketReset" title="Azzera filtri" aria-label="Azzera filtri" hidden><i data-lucide="filter-x" aria-hidden="true"></i></button>
+  </form>
+  <p class="market-status" id="marketStatus" role="status" aria-live="polite"></p>
+  <div id="marketError" class="market-error" hidden><span>Mercato non disponibile. Riprova tra poco.</span><button type="button" id="marketRetry">Riprova</button></div>
+  <section class="market-sections" id="marketGroups">
     <div class="empty">Caricamento mercato</div>
   </section>
 </main>
@@ -155,7 +164,8 @@ function itemHtml(item){
   var source = item.source_name || "ICV";
   var sourceLabel = Number(item.source_count || 0) > 1 ? item.source_count + " fonti" : source;
   var direction=dealDirection(item),stage=dealStage(item),color=STAGE_COLORS[stage]||STAGE_COLORS.interest;
-  var sourceLink=item.source_url?"<a href='"+esc(item.source_url)+"' target='_blank' rel='noopener'>"+esc(sourceLabel)+"</a>":esc(sourceLabel);
+  var sourceUrl;try{var url=new URL(item.source_url);if(url.protocol==="https:")sourceUrl=url.href;}catch(error){}
+  var sourceLink=sourceUrl?"<a href='"+esc(sourceUrl)+"' target='_blank' rel='noopener noreferrer' aria-label='"+esc(sourceLabel)+" (si apre in una nuova scheda)'>"+esc(sourceLabel)+"</a>":esc(sourceLabel);
   var playerUrl="/giocatore?slug="+esc(slugifyPlayer(title));
   return "<article class='deal-card' style='--stage:"+color+"' data-direction='"+esc(direction)+"'><div class='deal-top'><span class='direction'>"+esc(DIRECTION_LABELS[direction]||"Scenario")+"</span><span class='stage'>"+esc(STAGE_LABELS[stage]||"Monitorata")+"</span></div><div class='deal-main'><a class='player-link' href='"+playerUrl+"'><div class='avatar'>"+esc(initials(title))+"</div></a><div><a class='player-link' href='"+playerUrl+"'><h3>"+esc(title)+"</h3></a><p>"+esc(note)+"</p></div></div><div class='deal-meta'>"+capologyHtml(title)+"<div class='source-line'><span>"+sourceLink+" · "+esc(shortDate(item.updated_at))+"</span>"+confidenceBars(item)+"</div></div></article>";
 }
@@ -176,27 +186,57 @@ function marketSectionHtml(eyebrow,title,copy,rows){
   return "<section class='market-section'><div class='market-section-head'><div><div class='eyebrow'>"+esc(eyebrow)+"</div><h3 class='market-section-title'>"+esc(title)+"</h3></div><div class='market-section-copy'>"+esc(copy)+"</div><span class='market-section-count'>"+rows.length+"</span></div><div class='grid'>"+rows.map(itemHtml).join("")+"</div></section>";
 }
 function renderTopics(rows){
-  var official=rows.filter(function(row){return dealStage(row)==="official";}).slice(0,4);
-  var incoming=rows.filter(function(row){return dealStage(row)!=="official"&&dealDirection(row)==="incoming";}).slice(0,4);
-  var outgoing=rows.filter(function(row){return dealStage(row)!=="official"&&dealDirection(row)==="outgoing";}).slice(0,4);
-  var selected=official.concat(incoming,outgoing);
+  var q=normalizeMarket(document.getElementById("marketQuery").value.trim());
+  var direction=document.getElementById("marketDirection").value,stage=document.getElementById("marketStage").value;
+  var selected=rows.filter(function(row){return (!q||normalizeMarket([displayTitle(row),row.note,row.source_name].join(" ")).includes(q))&&(!direction||dealDirection(row)===direction)&&(!stage||dealStage(row)===stage);}).sort(function(a,b){return marketTime(b.updated_at)-marketTime(a.updated_at);});
+  var official=selected.filter(function(row){return dealStage(row)==="official";});
+  var incoming=selected.filter(function(row){return dealStage(row)!=="official"&&dealDirection(row)==="incoming";});
+  var outgoing=selected.filter(function(row){return dealStage(row)!=="official"&&dealDirection(row)==="outgoing";});
+  var renewals=selected.filter(function(row){return dealStage(row)!=="official"&&dealDirection(row)==="renewal";});
+  var scenarios=selected.filter(function(row){return dealStage(row)!=="official"&&!['incoming','outgoing','renewal'].includes(dealDirection(row));});
   document.getElementById("marketGroups").innerHTML = [
     marketSectionHtml("Operazioni chiuse","Ufficiali","Comunicati del club e trasferimenti completati",official),
     marketSectionHtml("Radar acquisti","In entrata","Piste recenti con riscontri concreti",incoming),
-    marketSectionHtml("Radar cessioni","In uscita","Possibili partenze e operazioni in corso",outgoing)
-  ].join("") || "<div class='empty'>Nessuna operazione sufficientemente solida da mostrare</div>";
+    marketSectionHtml("Radar cessioni","In uscita","Possibili partenze e operazioni in corso",outgoing),
+    marketSectionHtml("Contratti","Rinnovi","Aggiornamenti contrattuali",renewals),
+    marketSectionHtml("Scenario mercato","Scenari","Notizie e ipotesi da confermare",scenarios)
+  ].join("") || "<div class='empty'>"+(q||direction||stage?"Nessuna operazione corrisponde ai filtri":"Nessuna operazione sufficientemente solida da mostrare")+"</div>";
+  document.getElementById("marketStatus").textContent=selected.length+" di "+rows.length+" operazioni";
+  document.getElementById("marketReset").hidden=!(q||direction||stage);
   var latest=selected.reduce(function(value,row){return new Date(row.updated_at||0)>new Date(value||0)?row.updated_at:value;},null);
   document.getElementById("boardUpdated").textContent=selected.length?(selected.length+" operazioni selezionate · "+shortDate(latest)):"In attesa di segnali verificabili";
 }
 var allRows = [];
-function loadMarket(){
-  fetch("/api/public/home").then(function(r){return r.json();}).then(function(data){
-    allRows = (Array.isArray(data.market) ? data.market : []).filter(function(item){return !isNoiseItem(item);});
+var marketLoading=false;
+function normalizeMarket(value){return String(value||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("it");}
+function marketTime(value){var time=new Date(value||0).getTime();return Number.isFinite(time)?time:0;}
+function marketUrl(){var url=new URL(location.href);[['q','marketQuery'],['direzione','marketDirection'],['stato','marketStage']].forEach(function(pair){var value=document.getElementById(pair[1]).value.trim();if(value)url.searchParams.set(pair[0],value);else url.searchParams.delete(pair[0]);});history.replaceState(null,"",url);}
+function restoreMarketFilters(){var params=new URLSearchParams(location.search);document.getElementById("marketQuery").value=(params.get("q")||"").slice(0,100);[['direzione','marketDirection'],['stato','marketStage']].forEach(function(pair){var select=document.getElementById(pair[1]),value=params.get(pair[0])||"";select.value=Array.from(select.options).some(function(option){return option.value===value;})?value:"";});}
+async function loadMarket(){
+  if(marketLoading)return;
+  marketLoading=true;
+  var groups=document.getElementById("marketGroups"),error=document.getElementById("marketError"),retry=document.getElementById("marketRetry"),controller=new AbortController(),timer=setTimeout(function(){controller.abort();},15000);
+  groups.setAttribute("aria-busy","true");error.hidden=true;retry.disabled=true;
+  document.getElementById("marketStatus").textContent="Caricamento mercato...";
+  try{
+    var response=await fetch("/api/public/home",{signal:controller.signal});
+    if(!response.ok)throw new Error("Servizio non disponibile");
+    var data=await response.json();
+    if(!Array.isArray(data.market))throw new Error("Dati non validi");
+    allRows=data.market.filter(function(item){return item&&typeof item==="object"&&!isNoiseItem(item);});
     renderTopics(allRows);
-  }).catch(function(){
-    document.getElementById("marketGroups").innerHTML = "<div class='empty' style='grid-column:1/-1'>Mercato non disponibile</div>";
-  });
+  }catch(failure){
+    error.hidden=false;
+    document.getElementById("marketStatus").textContent=allRows.length?"Dati precedenti conservati":"Caricamento non riuscito";
+    if(!allRows.length)groups.innerHTML="";
+  }finally{clearTimeout(timer);marketLoading=false;retry.disabled=false;groups.removeAttribute("aria-busy");}
 }
+restoreMarketFilters();
+document.getElementById("marketFilters").addEventListener("submit",function(event){event.preventDefault();});
+['marketQuery','marketDirection','marketStage'].forEach(function(id){document.getElementById(id).addEventListener(id==='marketQuery'?'input':'change',function(){marketUrl();if(!marketLoading)renderTopics(allRows);});});
+document.getElementById("marketReset").addEventListener("click",function(){['marketQuery','marketDirection','marketStage'].forEach(function(id){document.getElementById(id).value="";});marketUrl();renderTopics(allRows);document.getElementById("marketQuery").focus();});
+document.getElementById("marketRetry").addEventListener("click",function(){document.getElementById("marketQuery").focus();loadMarket();});
+window.addEventListener("popstate",function(){restoreMarketFilters();renderTopics(allRows);});
 function refreshThemeButton(){
   var btn=document.getElementById("themeButton");
   if(btn) btn.textContent=document.body.classList.contains("light") ? "Night" : "Day";

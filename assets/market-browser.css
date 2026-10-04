@@ -1,0 +1,11 @@
+.market-filters{display:grid;grid-template-columns:minmax(180px,2fr) minmax(120px,1fr) minmax(130px,1fr) auto;align-items:end;gap:12px;margin-bottom:16px}
+.market-filters label{display:grid;gap:7px;font-size:13px;color:var(--t2)}
+.market-filters input,.market-filters select,.market-filters button,.market-error button{min-height:48px;border:1px solid var(--bdr2);border-radius:6px;background:var(--d2);color:var(--white);padding:10px 12px;font:inherit;min-width:0}
+.market-filters button{width:48px;display:grid;place-items:center;cursor:pointer}.market-filters svg{width:20px;height:20px}
+.market-status{font-size:14px;color:var(--t2);margin-bottom:18px;min-height:20px}
+.market-error{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;color:var(--red)}
+.market-error button{cursor:pointer}.market-filters [hidden],.market-error[hidden]{display:none}
+.market-filters :focus-visible,.market-error button:focus-visible{outline:2px solid var(--gold-l);outline-offset:3px}
+.source-line>span{min-width:0;overflow-wrap:anywhere}.deal-card h3{overflow-wrap:anywhere}.confidence{flex-shrink:0}
+.page-header nav{min-width:0}.hero h1{font-size:96px;letter-spacing:0}.market-section-title{letter-spacing:0}
+@media(max-width:700px){.market-filters{grid-template-columns:1fr 1fr}.market-filters label:first-child{grid-column:1/-1}.market-filters button{grid-column:2;justify-self:end}.hero h1{font-size:72px}}

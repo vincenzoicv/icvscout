@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cerca · ICV Scout</title>
+  <title>Cerca · Il Calcio di Vince</title>
   <meta name="description" content="Cerca partite, notizie, giocatori, mercato e contenuti ICV.">
   <link rel="canonical" href="https://ilcalciodivince.com/cerca">
   <meta name="theme-color" content="#070708" id="themeColor">
@@ -14,7 +14,8 @@
   <link rel="stylesheet" href="/assets/match-pages.css?v=20260925-1">
   <script defer src="/assets/lucide.min.js"></script>
   <script defer src="/assets/section-pages.js?v=20261004-2"></script>
-  <script defer src="/assets/match-pages.js?v=20260925-3"></script>
+  <link rel="stylesheet" href="/assets/search-page.css?v=20261004-1">
+  <script defer src="/assets/search-page.js?v=20261004-1"></script>
 </head>
 <body class="match-page search-page">
   <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
@@ -25,7 +26,7 @@
     <button class="page-theme" id="pageTheme" type="button" aria-label="Cambia tema" aria-pressed="false" title="Cambia tema"><i data-lucide="sun-moon" aria-hidden="true"></i></button>
   </div></header>
   <main id="main-content" class="page-main search-main" tabindex="-1">
-    <a class="back" href="/" aria-label="Torna alla home"><i data-lucide="arrow-left" aria-hidden="true"></i>ICV Scout</a>
+    <a class="back" href="/" aria-label="Torna alla home"><i data-lucide="arrow-left" aria-hidden="true"></i>Il Calcio di Vince</a>
     <p class="page-kicker">Archivio ICV</p>
     <h1>Cerca</h1>
     <p class="page-intro">Partite, notizie, giocatori, mercato e contenuti social in un’unica ricerca.</p>
@@ -34,7 +35,9 @@
       <div class="site-search-control"><i data-lucide="search" aria-hidden="true"></i><input id="siteSearchInput" name="q" type="search" minlength="2" maxlength="100" autocomplete="off" placeholder="Es. Juventus, Yildiz, Atalanta" required><button type="submit">Cerca</button></div>
     </form>
     <p id="searchStatus" class="page-status" role="status" aria-live="polite">Inserisci almeno due caratteri.</p>
-    <div id="searchResults" class="search-results" aria-label="Risultati della ricerca"></div>
+    <div id="searchFilters" class="search-filters" role="group" aria-label="Filtra risultati" hidden></div>
+    <button id="searchRetry" class="match-primary-link" type="button" hidden><i data-lucide="rotate-cw" aria-hidden="true"></i>Riprova</button>
+    <div id="searchResults" class="search-results" aria-label="Risultati della ricerca" aria-busy="false"></div>
   </main>
   <footer class="page-footer"><a href="/">ICV Scout · Il Calcio di Vince</a><a href="/privacy">Privacy</a><a href="/cookie-policy">Cookie</a><a href="/calendario-juventus">Calendario Juventus</a></footer>
 </body>

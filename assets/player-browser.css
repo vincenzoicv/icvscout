@@ -1,0 +1,9 @@
+.page-header nav{min-width:0}.hero>div{min-width:0}.hero h1{font-size:80px;letter-spacing:0;overflow-wrap:anywhere}
+.player-status{color:var(--muted);font-size:14px;min-height:20px;margin:18px 0 0}
+.player-error{display:flex;align-items:center;flex-wrap:wrap;gap:14px;padding:18px 0;color:var(--text)}.player-error[hidden]{display:none}
+.player-error button,.player-error a{min-height:44px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font:inherit;padding:11px 14px;cursor:pointer;text-decoration:none}
+.tabs{flex-wrap:wrap;overflow:visible}.tabs button{min-height:44px;letter-spacing:0}
+a.metric{display:block;color:inherit;text-decoration:none}a.metric:hover{border-color:var(--gold2)}
+.tabs button:focus-visible,a.metric:focus-visible,.player-error :focus-visible{outline:2px solid var(--gold2);outline-offset:3px}
+.row h3,.row p,.related a{overflow-wrap:anywhere}.related a{min-height:44px;display:inline-flex;align-items:center}.hero h1,.section h2{letter-spacing:0}
+@media(max-width:700px){.hero h1{font-size:48px}.hero{align-items:start}.section-head{align-items:start;flex-wrap:wrap}.section h2{font-size:32px}}

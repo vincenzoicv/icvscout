@@ -405,8 +405,8 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
   }
   assert.doesNotMatch(page, /api\/football-data\/teams\/109\/matches/);
   assert.match(redirects, /^\/calendario-juventus\.html \/calendario-juventus 301$/m);
-  assert.match(redirects, /^\/mercato \/calendario-juventus 301$/m);
-  assert.match(redirects, /^\/mercato\.html \/calendario-juventus 301$/m);
+  assert.doesNotMatch(redirects, /^\/mercato \/calendario-juventus 301$/m);
+  assert.match(redirects, /^\/mercato\.html \/mercato 301$/m);
   assert.match(sitemap, /https:\/\/ilcalciodivince\.com\/calendario-juventus/);
   assert.doesNotMatch(sitemap, /https:\/\/ilcalciodivince\.com\/mercato/);
   assert.match(worker, /\/calendario-juventus\.html/);

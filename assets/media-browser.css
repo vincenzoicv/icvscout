@@ -1,0 +1,14 @@
+.media-page .page-header .page-header-inner>nav>a,.media-page .page-header .page-header-inner>nav>details{flex-shrink:0}
+.media-controls{display:flex;align-items:end;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.media-search{display:flex;align-items:center;gap:10px;flex:1;min-width:240px;min-height:48px;padding:0 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.media-search svg{width:18px;height:18px;flex:none;color:var(--muted)}
+.media-search input{min-width:0;width:100%;min-height:46px;background:none;border:0;color:var(--text);font:16px Barlow,Arial,sans-serif}
+.media-order{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+.media-order select,.media-controls button{min-height:48px;padding:10px 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);font:15px Barlow,Arial,sans-serif}
+.media-controls button{display:inline-flex;align-items:center;gap:8px}
+.media-controls button svg{width:18px;height:18px}
+.media-page .page-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.media-page .page-tabs button{min-height:44px;white-space:normal}
+.media-page .album-card img{background:var(--surface)}
+.media-page .album-card .album-image-error{object-fit:contain;padding:32px}
+@media(max-width:600px){.media-search{min-width:0;flex-basis:100%}.media-order{flex:1}.media-order select{width:100%}.media-controls{gap:12px}}

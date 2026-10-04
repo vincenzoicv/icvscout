@@ -135,6 +135,7 @@
     @media(max-width:720px){.page-header-inner{padding:12px 15px}.badge{font-size:16px}.theme-toggle{padding:8px}.theme-toggle span{display:none}.platforms,.uel-grid,.uel-heading{grid-template-columns:1fr}.calendar-box{padding:18px}.match{grid-template-columns:1fr auto}.match time{grid-column:1/-1}.newsletter form{flex-direction:column}.hero{min-height:0;display:block;padding:32px 15px 42px}.hero h1{font-size:clamp(56px,18vw,82px)}.next-match{display:block;margin-top:24px}.next-match strong{font-size:23px}.next-match-actions{justify-content:flex-start;margin-top:12px}.lead{margin-top:18px}.facts{gap:8px;margin:20px 0}.fact{padding:7px 10px}.calendar-box>p{margin-bottom:14px}main{padding:46px 15px}.competition-tabs{margin-bottom:42px}.uel-section{margin-top:62px;padding-top:48px}.uel-heading{gap:22px}.uel-dates{grid-template-columns:repeat(2,1fr)}.uel-windows-head{display:block}.uel-windows-head p{margin-top:8px;text-align:left}}
     .match.next-fixture{border-color:var(--gold);border-left-width:3px}.next-fixture-label{display:block;color:var(--gold);font-size:12px;line-height:1.5;margin-bottom:4px}.match{border-radius:6px}.match strong,.match span{overflow-wrap:anywhere}.match time{font-size:13px}@media(max-width:720px){.match{grid-template-columns:minmax(0,1fr)}.match span{justify-self:start}}
   </style>
+  <link rel="stylesheet" href="/assets/calendar-browser.css?v=20261004-1">
   <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260925-1">
   <link rel="stylesheet" href="/assets/match-pages.css?v=20260925-1">
 </head>
@@ -155,7 +156,7 @@
         <div class="next-match-copy"><span class="next-match-label">Prossima partita</span><strong>Calendario in aggiornamento</strong></div>
         <div class="next-match-actions"><button class="next-match-link" type="button" onclick="downloadCalendar()">Scarica .ics</button><a class="next-match-secondary" href="#calendarOptions">Altre opzioni</a></div>
       </div>
-      <p class="lead">Serie A ed Europa League 2026/27 in un’unica agenda: eventi scaricabili solo quando date e orari sono ufficiali.</p>
+      <p class="lead">Serie A, Europa League e Coppa Italia 2026/27 in un’unica agenda, con date, orari e risultati aggiornati.</p>
       <div class="facts">
         <div class="fact"><strong>38</strong><span>gare di Serie A</span></div>
         <div class="fact"><strong>8</strong><span>sfide europee</span></div>
@@ -179,10 +180,19 @@
       <button class="competition-tab active" type="button" data-calendar-filter="all" aria-pressed="true">Tutte</button>
       <button class="competition-tab" type="button" data-calendar-filter="seriea" aria-pressed="false">Serie A</button>
       <button class="competition-tab" type="button" data-calendar-filter="europa" aria-pressed="false">Europa League</button>
+      <button class="competition-tab" type="button" data-calendar-filter="coppa" aria-pressed="false">Coppa Italia</button>
     </nav>
+    <div class="calendar-toolbar">
+      <label>Periodo<select id="calendarPeriod"><option value="upcoming">Da giocare</option><option value="all">Tutta la stagione</option><option value="finished">Concluse</option></select></label>
+      <label>Campo<select id="calendarVenue"><option value="all">Casa e trasferta</option><option value="home">Casa</option><option value="away">Trasferta</option></select></label>
+      <label class="calendar-search">Avversario<input id="calendarOpponent" type="search" placeholder="Cerca squadra" autocomplete="off"></label>
+      <button id="calendarReset" type="button" title="Ripristina i filtri" aria-label="Ripristina i filtri"><i data-lucide="rotate-ccw" aria-hidden="true"></i></button>
+    </div>
+    <p id="calendarResults" class="calendar-results" role="status"></p>
+    <button id="calendarRetry" class="next-match-link" type="button" hidden>Riprova</button>
 
     <section data-calendar-section="all">
-      <div class="section-eye">Serie A &middot; Europa League</div>
+      <div class="section-eye">Tutte le competizioni</div>
       <div class="section-title">Calendario e risultati</div>
       <div class="matches" id="allPreview"><div class="loading loading--orbit" role="status"><span class="icv-orbit-loader" aria-hidden="true"></span><span>Caricamento del calendario in corso...</span></div></div>
     </section>
@@ -206,6 +216,11 @@
       <div class="matches" id="europaPreview"><div class="loading loading--orbit" role="status"><span class="icv-orbit-loader" aria-hidden="true"></span><span>Caricamento del calendario in corso...</span></div></div>
       <div class="uel-sources">Fonte: <a href="https://www.juventus.com/it/news/articoli/uefa-europa-league-date-e-orari-delle-partite-della-juventus" target="_blank" rel="noopener noreferrer">Juventus.com · date e orari ufficiali</a></div>
     </section>
+    <section data-calendar-section="coppa" hidden>
+      <div class="section-eye">Coppa Italia 2026/27</div>
+      <h2 class="section-title">Calendario e risultati</h2>
+      <div class="matches" id="coppaPreview"></div>
+    </section>
   </main>
 
   <footer class="page-footer"><a href="/">ICV Scout · Il Calcio di Vince</a><a href="/privacy">Privacy</a><a href="/cookie-policy">Cookie</a><a href="#" data-privacy-settings>Preferenze</a><a class="preferred-source-link" href="https://www.google.com/preferences/source?q=ilcalciodivince.com" target="_blank" rel="noopener noreferrer" aria-label="Aggiungi Il Calcio di Vince alle fonti preferite di Google"><i data-lucide="star" aria-hidden="true"></i>Segui su Google</a></footer>
@@ -213,8 +228,38 @@
   <script>
     const calendarPath = '/api/juventus/calendar.ics';
     const publicCalendarUrl = 'https://ilcalciodivince.com' + calendarPath;
+    let calendarEvents = [], selectedCompetition = 'all', nextCalendarEvent = null;
+    const competitionNames = {seriea:'Serie A',europa:'Europa League',coppa:'Coppa Italia'};
+    const detailHref = event => '/partita?date=' + encodeURIComponent(event.date.toISOString()) + (event.home && event.away ? '&home=' + encodeURIComponent(event.home) + '&away=' + encodeURIComponent(event.away) : '');
+    const normalized = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    function renderCalendar() {
+      const period = document.getElementById('calendarPeriod').value, venue = document.getElementById('calendarVenue').value, query = normalized(document.getElementById('calendarOpponent').value.trim());
+      const today=new Date();today.setHours(0,0,0,0);
+      const visible = calendarEvents.filter(event => (period==='all'||(period==='finished'?event.finished:!event.finished&&!event.cancelled&&event.date>=today)) && (venue==='all'||event.venue===venue) && (!query||normalized(event.opponent||event.title).includes(query)));
+      for(const [filter,id] of Object.entries({all:'allPreview',seriea:'matchPreview',europa:'europaPreview',coppa:'coppaPreview'})){
+        const events=visible.filter(event=>filter==='all'||event.competition===filter);
+        let month='';
+        document.getElementById(id).innerHTML=events.length?events.map(event=>{
+          const monthLabel=new Intl.DateTimeFormat('it-IT',{month:'long',year:'numeric',timeZone:'Europe/Rome'}).format(event.date);
+          const heading=monthLabel!==month?`<h3 class="calendar-month">${escapeHtml(monthLabel)}</h3>`:'';
+          month=monthLabel;
+          const date=new Intl.DateTimeFormat('it-IT',{weekday:'short',day:'2-digit',month:'short',timeZone:'Europe/Rome'}).format(event.date);
+          const hour=event.allDay?'Orario da confermare':new Intl.DateTimeFormat('it-IT',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'}).format(event.date);
+          return heading+`<article class="match${event===nextCalendarEvent?' next-fixture':''}"><time datetime="${escapeHtml(event.date.toISOString())}">${escapeHtml(date)}<small>${escapeHtml(hour)}</small></time><div class="calendar-fixture-copy">${event===nextCalendarEvent?'<small class="next-fixture-label">Prossima partita</small>':''}<strong><a class="match-detail-link" href="${escapeHtml(detailHref(event))}">${escapeHtml(event.title)}</a></strong><p>${escapeHtml(competitionNames[event.competition])} · ${escapeHtml(event.round)}${event.venue?' · '+(event.venue==='home'?'Casa':'Trasferta'):''}</p></div><div class="calendar-fixture-status"><span>${event.finished?'Finale':event.cancelled?'Annullata':event.date<today?'Esito non disponibile':event.allDay?'Da confermare':'In programma'}</span>${event.broadcaster?`<small>Diretta ${escapeHtml(event.broadcaster)}</small>`:''}</div></article>`;
+        }).join(''):'<p class="calendar-empty">Nessuna partita con questi filtri.</p>';
+      }
+      const count=visible.filter(event=>selectedCompetition==='all'||event.competition===selectedCompetition).length;
+      document.getElementById('calendarResults').textContent=count+' partite';
+    }
+    ['calendarPeriod','calendarVenue'].forEach(id=>document.getElementById(id).addEventListener('change',renderCalendar));
+    document.getElementById('calendarOpponent').addEventListener('input',renderCalendar);
+    document.getElementById('calendarReset').addEventListener('click',()=>{
+      document.getElementById('calendarPeriod').value='upcoming';document.getElementById('calendarVenue').value='all';document.getElementById('calendarOpponent').value='';setCompetitionFilter('all');
+    });
+    document.getElementById('calendarRetry').addEventListener('click',loadPreview);
 
     function setCompetitionFilter(filter, updateHash = true) {
+      selectedCompetition = filter;
       document.querySelectorAll('[data-calendar-filter]').forEach(button => {
         const active = button.dataset.calendarFilter === filter;
         button.classList.toggle('active', active);
@@ -223,7 +268,8 @@
       document.querySelectorAll('[data-calendar-section]').forEach(section => {
         section.hidden = section.dataset.calendarSection !== filter;
       });
-      if (updateHash) history.replaceState(null, '', filter === 'europa' ? '#europa-league' : filter === 'seriea' ? '#serie-a' : location.pathname);
+      if (updateHash) history.replaceState(null, '', filter === 'europa' ? '#europa-league' : filter === 'seriea' ? '#serie-a' : filter === 'coppa' ? '#coppa-italia' : location.pathname + location.search);
+      if(calendarEvents.length)renderCalendar();
     }
 
     document.querySelectorAll('[data-calendar-filter]').forEach(button => {
@@ -231,6 +277,7 @@
     });
     if (location.hash === '#europa-league') setCompetitionFilter('europa', false);
     if (location.hash === '#serie-a') setCompetitionFilter('seriea', false);
+    if (location.hash === '#coppa-italia') setCompetitionFilter('coppa', false);
 
     function setCalendarStatus(message) {
       document.getElementById('calendarStatus').textContent = message;
@@ -270,6 +317,8 @@
     }
 
     async function loadPreview() {
+      document.getElementById('calendarRetry').hidden=true;
+      document.getElementById('calendarResults').textContent='Caricamento del calendario…';
       const container = document.getElementById('matchPreview');
       const europaContainer = document.getElementById('europaPreview');
       try {
@@ -289,55 +338,45 @@
             ? new Date(rawDate.slice(0,4) + '-' + rawDate.slice(4,6) + '-' + rawDate.slice(6,8) + 'T12:00:00')
             : new Date(rawDate.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/, '$1-$2-$3T$4:$5:$6Z'));
           const description = String(fields.DESCRIPTION || '').replace(/\\n/g, ' ');
-          const title = String(fields.SUMMARY || '').replace(/^(Serie A|Europa League|Juventus): /, '');
-          const sides = title.match(/^(.+?)\s+(?:\d+\s*[-–]\s*\d+\s+)?(?:-\s+)(.+)$/);
+          const title = String(fields.SUMMARY || '').replace(/^(Serie A|Europa League|Coppa Italia|Juventus): /, '').replace(/\\,/g,',');
+          const sides = title.match(/^(.+?)\s+(?:\d+\s*[-–]\s*\d+|[-–])\s+(.+)$/);
+          const home = sides ? sides[1].trim() : '', away = sides ? sides[2].trim() : '';
+          const venue = /juventus/i.test(home) ? 'home' : /juventus/i.test(away) ? 'away' : '';
           return {
             date,
             allDay,
             title,
-            home: sides ? sides[1].trim() : '',
-            away: sides ? sides[2].trim() : '',
-            competition: String(fields.CATEGORIES || '').includes('Europa League') ? 'europa' : 'seriea',
-            round: (description.match(/\d+ª giornata/) || ['Serie A'])[0],
+            home, away, venue, opponent:venue==='home'?away:home,
+            finished: /Risultato finale:/i.test(description),
+            cancelled: fields.STATUS === 'CANCELLED',
+            broadcaster: (description.match(/Diretta:\s*([^\.]+)\./i)||[])[1]||'',
+            competition: String(fields.CATEGORIES || '').includes('Europa League') ? 'europa' : String(fields.CATEGORIES || '').includes('Coppa Italia') ? 'coppa' : 'seriea',
+            round: (description.match(/\d+ª giornata|Ottavi di finale|Quarti di finale|Semifinale|Finale/i) || [''])[0],
           };
         }).filter(event => Number.isFinite(event.date.getTime())).sort((a, b) => a.date - b.date);
         if (!events.length) throw new Error('Nessuna partita disponibile');
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const serieA = events.filter(event => event.competition === 'seriea');
-        const nextIndex = serieA.findIndex(event => event.date >= today);
-        const start = Math.max(0, (nextIndex < 0 ? serieA.length : nextIndex) - 2);
-        const nextEvent = events.find(event => event.date >= new Date() || event.allDay && event.date >= today);
+        calendarEvents = events;
+        nextCalendarEvent = events.find(event => !event.finished && !event.cancelled && (event.date >= new Date() || event.allDay && event.date >= today)) || null;
         const nextMatch = document.getElementById('nextMatch');
         nextMatch.querySelector('.next-match-detail')?.remove();
-        if (nextEvent) {
-          const nextDate = new Intl.DateTimeFormat('it-IT', nextEvent.allDay
-            ? {day:'numeric',month:'long',timeZone:'Europe/Rome'}
-            : {day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'}).format(nextEvent.date);
-          nextMatch.querySelector('strong').textContent = nextEvent.title;
-          const detail = document.createElement('span');
-          detail.className = 'next-match-detail';
-          detail.textContent = (nextEvent.competition === 'europa' ? 'Europa League' : 'Serie A') + ' · ' + nextDate + (nextEvent.allDay ? ' · orario da confermare' : '');
+        nextMatch.querySelector('.next-match-referto')?.remove();
+        if(nextCalendarEvent){
+          const event=nextCalendarEvent;
+          nextMatch.querySelector('strong').textContent=event.title;
+          const detail=document.createElement('span');
+          detail.className='next-match-detail';
+          detail.textContent=competitionNames[event.competition]+' · '+new Intl.DateTimeFormat('it-IT',{weekday:'long',day:'numeric',month:'long',...(event.allDay?{}:{hour:'2-digit',minute:'2-digit'}),timeZone:'Europe/Rome'}).format(event.date)+(event.allDay?' · orario da confermare':'')+(event.broadcaster?' · Diretta '+event.broadcaster:'');
           nextMatch.querySelector('.next-match-copy').appendChild(detail);
-        } else {
-          nextMatch.querySelector('strong').textContent = 'Nessuna partita in programma';
-        }
-        nextMatch.setAttribute('aria-busy', 'false');
-        const renderEvent = event => {
-          const options = event.allDay
-            ? {day:'2-digit',month:'short',timeZone:'Europe/Rome'}
-            : {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Rome'};
-          const date = new Intl.DateTimeFormat('it-IT', options).format(event.date);
-          const label = event.allDay ? event.round + ' · orario da confermare' : event.round;
-          const upcoming = event === nextEvent;
-          const detailHref = '/partita?date=' + encodeURIComponent(event.date.toISOString()) + (event.home && event.away ? '&home=' + encodeURIComponent(event.home) + '&away=' + encodeURIComponent(event.away) : '');
-          return `<article class="match${upcoming ? ' next-fixture' : ''}"><time>${escapeHtml(date)}</time><strong><a class="match-detail-link" href="${escapeHtml(detailHref)}">${upcoming ? '<small class="next-fixture-label">Prossima partita</small>' : ''}${escapeHtml(event.title)}</a></strong><span>${event.competition === 'europa' ? 'Europa League' : 'Serie A'} &middot; ${escapeHtml(label)}</span></article>`;
-        };
-        container.innerHTML = serieA.slice(start, start + 8).map(renderEvent).join('');
-        europaContainer.innerHTML = events.filter(event => event.competition === 'europa').map(renderEvent).join('');
-        const allIndex = events.findIndex(event => event.date >= today);
-        document.getElementById('allPreview').innerHTML = events.slice(Math.max(0,(allIndex < 0 ? events.length : allIndex)-2)).map(renderEvent).join('');
+          const link=document.createElement('a');link.className='next-match-secondary next-match-referto';link.href=detailHref(event);link.textContent='Apri la partita';nextMatch.querySelector('.next-match-actions').prepend(link);
+        }else nextMatch.querySelector('strong').textContent='Nessuna partita in programma';
+        nextMatch.setAttribute('aria-busy','false');
+        renderCalendar();
       } catch {
+        document.getElementById('calendarResults').textContent=calendarEvents.length?'Aggiornamento non riuscito. Sono visibili gli ultimi dati caricati.':'Calendario temporaneamente non disponibile.';
+        document.getElementById('calendarRetry').hidden=false;
+        if(calendarEvents.length)return;
         const nextMatch = document.getElementById('nextMatch');
         nextMatch.querySelector('strong').textContent = 'Calendario momentaneamente non disponibile';
         nextMatch.setAttribute('aria-busy', 'false');

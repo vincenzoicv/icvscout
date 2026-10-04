@@ -500,9 +500,10 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     });
     const nextTitle = {textContent:''};
     const nextCopy = {detail:null,appendChild(detail){this.detail=detail}};
-    const nextMatch = {busy:'true',querySelector(selector){return selector==='strong'?nextTitle:selector==='.next-match-copy'?nextCopy:nextCopy.detail},setAttribute(name,value){if(name==='aria-busy')this.busy=value}};
-    const previews = {matchPreview:{innerHTML:''}, europaPreview:{innerHTML:''}, allPreview:{innerHTML:''}, nextMatch};
-    const previewSource = page.slice(page.indexOf('function escapeHtml('), page.lastIndexOf('loadPreview();'));
+    const nextMatch = {busy:'true',querySelector(selector){return selector==='strong'?nextTitle:selector==='.next-match-copy'?nextCopy:selector==='.next-match-actions'?{prepend(){}}:null},setAttribute(name,value){if(name==='aria-busy')this.busy=value}};
+    const previews = {matchPreview:{innerHTML:''}, europaPreview:{innerHTML:''}, allPreview:{innerHTML:''},coppaPreview:{innerHTML:''},calendarPeriod:{value:'all'},calendarVenue:{value:'all'},calendarOpponent:{value:''},calendarRetry:{hidden:true},calendarResults:{textContent:''},nextMatch};
+    const renderSource = page.slice(page.indexOf('let calendarEvents ='), page.indexOf("['calendarPeriod','calendarVenue']"));
+    const previewSource = renderSource + page.slice(page.indexOf('function escapeHtml('), page.lastIndexOf('loadPreview();'));
     class PreviewDate extends Date {
       constructor(value) { super(arguments.length ? value : '2026-09-18T12:00:00Z'); }
       static now() { return Date.parse('2026-09-18T12:00:00Z'); }
@@ -515,7 +516,7 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     );
     assert.equal((previews.europaPreview.innerHTML.match(/<article/g) || []).length, 8);
     assert.equal(nextTitle.textContent, 'Juventus - Atalanta');
-    assert.match(nextCopy.detail.textContent, /Serie A · 20 settembre/);
+    assert.match(nextCopy.detail.textContent, /Serie A · domenica 20 settembre/);
     assert.equal(nextMatch.busy, 'false');
     assert.match(previews.europaPreview.innerHTML, /1ª giornata[\s\S]*8ª giornata/);
     assert.doesNotMatch(previews.europaPreview.innerHTML, /Serie A|orario da confermare/);

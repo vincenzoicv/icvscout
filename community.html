@@ -173,7 +173,8 @@
   <div class="modal-wrap hidden" id="searchModal">
     <section class="modal wide-modal" role="dialog" aria-modal="true" aria-labelledby="searchTitle">
       <div class="modal-head"><div><h2 id="searchTitle">Cerca nella Community</h2><p>Trova tifosi, discussioni e notizie ICV.</p></div><button class="close" type="button" title="Chiudi" onclick="closeLayer('searchModal')"><i data-lucide="x"></i></button></div>
-      <form class="search-form" onsubmit="runSearch(event)"><input id="searchInput" minlength="2" maxlength="60" placeholder="Nome, argomento o giocatore" autocomplete="off" aria-label="Cerca nella Community"><button class="publish">Cerca</button></form>
+      <form class="search-form" onsubmit="runSearch(event)"><input id="searchInput" type="search" required minlength="2" maxlength="60" placeholder="Nome, argomento o giocatore" autocomplete="off" aria-label="Cerca nella Community"><button class="publish">Cerca</button></form>
+      <p id="communitySearchStatus" role="status" aria-live="polite"></p>
       <div class="layer-results" id="searchResults"><div class="feed-status">Scrivi almeno due caratteri.</div></div>
     </section>
   </div>
@@ -343,6 +344,7 @@
     async function blockUser(btn,id){if(!session)return openAuth();try{var data=await communityApi("profiles/"+id+"/block",{method:"POST"});btn.textContent=data.active?"Sblocca":"Blocca";await loadBlockedUsers();await loadFeed();showToast(data.active?"Utente bloccato":"Utente sbloccato")}catch(error){showToast(error.message)}}
     window.addEventListener("DOMContentLoaded",init);
   </script>
+  <script defer src="/assets/community-search.js?v=20261004-1"></script>
   <script defer src="/assets/privacy-controls.js?v=20260831-2"></script>
   <script defer src="/assets/analytics.js?v=20260728-1"></script>
 </body>

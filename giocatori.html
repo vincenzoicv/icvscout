@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Giocatori · Il Calcio di Vince</title>
+  <meta name="description" content="Profili giocatore, notizie e aggiornamenti di mercato di Il Calcio di Vince.">
+  <link rel="canonical" href="https://ilcalciodivince.com/giocatori">
+  <link rel="stylesheet" href="/assets/fonts.css?v=20260728-1">
+  <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260925-1">
+  <link rel="stylesheet" href="/assets/section-pages.css?v=20261003-2">
+  <link rel="stylesheet" href="/assets/classifica-nav.css?v=20260831-1">
+  <link rel="stylesheet" href="/assets/player-index.css?v=20261004-1">
+  <script defer src="/assets/lucide.min.js"></script>
+  <script defer src="/assets/section-pages.js?v=20261004-2"></script>
+  <script defer src="/assets/player-index.js?v=20261004-1"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
+  <header class="page-header"><div class="page-header-inner">
+    <a class="page-brand" href="/"><img src="/assets/icv-logo-160.jpg" alt="" width="40" height="40"><span class="page-brand-copy"><strong>Il Calcio di Vince</strong><small>ICV Scout</small></span></a>
+    <nav aria-label="Menu principale"><a href="/">Home</a><details class="classifica-menu"><summary>Classifica</summary><div><a href="/classifica?competizione=serie-a">Serie A</a><a href="/classifica?competizione=europa-league">Europa League</a></div></details><a href="/calendario-juventus">Calendario</a><a href="/media">Media</a><a href="/community">Community</a><a href="/news">News</a><a href="/cerca">Cerca</a></nav>
+    <button class="page-theme" id="pageTheme" type="button" aria-label="Cambia tema" aria-pressed="false" title="Cambia tema"><i data-lucide="sun-moon" aria-hidden="true"></i></button>
+  </div></header>
+  <main class="page-main" id="main-content" tabindex="-1">
+    <div class="page-eyebrow">Il Calcio di Vince</div><h1 class="page-title">Giocatori</h1>
+    <form id="playerIndexFilters" class="player-index-filters" role="search" aria-label="Cerca profili giocatore">
+      <label for="playerIndexQuery">Nome giocatore<input id="playerIndexQuery" type="search" maxlength="100" placeholder="Cerca un giocatore" autocomplete="off"></label>
+      <label for="playerIndexOrder">Ordine<select id="playerIndexOrder" aria-label="Ordine"><option value="recent">Aggiornamenti recenti</option><option value="name">Nome A-Z</option><option value="news">Piu notizie</option></select></label>
+      <button id="playerIndexReset" type="button" title="Azzera filtri" aria-label="Azzera filtri" hidden><i data-lucide="filter-x" aria-hidden="true"></i></button>
+    </form>
+    <p id="playerIndexStatus" role="status" aria-live="polite"></p>
+    <div id="playerIndexError" hidden><span>Profili temporaneamente non disponibili.</span><button id="playerIndexRetry" type="button">Riprova</button></div>
+    <div id="playerIndexList" class="player-index-list"></div>
+  </main>
+  <footer class="page-footer"><a href="/">Il Calcio di Vince</a><a href="/privacy">Privacy</a><a href="/mercato">Mercato</a><a href="/cerca">Cerca</a></footer>
+  <script defer src="/assets/privacy-controls.js?v=20260831-2"></script>
+</body>
+</html>

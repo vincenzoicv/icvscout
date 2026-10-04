@@ -1,4 +1,5 @@
 .page-header nav{min-width:0}.hero>div{min-width:0}.hero h1{font-size:80px;letter-spacing:0;overflow-wrap:anywhere}
+.player-index-back{display:inline-flex;align-items:center;min-height:44px;margin-bottom:18px;color:var(--muted);text-decoration:none}.player-index-back:hover{color:var(--gold2)}
 .player-status{color:var(--muted);font-size:14px;min-height:20px;margin:18px 0 0}
 .player-error{display:flex;align-items:center;flex-wrap:wrap;gap:14px;padding:18px 0;color:var(--text)}.player-error[hidden]{display:none}
 .player-error button,.player-error a{min-height:44px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);font:inherit;padding:11px 14px;cursor:pointer;text-decoration:none}

@@ -13,7 +13,8 @@
   <link rel="stylesheet" href="/assets/news-editorial.css?v=20261003-2">
   <script defer src="/assets/lucide.min.js"></script>
   <script defer src="/assets/section-pages.js?v=20261004-2"></script>
-  <script defer src="/assets/news-page.js?v=20261003-2"></script>
+  <link rel="stylesheet" href="/assets/news-browser.css?v=20261004-1">
+  <script defer src="/assets/news-page.js?v=20261004-1"></script>
 </head>
 <body class="news-page">
   <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
@@ -26,6 +27,12 @@
     <div class="news-heading"><p class="page-kicker">Il Calcio di Vince · Juventus</p><h1>News</h1></div>
     <div class="news-controls"><label class="news-search-field"><i data-lucide="search" aria-hidden="true"></i><input id="newsSearch" type="search" aria-label="Cerca nelle notizie" autocomplete="off" placeholder="Cerca per titolo o argomento"></label><span class="news-count" id="newsCount" aria-live="polite"></span></div>
     <div class="news-filters" id="newsFilters" role="group" aria-label="Filtra notizie per categoria"></div>
+    <div class="news-refine">
+      <label>Fonte<select id="newsSource"><option value="">Tutte le fonti</option></select></label>
+      <label>Periodo<select id="newsPeriod"><option value="all">Tutte le date</option><option value="day">Ultime 24 ore</option><option value="week">Ultimi 7 giorni</option><option value="month">Ultimi 30 giorni</option></select></label>
+      <button id="newsReset" type="button" hidden><i data-lucide="filter-x" aria-hidden="true"></i>Azzera filtri</button>
+    </div>
+    <p class="news-scope">Ultime 30 notizie pubblicate · <a href="/cerca">Cerca in tutto il sito</a></p>
     <p class="news-status" id="newsStatus" role="status" aria-live="polite">Caricamento notizie…</p>
     <button class="news-retry" id="newsRetry" type="button" hidden>Riprova</button>
     <div class="news-list" id="newsList" aria-busy="true"></div>

@@ -4,7 +4,7 @@
   const search=document.getElementById('mediaSearch'),order=document.getElementById('mediaOrder'),reset=document.getElementById('mediaReset'),status=document.getElementById('mediaStatus'),error=document.getElementById('mediaError'),retry=document.getElementById('mediaRetry'),empty=document.getElementById('mediaEmpty'),grid=document.getElementById('albumList');
   if(!search||!order||!reset)return;
   let data=null,loading=false,selectedAlbum=null;
-  const labels={tutti:'Tutti','sala-stampa':'Sala stampa',foto:'Foto',storie:'Storie bianconere'};
+  const labels={tutti:'Tutti',video:'Interviste e video','sala-stampa':'Sala stampa',foto:'Foto',storie:'Storie bianconere'};
   const normalize=value=>String(value||'').toLocaleLowerCase('it').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
   const matches=item=>normalize(item.title).includes(normalize(search.value.trim()));
   const active=()=>filters.some(item=>item.dataset.filter===location.hash.slice(1))?location.hash.slice(1):'tutti';
@@ -20,7 +20,10 @@
     if(!data)return;
     const conferences=sorted(data.conferences.filter(matches),'published_at'),albums=sorted(data.albums.filter(matches),'date');
     const story=matches({title:document.getElementById('storiesHeading').textContent})?1:0;
-    const counts={'sala-stampa':conferences.length,foto:albums.length,storie:story,tutti:conferences.length+albums.length+story};
+    const videos=sorted(data.videos.filter(item=>matches({title:item.title+' '+item.description})),'published_at');
+    window.ICVVideos.render(document.getElementById('mediaVideoList'),videos);
+    document.getElementById('noVideos').hidden=videos.length>0;
+    const counts={video:videos.length,'sala-stampa':conferences.length,foto:albums.length,storie:story,tutti:conferences.length+albums.length+story+videos.length};
     for(const button of filters)button.textContent=labels[button.dataset.filter]+' ('+counts[button.dataset.filter]+')';
     window.ICVConference.render(conferences[0],conferences.slice(1));
     document.getElementById('noConferences').hidden=conferences.length>0;
@@ -54,6 +57,7 @@
       const response=await fetch('/api/public/media',{cache:'no-store',headers:{Accept:'application/json'},signal:controller.signal});if(!response.ok)throw new Error();const result=await response.json();
       if(!Array.isArray(result.conferences)||!Array.isArray(result.albums))throw new Error();
       data={conferences:result.conferences.filter(item=>item&&typeof item.title==='string'),albums:result.albums.filter(item=>item&&typeof item.title==='string'&&Array.isArray(item.photos)&&item.photos.length)};
+      data.videos=Array.isArray(result.videos)?result.videos.filter(item=>item&&typeof item.title==='string'):[];
       filter();
     }catch{if(data)filter();else status.textContent='';error.hidden=false;}
     finally{clearTimeout(timeout);loading=false;grid.setAttribute('aria-busy','false');if(retrying)(error.hidden?search:retry).focus({preventScroll:true});}

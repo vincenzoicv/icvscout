@@ -834,6 +834,8 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 <link rel="stylesheet" href="/assets/vince-hero.css?v=20261003-1">
 <script defer src="/assets/vince-hero.js?v=20261003-1"></script>
 <link rel="stylesheet" href="/assets/featured-conference.css?v=20260831-4">
+<link rel="stylesheet" href="/assets/editorial-videos.css?v=20261005-2">
+<script defer src="/assets/editorial-videos.js?v=20261005-2"></script>
 <script defer src="/assets/featured-conference.js?v=20260913-1"></script>
 <link rel="stylesheet" href="/assets/featured-highlights.css?v=20260831-1">
 <script defer src="/assets/featured-highlights.js?v=20260831-1"></script>
@@ -843,7 +845,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 <script defer src="/assets/icv-stories.js?v=20260831-1"></script>
 <link rel="stylesheet" href="/assets/classifica-nav.css?v=20260831-1">
 <script defer src="/assets/section-pages.js?v=20261004-2"></script>
-<link rel="stylesheet" href="/assets/lineup-pitch.css?v=20261005-1">
+<link rel="stylesheet" href="/assets/lineup-pitch.css?v=20261005-2">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
@@ -1053,6 +1055,10 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
       <button id="highlightsStop" type="button" hidden><i class="conference-icon stop" aria-hidden="true"></i>Chiudi video</button>
     </div>
     <p id="highlightsStatus" role="status" aria-live="polite"></p>
+  </section>
+  <section class="editorial-videos" id="homeVideos" aria-labelledby="homeVideoHeading" hidden>
+    <div class="editorial-video-head"><h2 id="homeVideoHeading">Interviste e video</h2><a href="/media#video">Tutti i video</a></div>
+    <div class="editorial-video-grid" id="homeVideoList"></div>
   </section>
   <section class="featured-conference" id="featuredConference" aria-labelledby="conferenceHeading" hidden>
     <div class="conference-header">
@@ -2108,7 +2114,7 @@ function renderMatchHubProbable(data, active) {
   if (window.ICVLineupPitch) {
     window.ICVLineupPitch.render(safeFormation);
   } else if (!window.ICVLineupPitchLoading) {
-    window.ICVLineupPitchLoading = import("/assets/lineup-pitch-3d.js?v=20261005-1").catch(function() {
+    window.ICVLineupPitchLoading = import("/assets/lineup-pitch-3d.js?v=20261005-2").catch(function() {
       var stage = document.getElementById("matchHubLineupStage");
       if (stage) stage.classList.add("is-2d");
     });
@@ -3008,7 +3014,7 @@ if ('serviceWorker' in navigator) {
 }
 
 </script>
-<script defer src="/assets/privacy-controls.js?v=20260831-2"></script>
+<script defer src="/assets/privacy-controls.js?v=20261005-2"></script>
 <script defer src="/assets/analytics.js?v=20260728-1"></script>
 </body>
 </html>

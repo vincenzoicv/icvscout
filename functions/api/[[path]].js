@@ -3,6 +3,7 @@ import { DEFAULT_HIGHLIGHTS, highlightsSetting, publicHighlights, highlightsThum
 import { belongsToMatch, namesMatch, matchDay, communityMatchKey } from '../lib/match-content.js';
 import { adminMatchGallery, readMatchGallery, publicMatchGallery, publicMatchAlbums, matchPhotoResponse } from '../lib/match-gallery.js';
 import { standingsResponse } from '../lib/standings.js';
+import { readVideos, publicVideos, adminVideos, videoFile } from '../lib/videos.js';
 
 const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
@@ -156,6 +157,14 @@ export async function onRequest(context) {
   const path = url.pathname.replace(/^\/api\/?/, "");
 
   try {
+    if (path === 'admin/videos' || path === 'admin/video-file') {
+      requireAdmin(request, env);
+      if (path === 'admin/videos') return await adminVideos(request, env, sb);
+      if (request.method === 'GET') return await videoFile(request, env, sb, true);
+      return json({ error: 'Metodo non consentito' }, 405);
+    }
+    if (path === 'public/videos' && request.method === 'GET') return new Response(JSON.stringify({ videos: hasSupabase(env) ? publicVideos(await readVideos(env, sb)) : [] }), { headers: { ...JSON_HEADERS, 'Cache-Control': 'no-store' } });
+    if (path === 'public/video-file' && request.method === 'GET') return await videoFile(request, env, sb);
     if (path === 'admin/match-gallery' || path === 'admin/match-photo') {
       requireAdmin(request, env);
       if (path === 'admin/match-photo' && request.method === 'GET') return await matchPhotoResponse(request, env, sb, true);
@@ -509,7 +518,7 @@ async function publicMedia(env) {
     getSiteSetting(env,'featured_conference',{}),
     readMatchGallery(env,sb),
   ]);
-  return json({conferences:conferenceArchive(rows,setting),albums:publicMatchAlbums(gallery)});
+  return json({conferences:conferenceArchive(rows,setting),albums:publicMatchAlbums(gallery),videos:publicVideos(await readVideos(env,sb))});
 }
 
 async function publicConferenceThumbnail(env, url) {

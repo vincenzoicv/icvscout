@@ -15,7 +15,8 @@
   <script defer src="/assets/lucide.min.js"></script>
   <script defer src="/assets/section-pages.js?v=20261004-2"></script>
   <link rel="stylesheet" href="/assets/search-page.css?v=20261004-1">
-  <script defer src="/assets/search-page.js?v=20261004-1"></script>
+  <link rel="stylesheet" href="/assets/content-links.css?v=20261004-1">
+  <script defer src="/assets/search-page.js?v=20261004-2"></script>
 </head>
 <body class="match-page search-page">
   <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
@@ -34,6 +35,7 @@
       <label for="siteSearchInput">Cerca nel sito</label>
       <div class="site-search-control"><i data-lucide="search" aria-hidden="true"></i><input id="siteSearchInput" name="q" type="search" minlength="2" maxlength="100" autocomplete="off" placeholder="Es. Juventus, Yildiz, Atalanta" required><button type="submit">Cerca</button></div>
     </form>
+    <nav class="content-links" aria-label="Archivi ICV"><a href="/news"><i data-lucide="newspaper" aria-hidden="true"></i>News</a><a href="/giocatori"><i data-lucide="users-round" aria-hidden="true"></i>Giocatori</a><a href="/mercato"><i data-lucide="arrow-right-left" aria-hidden="true"></i>Mercato</a></nav>
     <p id="searchStatus" class="page-status" role="status" aria-live="polite">Inserisci almeno due caratteri.</p>
     <div id="searchFilters" class="search-filters" role="group" aria-label="Filtra risultati" hidden></div>
     <button id="searchRetry" class="match-primary-link" type="button" hidden><i data-lucide="rotate-cw" aria-hidden="true"></i>Riprova</button>

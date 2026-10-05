@@ -23,6 +23,25 @@ test('search filters results, dates and external sources and shares its active f
   await page.reload();
   await expect(page.getByRole('button',{name:'Partite (1)'})).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('.search-result')).toHaveCount(1);
+  await page.locator('#siteSearchInput').fill('Atalanta');
+  await page.getByRole('button',{name:'Cerca',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Partite (1)'})).toHaveAttribute('aria-pressed','true');
+  await expect(page).toHaveURL(/tipo=match/);
+  await expect(page.locator('.search-result')).toHaveCount(1);
+});
+test('context links connect search to the player archive and market',async({page})=>{
+  await page.route('**/api/public/players?**',route=>route.fulfill({json:[{name:'Bremer',slug:'bremer',market:[],news_count:1}]}));
+  await page.route('**/api/public/home',route=>route.fulfill({json:{market:[]}}));
+  await page.goto('/cerca.html');
+  const nav=page.getByRole('navigation',{name:'Archivi ICV'});
+  await nav.getByRole('link',{name:'Giocatori',exact:true}).click();
+  await expect(page).toHaveURL(/\/giocatori/);
+  await expect(page.locator('.player-index-row')).toContainText('Bremer');
+  await expect(nav.getByRole('link',{name:'Giocatori',exact:true})).toHaveAttribute('aria-current','page');
+  await nav.getByRole('link',{name:'Mercato',exact:true}).click();
+  await expect(page).toHaveURL(/\/mercato/);
+  await expect(page.locator('#marketStatus')).toContainText('0 di 0');
+  await expect(nav.getByRole('link',{name:'Mercato',exact:true})).toHaveAttribute('aria-current','page');
 });
 test('failed response exposes keyboard retry and unsafe links are excluded',async({page})=>{
   await page.route('**/api/public/search?*',route=>route.fulfill({status:503,body:'<!DOCTYPE html> upstream'}));

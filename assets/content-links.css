@@ -1,0 +1,5 @@
+.content-links{display:flex;align-items:center;flex-wrap:wrap;gap:8px 24px;padding:12px 0;margin:12px 0 22px;border-block:1px solid var(--line,var(--bdr2));font-size:14px}
+.content-links a{display:inline-flex;align-items:center;gap:8px;min-height:44px;color:inherit;text-decoration:none;white-space:nowrap}
+.content-links a:hover{color:var(--gold,var(--gold-l))}.content-links a[aria-current="page"]{color:var(--gold,var(--gold-l));font-weight:700}.content-links svg{width:18px;height:18px;flex-shrink:0}
+.content-links a:focus-visible{outline:2px solid var(--gold,var(--gold-l));outline-offset:3px}
+@media(max-width:400px){.content-links{column-gap:18px}}

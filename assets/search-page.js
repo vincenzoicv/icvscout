@@ -55,7 +55,7 @@
       clearTimeout(timeout);if(id===requestId){results.setAttribute('aria-busy','false');if(retrying){const target=retry.hidden?status:retry;if(target===status)target.setAttribute('tabindex','-1');target.focus({preventScroll:true});}}
     }
   }
-  form.addEventListener('submit',event=>{event.preventDefault();run(input.value,true);});
+  form.addEventListener('submit',event=>{event.preventDefault();run(input.value,true,activeType);});
   retry.addEventListener('click',()=>run(lastQuery,false,activeType));
   function fromUrl(){const params=new URLSearchParams(location.search);input.value=params.get('q')||'';run(input.value,false,params.get('tipo')||'all');}
   window.addEventListener('popstate',fromUrl);fromUrl();

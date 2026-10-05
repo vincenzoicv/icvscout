@@ -122,7 +122,7 @@ test('search requires at least two characters and the homepage exposes search', 
   assert.match(home, /href="\/cerca" class="header-search"/);
   assert.match(calendar, /detailHref = event => '\/partita\?date='/);
   assert.match(home, /href="\/cerca" class="header-search"/);
-  assert.match(readFileSync(new URL('../cerca.html', import.meta.url), 'utf8'), /search-page\.js\?v=20261004-1/);
+  assert.match(readFileSync(new URL('../cerca.html', import.meta.url), 'utf8'), /search-page\.js\?v=20261004-2/);
   assert.match(readFileSync(new URL('../partita.html', import.meta.url), 'utf8'), /match-pages\.js\?v=20261003-3/);
 });
 

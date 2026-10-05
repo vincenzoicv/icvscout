@@ -17,6 +17,11 @@ let dragging = false;
 let pointerStart = { x: 0, y: 0, yaw: 0, pitch: 0 };
 let yaw = 0;
 let pitch = 0;
+let projectedLabels = [];
+const labelLayer = document.createElement("div");
+labelLayer.className = "lineup-label-layer";
+labelLayer.setAttribute("aria-hidden", "true");
+stage?.appendChild(labelLayer);
 
 function makePitchTexture() {
   const surface = document.createElement("canvas");
@@ -26,11 +31,11 @@ function makePitchTexture() {
   if (!ctx) return null;
   const stripeHeight = surface.height / 12;
   for (let row = 0; row < 12; row += 1) {
-    ctx.fillStyle = row % 2 ? "#165a3c" : "#196546";
+    ctx.fillStyle = row % 2 ? "#154f40" : "#195647";
     ctx.fillRect(0, row * stripeHeight, surface.width, stripeHeight + 1);
   }
   ctx.strokeStyle = "rgba(238,246,236,.9)";
-  ctx.lineWidth = 7;
+  ctx.lineWidth = 3;
   ctx.strokeRect(22, 22, surface.width - 44, surface.height - 44);
   ctx.beginPath();
   ctx.moveTo(22, surface.height / 2);
@@ -53,72 +58,40 @@ function makePitchTexture() {
   });
   const texture = new THREE.CanvasTexture(surface);
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  texture.anisotropy = renderer ? Math.min(8, renderer.capabilities.getMaxAnisotropy()) : 1;
   return texture;
-}
-
-function makeLabel(name) {
-  const label = document.createElement("canvas");
-  label.width = 512;
-  label.height = 116;
-  const ctx = label.getContext("2d");
-  ctx.fillStyle = "rgba(7,9,8,.9)";
-  ctx.fillRect(8, 8, 496, 100);
-  ctx.strokeStyle = "rgba(232,184,75,.9)";
-  ctx.lineWidth = 4;
-  ctx.strokeRect(8, 8, 496, 100);
-  ctx.fillStyle = "#f8f7f2";
-  ctx.font = "700 48px Arial, sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  const safeName = String(name || "Juventus").slice(0, 22);
-  ctx.fillText(safeName, 256, 59, 450);
-  const texture = new THREE.CanvasTexture(label);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
-  const sprite = new THREE.Sprite(material);
-  sprite.scale.set(2.35, .53, 1);
-  sprite.position.y = 1.02;
-  sprite.renderOrder = 10;
-  return sprite;
 }
 
 function makePlayer(player) {
   const group = new THREE.Group();
-  const ring = new THREE.Mesh(
-    new THREE.CylinderGeometry(.42, .42, .07, 40),
-    new THREE.MeshStandardMaterial({ color: 0xd7a92e, metalness: .55, roughness: .28 })
-  );
-  ring.position.y = .055;
-  ring.receiveShadow = true;
-  group.add(ring);
-
-  const body = new THREE.Mesh(
-    new THREE.CylinderGeometry(.34, .39, .42, 32),
-    new THREE.MeshStandardMaterial({ color: 0x111111, metalness: .18, roughness: .52 })
-  );
-  body.position.y = .29;
-  body.castShadow = true;
-  group.add(body);
-
-  [-.19, 0, .19].forEach((offset) => {
-    const stripe = new THREE.Mesh(
-      new THREE.BoxGeometry(.09, .27, .38),
-      new THREE.MeshStandardMaterial({ color: 0xf3f2ed, roughness: .58 })
-    );
-    stripe.position.set(offset, .31, .1);
-    stripe.castShadow = true;
+  const goalkeeper = player === currentFormation.players.reduce((a, b) => Number(a.z) > Number(b.z) ? a : b);
+  const shape = new THREE.Shape();
+  const contour = [[-.36,-.5],[.36,-.5],[.36,.18],[.57,.05],[.73,.37],[.3,.62],[.15,.62],[0,.49],[-.15,.62],[-.3,.62],[-.73,.37],[-.57,.05],[-.36,.18]];
+  contour.forEach(([x,y],i) => i ? shape.lineTo(x,y) : shape.moveTo(x,y));
+  shape.closePath();
+  const shirt = new THREE.Mesh(new THREE.ExtrudeGeometry(shape,{depth:.12,bevelEnabled:true,bevelSegments:2,steps:1,bevelSize:.025,bevelThickness:.025}),new THREE.MeshStandardMaterial({color:goalkeeper ? 0x46c8b2 : 0xf5f5f2,roughness:.65}));
+  shirt.position.y = .85;
+  shirt.castShadow = true;
+  group.add(shirt);
+  if (!goalkeeper) [-.23,0,.23].forEach(x => {
+    const stripe = new THREE.Mesh(new THREE.BoxGeometry(.115,.86,.025),new THREE.MeshStandardMaterial({color:0x151719,roughness:.7}));
+    stripe.position.set(x,.79,.15);
     group.add(stripe);
   });
-  group.add(makeLabel(player.name));
+  const marker = document.createElement("span");
+  marker.className = "lineup-projected-label";
+  marker.textContent = player.name;
+  labelLayer.appendChild(marker);
+  projectedLabels.push({marker,player});
   group.position.set(Number(player.x) || 0, 0, Number(player.z) || 0);
   return group;
 }
 
 function setCamera() {
-  const radius = 17.5;
-  camera.position.set(Math.sin(yaw) * radius, 11.2 + pitch * 4, Math.cos(yaw) * radius);
-  camera.lookAt(0, 0, -.5);
+  const distance = Math.max(28, 22 / Math.max(.5, camera.aspect)) + Math.abs(yaw) * 8;
+  const radius = distance * .5;
+  camera.position.set(Math.sin(yaw) * radius, distance * .866 + pitch * 4, Math.cos(yaw) * radius);
+  camera.lookAt(0, 0, 0);
 }
 
 function resize() {
@@ -138,6 +111,17 @@ function draw() {
   resize();
   setCamera();
   renderer.render(scene, camera);
+  projectedLabels.forEach(({marker,player}) => {
+    const point = new THREE.Vector3(Number(player.x)||0,.1,Number(player.z)||0).project(camera);
+    marker.style.left = `${(point.x + 1) * 50}%`;
+    marker.style.top = `${(1 - point.y) * 50}%`;
+  });
+  projectedLabels.forEach(({marker,player}) => {
+    const left = parseFloat(marker.style.left);
+    const neighbors = projectedLabels.filter(item => item.marker !== marker && Math.abs(Number(item.player.z) - Number(player.z)) < .8);
+    const gap = neighbors.length ? Math.min(...neighbors.map(item => Math.abs(parseFloat(item.marker.style.left) - left))) * canvas.clientWidth / 100 : 130;
+    marker.style.width = `${Math.min(120,canvas.clientWidth * .22,gap * .88)}px`;
+  });
 }
 
 function animateIntro(time) {
@@ -155,7 +139,7 @@ function buildScene(formation) {
     try {
       renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "high-performance" });
     } catch (error) {
-      stage.classList.add("is-2d");
+      setView("2d");
       return false;
     }
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -163,13 +147,17 @@ function buildScene(formation) {
     renderer.shadowMap.type = THREE.PCFShadowMap;
   }
   scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(0x06110c, 18, 32);
+  scene.background = new THREE.Color(0x101917);
   camera = new THREE.PerspectiveCamera(38, 1, .1, 60);
   scene.add(new THREE.HemisphereLight(0xeef5ed, 0x10251a, 2.25));
-  const key = new THREE.DirectionalLight(0xfff0c2, 3.4);
+  const key = new THREE.DirectionalLight(0xffffff, 2.5);
   key.position.set(-5, 13, 9);
   key.castShadow = true;
   key.shadow.mapSize.set(1024, 1024);
+  key.shadow.camera.left = -9;
+  key.shadow.camera.right = 9;
+  key.shadow.camera.top = 10;
+  key.shadow.camera.bottom = -10;
   scene.add(key);
 
   const pitchMesh = new THREE.Mesh(
@@ -189,9 +177,11 @@ function buildScene(formation) {
   scene.add(base);
 
   playerRoot = new THREE.Group();
+  labelLayer.replaceChildren();
+  projectedLabels = [];
   formation.players.forEach((player) => playerRoot.add(makePlayer(player)));
   scene.add(playerRoot);
-  yaw = .18;
+  yaw = 0;
   pitch = 0;
   setCamera();
   draw();
@@ -216,12 +206,20 @@ function disposeScene() {
 function renderFallback(formation) {
   if (!fallback) return;
   fallback.replaceChildren();
+  const pitchSurface = makePitchTexture();
+  fallback.style.backgroundImage = `url(${pitchSurface.image.toDataURL()})`;
+  pitchSurface.dispose();
+  const goalkeeper = formation.players.reduce((a,b) => Number(a.z) > Number(b.z) ? a : b);
   formation.players.forEach((player) => {
     const marker = document.createElement("span");
     marker.className = "lineup-2d-player";
     marker.style.left = `${50 + (Number(player.x) || 0) * 8.4}%`;
     marker.style.top = `${50 + (Number(player.z) || 0) * 5.45}%`;
-    marker.textContent = player.name;
+    const shirt = document.createElement("i");
+    shirt.className = player === goalkeeper ? "lineup-shirt is-goalkeeper" : "lineup-shirt";
+    const name = document.createElement("b");
+    name.textContent = player.name;
+    marker.append(shirt,name);
     fallback.appendChild(marker);
   });
 }
@@ -242,8 +240,12 @@ function render(formation) {
 
 function setView(mode) {
   if (!stage) return;
-  const use2d = mode === "2d";
+  const use2d = mode === "2d" || (!renderer && mode !== "graphic");
   const useGraphic = mode === "graphic";
+  if (use2d || useGraphic) {
+    cancelAnimationFrame(animationFrame);
+    animationFrame = 0;
+  }
   stage.classList.toggle("is-2d", use2d);
   stage.classList.toggle("is-graphic", useGraphic);
   document.querySelectorAll("[data-lineup-view]").forEach((button) => {
@@ -259,6 +261,7 @@ document.querySelectorAll("[data-lineup-view]").forEach((button) => {
 });
 
 canvas?.addEventListener("pointerdown", (event) => {
+  cancelAnimationFrame(animationFrame);
   dragging = true;
   pointerStart = { x: event.clientX, y: event.clientY, yaw, pitch };
   canvas.setPointerCapture(event.pointerId);

@@ -843,6 +843,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 <script defer src="/assets/icv-stories.js?v=20260831-1"></script>
 <link rel="stylesheet" href="/assets/classifica-nav.css?v=20260831-1">
 <script defer src="/assets/section-pages.js?v=20261004-2"></script>
+<link rel="stylesheet" href="/assets/lineup-pitch.css?v=20261005-1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
@@ -2107,7 +2108,7 @@ function renderMatchHubProbable(data, active) {
   if (window.ICVLineupPitch) {
     window.ICVLineupPitch.render(safeFormation);
   } else if (!window.ICVLineupPitchLoading) {
-    window.ICVLineupPitchLoading = import("/assets/lineup-pitch-3d.js?v=20260912-1").catch(function() {
+    window.ICVLineupPitchLoading = import("/assets/lineup-pitch-3d.js?v=20261005-1").catch(function() {
       var stage = document.getElementById("matchHubLineupStage");
       if (stage) stage.classList.add("is-2d");
     });

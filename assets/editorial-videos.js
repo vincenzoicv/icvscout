@@ -8,19 +8,23 @@
     return null;
   }
   function stopAll(except){document.querySelectorAll('.editorial-video video').forEach(v=>{if(v!==except)v.pause();});for(const player of players)if(player.frame!==except)player.close();}
-  const observer=new IntersectionObserver(entries=>{for(const entry of entries)if(!entry.isIntersecting)for(const player of players)if(player.frame===entry.target)player.close();});
+  const observer=new IntersectionObserver(entries=>{for(const entry of entries)for(const player of players)if(player.frame===entry.target){player.visible=entry.isIntersecting;if(entry.isIntersecting)player.autoLoad();else{player.close();player.dismissed=false;}}});
   function socialPlayer(frame,item,url,error){
     const provider=item.kind==='tiktok'?'TikTok':'Instagram';frame.classList.add('editorial-social-frame');
     const load=document.createElement('button');load.type='button';load.className='editorial-social-load';
     const label=()=>{load.textContent=(window.ICVPrivacy?.enabled('external_media')?'Carica video ':'Consenti e carica video ')+provider;};label();
     const close=document.createElement('button');close.type='button';close.className='editorial-social-close';close.textContent='Chiudi video';close.hidden=true;
     const disclosure=document.createElement('p');disclosure.className='editorial-social-privacy';disclosure.textContent=provider+' riceve dati di navigazione e puo usare cookie.';
-    const player={frame,iframe:null,close(){if(player.iframe){player.iframe.remove();player.iframe=null;}load.hidden=false;close.hidden=true;label();}};players.add(player);observer.observe(frame);
+    const player={frame,iframe:null,visible:false,dismissed:false,autoLoad(){if(item.kind==='tiktok'&&player.visible&&!player.dismissed&&window.ICVPrivacy?.enabled('external_media'))mount();},close(){player.dismissed=true;if(player.iframe){player.iframe.remove();player.iframe=null;}load.hidden=false;close.hidden=true;label();}};players.add(player);observer.observe(frame);
+    function mount(){
+      if(player.iframe)return;
+      error.hidden=true;const iframe=document.createElement('iframe');iframe.title=item.title+' · '+provider;iframe.src=url;iframe.allow='fullscreen; encrypted-media; picture-in-picture';iframe.referrerPolicy='strict-origin-when-cross-origin';iframe.allowFullscreen=true;
+      iframe.addEventListener('error',()=>{error.textContent='Video non disponibile. Il contenuto deve essere pubblico e consentire l\'incorporamento.';error.hidden=false;});player.iframe=iframe;frame.prepend(iframe);load.hidden=true;close.hidden=false;
+    }
     load.addEventListener('click',()=>{
       if(!window.ICVPrivacy){error.textContent='Preferenze privacy non disponibili. Ricarica la pagina.';error.hidden=false;return;}
       if(!window.ICVPrivacy.enabled('external_media'))window.ICVPrivacy.save({...window.ICVPrivacy.get(),external_media:true});
-      stopAll(frame);error.hidden=true;const iframe=document.createElement('iframe');iframe.title=item.title+' · '+provider;iframe.src=url;iframe.allow='fullscreen; encrypted-media; picture-in-picture';iframe.referrerPolicy='strict-origin-when-cross-origin';iframe.allowFullscreen=true;
-      iframe.addEventListener('error',()=>{error.textContent='Video non disponibile. Il contenuto deve essere pubblico e consentire l\'incorporamento.';error.hidden=false;});player.iframe=iframe;frame.prepend(iframe);load.hidden=true;close.hidden=false;
+      stopAll(frame);player.dismissed=false;mount();
     });close.addEventListener('click',()=>player.close());frame.append(load,disclosure,close);
   }
   function render(root,items){
@@ -47,7 +51,7 @@
   window.ICVVideos={render};
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAll();});
   window.addEventListener('pagehide',()=>stopAll());
-  window.addEventListener('icv:privacychange',()=>{for(const player of players){if(!window.ICVPrivacy?.enabled('external_media'))player.close();}});
+  window.addEventListener('icv:privacychange',()=>{for(const player of players){if(!window.ICVPrivacy?.enabled('external_media'))player.close();else{player.dismissed=false;player.autoLoad();}}});
   window.addEventListener('message',event=>{if(event.origin!=='https://www.tiktok.com'||event.data?.['x-tiktok-player']!==true)return;for(const player of players)if(player.iframe?.contentWindow===event.source&&event.data.type==='onPlayerError'){player.close();const error=player.frame.closest('article').querySelector('.editorial-video-error');error.textContent='TikTok non puo riprodurre questo video. Verifica che sia pubblico e incorporabile.';error.hidden=false;}});
   const home=document.getElementById('homeVideos');
   if(home){

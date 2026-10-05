@@ -1,5 +1,21 @@
 import {test,expect} from '@playwright/test';
 const videos=Array.from({length:4},(_,i)=>({id:'00000000-0000-0000-0000-00000000000'+i,title:'Video di prova '+i,description:'Anteprima privata della sezione video',published_at:'2026-10-0'+(5-i)+'T12:00:00Z',url:'/api/public/video-file?id=00000000-0000-0000-0000-00000000000'+i,poster:null,captions:null}));
+test('TikTok: anteprima automatica con consenso salvato, senza autoplay',async({page},info)=>{
+  const item={...videos[0],kind:'tiktok',source_url:'https://www.tiktok.com/@scout2015/video/6718335390845095173',url:null};
+  await page.route('https://www.tiktok.com/**',route=>route.fulfill({body:'<p>Player TikTok</p>',contentType:'text/html'}));
+  await page.route('**/api/public/videos',route=>route.fulfill({json:{videos:[item]}}));
+  await page.goto('/');await expect(page.locator('#homeVideoList article')).toHaveCount(1);
+  await expect(page.locator('#homeVideoList iframe')).toHaveCount(0);
+  await page.evaluate(()=>ICVPrivacy.save({...ICVPrivacy.get(),external_media:true}));
+  await page.locator('#homeVideos').scrollIntoViewIfNeeded();
+  await expect(page.locator('#homeVideoList iframe')).toHaveAttribute('src',/autoplay=0/);
+  await page.screenshot({path:'/tmp/icv-tiktok-auto-'+info.project.name+'.png'});
+  await page.reload();await page.locator('#homeVideos').scrollIntoViewIfNeeded();
+  await expect(page.locator('#homeVideoList iframe')).toHaveCount(1);
+  await page.locator('.editorial-social-close').click();await expect(page.locator('#homeVideoList iframe')).toHaveCount(0);
+  await page.evaluate(()=>ICVPrivacy.save({...ICVPrivacy.get(),external_media:false}));
+  await page.reload();await page.locator('#homeVideos').scrollIntoViewIfNeeded();await expect(page.locator('#homeVideoList iframe')).toHaveCount(0);
+});
 test('social: nessun iframe prima del consenso, player interno e revoca immediata',async({page},info)=>{
   const social=[{...videos[0],kind:'instagram',source_url:'https://www.instagram.com/reel/Dd_eMBASwjy/',url:null},{...videos[1],kind:'tiktok',source_url:'https://www.tiktok.com/@scout2015/video/6718335390845095173',url:null}];
   let embeds=0;await page.route('https://www.instagram.com/**',route=>{embeds++;return route.fulfill({body:'<p>Player Instagram di prova</p>',contentType:'text/html'});});

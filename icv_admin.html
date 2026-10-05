@@ -38,19 +38,21 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261005-1">
 </head>
 <body>
 <header>
   <div class="brand"><span class="logo">ICV</span><span class="badge">Automation Admin</span></div>
   <a class="back" href="/">Scout</a>
 </header>
-<main>
+<a class="admin-skip" href="#main-content">Vai al contenuto principale</a>
+<main id="main-content" tabindex="-1">
   <section class="login" id="login">
     <h1>ACCESSO ADMIN</h1>
     <p>Inserisci il token configurato in Cloudflare come ADMIN_TOKEN</p>
-    <input id="tokenInput" type="password" placeholder="Admin token">
+    <input id="tokenInput" type="password" placeholder="Admin token" aria-label="Token di accesso admin">
     <button onclick="login()">Entra</button>
-    <p id="loginError" style="display:none;color:var(--red)">Token non valido o API non configurata</p>
+    <p id="loginError" role="alert" style="display:none;color:var(--red)">Token non valido o API non configurata</p>
   </section>
 
   <section class="panel" id="panel">
@@ -80,7 +82,8 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
     <div class="status-grid" id="automationStatus"></div>
     <div class="admin-alerts" id="adminAlerts"></div>
 
-    <nav class="admin-nav" id="adminNav">
+    <div class="admin-section-picker"><label for="adminSection">Sezione</label><select id="adminSection" onchange="setAdminTab(this.value)"><option value="drafts">Da approvare</option><option value="live">Live Desk</option><option value="published">Pubblicate</option><option value="market">Mercato</option><option value="social">Social</option><option value="graphics">Grafiche</option><option value="photos">Foto partite</option><option value="highlights">Highlights</option><option value="community">Community</option><option value="analytics">Analytics</option><option value="monitor">Monitor</option><option value="sources">Fonti</option><option value="advanced">Avanzate</option></select></div>
+    <nav class="admin-nav" id="adminNav" aria-label="Sezioni admin">
       <button class="active" data-tab="drafts" onclick="setAdminTab('drafts',this)">Da approvare</button>
       <button data-tab="live" onclick="setAdminTab('live',this)">Live Desk</button>
       <button data-tab="published" onclick="setAdminTab('published',this)">Pubblicate</button>
@@ -276,7 +279,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
     </div>
   </section>
 </main>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], liveDesk: [], runs: [], automationMonitor: null, communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], analytics: null, latestFetch: null, adminTab: "drafts", filters: { draftReliability:"all", draftStatus:"all", draftQuery:"", newsReliability:"all", newsVisibility:"all", newsQuery:"", sourceReliability:"all", sourceQuery:"" } };
@@ -420,9 +423,14 @@ function restoreContentFilters(){
   Object.keys(mapping).forEach(function(key){var el=document.getElementById(mapping[key]);if(el&&state.filters[key]!=null)el.value=state.filters[key]});
 }
 function setAdminTab(tab, btn){
+  if(!document.querySelector('#adminNav button[data-tab="'+tab+'"]')) return;
   state.adminTab = tab;
-  document.querySelectorAll("#adminNav button").forEach(function(el){ el.classList.remove("active"); });
-  if(btn) btn.classList.add("active");
+  document.querySelectorAll("#adminNav button").forEach(function(el){
+    var selected = el.getAttribute("data-tab") === tab;
+    el.classList.toggle("active", selected);
+    el.setAttribute("aria-pressed", String(selected));
+  });
+  document.getElementById("adminSection").value = tab;
   document.querySelectorAll(".admin-panel").forEach(function(el){
     el.classList.toggle("active", el.getAttribute("data-panel") === tab);
   });
@@ -633,6 +641,11 @@ function renderAdminAlerts(){
     kicker:"Instagram",
     title:"Instagram non ancora importato",
     text:"Usa Importa Instagram quando pubblichi nuovi post o Reel."
+  } : instagramRun.status === "error" ? {
+    tone:"danger",
+    kicker:"Instagram",
+    title:"Import Instagram non riuscito",
+    text:"Ultimo tentativo: " + date(instagramRun.created_at) + ". Controlla il dettaglio nel Monitor."
   } : hoursSince(instagramRun.created_at) >= 24 ? {
     tone: instagramRun.status === "error" ? "danger" : "warn",
     kicker:"Instagram",
@@ -1207,6 +1220,7 @@ function hoursSince(value){
 function labelRel(value){ return {official:"Fonte ufficiale",trusted:"Fonte affidabile",rumor:"Voce",aggregator:"Aggregatore",blacklist:"Ignorata"}[value] || value || "Fonte affidabile"; }
 function showToast(msg){ var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(function(){t.classList.remove("show")},2600); }
 document.getElementById("tokenInput").addEventListener("keydown", function(e){ if(e.key==="Enter") login(); });
+document.querySelectorAll("#adminNav button").forEach(function(el){el.setAttribute("aria-pressed",String(el.getAttribute("data-tab") === state.adminTab));});
 var graphicFileInput = document.getElementById("graphicFile");
 if(graphicFileInput) graphicFileInput.addEventListener("change", previewGraphicFile);
 if(token()) login();

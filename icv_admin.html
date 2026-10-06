@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="/assets/editorial-videos.css?v=20261005-2">
 <script defer src="/assets/privacy-controls.js?v=20261005-3"></script>
 <script defer src="/assets/editorial-videos.js?v=20261005-3"></script>
-<script defer src="/assets/admin-videos.js?v=20261005-2"></script>
+<script defer src="/assets/admin-videos.js?v=20261006-1"></script>
 <style>
 :root{--gold:#C4962A;--gold-l:#E8B84B;--black:#060606;--d2:#151515;--d3:#1c1c1c;--white:#f0f0f0;--t2:rgba(255,255,255,.66);--t3:rgba(255,255,255,.40);--bdr:rgba(196,150,42,.16);--bdr2:rgba(255,255,255,.07);--green:#4ade80;--red:#f87171;--blue:#60a5fa;--orange:#f59e0b}
 *{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh;background:var(--black);color:var(--white);font-family:Barlow,sans-serif}body:before{content:"";position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");opacity:.025;pointer-events:none}
@@ -43,7 +43,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
-<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-6">
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-7">
 </head>
 <body>
 <header>
@@ -117,15 +117,19 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         <section class="admin-panel video-admin" data-panel="videos" id="videoAdmin" aria-labelledby="videoAdminHeading">
           <h2 id="videoAdminHeading">Interviste e video</h2>
           <div class="video-admin-actions"><button id="videoRefresh" type="button">Aggiorna archivio</button><p id="videoSpace"></p></div>
+          <meter id="videoSpaceMeter" min="0" max="1" value="0" aria-label="Spazio archivio video occupato" hidden></meter>
+          <p id="videoSpaceDetails" class="video-space-details"></p>
+          <p id="videoArchiveWarnings" class="video-archive-warning" role="status" hidden></p>
           <form id="videoUploadForm" class="video-admin-form">
             <fieldset id="videoUploadFields" disabled>
               <label>Origine<select id="videoOrigin"><option value="file">File dal computer</option><option value="social">Link Instagram o TikTok</option></select></label>
               <label>Titolo<input name="title" required maxlength="160"></label>
               <label>Descrizione<textarea name="description" maxlength="1200"></textarea></label>
-              <label data-video-file>Video MP4 (massimo 50 MB)<input id="videoFile" name="video" type="file" accept="video/mp4,.mp4" required></label>
+              <label data-video-file><span id="videoFileLimit">Video MP4</span><input id="videoFile" name="video" type="file" accept="video/mp4,.mp4" required aria-describedby="videoSelection"></label>
               <label data-video-file>Copertina JPG (facoltativa, massimo 2 MB)<input id="videoCover" name="cover" type="file" accept="image/jpeg,.jpg,.jpeg"></label>
               <label data-video-file>Sottotitoli italiani VTT (facoltativi, massimo 32 KB)<input id="videoCaptions" name="captions" type="file" accept=".vtt,text/vtt"></label>
               <label id="videoLinkField" hidden>Link completo del video<input id="videoLink" type="url" maxlength="1024" placeholder="https://www.instagram.com/reel/..."></label>
+              <p id="videoSelection" class="video-space-details" aria-live="polite"></p>
               <label class="video-admin-rights"><input id="videoRights" name="rights" type="checkbox" required>Ho i diritti per pubblicare questo video.</label>
               <button type="submit">Carica in bozza</button>
             </fieldset>

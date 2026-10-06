@@ -62,6 +62,9 @@ input,select{min-height:44px}
 .monitor-run-detail p{font-size:14px;line-height:1.5;margin:0 0 6px}
 .monitor-history-row{grid-template-columns:minmax(0,1fr) auto 165px}
 .monitor-source small{display:block;line-height:1.5}
+.video-admin meter{display:block;width:100%;max-width:720px;height:16px;margin:12px 0}
+.video-space-details{color:var(--t2);font-size:14px;line-height:1.6;margin:8px 0 16px;text-transform:none;overflow-wrap:anywhere}
+.video-archive-warning{border-left:3px solid var(--orange);padding:12px;color:#f3d290;background:#1d170b;font-size:14px;line-height:1.6;margin-bottom:18px}
 .admin-section-picker{display:none}
 .admin-skip{position:fixed;top:8px;left:16px;z-index:60;transform:translateY(-160%);background:var(--gold-l);color:#060606;padding:10px 16px;border-radius:4px}
 .admin-skip:focus{transform:none}

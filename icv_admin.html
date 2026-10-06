@@ -457,7 +457,7 @@ function restoreAutomationActivity(){
     entries.forEach(function(entry){
       if(!Array.isArray(entry)||!automationActions.includes(entry[0]))return;
       var item=entry[1],age=item&&Date.now()-Date.parse(item.updatedAt);
-      if(!item||!Number.isFinite(age)||age<0||age>24*60*60*1000||!["running","done","warning","error","uncertain"].includes(item.status))return;
+      if(!item||!Number.isFinite(age)||age<0||age>24*60*60*1000||!["running","done","warning","error","uncertain","skipped"].includes(item.status))return;
       automationActivity.set(entry[0],{status:item.status==="running"?"uncertain":item.status,message:item.status==="running"?"La pagina e stata riaperta senza un esito confermato. Controlla il Monitor prima di ripetere l'operazione.":String(item.message||"").slice(0,2000),updatedAt:item.updatedAt});
     });
   }catch(error){}
@@ -473,7 +473,7 @@ function renderAutomationActivity(){
   if(!box)return;
   box.hidden=automationActivity.size===0;
   var labels={fetch_news:"Fetch News",market:"Mercato",match_center:"Match Center",social:"Social",instagram_import:"Instagram",youtube_scout:"YouTube Scout",home_autopilot:"Home autopilot"};
-  var statuses={running:"In corso",done:"Completata",warning:"Completata con avvisi",error:"Non riuscita",uncertain:"Esito da verificare"};
+  var statuses={running:"In corso",done:"Completata",warning:"Completata con avvisi",error:"Non riuscita",uncertain:"Esito da verificare",skipped:"Non eseguita"};
   box.innerHTML=Array.from(automationActivity.entries()).map(function(entry){var action=entry[0],item=entry[1];return "<div class='automation-activity-row "+item.status+"'><strong>"+esc(labels[action]||action)+"</strong><span>"+esc(statuses[item.status])+"</span><p>"+esc(item.message)+(item.updatedAt?"<br><time datetime='"+escAttr(item.updatedAt)+"'>"+esc(date(item.updatedAt))+"</time>":"")+"</p></div>";}).join("");
 }
 function runAutomation(action){
@@ -497,6 +497,11 @@ function executeAutomation(action){
   showToast("Automazione in corso");
   return api("/api/admin/automate", {method:"POST", body:{action:action}})
     .then(function(res){
+      if(!res||typeof res!=="object"||Array.isArray(res)||typeof res.ok!=="boolean")throw new Error("Risposta del servizio non valida");
+      if(res.ok&& (res.skipped===true||res.disabled===true)){
+        var reason=res.disabled===true||res.reason==="disabled"?"Processo disattivato: nessuna attivita eseguita.":res.reason==="interval_not_elapsed"?"Intervallo minimo non ancora trascorso: nessuna nuova esecuzione.":"Il servizio non ha eseguito il processo. Controlla il Monitor per i dettagli.";
+        setAutomationActivity(action,"skipped",reason);showToast(reason);return load();
+      }
       if(action === "fetch_news") state.latestFetch = res;
       var failure=res&&res.ok===false;
       var warning=!!firstAutomationError(res||{})||(Array.isArray(res&&res.sources_report)&&res.sources_report.some(function(source){return source.warning||source.error}));
@@ -1344,15 +1349,18 @@ function sourceReportFor(res, name){
   var needle = String(name || "").toLowerCase();
   return rows.find(function(item){ return String(item.source || "").toLowerCase().indexOf(needle) !== -1; }) || null;
 }
-function firstAutomationError(res){
+function firstAutomationError(res, depth){
+  depth=depth||0;if(!res||typeof res!=="object"||depth>8)return "";
+  if(res.error&&!isIgnorableAutomationError(res.error))return String(res.error);
   var errors = Array.isArray(res.errors) ? res.errors : [];
-  if(!errors.length) return "";
   errors = errors.filter(function(item){
     return !isIgnorableAutomationError([item && item.source || "", item && item.error || ""].join(": "));
   });
-  if(!errors.length) return "";
-  var first = errors[0] || {};
-  return [first.source || first.title || first.draft || "", first.error || ""].filter(Boolean).join(": ");
+  if(errors.length){var first=errors[0]||{};var message=typeof first==="string"?first:[first.source||first.title||first.draft||"",first.error||""].filter(Boolean).join(": ");if(message)return message;}
+  var tasks=Array.isArray(res.tasks)?res.tasks:[];
+  for(var task of tasks){var problem=firstAutomationError(task,depth+1);if(problem)return [task.type||"",problem].filter(Boolean).join(": ");}
+  if(res.result){var nested=firstAutomationError(res.result,depth+1);if(nested)return nested;}
+  return res.ok===false?"Il servizio non ha completato l'attivita.":"";
 }
 function isIgnorableAutomationError(message){
   return /PGRST102|empty or invalid json|Body JSON vuoto|Body JSON non valido/i.test(String(message || ""));

@@ -188,6 +188,25 @@ test('failed payloads are not shown as completed and partial results remain visi
   await expect(page.locator('#automationActivity')).toContainText('Risposta lenta');
 });
 
+test('manual outcomes distinguish missing confirmation disabled jobs and nested failures',async({page})=>{
+  await workspace(page);
+  for(const payload of [{},null,[],{ok:'true'}]){
+    await page.evaluate(async payload=>{load=()=>Promise.resolve();api=()=>Promise.resolve(payload);await runAutomation('market');},payload);
+    await expect(page.locator('#automationActivity .uncertain')).toContainText('Esito da verificare');
+    await expect(page.locator('#automationActivity .done')).toHaveCount(0);
+  }
+  await page.evaluate(async()=>{state.latestFetch={scanned:7};api=()=>Promise.resolve({ok:true,skipped:true,reason:'interval_not_elapsed'});await runAutomation('fetch_news');});
+  await expect(page.locator('#automationActivity .skipped')).toContainText('Intervallo minimo');
+  expect(await page.evaluate(()=>state.latestFetch.scanned)).toBe(7);
+  await page.evaluate(async()=>{api=()=>Promise.resolve({ok:true,disabled:true});await runAutomation('youtube_scout');restoreAutomationActivity();});
+  await expect(page.locator('#automationActivity .skipped').filter({hasText:'YouTube Scout'})).toContainText('Processo disattivato');
+  await page.evaluate(async()=>{api=()=>Promise.resolve({ok:true,tasks:[{type:'market',result:{ok:false,error:'Feed non disponibile'}}]});await runAutomation('home_autopilot');});
+  await expect(page.locator('#automationActivity .warning')).toContainText('market: Feed non disponibile');
+  await page.evaluate(async()=>{api=()=>Promise.resolve({ok:true,skipped:3});await runAutomation('youtube_scout');});
+  await expect(page.locator('#automationActivity .done')).toContainText('YouTube Scout');
+  expect(await page.evaluate(()=>runningAutomations.size)).toBe(0);
+});
+
 test('timeout remains uncertain after refresh and simultaneous jobs keep separate statuses',async({page})=>{
   await workspace(page);
   await page.evaluate(async()=>{load=()=>Promise.resolve();api=()=>Promise.reject(Object.assign(new Error('Gateway timeout'),{status:524}));await runAutomation('market');api=()=>Promise.resolve({ok:true,imported:2});await runAutomation('instagram_import');});

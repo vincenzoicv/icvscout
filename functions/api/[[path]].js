@@ -269,7 +269,9 @@ async function runScheduledAutomations({ env, cron = "", scheduledTime = Date.no
   }
 
   if (shouldRunMarket) {
-    tasks.push({ type: "market", result: await runMarketAutomation(env, { sourceLimit: 2, draftLimit: 6 }) });
+    const marketResult = await runMarketAutomation(env, { sourceLimit: 2, draftLimit: 6 });
+    tasks.push({ type: "market", result: marketResult });
+    await logRun(env, "market", marketResult);
   }
 
   if (shouldRunYoutube) {
@@ -690,18 +692,24 @@ async function runHomeAutopilot(env, options = {}) {
     await logRun(env, "news", newsResult);
 
     if (includeMarket) {
-      result.tasks.push({ type: "market", result: await runMarketAutomation(env, { sources }) });
+      const marketResult = await runMarketAutomation(env, { sources });
+      result.tasks.push({ type: "market", result: marketResult });
+      await logRun(env, "market", marketResult);
     }
   } catch (err) {
     result.ok = false;
     result.tasks.push({ type: "news_market", error: err.message || "Errore news/mercato" });
+    await logRun(env, "news", automationFailure(err, "Errore news/mercato"));
   }
 
   if (env.FOOTBALL_DATA_KEY) {
     try {
-      result.tasks.push({ type: "match_center", result: await generateMatchCenter(env) });
+      const matchResult = await generateMatchCenter(env);
+      result.tasks.push({ type: "match_center", result: matchResult });
+      await logRun(env, "match_center", matchResult);
     } catch (err) {
       result.tasks.push({ type: "match_center", error: err.message || "Errore Match Center" });
+      await logRun(env, "match_center", automationFailure(err, "Errore Match Center"));
     }
   }
 
@@ -2193,7 +2201,7 @@ async function adminNews(request, env) {
       safeAdminRead(() => sb(env, "/social_drafts?order=created_at.desc&limit=40"), []),
       safeAdminRead(() => sb(env, "/market_items?order=updated_at.desc&limit=60"), []),
       safeAdminRead(() => sb(env, "/match_reports?order=match_date.desc&limit=20"), []),
-      safeAdminRead(() => sb(env, "/automation_runs?order=created_at.desc&limit=60"), []),
+      readSection("monitor", () => readAutomationHistory(env), []),
       safeAdminRead(() => getSiteSetting(env, "radar_home", DEFAULT_RADAR), DEFAULT_RADAR),
       safeAdminRead(() => getSiteSetting(env, "graphics_gallery", DEFAULT_GRAPHICS), DEFAULT_GRAPHICS),
       safeAdminRead(() => sb(env, "/community_posts?select=id,user_id,category,body,image_url,is_official,status,created_at,author:community_profiles!community_posts_user_id_fkey(display_name,username)&order=created_at.desc&limit=80"), []),
@@ -2208,7 +2216,8 @@ async function adminNews(request, env) {
     const conferenceOptions = await safeAdminRead(() => conferenceRows(env,{mode:'auto'}),[]);
     const visibleNews = publicNewsRows(news).filter(item => item.visible !== false);
     const publicMarket = aggregateMarketItems(publicMarketRows(market));
-    return json({ read_warnings: readWarnings, drafts, news, sources, social, highlights_config:await safeAdminRead(() => readHighlightsSetting(env),{mode:'off'}), conference_config:conferenceConfig, featured_conference:conference, conference_options:conferenceOptions.map(row=>({id:row.id,hook:row.hook,published_at:row.published_at})), market: publicMarket, matches, live_desk: buildLiveDeskEntries({ news: visibleNews, market: publicMarket, matches }, 20), runs, automation_monitor: buildAutomationMonitor(runs, { cadences: { home_autopilot: Math.max(1, Number(env.HOME_AUTO_INTERVAL_HOURS || 6)) } }), radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
+    const homeInterval = Math.max(1, Number(env.HOME_AUTO_INTERVAL_HOURS || 6));
+    return json({ read_warnings: readWarnings, drafts, news, sources, social, highlights_config:await safeAdminRead(() => readHighlightsSetting(env),{mode:'off'}), conference_config:conferenceConfig, featured_conference:conference, conference_options:conferenceOptions.map(row=>({id:row.id,hook:row.hook,published_at:row.published_at})), market: publicMarket, matches, live_desk: buildLiveDeskEntries({ news: visibleNews, market: publicMarket, matches }, 20), runs, automation_monitor: readWarnings.includes("monitor") ? null : buildAutomationMonitor(runs, { cadences: { home_autopilot: homeInterval, news: homeInterval, market: 6, match_center: 1 / 60, instagram_import: env.IG_ACCESS_TOKEN ? homeInterval : null, youtube_scout: youtubeScoutEnabled(env) ? 24 : null } }), radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
   }
 
   const body = await readBody(request);
@@ -6661,6 +6670,16 @@ function automationRunProblems(payload) {
   return problems.filter(Boolean);
 }
 
+const MONITORED_AUTOMATIONS = ["home_autopilot", "news", "market", "match_center", "instagram_import", "youtube_scout"];
+
+async function readAutomationHistory(env) {
+  // A busy minute-level job must not evict the history of slower jobs.
+  const histories = await Promise.all([...MONITORED_AUTOMATIONS, "scheduled_autopilot"].map(type =>
+    sb(env, "/automation_runs?type=eq." + type + "&order=created_at.desc&limit=20")
+  ));
+  return histories.flat().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+}
+
 function buildAutomationMonitor(runs, options = {}) {
   const now = new Date(options.now || Date.now());
   const cadenceOverrides = options.cadences || {};
@@ -6671,7 +6690,7 @@ function buildAutomationMonitor(runs, options = {}) {
     { key: "match_center", label: "Match Center", cadence_hours: 12 },
     { key: "instagram_import", label: "Instagram", cadence_hours: 24 },
     { key: "youtube_scout", label: "YouTube Scout", cadence_hours: 24 },
-  ].map(item => ({ ...item, cadence_hours: Number(cadenceOverrides[item.key] || item.cadence_hours) }));
+  ].map(item => ({ ...item, cadence_hours: Object.hasOwn(cadenceOverrides, item.key) ? cadenceOverrides[item.key] : item.cadence_hours }));
   const orderedRuns = (Array.isArray(runs) ? runs : []).filter(run => run && run.type && run.created_at).slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const jobs = definitions.map(definition => {
     const history = orderedRuns.filter(run => run.type === definition.key);
@@ -6681,7 +6700,7 @@ function buildAutomationMonitor(runs, options = {}) {
     const problems = automationRunProblems(payload);
     const ageHours = Math.max(0, (now.getTime() - new Date(latest.created_at).getTime()) / 3600000);
     const failed = latest.status === "error" || payload.ok === false;
-    const delayed = ageHours > definition.cadence_hours * 1.75;
+    const delayed = definition.cadence_hours > 0 && ageHours > Math.max(definition.cadence_hours * 1.75, 0.1);
     const status = failed ? "error" : delayed ? "delayed" : problems.length ? "degraded" : "healthy";
     let successStreak = 0;
     for (const run of history) {
@@ -6719,7 +6738,7 @@ function buildAutomationMonitor(runs, options = {}) {
     counts,
     jobs,
     sources,
-    recent_runs: orderedRuns.slice(0, 30).map(run => ({
+    recent_runs: definitions.flatMap(definition => orderedRuns.filter(run => run.type === definition.key).slice(0, 4)).sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).map(run => ({
       id: run.id,
       type: run.type,
       status: run.status,

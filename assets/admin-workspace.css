@@ -24,6 +24,9 @@ input,select{min-height:44px}
 .primary,.ghost,.danger,.small{letter-spacing:0}
 .status-card strong,.admin-alert strong,.admin-alert .alert-kicker{font-family:Barlow,sans-serif;letter-spacing:0}
 .admin-nav button.active{color:var(--gold-l)}
+.admin-nav-group{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding-right:12px;border-right:1px solid var(--bdr2);min-width:0}
+.admin-nav-group:last-child{border-right:0}
+.admin-nav-group>span{flex-basis:100%;font-size:11px;color:var(--t3);padding:0 10px}
 .card.admin-panel{background:none;border:0;border-radius:0;padding:16px 0}
 .card h2{font-family:Barlow,sans-serif;font-size:24px;line-height:1.3}
 .item h3{font-family:Barlow,sans-serif;font-size:17px;line-height:1.4}

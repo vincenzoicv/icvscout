@@ -1,11 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import cron from '../workers/icv-cron.js';
-import {onRequest} from '../functions/api/[[path]].js';
+import {onRequest,buildAutomationMonitor} from '../functions/api/[[path]].js';
 
 const env={ADMIN_TOKEN:'test-admin',SUPABASE_URL:'https://admin-db.test',SUPABASE_SERVICE_ROLE_KEY:'test-service'};
 const request=(method='GET',body)=>new Request('https://icv.test/api/admin/news',{method,headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
 const run=req=>onRequest({request:req,env});
+
+test('monitor reads each process independently and does not hide slower jobs',async t=>{
+  const types=[];t.mock.method(globalThis,'fetch',async url=>{
+    const u=new URL(url);if(u.pathname.endsWith('/automation_runs')){const type=u.searchParams.get('type');types.push(type);return Response.json([{id:type,type:type.slice(3),status:'ok',created_at:'2026-10-06T10:00:00Z',payload:{}}]);}
+    return Response.json([]);
+  });
+  const data=await(await run(request())).json();
+  assert.equal(types.length,7);assert.ok(types.includes('eq.news'));
+  assert.ok(data.automation_monitor.jobs.find(job=>job.key==='news').last_run_at);
+});
+test('monitor read failure is reported rather than showing never-run jobs',async t=>{
+  t.mock.method(globalThis,'fetch',async url=>new URL(url).pathname.endsWith('/automation_runs')?Response.json({message:'unavailable'},{status:500}):Response.json([]));
+  const data=await(await run(request())).json();assert.ok(data.read_warnings.includes('monitor'));assert.equal(data.automation_monitor,null);
+});
+test('balanced monitor history retains news and manual jobs are not marked late',()=>{
+  const runs=Array.from({length:60},(_,id)=>({id,type:'match_center',status:'ok',created_at:'2026-10-06T10:00:00Z',payload:{}}));
+  runs.push({id:100,type:'news',status:'ok',created_at:'2026-10-01T10:00:00Z',payload:{}});
+  const monitor=buildAutomationMonitor(runs,{now:'2026-10-06T11:00:00Z',cadences:{news:null}});
+  assert.equal(monitor.jobs.find(job=>job.key==='news').status,'healthy');
+  assert.equal(monitor.recent_runs.filter(run=>run.type==='match_center').length,4);
+  assert.ok(monitor.recent_runs.some(run=>run.type==='news'));
+});
 
 test('cron denies anonymous and wrong tokens before making any outgoing request',async t=>{
   let calls=0;t.mock.method(globalThis,'fetch',async()=>{calls++;return Response.json({ok:true});});

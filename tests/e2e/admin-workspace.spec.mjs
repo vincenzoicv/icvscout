@@ -36,6 +36,17 @@ test('desktop buttons and mobile section picker stay synchronized', async ({page
   await expect(page.locator('[data-panel="videos"]')).toBeVisible();
 });
 
+test('navigation groups stay accessible and monitor outages are explicit',async({page})=>{
+  await workspace(page);
+  await page.setViewportSize({width:1280,height:900});
+  await expect(page.locator('#adminNav').getByRole('group',{name:'Media',exact:true})).toBeVisible();
+  await page.evaluate(()=>{state.readWarnings=['monitor'];render();setAdminTab('monitor');});
+  await expect(page.locator('#monitorJobs')).toContainText('Monitor non disponibile');
+  await expect(page.locator('#monitorKpis')).toBeEmpty();
+  await expect(page.locator('#automationStatus')).toContainText('Stato non disponibile');
+  await expect(page.locator('#adminAlerts')).toContainText('Stato Instagram non disponibile');
+});
+
 test('unavailable draft data is not presented as an empty or healthy queue',async({page})=>{
   await workspace(page);
   await page.evaluate(()=>{state.readWarnings=['drafts','news'];state.drafts=[];render();});

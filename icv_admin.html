@@ -43,7 +43,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
-<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-1">
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-2">
 </head>
 <body>
 <header>
@@ -90,20 +90,24 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 
     <div class="admin-section-picker"><label for="adminSection">Sezione</label><select id="adminSection" onchange="setAdminTab(this.value)"><option value="drafts">Da approvare</option><option value="live">Live Desk</option><option value="published">Pubblicate</option><option value="market">Mercato</option><option value="social">Social</option><option value="graphics">Grafiche</option><option value="photos">Foto partite</option><option value="videos">Interviste e video</option><option value="highlights">Highlights</option><option value="community">Community</option><option value="analytics">Analytics</option><option value="monitor">Monitor</option><option value="sources">Fonti</option><option value="advanced">Avanzate</option></select></div>
     <nav class="admin-nav" id="adminNav" aria-label="Sezioni admin">
+      <div class="admin-nav-group" role="group" aria-label="Contenuti"><span>Contenuti</span>
       <button class="active" data-tab="drafts" onclick="setAdminTab('drafts',this)">Da approvare</button>
       <button data-tab="live" onclick="setAdminTab('live',this)">Live Desk</button>
       <button data-tab="published" onclick="setAdminTab('published',this)">Pubblicate</button>
       <button data-tab="market" onclick="setAdminTab('market',this)">Mercato</button>
       <button data-tab="social" onclick="setAdminTab('social',this)">Social</button>
+      </div><div class="admin-nav-group" role="group" aria-label="Media"><span>Media</span>
       <button data-tab="graphics" onclick="setAdminTab('graphics',this)">Grafiche</button>
       <button data-tab="photos" onclick="setAdminTab('photos',this)">Foto partite</button>
       <button data-tab="videos" onclick="setAdminTab('videos',this)">Interviste e video</button>
       <button data-tab="highlights" onclick="setAdminTab('highlights',this)">Highlights</button>
+      </div><div class="admin-nav-group" role="group" aria-label="Community e sistema"><span>Community e sistema</span>
       <button data-tab="community" onclick="setAdminTab('community',this)">Community</button>
       <button data-tab="analytics" onclick="setAdminTab('analytics',this)">Analytics</button>
       <button data-tab="monitor" onclick="setAdminTab('monitor',this)">Monitor</button>
       <button data-tab="sources" onclick="setAdminTab('sources',this)">Fonti</button>
       <button data-tab="advanced" onclick="setAdminTab('advanced',this)">Avanzate</button>
+      </div>
     </nav>
 
     <div class="grid">
@@ -393,8 +397,10 @@ function load(strict){
     state.market = data.market || [];
     state.matches = data.matches || [];
     state.liveDesk = data.live_desk || [];
-    state.runs = data.runs || [];
-    state.automationMonitor = data.automation_monitor || null;
+    if(!sectionUnavailable("monitor")){
+      state.runs = data.runs || [];
+      state.automationMonitor = data.automation_monitor || null;
+    }
     state.communityPosts = data.community_posts || [];
     state.communityReports = data.community_reports || [];
     state.communityProfiles = data.community_profiles || [];
@@ -612,7 +618,7 @@ function migrateGraphics(){
 }
 function render(){
   var warningBox=document.getElementById("adminReadWarnings");
-  var names={drafts:"bozze",news:"news",sources:"fonti"};
+  var names={drafts:"bozze",news:"news",sources:"fonti",monitor:"monitor automazioni"};
   warningBox.hidden=!(state.readWarnings||[]).length;
   warningBox.textContent=warningBox.hidden?"":"Dati non aggiornati: "+state.readWarnings.map(function(name){return names[name]||name}).join(", ")+". Gli eventuali dati precedenti sono conservati. Riprova ad aggiornare.";
   document.getElementById("stDrafts").textContent = visibleDrafts().filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; }).length;
@@ -639,6 +645,7 @@ function renderAutomationStatus(){
     {key:"match_center", label:"Match Center", fallback:"In attesa calendario"}
   ];
   box.innerHTML = items.map(function(item){
+    if(sectionUnavailable("monitor"))return "<div class='status-card status-warn'><strong>"+esc(item.label)+"</strong><span>Stato non disponibile</span></div>";
     var run = lookup[item.key];
     var health=monitorLookup[item.key],status=health&&health.status;
     var cls = status === "healthy" ? "status-ok" : (status === "error" || status === "degraded" || status === "delayed") ? "status-warn" : run ? (run.status === "error" ? "status-warn" : "status-ok") : "status-idle";
@@ -672,7 +679,9 @@ function renderAdminAlerts(){
     text:"La coda di revisione e pulita."
   });
 
-  alerts.push(marketRun && isToday(marketRun.created_at) && marketRun.status !== "error" ? {
+  alerts.push(sectionUnavailable("monitor")?{
+    tone:"warn",kicker:"Mercato",title:"Stato mercato non disponibile",text:"Riprova ad aggiornare il monitor."
+  }:marketRun && isToday(marketRun.created_at) && marketRun.status !== "error" ? {
     tone:"ok",
     kicker:"Mercato",
     title:"Mercato aggiornato oggi",
@@ -684,7 +693,9 @@ function renderAdminAlerts(){
     text: marketRun ? "Ultimo giro: " + date(marketRun.created_at) + "." : "Nessuna scansione mercato registrata."
   });
 
-  alerts.push(!instagramRun ? {
+  alerts.push(sectionUnavailable("monitor")?{
+    tone:"warn",kicker:"Instagram",title:"Stato Instagram non disponibile",text:"Riprova ad aggiornare il monitor."
+  }:!instagramRun ? {
     tone:"warn",
     kicker:"Instagram",
     title:"Instagram non ancora importato",
@@ -742,13 +753,14 @@ function monitorStatusLabel(status){return{healthy:"Operativa",degraded:"Degrada
 function renderAutomationMonitor(){
   var monitor=state.automationMonitor,kpis=document.getElementById("monitorKpis"),jobs=document.getElementById("monitorJobs"),sources=document.getElementById("monitorSources"),history=document.getElementById("monitorHistory"),updatedAt=document.getElementById("monitorUpdatedAt");
   if(!kpis||!jobs||!sources||!history)return;
+  if(sectionUnavailable("monitor")){if(updatedAt)updatedAt.textContent="Monitor non aggiornato";kpis.innerHTML="";jobs.innerHTML=sources.innerHTML=history.innerHTML="<div class='empty'>Monitor non disponibile. Riprova ad aggiornare.</div>";return}
   if(!monitor){if(updatedAt)updatedAt.textContent="";kpis.innerHTML="";jobs.innerHTML=sources.innerHTML=history.innerHTML="<div class='empty'>Dati di monitoraggio non ancora disponibili.</div>";return}
   if(updatedAt)updatedAt.textContent=monitor.generated_at?"Aggiornato "+date(monitor.generated_at):"";
   var counts=monitor.counts||{};
   kpis.innerHTML=[["healthy","Operative"],["degraded","Degradate"],["delayed","In ritardo"],["error","Errori"],["idle","Mai eseguite"]].map(function(item){return"<div class='monitor-kpi "+item[0]+"'><strong>"+Number(counts[item[0]]||0)+"</strong><span>"+item[1]+"</span></div>"}).join("");
-  jobs.innerHTML=(monitor.jobs||[]).map(function(job){var detail=job.last_run_at?("Ultimo giro "+date(job.last_run_at)+" · cadenza "+job.cadence_hours+"h · serie positiva "+job.success_streak):"Nessuna esecuzione registrata";return"<div class='monitor-job'><span class='health-dot "+esc(job.status)+"'></span><div><h3>"+esc(job.label)+"</h3><p>"+esc(detail)+"</p>"+(job.last_error?"<p style='color:var(--orange)'>"+esc(job.last_error)+"</p>":"")+"</div><span class='health-badge "+esc(job.status)+"'>"+esc(monitorStatusLabel(job.status))+"</span></div>"}).join("")||"<div class='empty'>Nessun processo registrato.</div>";
+  jobs.innerHTML=(monitor.jobs||[]).map(function(job){var cadence=job.cadence_hours>0?(job.cadence_hours<1?"Controllo ogni "+Math.round(job.cadence_hours*60)+" min":"Intervallo minimo "+job.cadence_hours+"h"):"Nessuna ricorrenza configurata";var detail=(job.last_run_at?"Ultimo giro "+date(job.last_run_at):"Nessuna esecuzione registrata")+" · "+cadence;return"<div class='monitor-job'><span class='health-dot "+esc(job.status)+"'></span><div><h3>"+esc(job.label)+"</h3><p>"+esc(detail)+"</p>"+(job.last_error?"<p style='color:var(--orange)'>"+esc(job.last_error)+"</p>":"")+"</div><span class='health-badge "+esc(job.status)+"'>"+esc(monitorStatusLabel(job.status))+"</span></div>"}).join("")||"<div class='empty'>Nessun processo registrato.</div>";
   sources.innerHTML=(monitor.sources||[]).map(function(source){return"<div class='monitor-source'><span class='health-dot "+esc(source.status)+"'></span><div><strong>"+esc(source.source)+"</strong><small>"+source.scanned+" letti · "+source.relevant+" rilevanti · "+source.changed+" aggiornati</small></div><span class='health-badge "+esc(source.status)+"' title='"+escAttr(source.detail)+"'>"+esc(monitorStatusLabel(source.status))+"</span></div>"}).join("")||"<div class='empty'>Il prossimo Fetch News mostrerà lo stato delle singole fonti.</div>";
-  history.innerHTML=(monitor.recent_runs||[]).slice(0,20).map(function(run){var status=run.status==="error"?"error":run.warning_count?"degraded":"healthy";return"<div class='monitor-history-row'><strong>"+esc(run.type.replaceAll("_"," "))+"</strong><span class='health-badge "+status+"'>"+esc(status==="healthy"?"Completata":monitorStatusLabel(status))+"</span><time>"+esc(date(run.created_at))+"</time></div>"}).join("")||"<div class='empty'>Nessuna esecuzione disponibile.</div>";
+  history.innerHTML=(monitor.recent_runs||[]).map(function(run){var status=run.status==="error"?"error":run.warning_count?"degraded":"healthy";return"<div class='monitor-history-row'><strong>"+esc(run.type.replaceAll("_"," "))+"</strong><span class='health-badge "+status+"'>"+esc(status==="healthy"?"Completata":monitorStatusLabel(status))+"</span><time>"+esc(date(run.created_at))+"</time></div>"}).join("")||"<div class='empty'>Nessuna esecuzione disponibile.</div>";
 }
 function renderDrafts(){
   var list = document.getElementById("draftList");

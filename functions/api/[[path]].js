@@ -6673,7 +6673,8 @@ function automationRunPayload(run) {
   return {};
 }
 
-function automationRunProblems(payload) {
+function automationRunProblems(payload, depth = 0) {
+  if (!payload || typeof payload !== "object" || depth > 5) return [];
   const problems = [];
   if (payload.error) problems.push(cleanText(payload.error));
   if (Array.isArray(payload.errors)) {
@@ -6682,6 +6683,11 @@ function automationRunProblems(payload) {
   if (Array.isArray(payload.tasks)) {
     payload.tasks.forEach(item => {
       if (item && item.error) problems.push(cleanText(item.type ? item.type + ": " + item.error : item.error));
+      if (item && item.result) {
+        const nested = automationRunProblems(item.result, depth + 1);
+        if (item.result.ok === false && !nested.length) nested.push("Operazione non riuscita");
+        nested.forEach(problem => problems.push((item.type ? cleanText(item.type) + ": " : "") + problem));
+      }
     });
   }
   if (Array.isArray(payload.sources_report)) {
@@ -6689,7 +6695,15 @@ function automationRunProblems(payload) {
       if (item && (item.error || item.warning)) problems.push(cleanText((item.source ? item.source + ": " : "") + (item.error || item.warning)));
     });
   }
-  return problems.filter(Boolean);
+  return [...new Set(problems.filter(Boolean))];
+}
+
+function automationRunOutcome(run) {
+  const payload = automationRunPayload(run);
+  if (run.status === "error" || payload.ok === false) return "error";
+  if (automationRunProblems(payload).length) return "warning";
+  if (payload.skipped === true) return "skipped";
+  return run.status === "ok" || run.status === "success" ? "completed" : "unknown";
 }
 
 const MONITORED_AUTOMATIONS = ["home_autopilot", "news", "market", "match_center", "instagram_import", "youtube_scout"];
@@ -6713,25 +6727,29 @@ function buildAutomationMonitor(runs, options = {}) {
     { key: "instagram_import", label: "Instagram", cadence_hours: 24 },
     { key: "youtube_scout", label: "YouTube Scout", cadence_hours: 24 },
   ].map(item => ({ ...item, cadence_hours: Object.hasOwn(cadenceOverrides, item.key) ? cadenceOverrides[item.key] : item.cadence_hours }));
-  const orderedRuns = (Array.isArray(runs) ? runs : []).filter(run => run && run.type && run.created_at).slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const orderedRuns = (Array.isArray(runs) ? runs : []).filter(run => run && run.type && Number.isFinite(Date.parse(run.created_at)) && Date.parse(run.created_at) <= now.getTime()).slice().sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const jobs = definitions.map(definition => {
     const history = orderedRuns.filter(run => run.type === definition.key);
-    const latest = history[0] || null;
-    if (!latest) return { ...definition, status: "idle", age_hours: null, last_run_at: null, last_error: null, success_streak: 0, warning_count: 0 };
+    const latest = history.find(run => automationRunOutcome(run) !== "skipped") || null;
+    const attempt = history[0] || null;
+    const lastAttempt = { last_attempt_at: attempt?.created_at || null, last_attempt_outcome: attempt ? automationRunOutcome(attempt) : null };
+    if (!latest) return { ...definition, ...lastAttempt, status: "idle", age_hours: null, last_run_at: null, last_error: null, success_streak: 0, warning_count: 0 };
     const payload = automationRunPayload(latest);
     const problems = automationRunProblems(payload);
     const ageHours = Math.max(0, (now.getTime() - new Date(latest.created_at).getTime()) / 3600000);
     const failed = latest.status === "error" || payload.ok === false;
     const delayed = definition.cadence_hours > 0 && ageHours > Math.max(definition.cadence_hours * 1.75, 0.1);
-    const status = failed ? "error" : delayed ? "delayed" : problems.length ? "degraded" : "healthy";
+    const status = failed ? "error" : delayed ? "delayed" : problems.length || automationRunOutcome(latest) === "unknown" ? "degraded" : "healthy";
     let successStreak = 0;
     for (const run of history) {
       const runPayload = automationRunPayload(run);
-      if (run.status === "error" || runPayload.ok === false) break;
+      if (automationRunOutcome(run) === "skipped") continue;
+      if (automationRunOutcome(run) !== "completed") break;
       successStreak += 1;
     }
     return {
       ...definition,
+      ...lastAttempt,
       status,
       age_hours: Math.round(ageHours * 10) / 10,
       last_run_at: latest.created_at,
@@ -6741,9 +6759,9 @@ function buildAutomationMonitor(runs, options = {}) {
       last_run_status: latest.status,
     };
   });
-  const latestNewsRun = orderedRuns.find(run => run.type === "news");
+  const latestNewsRun = orderedRuns.find(run => run.type === "news" && automationRunOutcome(run) !== "skipped");
   const newsPayload = automationRunPayload(latestNewsRun);
-  const sources = (Array.isArray(newsPayload.sources_report) ? newsPayload.sources_report : []).map(item => ({
+  const sources = (Array.isArray(newsPayload.sources_report) ? newsPayload.sources_report : []).filter(item => item && typeof item === "object").map(item => ({
     source: cleanText(item.source || "Fonte"),
     url: item.url || null,
     last_checked_at: latestNewsRun?.created_at || null,
@@ -6766,6 +6784,9 @@ function buildAutomationMonitor(runs, options = {}) {
       id: run.id,
       type: run.type,
       status: run.status,
+      outcome: automationRunOutcome(run),
+      reason: cleanText(automationRunPayload(run).reason || ""),
+      problems: automationRunProblems(automationRunPayload(run)).slice(0, 8),
       created_at: run.created_at,
       warning_count: automationRunProblems(automationRunPayload(run)).length,
     })),

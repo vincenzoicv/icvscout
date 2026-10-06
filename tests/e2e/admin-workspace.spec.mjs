@@ -13,6 +13,32 @@ async function workspace(page) {
   });
 }
 
+test('monitor history filters expose warnings and skipped reasons without false completion',async({page})=>{
+  await workspace(page);
+  await page.evaluate(()=>{
+    state.automationMonitor={generated_at:new Date().toISOString(),counts:{},jobs:[],sources:[{source:'Fonte vecchia',status:'healthy',last_checked_at:'2026-01-01T10:00:00Z',scanned:3,relevant:1,changed:0}],recent_runs:[
+      {type:'news',status:'ok',outcome:'skipped',reason:'interval_not_elapsed',created_at:'2026-10-06T10:00:00Z'},
+      {type:'home_autopilot',status:'ok',outcome:'warning',problems:['market: Fonte non disponibile <script>'],created_at:'2026-10-06T09:00:00Z'},
+      {type:'market',status:'pending',outcome:'unknown',created_at:'2026-10-06T08:00:00Z'}
+    ]};setAdminTab('monitor');renderAutomationMonitor();
+  });
+  await expect(page.locator('#monitorSources')).toContainText('Da aggiornare');
+  await expect(page.locator('#monitorHistory')).not.toContainText('Completata');
+  await page.getByLabel('Filtra storico per esito').selectOption('problems');
+  await expect(page.locator('#monitorHistory .monitor-history-row')).toHaveCount(1);
+  await expect(page.locator('#monitorHistory')).toContainText('Fonte non disponibile <script>');
+  await expect(page.locator('#monitorHistory script')).toHaveCount(0);
+  await page.getByLabel('Filtra storico per esito').selectOption('skipped');
+  await expect(page.locator('#monitorHistory')).toContainText('Intervallo minimo non ancora trascorso');
+  await page.getByLabel('Filtra storico per processo').selectOption('market');
+  await expect(page.locator('#monitorHistory')).toContainText('Nessuna esecuzione corrisponde');
+  await page.getByLabel('Filtra storico per esito').selectOption('unknown');
+  await expect(page.locator('#monitorHistory')).toContainText('Da verificare');
+  await page.setViewportSize({width:320,height:700});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'/tmp/icv-monitor-320.png',fullPage:true});
+});
+
 test('source filters combine activation and health and keep settings after restoration',async({page})=>{
   await workspace(page);
   await page.evaluate(()=>{

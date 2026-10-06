@@ -7,6 +7,31 @@ const env={ADMIN_TOKEN:'test-admin',SUPABASE_URL:'https://admin-db.test',SUPABAS
 const request=(method='GET',body)=>new Request('https://icv.test/api/admin/news',{method,headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
 const run=req=>onRequest({request:req,env});
 
+test('monitor exposes nested failures without counting partial results as clean successes',()=>{
+  const monitor=buildAutomationMonitor([{type:'home_autopilot',status:'ok',created_at:'2026-10-06T10:00:00Z',payload:{ok:true,tasks:[{type:'market',result:{ok:false,error:'Fonte non disponibile'}},{type:'news',result:{ok:true,tasks:[{type:'feed',result:{ok:false}}]}}]}}],{now:'2026-10-06T11:00:00Z'});
+  const job=monitor.jobs.find(job=>job.key==='home_autopilot');
+  assert.equal(job.status,'degraded');assert.equal(job.success_streak,0);
+  assert.equal(monitor.recent_runs[0].outcome,'warning');
+  assert.ok(monitor.recent_runs[0].problems.includes('market: Fonte non disponibile'));
+  assert.ok(monitor.recent_runs[0].problems.includes('news: feed: Operazione non riuscita'));
+});
+
+test('skipped attempts do not refresh a delayed job or become completed runs',()=>{
+  const monitor=buildAutomationMonitor([
+    {type:'news',status:'ok',created_at:'2026-10-06T10:55:00Z',payload:{ok:true,skipped:true,reason:'interval_not_elapsed'}},
+    {type:'news',status:'ok',created_at:'2026-10-01T10:00:00Z',payload:{ok:true,skipped:3}},
+    {type:'market',status:'pending',created_at:'2026-10-06T10:00:00Z',payload:{ok:true}},
+    {type:'instagram_import',status:'ok',created_at:'invalid',payload:{}},
+    {type:'instagram_import',status:'ok',created_at:'2027-10-06T10:00:00Z',payload:{}}
+  ],{now:'2026-10-06T11:00:00Z'});
+  const news=monitor.jobs.find(job=>job.key==='news');
+  assert.equal(news.status,'delayed');assert.equal(news.last_run_at,'2026-10-01T10:00:00Z');
+  assert.equal(news.last_attempt_outcome,'skipped');
+  assert.equal(monitor.recent_runs.find(run=>run.type==='news').outcome,'skipped');
+  assert.equal(monitor.recent_runs.find(run=>run.type==='market').outcome,'unknown');
+  assert.equal(monitor.jobs.find(job=>job.key==='instagram_import').status,'idle');
+});
+
 test('source reports retain the actual news check date and feed identity',()=>{
   const created_at='2026-10-01T10:00:00Z';
   const monitor=buildAutomationMonitor([{type:'news',status:'ok',created_at,payload:{sources_report:[{source:'Fonte test',url:'https://example.test/feed',scanned:3,relevant:2,published:1}]}}],{now:'2026-10-06T11:00:00Z'});

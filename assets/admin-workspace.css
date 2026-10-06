@@ -55,6 +55,9 @@ input,select{min-height:44px}
 .meta{font-size:12px}
 .item,.status-card,.admin-alert{overflow-wrap:anywhere}
 .filter-toolbar{margin-bottom:18px}
+.draft-results{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 16px}
+.draft-results p{margin:0;color:var(--t2);font-size:14px;line-height:1.5}
+.draft-results [hidden]{display:none}
 .source-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
 .source-feed{display:block;margin-top:12px;overflow-wrap:anywhere;font-size:14px;color:var(--gold-l);text-decoration:underline;line-height:1.6}
 .source-check{color:var(--t2);font-size:14px;line-height:1.6;margin:12px 0 0;text-transform:none}

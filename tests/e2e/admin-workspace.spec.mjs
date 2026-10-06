@@ -13,6 +13,30 @@ async function workspace(page) {
   });
 }
 
+test('draft queue counts filtered results resets only draft filters and exposes readable states',async({page})=>{
+  await workspace(page);
+  await page.evaluate(()=>{state.drafts.push({id:2,title:'Formazione ufficiale',body:'Testo test',source_name:'Club test',reliability:'official',review_status:'ready'});state.filters.newsQuery='conserva';document.getElementById('newsQuery').value='conserva';renderDrafts();});
+  await expect(page.locator('#draftResults')).toHaveText('2 di 2 bozze in attesa');
+  await expect(page.locator('#draftResetFilters')).toBeHidden();
+  await expect(page.locator('#draftList')).not.toContainText('pending');
+  await expect(page.locator('#draftList')).toContainText('Pronta');
+  await page.getByLabel('Filtra bozze per affidabilità').selectOption('official');
+  await expect(page.locator('#draftResults')).toHaveText('1 di 2 bozze in attesa');
+  await page.getByLabel('Cerca bozze',{exact:true}).fill('nessun risultato');
+  await expect(page.locator('#draftResults')).toHaveText('0 di 2 bozze in attesa');
+  await page.getByRole('button',{name:'Azzera filtri'}).click();
+  await expect(page.locator('#draftResults')).toHaveText('2 di 2 bozze in attesa');
+  expect(await page.evaluate(()=>state.filters.newsQuery)).toBe('conserva');
+  await page.evaluate(()=>{state.readWarnings=['drafts'];renderDrafts();});
+  await expect(page.locator('#draftResults')).toContainText('conteggio da verificare');
+  for(const button of await page.locator('#draftList button').all()){
+    if(await button.textContent()!=='Anteprima')await expect(button).toBeDisabled();
+  }
+  await page.setViewportSize({width:320,height:700});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'/tmp/icv-draft-queue-320.png',fullPage:true});
+});
+
 test('monitor history filters expose warnings and skipped reasons without false completion',async({page})=>{
   await workspace(page);
   await page.evaluate(()=>{

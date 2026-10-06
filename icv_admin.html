@@ -43,7 +43,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
-<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-7">
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-8">
 </head>
 <body>
 <header>
@@ -167,6 +167,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <h2>Bozze Automatiche</h2>
           <div id="reliabilityGuideDrafts"></div>
           <div class="filter-toolbar"><select id="draftReliability" aria-label="Filtra bozze per affidabilità" onchange="updateContentFilters()"><option value="all">Tutte le affidabilità</option><option value="official">Fonti ufficiali</option><option value="trusted">Fonti affidabili</option><option value="rumor">Voci</option><option value="aggregator">Aggregatori</option></select><select id="draftStatus" aria-label="Filtra bozze per stato" onchange="updateContentFilters()"><option value="all">Tutti gli stati</option><option value="ready">Pronte</option><option value="pending">Da verificare</option></select><input id="draftQuery" aria-label="Cerca bozze" placeholder="Cerca titolo o fonte" oninput="updateContentFilters()"></div>
+          <div class="draft-results"><p id="draftResults" role="status" aria-live="polite"></p><button class="ghost small" id="draftResetFilters" type="button" onclick="resetDraftFilters()" hidden>Azzera filtri</button></div>
           <div id="draftList"></div>
           <div id="fetchResults" style="margin-top:16px"></div>
         </div>
@@ -541,6 +542,12 @@ function restoreContentFilters(){
   var mapping={draftReliability:"draftReliability",draftStatus:"draftStatus",draftQuery:"draftQuery",newsReliability:"newsReliability",newsVisibility:"newsVisibility",newsQuery:"newsQuery",sourceReliability:"sourceReliabilityFilter",sourceActive:"sourceActiveFilter",sourceHealth:"sourceHealthFilter",sourceQuery:"sourceQuery"};
   Object.keys(mapping).forEach(function(key){var el=document.getElementById(mapping[key]);if(el&&state.filters[key]!=null)el.value=state.filters[key]});
 }
+function resetDraftFilters(){
+  document.getElementById("draftReliability").value="all";
+  document.getElementById("draftStatus").value="all";
+  document.getElementById("draftQuery").value="";
+  updateContentFilters();
+}
 function setAdminTab(tab, btn){
   if(!document.querySelector('#adminNav button[data-tab="'+tab+'"]')) return;
   state.adminTab = tab;
@@ -888,15 +895,22 @@ function renderAutomationMonitor(){
 function renderDrafts(){
   var list = document.getElementById("draftList");
   var drafts = visibleDrafts().filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; });
+  var total=drafts.length,unavailable=sectionUnavailable("drafts");
   var filters=state.filters||{};
   if(filters.draftReliability!=="all")drafts=drafts.filter(function(d){return d.reliability===filters.draftReliability});
   if(filters.draftStatus!=="all")drafts=drafts.filter(function(d){return filters.draftStatus==="pending"?d.review_status!=="ready":d.review_status===filters.draftStatus});
   if(filters.draftQuery)drafts=drafts.filter(function(d){return[d.title,d.body,d.source_name].join(" ").toLowerCase().includes(filters.draftQuery)});
+  document.getElementById("draftResults").textContent=unavailable?"Elenco non aggiornato: conteggio da verificare.":drafts.length+" di "+total+" bozze in attesa";
+  document.getElementById("draftResetFilters").hidden=filters.draftReliability==="all"&&filters.draftStatus==="all"&&!filters.draftQuery;
   if(!drafts.length){ list.innerHTML = "<div class='empty'>"+(sectionUnavailable("drafts")?"Bozze non disponibili. Riprova ad aggiornare.":"Nessuna bozza in questa vista.")+"</div>"; return; }
   list.innerHTML = drafts.map(function(d){
     return "<div class='item' data-draft-id='"+Number(d.id)+"'><div class='item-head'><div>"+reliabilityBadge(d.reliability)+"<span class='pill blacklist'>"+esc(d.review_status||"pending")+"</span><h3>"+esc(d.title)+"</h3></div><div class='meta'>"+date(d.created_at)+"</div></div><p>"+esc(d.body)+"</p><div class='meta'>"+esc(d.source_name || "")+(d.source_url?" · <a href='"+escAttr(d.source_url)+"' target='_blank' style='color:var(--gold-l)'>fonte</a>":"")+"</div><div class='item-actions' style='margin-top:10px'><button class='primary small' onclick='approveDraft("+d.id+")'"+(pendingDraftReviews.has(String(d.id))?" disabled":"")+">Approva</button><button class='danger small' onclick='discardDraft("+d.id+")'"+(pendingDraftReviews.has(String(d.id))?" disabled":"")+">Scarta</button></div></div>";
   }).join("");
   list.querySelectorAll("[data-draft-id]").forEach(function(row){
+    var draft=state.drafts.find(function(item){return String(item.id)===row.dataset.draftId});
+    var status=row.querySelector(".pill.blacklist");
+    if(status)status.textContent=({ready:"Pronta",needs_review:"Da verificare",pending:"In attesa"})[draft&&draft.review_status]||"Da verificare";
+    row.querySelectorAll(".item-actions button").forEach(function(button){button.disabled=unavailable||pendingDraftReviews.has(row.dataset.draftId)});
     var source=row.querySelector(".meta a");
     if(source){var href=safeDraftSource(source.getAttribute("href"));if(href){source.href=href;source.rel="noopener noreferrer";}else source.remove();}
     var button=document.createElement("button");button.className="ghost small";button.textContent="Anteprima";

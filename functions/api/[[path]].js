@@ -88,20 +88,7 @@ const OFFICIAL_SOURCE_PATTERNS = [
   "fifa.com",
 ];
 
-const TRUSTED_SOURCE_PATTERNS = [
-  "sky",
-  "di marzio",
-  "gianlucadimarzio",
-  "romano",
-  "fabrizio romano",
-  "agresti",
-  "romeo agresti",
-  "gazzetta",
-];
-
-const AUTO_PUBLISH_TRUSTED_SOURCE_PATTERNS = [
-  "fabrizio romano",
-];
+const TRUSTED_SOURCE_DOMAINS = ["sky.it", "gianlucadimarzio.com", "gazzetta.it", "fabrizioromano.com"];
 
 const BLOCKED_NEWS_TOPIC_PATTERNS = [
   /\bjuve\s+stabia\b/,
@@ -5242,10 +5229,9 @@ async function digest(text) {
 }
 
 function reliabilityForSource(source, url) {
-  const s = (source + " " + url).toLowerCase();
-  if (s.includes("juventus.com") || s.includes("legaseriea")) return "official";
-  if (s.includes("sky") || s.includes("di marzio") || s.includes("romano") || s.includes("agresti") || s.includes("gazzetta")) return "trusted";
-  if (s.includes("google")) return "aggregator";
+  if (isOfficialSource(null, source, url)) return "official";
+  if (isTrustedSource(null, source, url)) return "trusted";
+  if (isNewsAggregatorUrl(url)) return "aggregator";
   return "rumor";
 }
 
@@ -5489,11 +5475,42 @@ function mergedMarketStatus(oldStatus, nextStatus, reliability) {
 }
 
 function isOfficialSource(source, sourceName = "", url = "") {
-  return matchesAnySourcePattern(sourceText(source, sourceName, url), OFFICIAL_SOURCE_PATTERNS);
+  return sourceDomainMatches(url || source && source.url, OFFICIAL_SOURCE_PATTERNS);
 }
 
 function isTrustedSource(source, sourceName = "", url = "") {
-  return matchesAnySourcePattern(sourceText(source, sourceName, url), TRUSTED_SOURCE_PATTERNS);
+  return sourceDomainMatches(url || source && source.url, TRUSTED_SOURCE_DOMAINS) || isVerifiedRomanoUrl(url || source && source.url);
+}
+
+function sourceOrigin(value) {
+  try {
+    const url = new URL(value);
+    if (!["https:", "http:"].includes(url.protocol) || url.username || url.password) return null;
+    // Bing RSS carries the publisher URL in a structured redirect parameter.
+    if (url.hostname === "www.bing.com" || url.hostname === "bing.com") {
+      if (url.pathname === "/news/apiclick.aspx" && url.searchParams.has("url")) {
+        const original = new URL(url.searchParams.get("url"));
+        return ["https:", "http:"].includes(original.protocol) && !original.username && !original.password ? original : null;
+      }
+    }
+    return url;
+  } catch { return null; }
+}
+
+function sourceDomainMatches(value, domains) {
+  const url = sourceOrigin(value);
+  return !!url && domains.some(domain => url.hostname === domain || url.hostname.endsWith("." + domain));
+}
+
+function isNewsAggregatorUrl(value) {
+  return sourceDomainMatches(value, ["news.google.com", "bing.com"]);
+}
+
+function isVerifiedRomanoUrl(value) {
+  const url = sourceOrigin(value);
+  if (!url) return false;
+  return (url.hostname === "t.me" && /^\/s\/fabrizioromanotg(?:\/\d+)?\/?$/.test(url.pathname)) ||
+    (["x.com", "www.x.com", "twitter.com", "www.twitter.com"].includes(url.hostname) && /^\/FabrizioRomano(?:\/status\/\d+)?\/?$/i.test(url.pathname));
 }
 
 function isAutoPublishTrustedSource(env, source, sourceName = "", url = "") {
@@ -5501,7 +5518,11 @@ function isAutoPublishTrustedSource(env, source, sourceName = "", url = "") {
     .split(",")
     .map(item => item.trim().toLowerCase())
     .filter(Boolean);
-  return matchesAnySourcePattern(sourceText(source, sourceName, url), AUTO_PUBLISH_TRUSTED_SOURCE_PATTERNS.concat(envPatterns));
+  if (isVerifiedRomanoUrl(url || source && source.url)) return true;
+  // Custom exceptions are administrator-configured exact names or domains, not article text.
+  return envPatterns.some(pattern => pattern.includes(".")
+    ? sourceDomainMatches(url || source && source.url, [pattern])
+    : cleanText(source && source.name).toLowerCase() === pattern);
 }
 
 function shouldAutoPublishCandidate(env, source, candidate) {
@@ -6759,4 +6780,4 @@ async function logRun(env, type, result) {
   }
 }
 
-export { aggregateMarketItems, buildLiveDeskEntries, isMarketRelevantNewsRow, marketDealMetadata, marketTopicName, publicMarketFromNews, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl, instagramFailureDetails, newsItemRejectionReason, planNewsDraftCleanup, canonicalNewsTitle, orderPublicMatches, footballDataMatchStatus, matchReportFromFootballData };
+export { sourceTier, shouldAutoPublishCandidate, aggregateMarketItems, buildLiveDeskEntries, isMarketRelevantNewsRow, marketDealMetadata, marketTopicName, publicMarketFromNews, isIgnoredMarketSignal, parseJuventusOfficialPage, playerEntitySlug, buildPlayerIndex, playerEntityMatches, buildAutomationMonitor, fetchSourceItems, fetchHeadersForUrl, googleNewsFallbackUrl, instagramFailureDetails, newsItemRejectionReason, planNewsDraftCleanup, canonicalNewsTitle, orderPublicMatches, footballDataMatchStatus, matchReportFromFootballData };

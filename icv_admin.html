@@ -43,7 +43,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
-<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-4">
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-5">
 </head>
 <body>
 <header>
@@ -224,7 +224,13 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         <div class="card admin-panel" data-panel="sources">
           <h2>Fonti</h2>
           <div id="reliabilityGuideSources"></div>
-          <div class="filter-toolbar" style="grid-template-columns:1fr 1fr"><select id="sourceReliabilityFilter" aria-label="Filtra fonti per affidabilità" onchange="updateContentFilters()"><option value="all">Tutte le affidabilità</option><option value="official">Fonti ufficiali</option><option value="trusted">Fonti affidabili</option><option value="rumor">Voci</option><option value="aggregator">Aggregatori</option><option value="blacklist">Ignorate</option></select><input id="sourceQuery" aria-label="Cerca fonte" placeholder="Cerca fonte" oninput="updateContentFilters()"></div>
+          <div class="filter-toolbar source-filters">
+            <select id="sourceReliabilityFilter" aria-label="Filtra fonti per affidabilità" onchange="updateContentFilters()"><option value="all">Tutte le affidabilità</option><option value="official">Fonti ufficiali</option><option value="trusted">Fonti affidabili</option><option value="rumor">Voci</option><option value="aggregator">Aggregatori</option><option value="blacklist">Ignorate</option></select>
+            <select id="sourceActiveFilter" aria-label="Filtra fonti per attivazione" onchange="updateContentFilters()"><option value="all">Attive e disattivate</option><option value="active">Solo attive</option><option value="inactive">Solo disattivate</option></select>
+            <select id="sourceHealthFilter" aria-label="Filtra fonti per ultimo controllo" onchange="updateContentFilters()"><option value="all">Tutti i controlli</option><option value="problems">Con problemi</option><option value="healthy">Senza problemi rilevati</option><option value="unchecked">Senza controllo recente</option></select>
+            <input id="sourceQuery" aria-label="Cerca fonte" placeholder="Cerca nome o indirizzo" oninput="updateContentFilters()">
+          </div>
+          <p id="sourceResults" class="meta" role="status" aria-live="polite"></p>
           <div id="sourceList"></div>
           <div class="form" style="margin-top:12px">
             <input id="sourceName" placeholder="Nome fonte">
@@ -327,7 +333,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], liveDesk: [], runs: [], automationMonitor: null, communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], analytics: null, latestFetch: null, adminTab: "drafts", filters: { draftReliability:"all", draftStatus:"all", draftQuery:"", newsReliability:"all", newsVisibility:"all", newsQuery:"", sourceReliability:"all", sourceQuery:"" } };
+var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], liveDesk: [], runs: [], automationMonitor: null, communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], analytics: null, latestFetch: null, adminTab: "drafts", filters: { draftReliability:"all", draftStatus:"all", draftQuery:"", newsReliability:"all", newsVisibility:"all", newsQuery:"", sourceReliability:"all", sourceActive:"all", sourceHealth:"all", sourceQuery:"" } };
 var OFFICIAL_SERIE_A_CALENDAR = {
   season: "Serie A 2026/27",
   title: "Calendario Juventus 2026/27 ufficiale",
@@ -481,13 +487,15 @@ function updateContentFilters(){
   state.filters.newsVisibility=filterValue("newsVisibility","all");
   state.filters.newsQuery=filterValue("newsQuery","").trim().toLowerCase();
   state.filters.sourceReliability=filterValue("sourceReliabilityFilter","all");
+  state.filters.sourceActive=filterValue("sourceActiveFilter","all");
+  state.filters.sourceHealth=filterValue("sourceHealthFilter","all");
   state.filters.sourceQuery=filterValue("sourceQuery","").trim().toLowerCase();
   try{localStorage.setItem("icv_admin_filters",JSON.stringify(state.filters))}catch(error){}
   renderDrafts();renderNews();renderSources();
 }
 function restoreContentFilters(){
   try{var saved=JSON.parse(localStorage.getItem("icv_admin_filters")||"{}");Object.assign(state.filters,saved||{})}catch(error){}
-  var mapping={draftReliability:"draftReliability",draftStatus:"draftStatus",draftQuery:"draftQuery",newsReliability:"newsReliability",newsVisibility:"newsVisibility",newsQuery:"newsQuery",sourceReliability:"sourceReliabilityFilter",sourceQuery:"sourceQuery"};
+  var mapping={draftReliability:"draftReliability",draftStatus:"draftStatus",draftQuery:"draftQuery",newsReliability:"newsReliability",newsVisibility:"newsVisibility",newsQuery:"newsQuery",sourceReliability:"sourceReliabilityFilter",sourceActive:"sourceActiveFilter",sourceHealth:"sourceHealthFilter",sourceQuery:"sourceQuery"};
   Object.keys(mapping).forEach(function(key){var el=document.getElementById(mapping[key]);if(el&&state.filters[key]!=null)el.value=state.filters[key]});
 }
 function setAdminTab(tab, btn){
@@ -899,11 +907,26 @@ function renderSources(){
   var list = document.getElementById("sourceList");
   var rows=state.sources.slice(),filters=state.filters||{};
   if(filters.sourceReliability!=="all")rows=rows.filter(function(s){return s.reliability===filters.sourceReliability});
+  if(filters.sourceActive==="active")rows=rows.filter(function(s){return s.active!==false});
+  if(filters.sourceActive==="inactive")rows=rows.filter(function(s){return s.active===false});
+  if(filters.sourceHealth&&filters.sourceHealth!=="all")rows=rows.filter(function(s){var health=sourceMonitorStatus(s);return filters.sourceHealth==="unchecked"?!sourceCheckRecent(health):filters.sourceHealth==="healthy"?sourceCheckRecent(health)&&health.status==="healthy":health&&["error","degraded"].includes(health.status)});
   if(filters.sourceQuery)rows=rows.filter(function(s){return[s.name,s.category,s.url].join(" ").toLowerCase().includes(filters.sourceQuery)});
+  document.getElementById("sourceResults").textContent=sectionUnavailable("sources")?"Elenco non aggiornato":rows.length+" di "+state.sources.length+" fonti";
   if(!rows.length){ list.innerHTML = "<div class='empty'>"+(sectionUnavailable("sources")?"Fonti non disponibili. Riprova ad aggiornare.":"Nessuna fonte corrisponde ai filtri selezionati.")+"</div>"; return; }
-  list.innerHTML = rows.map(function(s){ var health=sourceMonitorStatus(s.name);return "<div class='item'><div class='item-head'><div>"+reliabilityBadge(s.reliability)+"<h3>"+esc(s.name)+"</h3></div>"+(health?"<span class='health-badge "+esc(health.status)+"' title='"+escAttr(health.detail)+"'>"+esc(monitorStatusLabel(health.status))+"</span>":"")+"</div><div class='meta'>"+esc(s.category)+(s.active===false?" · disattivata":" · attiva")+"</div><label class='source-active'><input type='checkbox' data-source-url='"+escAttr(s.url)+"' onchange='setSourceActive(this)'"+(s.active===false?"":" checked")+(sectionUnavailable("sources")?" disabled":"")+"> Attiva: "+esc(s.name)+"</label></div>"; }).join("");
+  list.innerHTML = rows.map(function(s){
+    var health=sourceMonitorStatus(s),recent=sourceCheckRecent(health),url=safeDraftSource(s.url);
+    var label=health?health.status==="healthy"?(recent?"Ultimo controllo: OK":"Controllo da aggiornare"):"Ultimo controllo: "+monitorStatusLabel(health.status):"Non verificata";
+    var checked=health&&Number.isFinite(Date.parse(health.last_checked_at))?new Date(health.last_checked_at).toLocaleString("it-IT",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"Data non disponibile";
+    var details=health?"<p class='source-check'>Ultimo controllo: "+esc(checked)+"<br>"+esc(health.status==="healthy"?"Nessun problema rilevato nel controllo.":health.detail)+"<br>"+esc(health.scanned)+" letti · "+esc(health.relevant)+" rilevanti · "+esc(health.changed)+" aggiornati</p>":"<p class='source-check'>"+(sectionUnavailable("monitor")?"Monitor non disponibile: stato della fonte non verificabile.":"Nessun controllo disponibile per questa fonte.")+"</p>";
+    return "<div class='item'><div class='item-head'><div>"+reliabilityBadge(s.reliability)+"<h3>"+esc(s.name)+"</h3></div><span class='health-badge "+(health&&(recent||health.status!=="healthy")?esc(health.status):"idle")+"'>"+esc(label)+"</span></div><div class='meta'>"+esc(s.category)+(s.active===false?" · disattivata":" · attiva")+"</div>"+(url?"<a class='source-feed' href='"+escAttr(url)+"' target='_blank' rel='noopener noreferrer' aria-label='Apri feed di "+escAttr(s.name)+"'>"+esc(url)+"</a>":"<span class='source-check'>Indirizzo non valido</span>")+details+"<label class='source-active'><input type='checkbox' data-source-url='"+escAttr(s.url)+"' onchange='setSourceActive(this)'"+(s.active===false?"":" checked")+(sectionUnavailable("sources")?" disabled":"")+"> Attiva: "+esc(s.name)+"</label></div>";
+  }).join("");
 }
-function sourceMonitorStatus(name){var sources=state.automationMonitor&&state.automationMonitor.sources||[],needle=String(name||"").toLowerCase();return sources.find(function(item){return String(item.source||"").toLowerCase()===needle})||sources.find(function(item){var value=String(item.source||"").toLowerCase();return value.includes(needle)||needle.includes(value)})||null}
+function sourceMonitorStatus(source){
+  if(sectionUnavailable("monitor"))return null;
+  var sources=state.automationMonitor&&state.automationMonitor.sources||[],needle=String(source.name||"").trim().toLowerCase();
+  return sources.find(function(item){return needle&&String(item.source||"").trim().toLowerCase()===needle&&(!item.url||item.url===source.url)})||null;
+}
+function sourceCheckRecent(health){var checked=health&&Date.parse(health.last_checked_at),age=Date.now()-checked;return Number.isFinite(checked)&&age>=0&&age<=24*60*60*1000}
 function marketTextOf(item){return [item.player_name,item.note,item.source_name].join(" ").toLowerCase();}
 function isNoiseMarketItem(item){
   var name = String(item.player_name || "").toLowerCase();

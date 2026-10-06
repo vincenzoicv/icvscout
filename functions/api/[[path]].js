@@ -2730,6 +2730,7 @@ async function fetchNewsDrafts(env, sources) {
   for (const source of sources.filter(s => s.active !== false)) {
     const report = {
       source: source.name,
+      url: source.url,
       scanned: 0,
       relevant: 0,
       inserted: 0,
@@ -6744,6 +6745,8 @@ function buildAutomationMonitor(runs, options = {}) {
   const newsPayload = automationRunPayload(latestNewsRun);
   const sources = (Array.isArray(newsPayload.sources_report) ? newsPayload.sources_report : []).map(item => ({
     source: cleanText(item.source || "Fonte"),
+    url: item.url || null,
+    last_checked_at: latestNewsRun?.created_at || null,
     status: item.error ? "error" : item.warning ? "degraded" : "healthy",
     scanned: Number(item.scanned || 0),
     relevant: Number(item.relevant || 0),

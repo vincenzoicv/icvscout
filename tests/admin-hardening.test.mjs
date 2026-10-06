@@ -7,6 +7,16 @@ const env={ADMIN_TOKEN:'test-admin',SUPABASE_URL:'https://admin-db.test',SUPABAS
 const request=(method='GET',body)=>new Request('https://icv.test/api/admin/news',{method,headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{})});
 const run=req=>onRequest({request:req,env});
 
+test('source reports retain the actual news check date and feed identity',()=>{
+  const created_at='2026-10-01T10:00:00Z';
+  const monitor=buildAutomationMonitor([{type:'news',status:'ok',created_at,payload:{sources_report:[{source:'Fonte test',url:'https://example.test/feed',scanned:3,relevant:2,published:1}]}}],{now:'2026-10-06T11:00:00Z'});
+  assert.equal(monitor.sources[0].last_checked_at,created_at);
+  assert.equal(monitor.sources[0].url,'https://example.test/feed');
+  assert.equal(monitor.sources[0].changed,1);
+  const legacy=buildAutomationMonitor([{type:'news',status:'ok',created_at,payload:{sources_report:[{source:'Vecchia fonte'}]}}]);
+  assert.equal(legacy.sources[0].url,null);
+});
+
 test('monitor reads each process independently and does not hide slower jobs',async t=>{
   const types=[];t.mock.method(globalThis,'fetch',async url=>{
     const u=new URL(url);if(u.pathname.endsWith('/automation_runs')){const type=u.searchParams.get('type');types.push(type);return Response.json([{id:type,type:type.slice(3),status:'ok',created_at:'2026-10-06T10:00:00Z',payload:{}}]);}

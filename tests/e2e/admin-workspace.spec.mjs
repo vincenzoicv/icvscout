@@ -13,6 +13,44 @@ async function workspace(page) {
   });
 }
 
+test('source filters combine activation and health and keep settings after restoration',async({page})=>{
+  await workspace(page);
+  await page.evaluate(()=>{
+    state.sources=[{name:'Fonte test',url:'https://example.test/feed',reliability:'trusted',active:true},{name:'Fonte test extra',url:'https://example.test/extra',reliability:'trusted',active:false}];
+    state.automationMonitor={sources:[{source:'Fonte test',url:'https://example.test/feed',last_checked_at:new Date().toISOString(),status:'error',detail:'Risposta lenta',scanned:0,relevant:0,changed:0}]};
+    setAdminTab('sources');renderSources();
+  });
+  await expect(page.locator('#sourceResults')).toContainText('2 di 2');
+  await expect(page.getByRole('link',{name:'Apri feed di Fonte test',exact:true})).toHaveAttribute('href','https://example.test/feed');
+  await expect(page.locator('#sourceList .item').nth(1)).toContainText('Non verificata');
+  await page.getByLabel('Filtra fonti per ultimo controllo').selectOption('problems');
+  await expect(page.locator('#sourceList .item')).toHaveCount(1);
+  await expect(page.locator('#sourceList')).toContainText('Risposta lenta');
+  await page.getByLabel('Filtra fonti per attivazione').selectOption('inactive');
+  await expect(page.locator('#sourceResults')).toContainText('0 di 2');
+  await page.evaluate(()=>{state.filters.sourceActive='all';restoreContentFilters();});
+  await expect(page.getByLabel('Filtra fonti per attivazione')).toHaveValue('inactive');
+});
+
+test('old checks and monitor outages do not imply current source health',async({page})=>{
+  await workspace(page);await page.setViewportSize({width:320,height:700});
+  await page.evaluate(()=>{
+    state.sources=[{name:'Fonte test',url:'https://example.test/'+('long-feed-path-'.repeat(15)),reliability:'trusted'}];
+    state.automationMonitor={sources:[{source:'Fonte test',last_checked_at:new Date(Date.now()-48*60*60*1000).toISOString(),status:'healthy',scanned:3,relevant:2,changed:0}]};
+    setAdminTab('sources');renderSources();
+  });
+  await expect(page.locator('#sourceList')).toContainText('Controllo da aggiornare');
+  await page.getByLabel('Filtra fonti per ultimo controllo').selectOption('healthy');
+  await expect(page.locator('#sourceList .item')).toHaveCount(0);
+  await page.getByLabel('Filtra fonti per ultimo controllo').selectOption('unchecked');
+  await expect(page.locator('#sourceList .item')).toHaveCount(1);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'/tmp/icv-sources-320.png',fullPage:true});
+  await page.evaluate(()=>{state.readWarnings=['monitor'];state.sources[0].url='javascript:alert(1)';renderSources();});
+  await expect(page.locator('#sourceList a')).toHaveCount(0);
+  await expect(page.locator('#sourceList')).toContainText('stato della fonte non verificabile');
+});
+
 test('recent Instagram failure is never presented as a successful import', async ({page}) => {
   await workspace(page);
   await expect(page.locator('#adminAlerts .admin-alert-danger')).toContainText('Import Instagram non riuscito');

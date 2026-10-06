@@ -55,6 +55,9 @@ input,select{min-height:44px}
 .meta{font-size:12px}
 .item,.status-card,.admin-alert{overflow-wrap:anywhere}
 .filter-toolbar{margin-bottom:18px}
+.source-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+.source-feed{display:block;margin-top:12px;overflow-wrap:anywhere;font-size:14px;color:var(--gold-l);text-decoration:underline;line-height:1.6}
+.source-check{color:var(--t2);font-size:14px;line-height:1.6;margin:12px 0 0;text-transform:none}
 .admin-section-picker{display:none}
 .admin-skip{position:fixed;top:8px;left:16px;z-index:60;transform:translateY(-160%);background:var(--gold-l);color:#060606;padding:10px 16px;border-radius:4px}
 .admin-skip:focus{transform:none}
@@ -71,6 +74,7 @@ input,select{min-height:44px}
   .topbar{align-items:flex-start}
 }
 @media(max-width:620px){
+  .source-filters{grid-template-columns:1fr}
   main{padding:20px 16px 60px}
   .title h1{font-size:30px}
   .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}

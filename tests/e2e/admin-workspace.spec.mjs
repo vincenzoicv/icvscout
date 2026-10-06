@@ -21,6 +21,45 @@ test('recent Instagram failure is never presented as a successful import', async
   await expect(page.locator('#adminAlerts .admin-alert-ok')).toContainText(['Instagram aggiornato']);
 });
 
+test('manual automation keeps a persistent status and blocks repeated launches',async({page})=>{
+  await workspace(page);
+  const result=await page.evaluate(async()=>{
+    let calls=0,finish;api=()=>{calls++;return new Promise(resolve=>finish=resolve);};load=()=>Promise.resolve();
+    const first=runAutomation('market');await runAutomation('market');
+    const button=Array.from(document.querySelectorAll('button[onclick]')).find(b=>b.getAttribute('onclick')==="runAutomation('market')");
+    const pending={calls,disabled:button.disabled,busy:button.getAttribute('aria-busy'),message:document.getElementById('automationActivity').textContent};
+    finish({ok:true});await first;
+    return {pending,disabled:button.disabled,busy:button.hasAttribute('aria-busy')};
+  });
+  expect(result.pending.calls).toBe(1);expect(result.pending.disabled).toBe(true);expect(result.pending.busy).toBe('true');expect(result.pending.message).toContain('In corso');
+  expect(result.disabled).toBe(false);expect(result.busy).toBe(false);
+  await expect(page.locator('#automationActivity')).toContainText('Completata');
+});
+
+test('failed payloads are not shown as completed and partial results remain visible',async({page})=>{
+  await workspace(page);
+  await page.evaluate(async()=>{load=()=>Promise.resolve();api=()=>Promise.resolve({ok:false,error:'Fonte non disponibile'});await runAutomation('market');});
+  await expect(page.locator('#automationActivity')).toContainText('Non riuscita');
+  await expect(page.locator('#automationActivity')).toContainText('Fonte non disponibile');
+  await page.evaluate(async()=>{api=()=>Promise.resolve({ok:true,errors:[{source:'Fonte test',error:'Risposta lenta'}]});await runAutomation('market');});
+  await expect(page.locator('#automationActivity')).toContainText('Completata con avvisi');
+  await expect(page.locator('#automationActivity')).toContainText('Risposta lenta');
+});
+
+test('timeout remains uncertain after refresh and simultaneous jobs keep separate statuses',async({page})=>{
+  await workspace(page);
+  await page.evaluate(async()=>{load=()=>Promise.resolve();api=()=>Promise.reject(Object.assign(new Error('Gateway timeout'),{status:524}));await runAutomation('market');api=()=>Promise.resolve({ok:true,imported:2});await runAutomation('instagram_import');});
+  await expect(page.locator('#automationActivity .uncertain')).toContainText('Esito da verificare');
+  await expect(page.locator('#automationActivity .uncertain')).toContainText('Controlla il Monitor');
+  await expect(page.locator('#automationActivity .done')).toContainText('Instagram');
+  expect(await page.evaluate(()=>runningAutomations.size)).toBe(0);
+  for(const width of [320,1440]){
+    await page.setViewportSize({width,height:1000});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.screenshot({path:`/tmp/icv-automation-activity-${width}.png`,fullPage:true});
+  }
+});
+
 test('desktop buttons and mobile section picker stay synchronized', async ({page}) => {
   await workspace(page);
   await page.setViewportSize({width:1280,height:900});

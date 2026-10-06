@@ -43,7 +43,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
-<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-2">
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-3">
 </head>
 <body>
 <header>
@@ -75,6 +75,8 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         <button class="danger" onclick="logout()">Esci</button>
       </div>
     </div>
+
+    <section id="automationActivity" class="automation-activity" aria-label="Operazioni manuali" aria-live="polite" aria-atomic="true" hidden></section>
 
     <div class="stats">
       <div class="stat"><strong id="stDrafts">0</strong><span>Da approvare</span></div>
@@ -416,26 +418,46 @@ function load(strict){
   });
 }
 var runningAutomations = new Set();
+var automationActivity = new Map();
+function renderAutomationActivity(){
+  var box=document.getElementById("automationActivity");
+  if(!box)return;
+  box.hidden=automationActivity.size===0;
+  var labels={fetch_news:"Fetch News",market:"Mercato",match_center:"Match Center",social:"Social",instagram_import:"Instagram",youtube_scout:"YouTube Scout",home_autopilot:"Home autopilot"};
+  var statuses={running:"In corso",done:"Completata",warning:"Completata con avvisi",error:"Non riuscita",uncertain:"Esito da verificare"};
+  box.innerHTML=Array.from(automationActivity.entries()).map(function(entry){var action=entry[0],item=entry[1];return "<div class='automation-activity-row "+item.status+"'><strong>"+esc(labels[action]||action)+"</strong><span>"+esc(statuses[item.status])+"</span><p>"+esc(item.message)+"</p></div>";}).join("");
+}
 function runAutomation(action){
   if(runningAutomations.has(action)) return Promise.resolve();
   runningAutomations.add(action);
   var buttons = Array.from(document.querySelectorAll('button[onclick]')).filter(function(button){
     return button.getAttribute("onclick").indexOf("runAutomation('" + action + "')") !== -1;
   });
-  buttons.forEach(function(button){button.disabled=true});
+  buttons.forEach(function(button){button.disabled=true;button.setAttribute("aria-busy","true")});
+  automationActivity.set(action,{status:"running",message:"Attendi la risposta del servizio."});
+  renderAutomationActivity();
   showToast("Automazione in corso");
   return api("/api/admin/automate", {method:"POST", body:{action:action}})
     .then(function(res){
       if(action === "fetch_news") state.latestFetch = res;
-      showToast(automationResultMessage(action, res));
+      var failure=res&&res.ok===false;
+      var warning=!!firstAutomationError(res||{})||(Array.isArray(res&&res.sources_report)&&res.sources_report.some(function(source){return source.warning||source.error}));
+      var message=failure?(firstAutomationError(res||{})||res.error||"Il servizio non ha completato l'operazione."):automationResultMessage(action,res);
+      if(!failure&&warning&&action!=="fetch_news"&&action!=="youtube_scout")message+=" · "+(firstAutomationError(res||{})||"Alcune fonti hanno restituito avvisi.");
+      automationActivity.set(action,{status:failure?"error":warning?"warning":"done",message:message});
+      renderAutomationActivity();
+      showToast(message);
       return load();
     })
     .catch(function(err){
+      var uncertain=err.name==="AbortError"||[524,504].includes(err.status)||/potrebbe essere ancora in corso|Risposta del servizio non valida/.test(err.message)||err instanceof TypeError;
+      automationActivity.set(action,{status:uncertain?"uncertain":"error",message:uncertain?"La risposta non e arrivata. Controlla il Monitor prima di avviare di nuovo il processo.":err.message});
+      renderAutomationActivity();
       showToast(action === "instagram_import" ? friendlyAutomationError(err.message) : err.message);
       return load().catch(function(){});
     }).finally(function(){
       runningAutomations.delete(action);
-      buttons.forEach(function(button){button.disabled=false});
+      buttons.forEach(function(button){button.disabled=false;button.removeAttribute("aria-busy")});
     });
 }
 function filterValue(id, fallback){var el=document.getElementById(id);return el?el.value:fallback}

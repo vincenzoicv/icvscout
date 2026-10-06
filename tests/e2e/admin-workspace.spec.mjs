@@ -104,6 +104,7 @@ test('manual automation keeps a persistent status and blocks repeated launches',
   const result=await page.evaluate(async()=>{
     let calls=0,finish;api=()=>{calls++;return new Promise(resolve=>finish=resolve);};load=()=>Promise.resolve();
     const first=runAutomation('market');await runAutomation('market');
+    for(let i=0;i<100&&!calls;i++)await new Promise(resolve=>setTimeout(resolve,10));
     const button=Array.from(document.querySelectorAll('button[onclick]')).find(b=>b.getAttribute('onclick')==="runAutomation('market')");
     const pending={calls,disabled:button.disabled,busy:button.getAttribute('aria-busy'),message:document.getElementById('automationActivity').textContent};
     finish({ok:true});await first;
@@ -112,6 +113,43 @@ test('manual automation keeps a persistent status and blocks repeated launches',
   expect(result.pending.calls).toBe(1);expect(result.pending.disabled).toBe(true);expect(result.pending.busy).toBe('true');expect(result.pending.message).toContain('In corso');
   expect(result.disabled).toBe(false);expect(result.busy).toBe(false);
   await expect(page.locator('#automationActivity')).toContainText('Completata');
+});
+
+test('manual launches are coordinated across tabs without queued duplicate requests',async({page,context})=>{
+  await workspace(page);
+  await page.evaluate(()=>{window.automationCalls=0;load=()=>Promise.resolve();api=()=>{window.automationCalls++;return new Promise(resolve=>window.finishAutomation=resolve)};window.pendingAutomation=runAutomation('market');});
+  await expect.poll(()=>page.evaluate(()=>window.automationCalls)).toBe(1);
+  const other=await context.newPage();await workspace(other);
+  await other.evaluate(async()=>{window.automationCalls=0;load=()=>Promise.resolve();api=()=>{window.automationCalls++;return Promise.resolve({ok:true})};await runAutomation('fetch_news');});
+  expect(await other.evaluate(()=>window.automationCalls)).toBe(0);
+  await expect(other.locator('.toast')).toContainText("un'altra scheda");
+  await page.evaluate(async()=>{window.finishAutomation({ok:true});await window.pendingAutomation;});
+  await other.evaluate(()=>runAutomation('fetch_news'));
+  expect(await other.evaluate(()=>window.automationCalls)).toBe(1);
+  await other.close();
+});
+
+test('completed activity survives reload and interrupted activity remains uncertain',async({page})=>{
+  await workspace(page);
+  await page.evaluate(async()=>{load=()=>Promise.resolve();api=()=>Promise.resolve({ok:true});await runAutomation('market');});
+  await page.reload();await page.evaluate(()=>{document.getElementById('panel').style.display='block'});
+  await expect(page.locator('#automationActivity .done')).toContainText('Mercato');
+  await expect(page.locator('#automationActivity time')).toHaveCount(1);
+  await page.evaluate(()=>setAutomationActivity('instagram_import','running','Attendi'));
+  await page.reload();await page.evaluate(()=>{document.getElementById('panel').style.display='block'});
+  await expect(page.locator('#automationActivity .uncertain')).toContainText('esito confermato');
+  await expect(page.locator('#automationActivity .uncertain')).toContainText('Monitor');
+});
+
+test('unavailable storage and browser locks do not prevent a manual operation',async({page})=>{
+  await workspace(page);
+  const result=await page.evaluate(async()=>{
+    Object.defineProperty(navigator,'locks',{value:undefined});
+    const original=Storage.prototype.setItem;Storage.prototype.setItem=()=>{throw Error('Storage non disponibile')};
+    let calls=0;api=()=>{calls++;return Promise.resolve({ok:true})};load=()=>Promise.resolve();
+    try{await runAutomation('market');return {calls,status:automationActivity.get('market').status}}finally{Storage.prototype.setItem=original}
+  });
+  expect(result).toEqual({calls:1,status:'done'});
 });
 
 test('failed payloads are not shown as completed and partial results remain visible',async({page})=>{

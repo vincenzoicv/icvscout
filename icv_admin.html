@@ -400,7 +400,7 @@ function login(){
     showToast(err.message);
   });
 }
-function logout(){ sessionStorage.removeItem("icv_admin_token"); location.reload(); }
+function logout(){ sessionStorage.removeItem("icv_admin_token"); sessionStorage.removeItem("icv_admin_activity_v1"); location.reload(); }
 function load(strict){
   return api("/api/admin/news").then(function(data){
     state.readWarnings = Array.isArray(data.read_warnings) ? data.read_warnings : [];
@@ -437,23 +437,55 @@ function load(strict){
 }
 var runningAutomations = new Set();
 var automationActivity = new Map();
+var automationActivityKey = "icv_admin_activity_v1";
+var automationActions = ["fetch_news","market","match_center","social","instagram_import","youtube_scout","home_autopilot"];
+function saveAutomationActivity(){
+  try{sessionStorage.setItem(automationActivityKey,JSON.stringify(Array.from(automationActivity.entries())))}catch(error){}
+}
+function restoreAutomationActivity(){
+  try{
+    var entries=JSON.parse(sessionStorage.getItem(automationActivityKey)||"[]");
+    if(!Array.isArray(entries))return;
+    entries.forEach(function(entry){
+      if(!Array.isArray(entry)||!automationActions.includes(entry[0]))return;
+      var item=entry[1],age=item&&Date.now()-Date.parse(item.updatedAt);
+      if(!item||!Number.isFinite(age)||age<0||age>24*60*60*1000||!["running","done","warning","error","uncertain"].includes(item.status))return;
+      automationActivity.set(entry[0],{status:item.status==="running"?"uncertain":item.status,message:item.status==="running"?"La pagina e stata riaperta senza un esito confermato. Controlla il Monitor prima di ripetere l'operazione.":String(item.message||"").slice(0,2000),updatedAt:item.updatedAt});
+    });
+  }catch(error){}
+  saveAutomationActivity();
+  renderAutomationActivity();
+}
+function setAutomationActivity(action,status,message){
+  automationActivity.set(action,{status:status,message:message,updatedAt:new Date().toISOString()});
+  saveAutomationActivity();renderAutomationActivity();
+}
 function renderAutomationActivity(){
   var box=document.getElementById("automationActivity");
   if(!box)return;
   box.hidden=automationActivity.size===0;
   var labels={fetch_news:"Fetch News",market:"Mercato",match_center:"Match Center",social:"Social",instagram_import:"Instagram",youtube_scout:"YouTube Scout",home_autopilot:"Home autopilot"};
   var statuses={running:"In corso",done:"Completata",warning:"Completata con avvisi",error:"Non riuscita",uncertain:"Esito da verificare"};
-  box.innerHTML=Array.from(automationActivity.entries()).map(function(entry){var action=entry[0],item=entry[1];return "<div class='automation-activity-row "+item.status+"'><strong>"+esc(labels[action]||action)+"</strong><span>"+esc(statuses[item.status])+"</span><p>"+esc(item.message)+"</p></div>";}).join("");
+  box.innerHTML=Array.from(automationActivity.entries()).map(function(entry){var action=entry[0],item=entry[1];return "<div class='automation-activity-row "+item.status+"'><strong>"+esc(labels[action]||action)+"</strong><span>"+esc(statuses[item.status])+"</span><p>"+esc(item.message)+(item.updatedAt?"<br><time datetime='"+escAttr(item.updatedAt)+"'>"+esc(date(item.updatedAt))+"</time>":"")+"</p></div>";}).join("");
 }
 function runAutomation(action){
-  if(runningAutomations.has(action)) return Promise.resolve();
+  if(!automationActions.includes(action)||runningAutomations.has(action))return Promise.resolve();
+  if(runningAutomations.size){showToast("Attendi la conclusione dell'operazione gia avviata.");return Promise.resolve()}
   runningAutomations.add(action);
+  // The browser lock coordinates manual launches across tabs, not server-side schedules.
+  var launch=function(){return executeAutomation(action)};
+  var operation=navigator.locks&&navigator.locks.request?navigator.locks.request("icv-admin-manual-automation",{ifAvailable:true},function(lock){
+    if(!lock){showToast("Un'operazione admin e gia in corso in un'altra scheda. Nessun nuovo processo avviato.");return}
+    return launch();
+  }):launch();
+  return operation.catch(function(error){showToast("Avvio non riuscito: "+error.message)}).finally(function(){runningAutomations.delete(action)});
+}
+function executeAutomation(action){
   var buttons = Array.from(document.querySelectorAll('button[onclick]')).filter(function(button){
     return button.getAttribute("onclick").indexOf("runAutomation('" + action + "')") !== -1;
   });
   buttons.forEach(function(button){button.disabled=true;button.setAttribute("aria-busy","true")});
-  automationActivity.set(action,{status:"running",message:"Attendi la risposta del servizio."});
-  renderAutomationActivity();
+  setAutomationActivity(action,"running","Attendi la risposta del servizio.");
   showToast("Automazione in corso");
   return api("/api/admin/automate", {method:"POST", body:{action:action}})
     .then(function(res){
@@ -462,22 +494,20 @@ function runAutomation(action){
       var warning=!!firstAutomationError(res||{})||(Array.isArray(res&&res.sources_report)&&res.sources_report.some(function(source){return source.warning||source.error}));
       var message=failure?(firstAutomationError(res||{})||res.error||"Il servizio non ha completato l'operazione."):automationResultMessage(action,res);
       if(!failure&&warning&&action!=="fetch_news"&&action!=="youtube_scout")message+=" · "+(firstAutomationError(res||{})||"Alcune fonti hanno restituito avvisi.");
-      automationActivity.set(action,{status:failure?"error":warning?"warning":"done",message:message});
-      renderAutomationActivity();
+      setAutomationActivity(action,failure?"error":warning?"warning":"done",message);
       showToast(message);
       return load();
     })
     .catch(function(err){
       var uncertain=err.name==="AbortError"||[524,504].includes(err.status)||/potrebbe essere ancora in corso|Risposta del servizio non valida/.test(err.message)||err instanceof TypeError;
-      automationActivity.set(action,{status:uncertain?"uncertain":"error",message:uncertain?"La risposta non e arrivata. Controlla il Monitor prima di avviare di nuovo il processo.":err.message});
-      renderAutomationActivity();
+      setAutomationActivity(action,uncertain?"uncertain":"error",uncertain?"La risposta non e arrivata. Controlla il Monitor prima di avviare di nuovo il processo.":err.message);
       showToast(action === "instagram_import" ? friendlyAutomationError(err.message) : err.message);
       return load().catch(function(){});
     }).finally(function(){
-      runningAutomations.delete(action);
       buttons.forEach(function(button){button.disabled=false;button.removeAttribute("aria-busy")});
     });
 }
+restoreAutomationActivity();
 function filterValue(id, fallback){var el=document.getElementById(id);return el?el.value:fallback}
 function updateContentFilters(){
   state.filters.draftReliability=filterValue("draftReliability","all");

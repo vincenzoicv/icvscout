@@ -43,7 +43,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
-<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-3">
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-4">
 </head>
 <body>
 <header>
@@ -312,6 +312,18 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
     </div>
   </section>
 </main>
+<dialog id="draftPreview" class="draft-preview" aria-labelledby="draftPreviewTitle">
+  <div class="draft-preview-heading"><span>Revisione bozza</span><button class="ghost" autofocus onclick="document.getElementById('draftPreview').close()">Chiudi</button></div>
+  <h2 id="draftPreviewTitle"></h2>
+  <div id="draftPreviewMeta" class="meta"></div>
+  <p id="draftPreviewBody"></p>
+  <a id="draftPreviewSource" target="_blank" rel="noopener noreferrer">Apri fonte originale</a>
+  <p id="draftPreviewStatus" role="status" aria-live="polite"></p>
+  <div class="item-actions" id="draftPreviewActions">
+    <button class="primary" onclick="approveDraft(draftPreviewId)">Approva e pubblica</button>
+    <button class="danger" onclick="discardDraft(draftPreviewId)">Scarta</button>
+  </div>
+</dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -538,15 +550,50 @@ function publishManual(){
 var pendingDraftReviews = new Set();
 function approveDraft(id){return reviewDraft(id,"approve_draft")}
 function discardDraft(id){return reviewDraft(id,"discard_draft")}
+var draftPreviewId=null,draftPreviewReturnFocus=null;
+function safeDraftSource(value){
+  try{var url=new URL(value);return ["http:","https:"].includes(url.protocol)&&!url.username&&!url.password?url.href:"";}catch(error){return "";}
+}
+function openDraftPreview(id,trigger){
+  var draft=state.drafts.find(function(item){return String(item.id)===String(id)});
+  if(!draft){showToast("Bozza non disponibile");return;}
+  var dialog=document.getElementById("draftPreview");
+  draftPreviewId=draft.id;draftPreviewReturnFocus=trigger||document.activeElement;
+  document.getElementById("draftPreviewTitle").textContent=draft.title||"Bozza senza titolo";
+  document.getElementById("draftPreviewBody").textContent=draft.body||"Testo non disponibile.";
+  var reliability={official:"Fonte ufficiale",trusted:"Fonte affidabile",aggregator:"Aggregatore",rumor:"Voce",blacklist:"Fonte esclusa"};
+  var reviews={ready:"Pronta",needs_review:"Da verificare",pending:"In attesa",approved:"Pubblicata",discarded:"Scartata"};
+  document.getElementById("draftPreviewMeta").textContent=[draft.source_name||"Fonte non indicata",reliability[draft.reliability]||"Affidabilita non indicata",reviews[draft.review_status]||"In attesa",date(draft.created_at)].join(" · ");
+  var source=document.getElementById("draftPreviewSource"),href=safeDraftSource(draft.source_url);
+  source.hidden=!href;if(href)source.href=href;else source.removeAttribute("href");
+  var actions=document.getElementById("draftPreviewActions");actions.dataset.draftId=Number(draft.id);
+  var unavailable=sectionUnavailable("drafts"),pending=pendingDraftReviews.has(String(draft.id));
+  actions.querySelectorAll("button").forEach(function(button){button.disabled=unavailable||pending||["approved","discarded"].includes(draft.review_status);});
+  document.getElementById("draftPreviewStatus").textContent=unavailable?"Bozze non aggiornate. Aggiorna l'elenco prima della revisione.":pending?"Revisione in corso...":"";
+  if(!dialog.open)dialog.showModal();
+}
+document.getElementById("draftPreview").addEventListener("close",function(){
+  if(draftPreviewReturnFocus&&draftPreviewReturnFocus.isConnected)draftPreviewReturnFocus.focus();
+  draftPreviewId=null;draftPreviewReturnFocus=null;
+});
+document.getElementById("draftPreview").addEventListener("keydown",function(event){
+  if(event.key!=="Tab")return;
+  var controls=Array.from(this.querySelectorAll("button:not(:disabled),a[href]:not([hidden])"));
+  var first=controls[0],last=controls[controls.length-1];
+  if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+  else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+});
 function reviewDraft(id,type){
+  if(sectionUnavailable("drafts")){showToast("Bozze non aggiornate. Aggiorna l'elenco prima della revisione.");return Promise.resolve();}
   if(pendingDraftReviews.has(String(id))) return Promise.resolve();
   pendingDraftReviews.add(String(id));
+  if(String(draftPreviewId)===String(id))document.getElementById("draftPreviewStatus").textContent="Revisione in corso...";
   var buttons = document.querySelectorAll('[data-draft-id="'+Number(id)+'"] button');
   buttons.forEach(function(button){button.disabled=true});
   return api("/api/admin/news", {method:type==="approve_draft"?"POST":"PATCH",body:{type:type,id:id}})
-    .then(function(result){showToast(type==="approve_draft"?(result.already_approved?"Bozza gia pubblicata":"Bozza pubblicata"):"Bozza scartata");return load();})
-    .catch(function(err){showToast(err.message);})
-    .finally(function(){pendingDraftReviews.delete(String(id));buttons.forEach(function(button){button.disabled=false});});
+    .then(function(result){if(String(draftPreviewId)===String(id))document.getElementById("draftPreview").close();showToast(type==="approve_draft"?(result.already_approved?"Bozza gia pubblicata":"Bozza pubblicata"):"Bozza scartata");return load();})
+    .catch(function(err){if(String(draftPreviewId)===String(id))document.getElementById("draftPreviewStatus").textContent=err.message;showToast(err.message);})
+    .finally(function(){pendingDraftReviews.delete(String(id));buttons.forEach(function(button){button.disabled=sectionUnavailable("drafts")});});
 }
 function setSourceActive(input){
   var active=input.checked;input.disabled=true;
@@ -795,6 +842,13 @@ function renderDrafts(){
   list.innerHTML = drafts.map(function(d){
     return "<div class='item' data-draft-id='"+Number(d.id)+"'><div class='item-head'><div>"+reliabilityBadge(d.reliability)+"<span class='pill blacklist'>"+esc(d.review_status||"pending")+"</span><h3>"+esc(d.title)+"</h3></div><div class='meta'>"+date(d.created_at)+"</div></div><p>"+esc(d.body)+"</p><div class='meta'>"+esc(d.source_name || "")+(d.source_url?" · <a href='"+escAttr(d.source_url)+"' target='_blank' style='color:var(--gold-l)'>fonte</a>":"")+"</div><div class='item-actions' style='margin-top:10px'><button class='primary small' onclick='approveDraft("+d.id+")'"+(pendingDraftReviews.has(String(d.id))?" disabled":"")+">Approva</button><button class='danger small' onclick='discardDraft("+d.id+")'"+(pendingDraftReviews.has(String(d.id))?" disabled":"")+">Scarta</button></div></div>";
   }).join("");
+  list.querySelectorAll("[data-draft-id]").forEach(function(row){
+    var source=row.querySelector(".meta a");
+    if(source){var href=safeDraftSource(source.getAttribute("href"));if(href){source.href=href;source.rel="noopener noreferrer";}else source.remove();}
+    var button=document.createElement("button");button.className="ghost small";button.textContent="Anteprima";
+    button.addEventListener("click",function(){openDraftPreview(row.dataset.draftId,button)});
+    row.querySelector(".item-actions").prepend(button);
+  });
 }
 function renderFetchResults(){
   var box = document.getElementById("fetchResults");

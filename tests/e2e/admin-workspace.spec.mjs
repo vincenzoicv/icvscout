@@ -21,6 +21,46 @@ test('recent Instagram failure is never presented as a successful import', async
   await expect(page.locator('#adminAlerts .admin-alert-ok')).toContainText(['Instagram aggiornato']);
 });
 
+test('draft preview exposes saved text and supports Escape with focus restoration',async({page})=>{
+  await workspace(page);
+  const trigger=page.getByRole('button',{name:'Anteprima',exact:true});await trigger.click();
+  const dialog=page.getByRole('dialog',{name:'Esempio di notizia da verificare prima della pubblicazione'});
+  await expect(dialog).toBeVisible();await expect(dialog.locator('#draftPreviewBody')).toContainText('Testo dimostrativo');
+  await expect(dialog.getByRole('button',{name:'Chiudi',exact:true})).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  expect(await page.evaluate(()=>document.getElementById('draftPreview').contains(document.activeElement))).toBe(true);
+  await page.keyboard.press('Escape');await expect(dialog).toBeHidden();await expect(trigger).toBeFocused();
+});
+
+test('preview rejects unsafe source URLs and does not interpret saved HTML',async({page})=>{
+  await workspace(page);
+  await page.evaluate(()=>{state.drafts[0].body='<img src=x onerror="window.previewInjected=true">';state.drafts[0].source_url='javascript:alert(1)';renderDrafts();openDraftPreview(1);});
+  await expect(page.locator('#draftPreviewBody')).toContainText('<img');
+  await expect(page.locator('#draftPreviewBody img')).toHaveCount(0);
+  await expect(page.locator('#draftPreviewSource')).toBeHidden();
+  await expect(page.locator('#draftList a')).toHaveCount(0);
+  expect(await page.evaluate(()=>window.previewInjected)).toBeUndefined();
+});
+
+test('preview approval uses the existing review guard and closes only on success',async({page})=>{
+  await workspace(page);await page.getByRole('button',{name:'Anteprima',exact:true}).click();
+  await page.evaluate(()=>{api=()=>Promise.reject(new Error('Servizio temporaneamente non disponibile'));load=()=>Promise.resolve();});
+  await page.getByRole('button',{name:'Approva e pubblica'}).click();
+  await expect(page.locator('#draftPreview')).toBeVisible();await expect(page.locator('#draftPreviewStatus')).toContainText('temporaneamente');
+  await page.evaluate(()=>{api=()=>Promise.resolve({already_approved:false});});
+  await page.getByRole('button',{name:'Approva e pubblica'}).click();await expect(page.locator('#draftPreview')).toBeHidden();
+});
+
+test('stale draft previews cannot approve and fit a narrow viewport',async({page})=>{
+  await workspace(page);await page.setViewportSize({width:320,height:700});
+  await page.evaluate(()=>{state.readWarnings=['drafts'];openDraftPreview(1);});
+  await expect(page.getByRole('button',{name:'Approva e pubblica'})).toBeDisabled();
+  await expect(page.locator('#draftPreviewStatus')).toContainText('Bozze non aggiornate');
+  const result=await page.evaluate(async()=>{let calls=0;api=()=>{calls++;return Promise.resolve()};await approveDraft(1);return calls;});expect(result).toBe(0);
+  expect(await page.locator('#draftPreview').evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);
+  await page.screenshot({path:'/tmp/icv-draft-preview-320.png'});
+});
+
 test('manual automation keeps a persistent status and blocks repeated launches',async({page})=>{
   await workspace(page);
   const result=await page.evaluate(async()=>{

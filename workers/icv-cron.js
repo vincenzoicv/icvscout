@@ -10,6 +10,12 @@ export default {
   },
 
   async fetch(request, env) {
+    const expected = env.CRON_SECRET || env.ADMIN_TOKEN;
+    const supplied = request.headers.get("X-ICV-Cron-Token") || "";
+    if (!expected || !await sameSecret(supplied, expected)) {
+      return json({ error: "Accesso cron non autorizzato" }, 401);
+    }
+    if (request.method !== "POST") return json({ error: "Usa POST per avviare un processo" }, 405);
     const url = new URL(request.url);
     const job = url.searchParams.get("job") || "home";
     if (!["home", "market", "match", "all"].includes(job)) {
@@ -18,6 +24,15 @@ export default {
     return json(await runCronJob(env, job, "manual:" + job));
   },
 };
+
+async function sameSecret(supplied, expected) {
+  const encode = new TextEncoder();
+  const [a, b] = await Promise.all([supplied, expected].map(value => crypto.subtle.digest("SHA-256", encode.encode(value))));
+  const left = new Uint8Array(a), right = new Uint8Array(b);
+  let difference = 0;
+  for (let i = 0; i < left.length; i++) difference |= left[i] ^ right[i];
+  return difference === 0;
+}
 
 function jobFromCron(cron) {
   if (cron === MATCH_CRON) return "match";

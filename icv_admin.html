@@ -43,7 +43,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
-<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261005-2">
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-1">
 </head>
 <body>
 <header>
@@ -86,8 +86,9 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 
     <div class="status-grid" id="automationStatus"></div>
     <div class="admin-alerts" id="adminAlerts"></div>
+    <div id="adminReadWarnings" role="status" aria-live="polite" hidden></div>
 
-    <div class="admin-section-picker"><label for="adminSection">Sezione</label><select id="adminSection" onchange="setAdminTab(this.value)"><option value="drafts">Da approvare</option><option value="live">Live Desk</option><option value="published">Pubblicate</option><option value="market">Mercato</option><option value="social">Social</option><option value="graphics">Grafiche</option><option value="photos">Foto partite</option><option value="highlights">Highlights</option><option value="community">Community</option><option value="analytics">Analytics</option><option value="monitor">Monitor</option><option value="sources">Fonti</option><option value="advanced">Avanzate</option></select></div>
+    <div class="admin-section-picker"><label for="adminSection">Sezione</label><select id="adminSection" onchange="setAdminTab(this.value)"><option value="drafts">Da approvare</option><option value="live">Live Desk</option><option value="published">Pubblicate</option><option value="market">Mercato</option><option value="social">Social</option><option value="graphics">Grafiche</option><option value="photos">Foto partite</option><option value="videos">Interviste e video</option><option value="highlights">Highlights</option><option value="community">Community</option><option value="analytics">Analytics</option><option value="monitor">Monitor</option><option value="sources">Fonti</option><option value="advanced">Avanzate</option></select></div>
     <nav class="admin-nav" id="adminNav" aria-label="Sezioni admin">
       <button class="active" data-tab="drafts" onclick="setAdminTab('drafts',this)">Da approvare</button>
       <button data-tab="live" onclick="setAdminTab('live',this)">Live Desk</button>
@@ -378,9 +379,10 @@ function login(){
 function logout(){ sessionStorage.removeItem("icv_admin_token"); location.reload(); }
 function load(strict){
   return api("/api/admin/news").then(function(data){
-    state.drafts = data.drafts || [];
-    state.news = data.news || [];
-    state.sources = data.sources || [];
+    state.readWarnings = Array.isArray(data.read_warnings) ? data.read_warnings : [];
+    if(!sectionUnavailable("drafts")) state.drafts = data.drafts || [];
+    if(!sectionUnavailable("news")) state.news = data.news || [];
+    if(!sectionUnavailable("sources")) state.sources = data.sources || [];
     state.social = data.social || [];
     state.conferenceConfig=data.conference_config || {mode:'auto'};
     state.conference=data.featured_conference || null;
@@ -505,16 +507,27 @@ function publishManual(){
     reliability:"trusted"
   }}).then(function(){ clearManual(); showToast("News pubblicata"); load(); }).catch(function(err){ showToast(err.message); });
 }
-function approveDraft(id){
-  api("/api/admin/news", {method:"POST", body:{type:"approve_draft", id:id}})
-    .then(function(){ showToast("Bozza pubblicata"); load(); })
-    .catch(function(err){ showToast(err.message); });
+var pendingDraftReviews = new Set();
+function approveDraft(id){return reviewDraft(id,"approve_draft")}
+function discardDraft(id){return reviewDraft(id,"discard_draft")}
+function reviewDraft(id,type){
+  if(pendingDraftReviews.has(String(id))) return Promise.resolve();
+  pendingDraftReviews.add(String(id));
+  var buttons = document.querySelectorAll('[data-draft-id="'+Number(id)+'"] button');
+  buttons.forEach(function(button){button.disabled=true});
+  return api("/api/admin/news", {method:type==="approve_draft"?"POST":"PATCH",body:{type:type,id:id}})
+    .then(function(result){showToast(type==="approve_draft"?(result.already_approved?"Bozza gia pubblicata":"Bozza pubblicata"):"Bozza scartata");return load();})
+    .catch(function(err){showToast(err.message);})
+    .finally(function(){pendingDraftReviews.delete(String(id));buttons.forEach(function(button){button.disabled=false});});
 }
-function discardDraft(id){
-  api("/api/admin/news", {method:"PATCH", body:{type:"discard_draft", id:id}})
-    .then(function(){ showToast("Bozza scartata"); load(); })
-    .catch(function(err){ showToast(err.message); });
+function setSourceActive(input){
+  var active=input.checked;input.disabled=true;
+  return api("/api/admin/news",{method:"PATCH",body:{type:"source_status",url:input.dataset.sourceUrl,active:active}})
+    .then(function(){showToast(active?"Fonte attivata":"Fonte disattivata");return load();})
+    .catch(function(error){input.checked=!active;showToast(error.message);})
+    .finally(function(){input.disabled=false});
 }
+function sectionUnavailable(name){return (state.readWarnings||[]).includes(name)}
 function toggleNews(id, visible){
   api("/api/admin/news", {method:"PATCH", body:{type:"toggle_news", id:id, visible:!visible}})
     .then(function(){ showToast(visible ? "News nascosta" : "News visibile"); load(); })
@@ -598,11 +611,17 @@ function migrateGraphics(){
     .catch(function(err){ showToast(err.message); });
 }
 function render(){
+  var warningBox=document.getElementById("adminReadWarnings");
+  var names={drafts:"bozze",news:"news",sources:"fonti"};
+  warningBox.hidden=!(state.readWarnings||[]).length;
+  warningBox.textContent=warningBox.hidden?"":"Dati non aggiornati: "+state.readWarnings.map(function(name){return names[name]||name}).join(", ")+". Gli eventuali dati precedenti sono conservati. Riprova ad aggiornare.";
   document.getElementById("stDrafts").textContent = visibleDrafts().filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; }).length;
   document.getElementById("stReady").textContent = visibleDrafts().filter(function(d){ return d.review_status === "ready"; }).length;
   document.getElementById("stNews").textContent = state.news.filter(function(n){ return n.visible; }).length;
   document.getElementById("stMarket").textContent = state.market.length;
   document.getElementById("stSocial").textContent = state.social.length;
+  if(sectionUnavailable("drafts")){document.getElementById("stDrafts").textContent="--";document.getElementById("stReady").textContent="--";}
+  if(sectionUnavailable("news"))document.getElementById("stNews").textContent="--";
   renderReliabilityGuides(); renderAutomationStatus(); renderAutomationMonitor(); renderAdminAlerts(); renderLiveDesk(); renderDrafts(); renderFetchResults(); renderNews(); renderSources(); renderMarket(); renderMatches(); renderSocial(); renderGraphics(); renderCommunity();
 }
 function renderAutomationStatus(){
@@ -639,7 +658,9 @@ function renderAdminAlerts(){
   var instagramRun = latestRun("instagram_import");
   var alerts = [];
 
-  alerts.push(openDrafts > 0 ? {
+  alerts.push(sectionUnavailable("drafts")?{
+    tone:"danger",kicker:"Bozze",title:"Bozze non aggiornate",text:"Non e possibile verificare la coda. Riprova ad aggiornare."
+  }:openDrafts > 0 ? {
     tone:"warn",
     kicker:"Bozze",
     title:"Ci sono " + openDrafts + " bozze da verificare",
@@ -685,7 +706,9 @@ function renderAdminAlerts(){
     text:"Ultimo import: " + date(instagramRun.created_at) + "."
   });
 
-  alerts.push(visibleToday > 0 ? {
+  alerts.push(sectionUnavailable("news")?{
+    tone:"warn",kicker:"Pubblicazione",title:"News non aggiornate",text:"Non e possibile verificare le pubblicazioni di oggi."
+  }:visibleToday > 0 ? {
     tone:"ok",
     kicker:"Pubblicazione",
     title: visibleToday + " news approvate oggi",
@@ -734,9 +757,9 @@ function renderDrafts(){
   if(filters.draftReliability!=="all")drafts=drafts.filter(function(d){return d.reliability===filters.draftReliability});
   if(filters.draftStatus!=="all")drafts=drafts.filter(function(d){return filters.draftStatus==="pending"?d.review_status!=="ready":d.review_status===filters.draftStatus});
   if(filters.draftQuery)drafts=drafts.filter(function(d){return[d.title,d.body,d.source_name].join(" ").toLowerCase().includes(filters.draftQuery)});
-  if(!drafts.length){ list.innerHTML = "<div class='empty'>Nessuna bozza in questa vista.</div>"; return; }
+  if(!drafts.length){ list.innerHTML = "<div class='empty'>"+(sectionUnavailable("drafts")?"Bozze non disponibili. Riprova ad aggiornare.":"Nessuna bozza in questa vista.")+"</div>"; return; }
   list.innerHTML = drafts.map(function(d){
-    return "<div class='item'><div class='item-head'><div>"+reliabilityBadge(d.reliability)+"<span class='pill blacklist'>"+esc(d.review_status||"pending")+"</span><h3>"+esc(d.title)+"</h3></div><div class='meta'>"+date(d.created_at)+"</div></div><p>"+esc(d.body)+"</p><div class='meta'>"+esc(d.source_name || "")+(d.source_url?" · <a href='"+escAttr(d.source_url)+"' target='_blank' style='color:var(--gold-l)'>fonte</a>":"")+"</div><div class='item-actions' style='margin-top:10px'><button class='primary small' onclick='approveDraft("+d.id+")'>Approva</button><button class='danger small' onclick='discardDraft("+d.id+")'>Scarta</button></div></div>";
+    return "<div class='item' data-draft-id='"+Number(d.id)+"'><div class='item-head'><div>"+reliabilityBadge(d.reliability)+"<span class='pill blacklist'>"+esc(d.review_status||"pending")+"</span><h3>"+esc(d.title)+"</h3></div><div class='meta'>"+date(d.created_at)+"</div></div><p>"+esc(d.body)+"</p><div class='meta'>"+esc(d.source_name || "")+(d.source_url?" · <a href='"+escAttr(d.source_url)+"' target='_blank' style='color:var(--gold-l)'>fonte</a>":"")+"</div><div class='item-actions' style='margin-top:10px'><button class='primary small' onclick='approveDraft("+d.id+")'"+(pendingDraftReviews.has(String(d.id))?" disabled":"")+">Approva</button><button class='danger small' onclick='discardDraft("+d.id+")'"+(pendingDraftReviews.has(String(d.id))?" disabled":"")+">Scarta</button></div></div>";
   }).join("");
 }
 function renderFetchResults(){
@@ -779,7 +802,7 @@ function renderNews(){
   if(filters.newsReliability!=="all")rows=rows.filter(function(n){return(n.reliability||"trusted")===filters.newsReliability});
   if(filters.newsVisibility!=="all")rows=rows.filter(function(n){return filters.newsVisibility==="visible"?n.visible!==false:n.visible===false});
   if(filters.newsQuery)rows=rows.filter(function(n){return[n.title,n.body,n.source].join(" ").toLowerCase().includes(filters.newsQuery)});
-  if(!rows.length){ list.innerHTML = "<div class='empty'>Nessuna news corrisponde ai filtri selezionati.</div>"; return; }
+  if(!rows.length){ list.innerHTML = "<div class='empty'>"+(sectionUnavailable("news")?"News non disponibili. Riprova ad aggiornare.":"Nessuna news corrisponde ai filtri selezionati.")+"</div>"; return; }
   list.innerHTML = rows.slice(0,40).map(function(n){
     return "<div class='item'><div class='item-head'><div>"+reliabilityBadge(n.reliability||"trusted")+"<h3>"+esc(n.title)+"</h3></div><div class='meta'>"+(n.visible!==false?"visibile":"nascosta")+"</div></div><p>"+esc(n.body || "")+"</p><div class='meta'>"+date(n.created_at)+" · "+esc(n.source || "ICV")+"</div><div class='item-actions' style='margin-top:10px'><button class='ghost small' onclick='toggleNews("+n.id+","+(n.visible!==false)+")'>"+(n.visible!==false?"Nascondi":"Mostra")+"</button><button class='danger small' onclick='deleteNews("+n.id+")'>Elimina</button></div></div>";
   }).join("");
@@ -789,8 +812,8 @@ function renderSources(){
   var rows=state.sources.slice(),filters=state.filters||{};
   if(filters.sourceReliability!=="all")rows=rows.filter(function(s){return s.reliability===filters.sourceReliability});
   if(filters.sourceQuery)rows=rows.filter(function(s){return[s.name,s.category,s.url].join(" ").toLowerCase().includes(filters.sourceQuery)});
-  if(!rows.length){ list.innerHTML = "<div class='empty'>Nessuna fonte corrisponde ai filtri selezionati.</div>"; return; }
-  list.innerHTML = rows.map(function(s){ var health=sourceMonitorStatus(s.name);return "<div class='item'><div class='item-head'><div>"+reliabilityBadge(s.reliability)+"<h3>"+esc(s.name)+"</h3></div>"+(health?"<span class='health-badge "+esc(health.status)+"' title='"+escAttr(health.detail)+"'>"+esc(monitorStatusLabel(health.status))+"</span>":"")+"</div><div class='meta'>"+esc(s.category)+(s.active===false?" · disattivata":" · attiva")+"</div></div>"; }).join("");
+  if(!rows.length){ list.innerHTML = "<div class='empty'>"+(sectionUnavailable("sources")?"Fonti non disponibili. Riprova ad aggiornare.":"Nessuna fonte corrisponde ai filtri selezionati.")+"</div>"; return; }
+  list.innerHTML = rows.map(function(s){ var health=sourceMonitorStatus(s.name);return "<div class='item'><div class='item-head'><div>"+reliabilityBadge(s.reliability)+"<h3>"+esc(s.name)+"</h3></div>"+(health?"<span class='health-badge "+esc(health.status)+"' title='"+escAttr(health.detail)+"'>"+esc(monitorStatusLabel(health.status))+"</span>":"")+"</div><div class='meta'>"+esc(s.category)+(s.active===false?" · disattivata":" · attiva")+"</div><label class='source-active'><input type='checkbox' data-source-url='"+escAttr(s.url)+"' onchange='setSourceActive(this)'"+(s.active===false?"":" checked")+(sectionUnavailable("sources")?" disabled":"")+"> Attiva: "+esc(s.name)+"</label></div>"; }).join("");
 }
 function sourceMonitorStatus(name){var sources=state.automationMonitor&&state.automationMonitor.sources||[],needle=String(name||"").toLowerCase();return sources.find(function(item){return String(item.source||"").toLowerCase()===needle})||sources.find(function(item){var value=String(item.source||"").toLowerCase();return value.includes(needle)||needle.includes(value)})||null}
 function marketTextOf(item){return [item.player_name,item.note,item.source_name].join(" ").toLowerCase();}

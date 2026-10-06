@@ -9,6 +9,7 @@ function client(fetch) {
   vm.createContext(context);
   vm.runInContext(admin.slice(admin.indexOf('function api(path'), admin.indexOf('function apiForm')), context);
   vm.runInContext(admin.slice(admin.indexOf('function load(strict)'), admin.indexOf('var runningAutomations')), context);
+  context.sectionUnavailable = name => (context.state.readWarnings || []).includes(name);
   return context;
 }
 

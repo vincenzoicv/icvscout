@@ -36,6 +36,10 @@ input,select{min-height:44px}
 .admin-skip:focus{transform:none}
 .login p{letter-spacing:0;text-transform:none;color:var(--t2);font-size:15px}
 .toast{max-width:calc(100% - 32px);overflow-wrap:anywhere;text-transform:none;font-size:15px}
+#adminReadWarnings{padding:14px;margin-bottom:16px;border-left:3px solid var(--orange);background:#1d170b;color:#f3d290;line-height:1.5}
+#adminReadWarnings[hidden]{display:none}
+.source-active{display:flex;align-items:center;gap:10px;margin-top:12px;font-family:Barlow,sans-serif;font-size:14px;text-transform:none;min-height:44px}
+.source-active input{width:20px;height:20px;min-height:20px;margin:0;accent-color:var(--gold-l)}
 @media(max-width:900px){
   .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
   .status-grid{grid-template-columns:repeat(2,minmax(0,1fr))}

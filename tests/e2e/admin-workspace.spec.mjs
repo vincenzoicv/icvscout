@@ -32,6 +32,37 @@ test('desktop buttons and mobile section picker stay synchronized', async ({page
   await expect(page.locator('[data-panel="sources"]')).toBeVisible();
   await expect(page.locator('#adminNav button[data-tab="sources"]')).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('[data-panel="published"]').first()).toBeHidden();
+  await page.getByLabel('Sezione',{exact:true}).selectOption('videos');
+  await expect(page.locator('[data-panel="videos"]')).toBeVisible();
+});
+
+test('unavailable draft data is not presented as an empty or healthy queue',async({page})=>{
+  await workspace(page);
+  await page.evaluate(()=>{state.readWarnings=['drafts','news'];state.drafts=[];render();});
+  await expect(page.locator('#adminReadWarnings')).toContainText('Dati non aggiornati');
+  await expect(page.locator('#adminAlerts')).not.toContainText('Nessuna bozza in attesa');
+  await expect(page.locator('#draftList')).toContainText('Bozze non disponibili');
+  await expect(page.locator('#stDrafts')).toHaveText('--');
+});
+
+test('repeated Approva/Scarta requests are blocked while the first review is pending',async({page})=>{
+  await workspace(page);
+  const result=await page.evaluate(async()=>{
+    let calls=0,complete;
+    api=()=>{calls++;return new Promise(resolve=>complete=resolve);};load=()=>Promise.resolve();
+    const first=approveDraft(1);const disabled=document.querySelector('[data-draft-id="1"] button').disabled;
+    await approveDraft(1);await discardDraft(1);complete({already_approved:false});await first;
+    return {calls,disabled,pending:pendingDraftReviews.size};
+  });
+  expect(result).toEqual({calls:1,disabled:true,pending:0});
+});
+
+test('disabled sources remain visible and can be reactivated',async({page})=>{
+  await workspace(page);await page.evaluate(()=>{state.sources=[{name:'Fonte test',url:'https://example.com/feed',reliability:'trusted',active:false}];setAdminTab('sources');renderSources();});
+  const toggle=page.getByLabel('Attiva: Fonte test');await expect(toggle).not.toBeChecked();
+  await page.route('**/api/admin/news',route=>route.fulfill({json:{ok:true}}));
+  await page.evaluate(()=>{load=()=>Promise.resolve();});await toggle.check();
+  await expect(toggle).toBeChecked();await expect(toggle).toBeEnabled();
 });
 
 test('admin dashboard fits phone tablet and desktop without changing real data', async ({page}) => {

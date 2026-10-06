@@ -2181,10 +2181,15 @@ async function adminNews(request, env) {
   }
 
   if (request.method === "GET") {
+    const readWarnings = [];
+    const readSection = async (section, action, fallback) => {
+      try { return await action(); }
+      catch { readWarnings.push(section); return fallback; }
+    };
     const [drafts, news, sources, social, market, matches, runs, radar, graphics, communityPosts, communityReports, communityProfiles, communityComments, communityModerationActions, communityContextNotes] = await Promise.all([
-      safeAdminRead(() => sb(env, "/news_drafts?order=created_at.desc&limit=80"), []),
-      safeAdminRead(() => sb(env, "/news?order=created_at.desc&limit=80"), []),
-      safeAdminRead(() => getSources(env), DEFAULT_SOURCES),
+      readSection("drafts", () => sb(env, "/news_drafts?order=created_at.desc&limit=80"), []),
+      readSection("news", () => sb(env, "/news?order=created_at.desc&limit=80"), []),
+      readSection("sources", () => getSources(env, { includeInactive: true }), []),
       safeAdminRead(() => sb(env, "/social_drafts?order=created_at.desc&limit=40"), []),
       safeAdminRead(() => sb(env, "/market_items?order=updated_at.desc&limit=60"), []),
       safeAdminRead(() => sb(env, "/match_reports?order=match_date.desc&limit=20"), []),
@@ -2203,7 +2208,7 @@ async function adminNews(request, env) {
     const conferenceOptions = await safeAdminRead(() => conferenceRows(env,{mode:'auto'}),[]);
     const visibleNews = publicNewsRows(news).filter(item => item.visible !== false);
     const publicMarket = aggregateMarketItems(publicMarketRows(market));
-    return json({ drafts, news, sources, social, highlights_config:await safeAdminRead(() => readHighlightsSetting(env),{mode:'off'}), conference_config:conferenceConfig, featured_conference:conference, conference_options:conferenceOptions.map(row=>({id:row.id,hook:row.hook,published_at:row.published_at})), market: publicMarket, matches, live_desk: buildLiveDeskEntries({ news: visibleNews, market: publicMarket, matches }, 20), runs, automation_monitor: buildAutomationMonitor(runs, { cadences: { home_autopilot: Math.max(1, Number(env.HOME_AUTO_INTERVAL_HOURS || 6)) } }), radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
+    return json({ read_warnings: readWarnings, drafts, news, sources, social, highlights_config:await safeAdminRead(() => readHighlightsSetting(env),{mode:'off'}), conference_config:conferenceConfig, featured_conference:conference, conference_options:conferenceOptions.map(row=>({id:row.id,hook:row.hook,published_at:row.published_at})), market: publicMarket, matches, live_desk: buildLiveDeskEntries({ news: visibleNews, market: publicMarket, matches }, 20), runs, automation_monitor: buildAutomationMonitor(runs, { cadences: { home_autopilot: Math.max(1, Number(env.HOME_AUTO_INTERVAL_HOURS || 6)) } }), radar, graphics, community_posts: communityPosts, community_reports: communityReports, community_profiles: communityProfiles, community_comments: communityComments, community_moderation_actions: communityModerationActions, community_context_notes: communityContextNotes });
   }
 
   const body = await readBody(request);
@@ -2278,8 +2283,9 @@ async function adminNews(request, env) {
     }
 
     if (body.type === "approve_draft") {
+      if (!Number.isSafeInteger(Number(body.id)) || Number(body.id) <= 0) return json({ error: "Bozza non valida" }, 400);
       const draft = await getOne(env, "/news_drafts?id=eq." + encodeURIComponent(body.id));
-      const inserted = await insertNewsRow(env, {
+      const payload = normalizeNewsInsertPayload({
           title: body.title || draft.title,
           body: body.body || draft.body,
           category: body.category || draft.category,
@@ -2291,11 +2297,16 @@ async function adminNews(request, env) {
           reliability: draft.reliability,
           editorial_status: body.editorial_status || statusFromReliability(draft.reliability),
       });
-      await sb(env, "/news_drafts?id=eq." + encodeURIComponent(body.id), {
-        method: "PATCH",
-        body: { review_status: "approved" },
-      });
-      return json({ news: inserted[0] });
+      try {
+        const approve = news => sb(env, "/rpc/icv_approve_news_draft", { method: "POST", body: { p_draft_id: Number(body.id), p_news: news } });
+        let result;
+        try { result = await approve(payload); }
+        catch (error) { if (!isSupabaseCheckConstraintError(error)) throw error; result = await approve(compatNewsInsertPayload(payload)); }
+        return json(result);
+      } catch (error) {
+        if (/ICV_DRAFT_DISCARDED/.test(error.message)) return json({ error: "La bozza e stata scartata. Aggiorna l'elenco." }, 409);
+        throw error;
+      }
     }
 
     if (body.type === "source") {
@@ -2424,6 +2435,18 @@ async function adminNews(request, env) {
   }
 
   if (request.method === "PATCH") {
+    if (body.type === "source_status") {
+      if (typeof body.active !== "boolean") return json({ error: "Stato fonte non valido" }, 400);
+      const allSources = await getSources(env, { includeInactive: true });
+      const source = allSources.find(item => sourceKey(item) === canonicalNewsUrl(body.url));
+      if (!source) return json({ error: "Fonte non trovata" }, 404);
+      if (source.id) {
+        await sb(env, "/sources?url=eq." + encodeURIComponent(source.url), { method: "PATCH", body: { active: body.active } });
+      } else {
+        await sb(env, "/sources", { method: "POST", body: [{ name: source.name, url: source.url, category: source.category, reliability: source.reliability, active: body.active }] });
+      }
+      return json({ ok: true, active: body.active });
+    }
     if (body.type === "match_override") {
       const matchId = cleanText(body.match_id).slice(0, 80);
       if (!matchId) return json({ error: "Seleziona una partita" }, 400);
@@ -2517,10 +2540,12 @@ async function adminNews(request, env) {
     }
 
     if (body.type === "discard_draft") {
-      await sb(env, "/news_drafts?id=eq." + encodeURIComponent(body.id), {
+      const discarded = await sb(env, "/news_drafts?id=eq." + encodeURIComponent(body.id) + "&review_status=neq.approved", {
         method: "PATCH",
         body: { review_status: "discarded" },
+        prefer: "return=representation",
       });
+      if (!discarded.length) return json({ error: "Bozza gia approvata o non disponibile. Aggiorna l'elenco." }, 409);
       return json({ ok: true });
     }
 
@@ -4381,17 +4406,19 @@ function compactGoalEvents(events, match) {
     .sort((a, b) => (a.minute + a.extra / 100) - (b.minute + b.extra / 100));
 }
 
-async function getSources(env) {
-  try {
-    const sources = await sb(env, "/sources?active=eq.true&order=reliability.asc,name.asc");
-    return mergeDefaultSources(sources);
-  } catch {
-    return DEFAULT_SOURCES;
-  }
+async function getSources(env, options = {}) {
+  const sources = await sb(env, "/sources?order=reliability.asc,name.asc,id.desc");
+  const merged = mergeDefaultSources(sources);
+  return options.includeInactive ? merged : merged.filter(source => source.active !== false);
 }
 
 function mergeDefaultSources(sources) {
-  const rows = Array.isArray(sources) ? sources.slice() : [];
+  const rows = [];
+  for (const source of Array.isArray(sources) ? sources : []) {
+    const index = rows.findIndex(item => sourceKey(item) === sourceKey(source));
+    if (index < 0) rows.push(source);
+    else if (source.active === false) rows[index] = source;
+  }
   const seen = new Set(rows.map(sourceKey));
   for (const source of DEFAULT_SOURCES) {
     const key = sourceKey(source);

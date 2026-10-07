@@ -165,6 +165,17 @@ test('home phases are isolated and the parent can record their result',async t=>
   assert.equal(response.status,200);assert.deepEqual(tasks,['instagram_import','fetch_news','market','match_center']);
   assert.equal(logs.at(-1).type,'home_autopilot');
 });
+test('home recovery can omit the separately launched market scan',async t=>{
+  const tasks=[];
+  t.mock.method(globalThis,'fetch',async(url,options={})=>{
+    if(new URL(url).pathname==='/api/cron/task'){
+      tasks.push(JSON.parse(options.body).action);return Response.json({ok:true});
+    }
+    return Response.json([]);
+  });
+  const response=await onRequest({request:new Request('https://icv.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({action:'home_autopilot',include_market:false})}),env});
+  assert.equal((await response.json()).ok,true);assert.deepEqual(tasks,['fetch_news']);
+});
 test('internal redirects are rejected without forwarding the cron credential',async t=>{
   const destinations=[];
   t.mock.method(globalThis,'fetch',async(url,options={})=>{
@@ -195,6 +206,22 @@ test('a partial news scan retains its position and is not shown as fully healthy
   const result=await response.json();assert.equal(calls,24);assert.equal(result.continuation.offset,24);assert.ok(result.warning);
   const monitor=buildAutomationMonitor([{...logs.at(-1),created_at:new Date().toISOString()}]);
   assert.equal(monitor.jobs.find(job=>job.key==='news').status,'degraded');
+});
+test('a slow news scan saves its next block before the admin response deadline',async t=>{
+  const realNow=Date.now;let elapsed=0,calls=0;const logs=[];
+  t.mock.method(Date,'now',()=>realNow()+elapsed);
+  t.mock.method(globalThis,'fetch',async(url,options={})=>{
+    const u=new URL(url);
+    if(u.pathname==='/api/cron/news-batch'){
+      calls++;elapsed+=20000;
+      return Response.json({ok:true,scanned:1,inserted:0,sources_report:[],next_offset:calls*4,errors:[]});
+    }
+    if(options.method==='POST'){logs.push(...JSON.parse(options.body));return Response.json([]);}
+    return Response.json([]);
+  });
+  const response=await onRequest({request:new Request('https://icv.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({action:'fetch_news'})}),env});
+  const result=await response.json();assert.equal(calls,2);assert.equal(result.continuation.offset,8);assert.ok(result.warning);
+  assert.equal(logs.at(-1).type,'news');assert.equal(logs.at(-1).payload.continuation.offset,8);
 });
 test('a following news run resumes the saved source and offset',async t=>{
   let first;

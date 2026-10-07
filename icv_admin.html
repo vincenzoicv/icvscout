@@ -211,7 +211,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         </div>
 
         <div class="card admin-panel" data-panel="monitor">
-          <div class="item-head"><div><h2>Salute Automazioni</h2><div class="meta">Ritardi, errori, continuità e disponibilità delle fonti</div><div id="monitorUpdatedAt" class="meta"></div></div><button class="ghost small" onclick="load()">Aggiorna stato</button></div>
+          <div class="item-head"><div><h2>Salute Automazioni</h2><div class="meta">Ritardi, errori, continuità e disponibilità delle fonti</div><div id="monitorUpdatedAt" class="meta"></div></div><div class="item-actions"><button class="ghost small" onclick="runAutomation('home_autopilot')">Aggiorna home</button><button class="ghost small" onclick="load()">Aggiorna stato</button></div></div>
           <div id="monitorKpis" class="monitor-kpis"></div>
           <div class="monitor-grid"><div class="item"><h3>Processi automatici</h3><div id="monitorJobs"></div></div><div class="item"><h3>Salute fonti ultimo fetch</h3><div id="monitorSources"></div></div></div>
           <div class="item monitor-history"><h3>Ultime esecuzioni</h3>
@@ -500,7 +500,7 @@ function executeAutomation(action){
   buttons.forEach(function(button){button.disabled=true;button.setAttribute("aria-busy","true")});
   setAutomationActivity(action,"running","Attendi la risposta del servizio.");
   showToast("Automazione in corso");
-  return api("/api/admin/automate", {method:"POST", body:{action:action}})
+  return api("/api/admin/automate", {method:"POST", body:{action:action,...(action==="home_autopilot"?{include_market:false}:{})}})
     .then(function(res){
       if(!res||typeof res!=="object"||Array.isArray(res)||typeof res.ok!=="boolean")throw new Error("Risposta del servizio non valida");
       if(res.ok&& (res.skipped===true||res.disabled===true)){

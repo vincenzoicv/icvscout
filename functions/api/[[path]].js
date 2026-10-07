@@ -2655,7 +2655,7 @@ async function adminAutomate(request, env) {
   }
 
   if (action === "home_autopilot") {
-    const result = await runHomeAutopilot(env, { force: true });
+    const result = await runHomeAutopilot(env, { force: true, includeMarket: body.include_market !== false });
     return json(result);
   }
 
@@ -2710,7 +2710,7 @@ async function isolatedAutomation(env, action, body = {}) {
     method: "POST", redirect: "manual",
     headers: { "Content-Type": "application/json", "X-ICV-Cron-Token": env.CRON_SECRET || env.ADMIN_TOKEN },
     body: JSON.stringify({ ...body, action }),
-    signal: AbortSignal.timeout(90000),
+    signal: AbortSignal.timeout(action === "news-batch" ? 45000 : 90000),
   });
   if (response.status >= 300 && response.status < 400) {
     if (response.body) await response.body.cancel();
@@ -2758,6 +2758,7 @@ async function cronNewsBatch(request, env) {
 }
 
 async function fetchNewsDrafts(env, sources, options = {}) {
+  const deadline = Date.now() + 35000;
   const active = sources.filter(source => source.active !== false && !isBlacklistedSource(env, source));
   const latest = await latestAutomationRun(env, options.type || "news");
   const cursor = automationRunPayload(latest).continuation;
@@ -2770,7 +2771,7 @@ async function fetchNewsDrafts(env, sources, options = {}) {
     const source = active[index];
     let offset = index === start && cursor?.source_url === source.url ? Number(cursor.offset || 0) : 0;
     do {
-      if (batches >= (options.maxBatches || 24)) {
+      if (batches >= (options.maxBatches || 24) || batches > 0 && Date.now() >= deadline) {
         total.continuation = { source_url: source.url, offset };
         total.warning = "Giro parziale: le fonti rimanenti saranno controllate nel prossimo giro.";
         total.sources_report = [...reports.values()];

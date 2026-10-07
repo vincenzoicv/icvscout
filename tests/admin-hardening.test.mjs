@@ -132,6 +132,7 @@ test('news collection spans isolated invocations and still records a current run
     const u=new URL(url);
     if(u.pathname==='/api/cron/news-batch'){
       assert.equal(options.redirect,'manual');
+      assert.equal(u.origin,'https://icvscout-2026.pages.dev');
       internal++;counts.push(0);
       const response=await onRequest({request:new Request(url,options),env});
       assert.ok(counts.pop()<=40,'every source block stays within its request allowance');
@@ -156,7 +157,7 @@ test('home phases are isolated and the parent can record their result',async t=>
   const tasks=[],logs=[];
   t.mock.method(globalThis,'fetch',async(url,options={})=>{
     const u=new URL(url);
-    if(u.pathname==='/api/cron/task'){const body=JSON.parse(options.body);tasks.push(body.action);assert.equal(options.redirect,'manual');assert.equal(options.headers['X-ICV-Cron-Token'],env.ADMIN_TOKEN);return Response.json({ok:true,scanned:3});}
+    if(u.pathname==='/api/cron/task'){const body=JSON.parse(options.body);tasks.push(body.action);assert.equal(u.origin,'https://icvscout-2026.pages.dev');assert.equal(options.redirect,'manual');assert.equal(options.headers['X-ICV-Cron-Token'],env.ADMIN_TOKEN);return Response.json({ok:true,scanned:3});}
     if(options.method==='POST'&&u.pathname.endsWith('/automation_runs'))logs.push(...JSON.parse(options.body));
     return Response.json([]);
   });

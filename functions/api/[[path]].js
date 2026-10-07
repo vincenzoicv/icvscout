@@ -2706,7 +2706,7 @@ function youtubeScoutDisabledResult() {
 
 async function isolatedAutomation(env, action, body = {}) {
   // Each authenticated phase gets its own Cloudflare subrequest allowance.
-  const response = await fetch("https://ilcalciodivince.com/api/cron/" + (action === "news-batch" ? action : "task"), {
+  const response = await fetch("https://icvscout-2026.pages.dev/api/cron/" + (action === "news-batch" ? action : "task"), {
     method: "POST", redirect: "manual",
     headers: { "Content-Type": "application/json", "X-ICV-Cron-Token": env.CRON_SECRET || env.ADMIN_TOKEN },
     body: JSON.stringify({ ...body, action }),

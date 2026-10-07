@@ -131,6 +131,7 @@ test('news collection spans isolated invocations and still records a current run
     counts[counts.length-1]++;
     const u=new URL(url);
     if(u.pathname==='/api/cron/news-batch'){
+      assert.equal(options.redirect,'manual');
       internal++;counts.push(0);
       const response=await onRequest({request:new Request(url,options),env});
       assert.ok(counts.pop()<=40,'every source block stays within its request allowance');
@@ -155,13 +156,28 @@ test('home phases are isolated and the parent can record their result',async t=>
   const tasks=[],logs=[];
   t.mock.method(globalThis,'fetch',async(url,options={})=>{
     const u=new URL(url);
-    if(u.pathname==='/api/cron/task'){const body=JSON.parse(options.body);tasks.push(body.action);assert.equal(options.headers['X-ICV-Cron-Token'],env.ADMIN_TOKEN);return Response.json({ok:true,scanned:3});}
+    if(u.pathname==='/api/cron/task'){const body=JSON.parse(options.body);tasks.push(body.action);assert.equal(options.redirect,'manual');assert.equal(options.headers['X-ICV-Cron-Token'],env.ADMIN_TOKEN);return Response.json({ok:true,scanned:3});}
     if(options.method==='POST'&&u.pathname.endsWith('/automation_runs'))logs.push(...JSON.parse(options.body));
     return Response.json([]);
   });
   const response=await onRequest({request:new Request('https://icv.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({action:'home_autopilot'})}),env:{...env,IG_ACCESS_TOKEN:'test',FOOTBALL_DATA_KEY:'test'}});
   assert.equal(response.status,200);assert.deepEqual(tasks,['instagram_import','fetch_news','market','match_center']);
   assert.equal(logs.at(-1).type,'home_autopilot');
+});
+test('internal redirects are rejected without forwarding the cron credential',async t=>{
+  const destinations=[];
+  t.mock.method(globalThis,'fetch',async(url,options={})=>{
+    destinations.push(String(url));
+    if(new URL(url).pathname==='/api/cron/task'){
+      assert.equal(options.redirect,'manual');
+      return new Response(null,{status:302,headers:{Location:'https://other.test/'}});
+    }
+    return Response.json([]);
+  });
+  const response=await onRequest({request:new Request('https://icv.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({action:'home_autopilot'})}),env});
+  const result=await response.json();assert.equal(result.ok,false);
+  assert.ok(result.tasks.some(task=>task.error?.includes('Reindirizzamento inatteso')));
+  assert.ok(destinations.every(url=>!url.startsWith('https://other.test/')));
 });
 test('a partial news scan retains its position and is not shown as fully healthy',async t=>{
   let calls=0;const logs=[];

@@ -2707,11 +2707,15 @@ function youtubeScoutDisabledResult() {
 async function isolatedAutomation(env, action, body = {}) {
   // Each authenticated phase gets its own Cloudflare subrequest allowance.
   const response = await fetch("https://ilcalciodivince.com/api/cron/" + (action === "news-batch" ? action : "task"), {
-    method: "POST", redirect: "error",
+    method: "POST", redirect: "manual",
     headers: { "Content-Type": "application/json", "X-ICV-Cron-Token": env.CRON_SECRET || env.ADMIN_TOKEN },
     body: JSON.stringify({ ...body, action }),
     signal: AbortSignal.timeout(90000),
   });
+  if (response.status >= 300 && response.status < 400) {
+    if (response.body) await response.body.cancel();
+    throw new Error("Reindirizzamento inatteso della fase automazione");
+  }
   if (!response.ok) throw new Error("Fase automazione non disponibile (HTTP " + response.status + ")");
   const result = await response.json();
   if (!result || result.ok !== true) throw new Error(result?.error || "Fase automazione non confermata");

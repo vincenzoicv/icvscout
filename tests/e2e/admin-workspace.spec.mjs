@@ -13,6 +13,52 @@ async function workspace(page) {
   });
 }
 
+test('published news paging reaches all loaded rows and resets on filter changes',async({page})=>{
+  await workspace(page);
+  await page.evaluate(()=>{
+    state.news=Array.from({length:65},(_,i)=>({id:i+1,title:'News test '+(i+1),body:'Testo test',source:'ICV',visible:i%2===0,reliability:'trusted'}));
+    setAdminTab('published');renderNews();
+  });
+  await expect(page.locator('#newsList .item')).toHaveCount(20);
+  await expect(page.locator('#newsResults')).toContainText('65 di 65 news caricate');
+  await expect(page.locator('#newsResults')).toContainText('fino a 80 recenti');
+  await expect(page.locator('#newsPrevious')).toBeDisabled();
+  for(let i=0;i<3;i++)await page.locator('#newsNext').click();
+  await expect(page.locator('#newsList .item')).toHaveCount(5);
+  await expect(page.locator('#newsList')).toContainText('News test 65');
+  await expect(page.locator('#newsNext')).toBeDisabled();
+  await expect(page.getByRole('heading',{name:'News Pubblicate',exact:true})).toBeFocused();
+  await page.getByLabel('Filtra news per visibilità').selectOption('hidden');
+  await expect(page.locator('#newsPageLabel')).toHaveText('Pagina 1 di 2');
+  await expect(page.locator('#newsResults')).toContainText('32 di 65');
+  await page.getByLabel('Cerca news',{exact:true}).fill('inesistente');
+  await expect(page.locator('#newsPagination')).toBeHidden();
+  await expect(page.locator('#newsResults')).toContainText('0 di 65');
+  await page.locator('#newsResetFilters').click();
+  await expect(page.locator('#newsResults')).toContainText('65 di 65');
+  await page.setViewportSize({width:320,height:700});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:'/tmp/icv-news-pagination-320.png',fullPage:true});
+});
+
+test('published news changes prevent repeated requests and disable stale actions',async({page})=>{
+  await workspace(page);
+  const result=await page.evaluate(async()=>{
+    state.news=[{id:1,title:'News test',body:'Testo',visible:true}];setAdminTab('published');renderNews();
+    let calls=0,resolve;load=()=>Promise.resolve();api=()=>{calls++;return new Promise(r=>resolve=r);};
+    const first=toggleNews(1,true);await toggleNews(1,true);await deleteNews(1);
+    const disabled=Array.from(document.querySelectorAll('#newsList button')).every(button=>button.disabled);
+    resolve({ok:true});await first;
+    api=()=>Promise.reject(new Error('Servizio non disponibile'));await toggleNews(1,true);
+    const recovered=Array.from(document.querySelectorAll('#newsList button')).every(button=>!button.disabled);
+    state.readWarnings=['news'];renderNews();await toggleNews(1,true);await deleteNews(1);
+    return {calls,disabled,recovered,pending:pendingNewsChanges.size};
+  });
+  expect(result).toEqual({calls:1,disabled:true,recovered:true,pending:0});
+  await expect(page.locator('#newsResults')).toContainText('conteggio da verificare');
+  for(const button of await page.locator('#newsList button').all())await expect(button).toBeDisabled();
+});
+
 test('draft queue counts filtered results resets only draft filters and exposes readable states',async({page})=>{
   await workspace(page);
   await page.evaluate(()=>{state.drafts.push({id:2,title:'Formazione ufficiale',body:'Testo test',source_name:'Club test',reliability:'official',review_status:'ready'});state.filters.newsQuery='conserva';document.getElementById('newsQuery').value='conserva';renderDrafts();});

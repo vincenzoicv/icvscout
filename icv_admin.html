@@ -43,7 +43,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
-<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261006-8">
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261007-1">
 </head>
 <body>
 <header>
@@ -176,7 +176,9 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <h2>News Pubblicate</h2>
           <div id="reliabilityGuideNews"></div>
           <div class="filter-toolbar"><select id="newsReliability" aria-label="Filtra news per affidabilità" onchange="updateContentFilters()"><option value="all">Tutte le affidabilità</option><option value="official">Fonti ufficiali</option><option value="trusted">Fonti affidabili</option><option value="rumor">Voci</option><option value="aggregator">Aggregatori</option></select><select id="newsVisibility" aria-label="Filtra news per visibilità" onchange="updateContentFilters()"><option value="all">Visibili e nascoste</option><option value="visible">Visibili</option><option value="hidden">Nascoste</option></select><input id="newsQuery" aria-label="Cerca news" placeholder="Cerca news o fonte" oninput="updateContentFilters()"></div>
+          <div class="draft-results"><p id="newsResults" role="status" aria-live="polite"></p><button class="ghost small" id="newsResetFilters" type="button" onclick="resetNewsFilters()" hidden>Azzera filtri news</button></div>
           <div id="newsList"></div>
+          <nav class="news-pagination" id="newsPagination" aria-label="Pagine news pubblicate" hidden><button class="ghost small" id="newsPrevious" type="button" onclick="changeNewsPage(-1)">Precedenti</button><span id="newsPageLabel"></span><button class="ghost small" id="newsNext" type="button" onclick="changeNewsPage(1)">Successive</button></nav>
         </div>
 
         <div class="card admin-panel" data-panel="live">
@@ -548,6 +550,12 @@ function resetDraftFilters(){
   document.getElementById("draftQuery").value="";
   updateContentFilters();
 }
+function resetNewsFilters(){
+  document.getElementById("newsReliability").value="all";
+  document.getElementById("newsVisibility").value="all";
+  document.getElementById("newsQuery").value="";
+  updateContentFilters();
+}
 function setAdminTab(tab, btn){
   if(!document.querySelector('#adminNav button[data-tab="'+tab+'"]')) return;
   state.adminTab = tab;
@@ -662,9 +670,7 @@ function setSourceActive(input){
 }
 function sectionUnavailable(name){return (state.readWarnings||[]).includes(name)}
 function toggleNews(id, visible){
-  api("/api/admin/news", {method:"PATCH", body:{type:"toggle_news", id:id, visible:!visible}})
-    .then(function(){ showToast(visible ? "News nascosta" : "News visibile"); load(); })
-    .catch(function(err){ showToast(err.message); });
+  return changePublishedNews(id,"visibility",visible);
 }
 function toggleSocial(id, visible){
   api("/api/admin/news", {method:"PATCH", body:{type:"toggle_social", id:id, visible:!visible}})
@@ -672,10 +678,18 @@ function toggleSocial(id, visible){
     .catch(function(err){ showToast(err.message); });
 }
 function deleteNews(id){
-  if(!confirm("Eliminare questa news?")) return;
-  api("/api/admin/news", {method:"DELETE", body:{id:id}})
-    .then(function(){ showToast("News eliminata"); load(); })
-    .catch(function(err){ showToast(err.message); });
+  return changePublishedNews(id,"delete");
+}
+var pendingNewsChanges=new Set();
+function changePublishedNews(id,action,visible){
+  if(sectionUnavailable("news")){showToast("News non aggiornate. Aggiorna l'elenco prima di modificarle.");return Promise.resolve();}
+  if(pendingNewsChanges.has(String(id)))return Promise.resolve();
+  if(action==="delete"&&!confirm("Eliminare questa news?"))return Promise.resolve();
+  pendingNewsChanges.add(String(id));renderNews();
+  return api("/api/admin/news",{method:action==="delete"?"DELETE":"PATCH",body:action==="delete"?{id:id}:{type:"toggle_news",id:id,visible:!visible}})
+    .then(function(){showToast(action==="delete"?"News eliminata":visible?"News nascosta":"News visibile");return load();})
+    .catch(function(error){showToast(error.message);})
+    .finally(function(){pendingNewsChanges.delete(String(id));renderNews();});
 }
 function addSource(){
   if(!val("sourceName") || !val("sourceUrl")) return showToast("Nome e URL richiesti");
@@ -952,16 +966,36 @@ function isYoutubeDraft(d){
   var payload = d.raw_payload || {};
   return source.indexOf("youtube") !== -1 || note.indexOf("youtube scout") !== -1 || !!payload.video_id;
 }
+var newsPage=0,newsPageFilterKey="";
+function changeNewsPage(direction){
+  newsPage+=direction;renderNews();
+  var heading=document.querySelector('[data-panel="published"] h2');heading.setAttribute("tabindex","-1");heading.focus();
+}
 function renderNews(){
   var list = document.getElementById("newsList");
   var rows=state.news.slice(),filters=state.filters||{};
+  var filterKey=JSON.stringify([filters.newsReliability,filters.newsVisibility,filters.newsQuery]);
+  if(filterKey!==newsPageFilterKey){newsPage=0;newsPageFilterKey=filterKey;}
   if(filters.newsReliability!=="all")rows=rows.filter(function(n){return(n.reliability||"trusted")===filters.newsReliability});
   if(filters.newsVisibility!=="all")rows=rows.filter(function(n){return filters.newsVisibility==="visible"?n.visible!==false:n.visible===false});
   if(filters.newsQuery)rows=rows.filter(function(n){return[n.title,n.body,n.source].join(" ").toLowerCase().includes(filters.newsQuery)});
+  var pages=Math.max(1,Math.ceil(rows.length/20)),unavailable=sectionUnavailable("news");
+  newsPage=Math.max(0,Math.min(newsPage,pages-1));
+  var start=newsPage*20,shown=rows.slice(start,start+20);
+  document.getElementById("newsResults").textContent=unavailable?"Elenco non aggiornato: conteggio da verificare.":rows.length+" di "+state.news.length+" news caricate (fino a 80 recenti)"+(rows.length?" · Mostrate "+(start+1)+"-"+(start+shown.length):"");
+  document.getElementById("newsResetFilters").hidden=filters.newsReliability==="all"&&filters.newsVisibility==="all"&&!filters.newsQuery;
+  document.getElementById("newsPagination").hidden=pages<=1;
+  document.getElementById("newsPrevious").disabled=newsPage===0;
+  document.getElementById("newsNext").disabled=newsPage===pages-1;
+  document.getElementById("newsPageLabel").textContent="Pagina "+(newsPage+1)+" di "+pages;
   if(!rows.length){ list.innerHTML = "<div class='empty'>"+(sectionUnavailable("news")?"News non disponibili. Riprova ad aggiornare.":"Nessuna news corrisponde ai filtri selezionati.")+"</div>"; return; }
-  list.innerHTML = rows.slice(0,40).map(function(n){
+  list.innerHTML = shown.map(function(n){
     return "<div class='item'><div class='item-head'><div>"+reliabilityBadge(n.reliability||"trusted")+"<h3>"+esc(n.title)+"</h3></div><div class='meta'>"+(n.visible!==false?"visibile":"nascosta")+"</div></div><p>"+esc(n.body || "")+"</p><div class='meta'>"+date(n.created_at)+" · "+esc(n.source || "ICV")+"</div><div class='item-actions' style='margin-top:10px'><button class='ghost small' onclick='toggleNews("+n.id+","+(n.visible!==false)+")'>"+(n.visible!==false?"Nascondi":"Mostra")+"</button><button class='danger small' onclick='deleteNews("+n.id+")'>Elimina</button></div></div>";
   }).join("");
+  list.querySelectorAll(".item").forEach(function(row,index){
+    row.dataset.newsId=String(shown[index].id);
+    row.querySelectorAll("button").forEach(function(button){button.disabled=unavailable||pendingNewsChanges.has(row.dataset.newsId);});
+  });
 }
 function renderSources(){
   var list = document.getElementById("sourceList");

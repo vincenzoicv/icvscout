@@ -192,6 +192,8 @@ export async function onRequest(context) {
     if (path === "admin/news") return await adminNews(request, env);
     if (path === "admin/automate") return await adminAutomate(request, env);
     if (path === "cron/autopilot") return cronAutopilot(request, env);
+    if (path === "cron/news-batch") return await cronNewsBatch(request, env);
+    if (path === "cron/task") return await cronTask(request, env);
     if (path.startsWith("football-data/")) return footballDataProxy(path, url, env);
     return json({ error: "Endpoint non disponibile" }, 404);
   } catch (err) {
@@ -661,9 +663,8 @@ async function runHomeAutopilot(env, options = {}) {
 
   if (env.IG_ACCESS_TOKEN) {
     try {
-      const instagramResult = await importInstagramMedia(env);
+      const instagramResult = await isolatedAutomation(env, "instagram_import");
       result.tasks.push({ type: "instagram_import", result: instagramResult });
-      await logRun(env, "instagram_import", instagramResult);
     } catch (err) {
       const instagramFailure = automationFailure(err, "Errore Instagram");
       result.ok = false;
@@ -673,15 +674,12 @@ async function runHomeAutopilot(env, options = {}) {
   }
 
   try {
-    const sources = await getSources(env);
-    const newsResult = await fetchNewsDrafts(env, sources);
+    const newsResult = await isolatedAutomation(env, "fetch_news");
     result.tasks.push({ type: "news", result: newsResult });
-    await logRun(env, "news", newsResult);
 
     if (includeMarket) {
-      const marketResult = await runMarketAutomation(env, { sources });
+      const marketResult = await isolatedAutomation(env, "market");
       result.tasks.push({ type: "market", result: marketResult });
-      await logRun(env, "market", marketResult);
     }
   } catch (err) {
     result.ok = false;
@@ -691,9 +689,8 @@ async function runHomeAutopilot(env, options = {}) {
 
   if (env.FOOTBALL_DATA_KEY) {
     try {
-      const matchResult = await generateMatchCenter(env);
+      const matchResult = await isolatedAutomation(env, "match_center");
       result.tasks.push({ type: "match_center", result: matchResult });
-      await logRun(env, "match_center", matchResult);
     } catch (err) {
       result.tasks.push({ type: "match_center", error: err.message || "Errore Match Center" });
       await logRun(env, "match_center", automationFailure(err, "Errore Match Center"));
@@ -2707,7 +2704,101 @@ function youtubeScoutDisabledResult() {
   };
 }
 
-async function fetchNewsDrafts(env, sources) {
+async function isolatedAutomation(env, action, body = {}) {
+  // Each authenticated phase gets its own Cloudflare subrequest allowance.
+  const response = await fetch("https://ilcalciodivince.com/api/cron/" + (action === "news-batch" ? action : "task"), {
+    method: "POST", redirect: "error",
+    headers: { "Content-Type": "application/json", "X-ICV-Cron-Token": env.CRON_SECRET || env.ADMIN_TOKEN },
+    body: JSON.stringify({ ...body, action }),
+    signal: AbortSignal.timeout(90000),
+  });
+  if (!response.ok) throw new Error("Fase automazione non disponibile (HTTP " + response.status + ")");
+  const result = await response.json();
+  if (!result || result.ok !== true) throw new Error(result?.error || "Fase automazione non confermata");
+  return result;
+}
+
+async function authorizedCronPost(request, env) {
+  const expected = env.CRON_SECRET || env.ADMIN_TOKEN;
+  const supplied = request.headers.get("X-ICV-Cron-Token");
+  if (request.method !== "POST" || !expected || !supplied) return false;
+  const encode = new TextEncoder();
+  const hashes = await Promise.all([expected, supplied].map(value => crypto.subtle.digest("SHA-256", encode.encode(value))));
+  const left = new Uint8Array(hashes[0]), right = new Uint8Array(hashes[1]);
+  let difference = 0;
+  for (let index = 0; index < left.length; index++) difference |= left[index] ^ right[index];
+  return difference === 0;
+}
+
+async function cronTask(request, env) {
+  if (!await authorizedCronPost(request, env)) return json({ error: "Accesso non autorizzato" }, 401);
+  const { action } = await readBody(request);
+  let result, type;
+  if (action === "fetch_news") { type = "news"; result = await fetchNewsDrafts(env, await getSources(env)); }
+  else if (action === "market") { type = action; result = await runMarketAutomation(env); }
+  else if (action === "instagram_import") { type = action; result = await importInstagramMedia(env); }
+  else if (action === "match_center") { type = action; result = await generateMatchCenter(env); }
+  else return json({ error: "Fase non supportata" }, 400);
+  await logRun(env, type, result);
+  return json(result);
+}
+
+async function cronNewsBatch(request, env) {
+  if (!await authorizedCronPost(request, env)) return json({ error: "Accesso non autorizzato" }, 401);
+  const body = await readBody(request);
+  const source = (await getSources(env)).find(item => item.url === body.source_url && item.active !== false);
+  if (!source || isBlacklistedSource(env, source)) return json({ error: "Fonte non disponibile" }, 400);
+  const offset = Number(body.offset || 0);
+  if (!Number.isInteger(offset) || offset < 0 || offset > 32) return json({ error: "Posizione non valida" }, 400);
+  return json(await fetchNewsDraftBatch({ ...env, newsRequestBudget: { remaining: 40 } }, [source], { offset, cleanup: body.cleanup === true }));
+}
+
+async function fetchNewsDrafts(env, sources, options = {}) {
+  const active = sources.filter(source => source.active !== false && !isBlacklistedSource(env, source));
+  const latest = await latestAutomationRun(env, options.type || "news");
+  const cursor = automationRunPayload(latest).continuation;
+  let start = cursor ? active.findIndex(source => source.url === cursor.source_url) : 0;
+  if (start < 0) start = 0;
+  const total = { ok: true, scanned: 0, inserted: 0, published: 0, updated: 0, skipped_duplicates: 0, skipped_blacklisted: 0, errors: [], sources_report: [], discoveries: [] };
+  const reports = new Map();
+  let batches = 0;
+  for (let index = start; index < active.length; index++) {
+    const source = active[index];
+    let offset = index === start && cursor?.source_url === source.url ? Number(cursor.offset || 0) : 0;
+    do {
+      if (batches >= (options.maxBatches || 24)) {
+        total.continuation = { source_url: source.url, offset };
+        total.warning = "Giro parziale: le fonti rimanenti saranno controllate nel prossimo giro.";
+        total.sources_report = [...reports.values()];
+        return total;
+      }
+      try {
+        const batch = await isolatedAutomation(env, "news-batch", { source_url: source.url, offset, cleanup: batches === 0 });
+        if (!Array.isArray(batch.sources_report) || !Object.hasOwn(batch, "next_offset") || batch.next_offset != null && (!Number.isInteger(batch.next_offset) || batch.next_offset <= offset || batch.next_offset > 32)) throw new Error("Risposta del blocco news incompleta");
+        for (const key of ["scanned", "inserted", "published", "updated", "skipped_duplicates", "skipped_blacklisted"]) total[key] += Number(batch[key] || 0);
+        total.errors.push(...(batch.errors || []));
+        for (const discovery of batch.discoveries || []) addFetchDiscovery(total.discoveries, { ...discovery, sourceName: discovery.source, sourceUrl: discovery.source_url }, discovery.outcome);
+        for (const report of batch.sources_report || []) {
+          const previous = reports.get(report.url) || { source: report.source, url: report.url };
+          for (const [key, value] of Object.entries(report)) if (typeof value === "number") previous[key] = Number(previous[key] || 0) + value;
+          if (report.error) previous.error = report.error;
+          if (report.warning) previous.warning = report.warning;
+          reports.set(report.url, previous);
+        }
+        offset = batch.next_offset;
+      } catch (error) {
+        total.errors.push({ source: source.name, error: error.message });
+        reports.set(source.url, { source: source.name, url: source.url, error: error.message });
+        offset = null;
+      }
+      batches++;
+    } while (offset != null);
+  }
+  total.sources_report = [...reports.values()];
+  return total;
+}
+
+async function fetchNewsDraftBatch(env, sources, options = {}) {
   let scanned = 0;
   let inserted = 0;
   let published = 0;
@@ -2719,14 +2810,15 @@ async function fetchNewsDrafts(env, sources) {
   const discoveries = [];
   const recentNews = await recentNewsRows(env);
   const recentDrafts = await recentDraftRows(env);
-  const romanoCleanup = await cleanupFabrizioRows(env, recentNews, recentDrafts);
+  const romanoCleanup = options.cleanup ? await cleanupFabrizioRows(env, recentNews, recentDrafts, 4) : { updated: 0, errors: [] };
   updated += romanoCleanup.updated;
   if (romanoCleanup.errors.length) errors.push(...romanoCleanup.errors);
-  const queueCleanup = await cleanupNewsDraftQueue(env, recentDrafts);
+  const queueCleanup = options.cleanup ? await cleanupNewsDraftQueue(env, recentDrafts) : { discarded: 0, errors: [] };
   updated += queueCleanup.discarded;
   if (queueCleanup.errors.length) errors.push(...queueCleanup.errors);
   const activeRecentDrafts = recentDrafts.filter(row => row.review_status !== "discarded");
 
+  let nextOffset = null;
   for (const source of sources.filter(s => s.active !== false)) {
     const report = {
       source: source.name,
@@ -2747,11 +2839,13 @@ async function fetchNewsDrafts(env, sources) {
         continue;
       }
 
-      const items = (await fetchSourceItems(source)).slice(0, itemScanLimitForSource(source));
-      scanned += items.length;
-      report.scanned = items.length;
+      const items = (await fetchSourceItems(source, env.newsRequestBudget)).slice(0, itemScanLimitForSource(source));
+      const offset = options.offset || 0;
+      scanned += offset === 0 ? items.length : 0;
+      report.scanned = offset === 0 ? items.length : 0;
+      nextOffset = offset + 4 < items.length ? offset + 4 : null;
 
-      for (const item of items) {
+      for (const item of items.slice(offset, offset + 4)) {
         const normalized = normalizeGoogleTitle(item.title);
         const title = normalized.title;
         const sourceName = normalized.source || item.source || source.name;
@@ -2797,6 +2891,11 @@ async function fetchNewsDrafts(env, sources) {
 
         const existingDraft = findExistingDraftInRows(activeRecentDrafts, candidate, hash);
         if (existingDraft) {
+          if (existingDraft.review_status === "approved") {
+            skippedDuplicates++; report.skipped_duplicates++;
+            addFetchDiscovery(discoveries, candidate, "published_duplicate");
+            continue;
+          }
           const promotedDraft = await promoteExistingDraftFromCandidate(env, existingDraft, candidate, activeRecentDrafts);
           Object.assign(existingDraft, promotedDraft);
           if (shouldAutoPublishCandidate(env, source, candidate)) {
@@ -2887,6 +2986,7 @@ async function fetchNewsDrafts(env, sources) {
         addFetchDiscovery(discoveries, candidate, autoPublished ? "auto_published" : "new_draft");
       }
     } catch (err) {
+      nextOffset = null;
       if (isTransientFetchError(err)) {
         report.warning = err.message;
       } else {
@@ -2898,7 +2998,7 @@ async function fetchNewsDrafts(env, sources) {
     }
   }
 
-  return { ok: true, scanned, inserted, published, updated, skipped_duplicates: skippedDuplicates, skipped_blacklisted: skippedBlacklisted, errors, sources_report: sourcesReport, discoveries, romano_cleanup: romanoCleanup, queue_cleanup: queueCleanup };
+  return { ok: true, scanned, inserted, published, updated, skipped_duplicates: skippedDuplicates, skipped_blacklisted: skippedBlacklisted, errors, sources_report: sourcesReport, discoveries, romano_cleanup: romanoCleanup, queue_cleanup: queueCleanup, next_offset: nextOffset };
 }
 
 function addFetchDiscovery(rows, candidate, outcome) {
@@ -2919,7 +3019,7 @@ function addFetchDiscovery(rows, candidate, outcome) {
 }
 
 async function generateMarketDrafts(env, sources, options = {}) {
-  const result = await fetchNewsDrafts(env, sources);
+  const result = await fetchNewsDrafts(env, sources, { type: "market", maxBatches: 12 });
   const draftLimit = Math.max(1, Math.min(Number(options.draftLimit || 8), 12));
   const drafts = await sb(env, "/news_drafts?category=eq.calciomercato&review_status=in.(needs_review,ready)&order=created_at.desc&limit=" + draftLimit);
   let inserted = 0;
@@ -4456,7 +4556,7 @@ async function sb(env, path, options = {}) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), method === "GET" ? 3500 : 8000);
     try {
-      const response = await fetch(url.replace(/\/$/, "") + "/rest/v1" + path, {
+      const response = await budgetFetch(env.newsRequestBudget, url.replace(/\/$/, "") + "/rest/v1" + path, {
         method,
         headers: {
           "Content-Type": "application/json",
@@ -4584,14 +4684,28 @@ function json(data, status = 200) {
   return new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
 }
 
-async function fetchText(url) {
+async function budgetFetch(budget, url, options) {
+  if (budget && budget.remaining-- <= 0) throw new Error("Limite preventivo del blocco news raggiunto");
+  return fetch(url, options);
+}
+
+async function fetchText(url, budget) {
   let lastStatus = 0;
   const retryDelays = [350, 900];
   for (let attempt = 0; attempt < 3; attempt++) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
     try {
-      const response = await fetch(url, { headers: fetchHeadersForUrl(url), signal: controller.signal });
+      let target = url;
+      let response;
+      for (let redirects = 0; redirects < 4; redirects++) {
+        response = await budgetFetch(budget, target, { headers: fetchHeadersForUrl(target), signal: controller.signal, ...(budget ? { redirect: "manual" } : {}) });
+        if (!budget || ![301, 302, 303, 307, 308].includes(response.status)) break;
+        const location = response.headers.get("Location");
+        if (response.body) await response.body.cancel();
+        if (!location || redirects === 3) throw new Error("Troppi reindirizzamenti della fonte");
+        target = new URL(location, target).href;
+      }
       if (response.ok) return await response.text();
       lastStatus = response.status;
       if (response.body) await response.body.cancel();
@@ -4938,14 +5052,14 @@ function isBadYoutubeTopic(value) {
   return /^(siamo|buonasera|buongiorno|adesso|oggi|ieri|domani|juve|juventus|mercato|calciomercato|fonte|video|tema|focus|luca|romeo|gianni|toselli|agresti|balzarini)$/i.test(cleanText(value));
 }
 
-async function fetchSourceItems(source) {
+async function fetchSourceItems(source, budget) {
   let text;
   try {
-    text = await fetchText(source.url);
+    text = await fetchText(source.url, budget);
   } catch (err) {
     const fallbackUrl = googleNewsFallbackUrl(source.url);
     if (!fallbackUrl || !isTransientFetchError(err)) throw err;
-    text = await fetchText(fallbackUrl);
+    text = await fetchText(fallbackUrl, budget);
   }
   if (isTelegramWebSource(source.url)) return parseTelegramWeb(text, source);
   if (isJuventusOfficialHomepage(source.url)) return parseJuventusOfficialPage(text);
@@ -5680,13 +5794,13 @@ function draftKeepScore(row) {
   return reliability + ready + (Number.isFinite(date) ? date / 1e15 : 0);
 }
 
-async function cleanupFabrizioRows(env, recentNews, recentDrafts) {
+async function cleanupFabrizioRows(env, recentNews, recentDrafts, limit = 8) {
   let updated = 0;
   let hidden = 0;
   let discarded = 0;
   const errors = [];
 
-  for (const row of (recentNews || []).filter(row => isFabrizioSourceName(row.source)).slice(0, 8)) {
+  for (const row of (recentNews || []).filter(row => isFabrizioSourceName(row.source)).slice(0, limit)) {
     try {
       const fixed = existingFabrizioEditorial(row);
       const patch = {};
@@ -5709,7 +5823,7 @@ async function cleanupFabrizioRows(env, recentNews, recentDrafts) {
     }
   }
 
-  for (const row of (recentDrafts || []).filter(row => isFabrizioSourceName(row.source_name) && row.review_status !== "approved" && row.review_status !== "discarded").slice(0, 8)) {
+  for (const row of (recentDrafts || []).filter(row => isFabrizioSourceName(row.source_name) && row.review_status !== "approved" && row.review_status !== "discarded").slice(0, limit)) {
     try {
       const fixed = existingFabrizioEditorial(row);
       const patch = { updated_at: new Date().toISOString() };
@@ -6677,6 +6791,7 @@ function automationRunProblems(payload, depth = 0) {
   if (!payload || typeof payload !== "object" || depth > 5) return [];
   const problems = [];
   if (payload.error) problems.push(cleanText(payload.error));
+  if (payload.warning) problems.push(cleanText(payload.warning));
   if (Array.isArray(payload.errors)) {
     payload.errors.forEach(item => problems.push(cleanText(typeof item === "string" ? item : item && (item.error || item.warning))));
   }

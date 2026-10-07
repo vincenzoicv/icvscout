@@ -1390,6 +1390,7 @@ function automationResultMessage(action, res){
     var failed = reports.filter(function(item){ return !!item.error || !!item.warning; }).length;
     var base = "Fetch news: " + Number(res && res.scanned || 0) + " lette, " + relevant + " rilevanti, " + Number(res && res.inserted || 0) + " nuove bozze, " + Number(res && res.skipped_duplicates || 0) + " duplicate";
     if(failed) base += ", " + failed + " fonti non disponibili";
+    if(res && res.warning) base += " · " + res.warning;
     if(romano){
       base += " · Romano: " + Number(romano.scanned || 0) + " lette, " + Number(romano.relevant || 0) + " rilevanti, " + Number(romano.published || 0) + " pubblicate, " + Number(romano.updated || 0) + " aggiornate";
       if(romano.error && !isIgnorableAutomationError(romano.error)) base += " · errore: " + friendlyAutomationError(romano.error);

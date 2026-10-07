@@ -116,6 +116,97 @@ test('source database outage stops the scan instead of reactivating defaults',as
   const r=await onRequest({request:new Request('https://icv.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({action:'fetch_news'})}),env});
   assert.equal(r.status,500);assert.equal(outside,0);
 });
+test('internal news phases reject anonymous requests before any outgoing work',async t=>{
+  let calls=0;t.mock.method(globalThis,'fetch',async()=>{calls++;return Response.json([]);});
+  for(const path of ['news-batch','task'])for(const method of ['GET','POST']){
+    const response=await onRequest({request:new Request('https://icv.test/api/cron/'+path,{method}),env});
+    assert.equal(response.status,401);
+  }
+  assert.equal(calls,0);
+});
+test('news collection spans isolated invocations and still records a current run',async t=>{
+  const counts=[0],logs=[];let id=1,internal=0;
+  const rss='<rss><channel>'+Array.from({length:12},(_,i)=>'<item><title>Juventus rinnovo giocatore test '+i+'</title><link>https://example.test/article/'+i+'</link><description>La Juventus prepara il rinnovo del contratto del giocatore '+i+'</description><pubDate>'+new Date().toUTCString()+'</pubDate></item>').join('')+'</channel></rss>';
+  t.mock.method(globalThis,'fetch',async(url,options={})=>{
+    counts[counts.length-1]++;
+    const u=new URL(url);
+    if(u.pathname==='/api/cron/news-batch'){
+      internal++;counts.push(0);
+      const response=await onRequest({request:new Request(url,options),env});
+      assert.ok(counts.pop()<=40,'every source block stays within its request allowance');
+      return response;
+    }
+    if(u.hostname!==new URL(env.SUPABASE_URL).hostname)return new Response(rss);
+    if(options.method==='POST'){
+      const rows=JSON.parse(options.body);
+      if(u.pathname.endsWith('/automation_runs'))logs.push(...rows);
+      return Response.json(rows.map(row=>({...row,id:id++})));
+    }
+    return Response.json([]);
+  });
+  const response=await onRequest({request:new Request('https://icv.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({action:'fetch_news'})}),env});
+  assert.equal(response.status,200);const result=await response.json();
+  assert.ok(internal>1);assert.ok(counts[0]<50);assert.ok(result.scanned>0);assert.ok(result.inserted>0);
+  assert.ok(result.errors.every(error=>!error.error.includes('subrequests')));
+  assert.equal(logs.at(-1).type,'news');assert.equal(logs.at(-1).payload.scanned,result.scanned);
+  assert.ok(result.sources_report.every(report=>!report.error));
+});
+test('home phases are isolated and the parent can record their result',async t=>{
+  const tasks=[],logs=[];
+  t.mock.method(globalThis,'fetch',async(url,options={})=>{
+    const u=new URL(url);
+    if(u.pathname==='/api/cron/task'){const body=JSON.parse(options.body);tasks.push(body.action);assert.equal(options.headers['X-ICV-Cron-Token'],env.ADMIN_TOKEN);return Response.json({ok:true,scanned:3});}
+    if(options.method==='POST'&&u.pathname.endsWith('/automation_runs'))logs.push(...JSON.parse(options.body));
+    return Response.json([]);
+  });
+  const response=await onRequest({request:new Request('https://icv.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({action:'home_autopilot'})}),env:{...env,IG_ACCESS_TOKEN:'test',FOOTBALL_DATA_KEY:'test'}});
+  assert.equal(response.status,200);assert.deepEqual(tasks,['instagram_import','fetch_news','market','match_center']);
+  assert.equal(logs.at(-1).type,'home_autopilot');
+});
+test('a partial news scan retains its position and is not shown as fully healthy',async t=>{
+  let calls=0;const logs=[];
+  t.mock.method(globalThis,'fetch',async(url,options={})=>{
+    const u=new URL(url);
+    if(u.pathname==='/api/cron/news-batch'){
+      calls++;const body=JSON.parse(options.body);assert.equal(body.offset,calls-1);
+      return Response.json({ok:true,scanned:1,inserted:0,sources_report:[],next_offset:calls,errors:[]});
+    }
+    if(options.method==='POST'){logs.push(...JSON.parse(options.body));return Response.json([]);}
+    return Response.json([]);
+  });
+  const response=await onRequest({request:new Request('https://icv.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({action:'fetch_news'})}),env});
+  const result=await response.json();assert.equal(calls,24);assert.equal(result.continuation.offset,24);assert.ok(result.warning);
+  const monitor=buildAutomationMonitor([{...logs.at(-1),created_at:new Date().toISOString()}]);
+  assert.equal(monitor.jobs.find(job=>job.key==='news').status,'degraded');
+});
+test('a following news run resumes the saved source and offset',async t=>{
+  let first;
+  t.mock.method(globalThis,'fetch',async(url,options={})=>{
+    const u=new URL(url);
+    if(u.pathname==='/api/cron/news-batch'){
+      const body=JSON.parse(options.body);first??=body;
+      return Response.json({ok:true,scanned:0,sources_report:[],next_offset:null,errors:[]});
+    }
+    if(u.pathname.endsWith('/sources'))return Response.json([{name:'Fonte test',url:'https://example.test/feed',active:true,reliability:'trusted'}]);
+    if(u.pathname.endsWith('/automation_runs')&&options.method!=='POST')return Response.json([{payload:{continuation:{source_url:'https://example.test/feed',offset:4}}}]);
+    return Response.json([]);
+  });
+  const response=await onRequest({request:new Request('https://icv.test/api/admin/automate',{method:'POST',headers:{'X-ICV-Admin-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({action:'fetch_news'})}),env});
+  assert.equal(response.status,200);assert.equal(first.source_url,'https://example.test/feed');assert.equal(first.offset,4);assert.equal((await response.json()).continuation,undefined);
+});
+test('a batch does not republish a draft that was already approved',async t=>{
+  const title='Juventus rinnovo Mario Rossi';let writes=0;
+  t.mock.method(globalThis,'fetch',async(url,options={})=>{
+    const u=new URL(url);
+    if(options.method&&options.method!=='GET')writes++;
+    if(u.hostname==='example.test')return new Response('<rss><channel><item><title>'+title+'</title><link>https://example.test/article</link><pubDate>'+new Date().toUTCString()+'</pubDate></item></channel></rss>');
+    if(u.pathname.endsWith('/sources'))return Response.json([{name:'Fonte test',url:'https://example.test/feed',active:true,reliability:'official'}]);
+    if(u.pathname.endsWith('/news_drafts'))return Response.json([{id:5,title,review_status:'approved',source_name:'Fonte test',source_url:'https://example.test/article',created_at:new Date().toISOString()}]);
+    return Response.json([]);
+  });
+  const response=await onRequest({request:new Request('https://icv.test/api/cron/news-batch',{method:'POST',headers:{'X-ICV-Cron-Token':env.ADMIN_TOKEN,'Content-Type':'application/json'},body:JSON.stringify({source_url:'https://example.test/feed'})}),env});
+  const result=await response.json();assert.equal(response.status,200);assert.equal(result.skipped_duplicates,1);assert.equal(result.published,0);assert.equal(writes,0);
+});
 test('approval uses the atomic RPC, not separate insert and draft PATCH',async t=>{
   const writes=[];t.mock.method(globalThis,'fetch',async(url,options={})=>{
     const path=new URL(url).pathname;

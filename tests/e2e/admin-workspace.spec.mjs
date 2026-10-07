@@ -48,7 +48,7 @@ test('published news changes prevent repeated requests and disable stale actions
     let calls=0,resolve;load=()=>Promise.resolve();api=()=>{calls++;return new Promise(r=>resolve=r);};
     const first=toggleNews(1,true);await toggleNews(1,true);await deleteNews(1);
     const disabled=Array.from(document.querySelectorAll('#newsList button')).every(button=>button.disabled);
-    resolve({ok:true});await first;
+    resolve({news:{id:1,visible:false}});await first;
     api=()=>Promise.reject(new Error('Servizio non disponibile'));await toggleNews(1,true);
     const recovered=Array.from(document.querySelectorAll('#newsList button')).every(button=>!button.disabled);
     state.readWarnings=['news'];renderNews();await toggleNews(1,true);await deleteNews(1);
@@ -57,6 +57,30 @@ test('published news changes prevent repeated requests and disable stale actions
   expect(result).toEqual({calls:1,disabled:true,recovered:true,pending:0});
   await expect(page.locator('#newsResults')).toContainText('conteggio da verificare');
   for(const button of await page.locator('#newsList button').all())await expect(button).toBeDisabled();
+});
+
+test('editorial changes require confirmation and retain saved state when refresh fails',async({page})=>{
+  await workspace(page);
+  await page.evaluate(()=>{load=()=>Promise.resolve(false);api=()=>Promise.resolve({});openDraftPreview(1);});
+  await page.getByRole('button',{name:'Approva e pubblica'}).click();
+  await expect(page.locator('#draftPreview')).toBeVisible();
+  await expect(page.locator('#draftPreviewStatus')).toContainText('Salvataggio non confermato');
+  expect(await page.evaluate(()=>state.drafts[0].review_status)).toBe('pending');
+  await page.evaluate(async()=>{api=()=>Promise.resolve({news:{id:10},already_approved:false});await approveDraft(1);});
+  await expect(page.locator('#draftReviewFeedback')).toContainText('Salvataggio confermato, ma elenco non aggiornato');
+  await expect(page.locator('#draftList [data-draft-id="1"]')).toHaveCount(0);
+  expect(await page.evaluate(async()=>{let calls=0;api=()=>{calls++;return Promise.resolve({})};await discardDraft(1);return calls;})).toBe(0);
+  await page.evaluate(()=>{state.news=[{id:5,title:'News test',visible:true}];setAdminTab('published');renderNews();});
+  await page.evaluate(async()=>{api=()=>Promise.resolve({news:{id:99,visible:false}});await toggleNews(5,true);});
+  await expect(page.locator('#newsChangeFeedback')).toContainText('Salvataggio non confermato');
+  expect(await page.evaluate(()=>state.news[0].visible)).toBe(true);
+  await page.evaluate(async()=>{api=()=>Promise.resolve({news:{id:5,visible:false}});await toggleNews(5,true);});
+  await expect(page.locator('#newsChangeFeedback')).toContainText('News nascosta. Salvataggio confermato');
+  await expect(page.locator('#newsList')).toContainText('nascosta');
+  page.once('dialog',dialog=>dialog.accept());
+  await page.evaluate(async()=>{api=()=>Promise.resolve({ok:true});await deleteNews(5);});
+  await expect(page.locator('#newsList .item')).toHaveCount(0);
+  await expect(page.locator('#newsChangeFeedback')).toContainText('News eliminata. Salvataggio confermato');
 });
 
 test('draft queue counts filtered results resets only draft filters and exposes readable states',async({page})=>{
@@ -181,7 +205,7 @@ test('preview approval uses the existing review guard and closes only on success
   await page.evaluate(()=>{api=()=>Promise.reject(new Error('Servizio temporaneamente non disponibile'));load=()=>Promise.resolve();});
   await page.getByRole('button',{name:'Approva e pubblica'}).click();
   await expect(page.locator('#draftPreview')).toBeVisible();await expect(page.locator('#draftPreviewStatus')).toContainText('temporaneamente');
-  await page.evaluate(()=>{api=()=>Promise.resolve({already_approved:false});});
+  await page.evaluate(()=>{api=()=>Promise.resolve({news:{id:10},already_approved:false});});
   await page.getByRole('button',{name:'Approva e pubblica'}).click();await expect(page.locator('#draftPreview')).toBeHidden();
 });
 
@@ -332,7 +356,7 @@ test('repeated Approva/Scarta requests are blocked while the first review is pen
     let calls=0,complete;
     api=()=>{calls++;return new Promise(resolve=>complete=resolve);};load=()=>Promise.resolve();
     const first=approveDraft(1);const disabled=document.querySelector('[data-draft-id="1"] button').disabled;
-    await approveDraft(1);await discardDraft(1);complete({already_approved:false});await first;
+    await approveDraft(1);await discardDraft(1);complete({news:{id:10},already_approved:false});await first;
     return {calls,disabled,pending:pendingDraftReviews.size};
   });
   expect(result).toEqual({calls:1,disabled:true,pending:0});

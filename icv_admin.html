@@ -43,7 +43,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
-<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261007-1">
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261007-2">
 </head>
 <body>
 <header>
@@ -169,6 +169,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <div class="filter-toolbar"><select id="draftReliability" aria-label="Filtra bozze per affidabilità" onchange="updateContentFilters()"><option value="all">Tutte le affidabilità</option><option value="official">Fonti ufficiali</option><option value="trusted">Fonti affidabili</option><option value="rumor">Voci</option><option value="aggregator">Aggregatori</option></select><select id="draftStatus" aria-label="Filtra bozze per stato" onchange="updateContentFilters()"><option value="all">Tutti gli stati</option><option value="ready">Pronte</option><option value="pending">Da verificare</option></select><input id="draftQuery" aria-label="Cerca bozze" placeholder="Cerca titolo o fonte" oninput="updateContentFilters()"></div>
           <div class="draft-results"><p id="draftResults" role="status" aria-live="polite"></p><button class="ghost small" id="draftResetFilters" type="button" onclick="resetDraftFilters()" hidden>Azzera filtri</button></div>
           <div id="draftList"></div>
+          <p id="draftReviewFeedback" class="editorial-feedback" role="status" aria-live="polite" hidden></p>
           <div id="fetchResults" style="margin-top:16px"></div>
         </div>
 
@@ -178,6 +179,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <div class="filter-toolbar"><select id="newsReliability" aria-label="Filtra news per affidabilità" onchange="updateContentFilters()"><option value="all">Tutte le affidabilità</option><option value="official">Fonti ufficiali</option><option value="trusted">Fonti affidabili</option><option value="rumor">Voci</option><option value="aggregator">Aggregatori</option></select><select id="newsVisibility" aria-label="Filtra news per visibilità" onchange="updateContentFilters()"><option value="all">Visibili e nascoste</option><option value="visible">Visibili</option><option value="hidden">Nascoste</option></select><input id="newsQuery" aria-label="Cerca news" placeholder="Cerca news o fonte" oninput="updateContentFilters()"></div>
           <div class="draft-results"><p id="newsResults" role="status" aria-live="polite"></p><button class="ghost small" id="newsResetFilters" type="button" onclick="resetNewsFilters()" hidden>Azzera filtri news</button></div>
           <div id="newsList"></div>
+          <p id="newsChangeFeedback" class="editorial-feedback" role="status" aria-live="polite" hidden></p>
           <nav class="news-pagination" id="newsPagination" aria-label="Pagine news pubblicate" hidden><button class="ghost small" id="newsPrevious" type="button" onclick="changeNewsPage(-1)">Precedenti</button><span id="newsPageLabel"></span><button class="ghost small" id="newsNext" type="button" onclick="changeNewsPage(1)">Successive</button></nav>
         </div>
 
@@ -652,13 +654,23 @@ document.getElementById("draftPreview").addEventListener("keydown",function(even
 function reviewDraft(id,type){
   if(sectionUnavailable("drafts")){showToast("Bozze non aggiornate. Aggiorna l'elenco prima della revisione.");return Promise.resolve();}
   if(pendingDraftReviews.has(String(id))) return Promise.resolve();
+  var draft=state.drafts.find(function(item){return String(item.id)===String(id)});
+  if(!draft||["approved","discarded"].includes(draft.review_status)){showToast("Bozza gia revisionata o non disponibile. Aggiorna l'elenco.");return Promise.resolve();}
   pendingDraftReviews.add(String(id));
+  editorialFeedback("draftReviewFeedback","Revisione in corso...",false);
   if(String(draftPreviewId)===String(id))document.getElementById("draftPreviewStatus").textContent="Revisione in corso...";
   var buttons = document.querySelectorAll('[data-draft-id="'+Number(id)+'"] button');
   buttons.forEach(function(button){button.disabled=true});
   return api("/api/admin/news", {method:type==="approve_draft"?"POST":"PATCH",body:{type:type,id:id}})
-    .then(function(result){if(String(draftPreviewId)===String(id))document.getElementById("draftPreview").close();showToast(type==="approve_draft"?(result.already_approved?"Bozza gia pubblicata":"Bozza pubblicata"):"Bozza scartata");return load();})
-    .catch(function(err){if(String(draftPreviewId)===String(id))document.getElementById("draftPreviewStatus").textContent=err.message;showToast(err.message);})
+    .then(function(result){
+      if(type==="approve_draft"?!(result&&result.news&&Number.isSafeInteger(Number(result.news.id))&&Number(result.news.id)>0):!(result&&result.ok===true))throw new Error("Salvataggio non confermato. Aggiorna l'elenco prima di ripetere l'operazione.");
+      draft.review_status=type==="approve_draft"?"approved":"discarded";renderDrafts();
+      if(String(draftPreviewId)===String(id))document.getElementById("draftPreview").close();
+      var message=type==="approve_draft"?(result.already_approved?"Bozza gia pubblicata":"Bozza pubblicata"):"Bozza scartata";
+      editorialFeedback("draftReviewFeedback",message,false);showToast(message);
+      return load().then(function(updated){editorialFeedback("draftReviewFeedback",message+(updated===false||sectionUnavailable("drafts")?". Salvataggio confermato, ma elenco non aggiornato.":"."),updated===false||sectionUnavailable("drafts"));});
+    })
+    .catch(function(err){if(String(draftPreviewId)===String(id))document.getElementById("draftPreviewStatus").textContent=err.message;editorialFeedback("draftReviewFeedback",err.message,true);showToast(err.message);})
     .finally(function(){pendingDraftReviews.delete(String(id));buttons.forEach(function(button){button.disabled=sectionUnavailable("drafts")});});
 }
 function setSourceActive(input){
@@ -681,14 +693,22 @@ function deleteNews(id){
   return changePublishedNews(id,"delete");
 }
 var pendingNewsChanges=new Set();
+function editorialFeedback(id,message,warning){var box=document.getElementById(id);box.hidden=false;box.textContent=message;box.dataset.warning=String(warning);}
 function changePublishedNews(id,action,visible){
   if(sectionUnavailable("news")){showToast("News non aggiornate. Aggiorna l'elenco prima di modificarle.");return Promise.resolve();}
   if(pendingNewsChanges.has(String(id)))return Promise.resolve();
   if(action==="delete"&&!confirm("Eliminare questa news?"))return Promise.resolve();
   pendingNewsChanges.add(String(id));renderNews();
+  editorialFeedback("newsChangeFeedback","Salvataggio in corso...",false);
   return api("/api/admin/news",{method:action==="delete"?"DELETE":"PATCH",body:action==="delete"?{id:id}:{type:"toggle_news",id:id,visible:!visible}})
-    .then(function(){showToast(action==="delete"?"News eliminata":visible?"News nascosta":"News visibile");return load();})
-    .catch(function(error){showToast(error.message);})
+    .then(function(result){
+      if(action==="delete"?!(result&&result.ok===true):!(result&&result.news&&String(result.news.id)===String(id)&&result.news.visible===!visible))throw new Error("Salvataggio non confermato. Aggiorna l'elenco prima di ripetere l'operazione.");
+      if(action==="delete")state.news=state.news.filter(function(item){return String(item.id)!==String(id)});
+      else state.news.forEach(function(item){if(String(item.id)===String(id))item.visible=!visible;});
+      renderNews();var message=action==="delete"?"News eliminata":visible?"News nascosta":"News visibile";editorialFeedback("newsChangeFeedback",message,false);showToast(message);
+      return load().then(function(updated){editorialFeedback("newsChangeFeedback",message+(updated===false||sectionUnavailable("news")?". Salvataggio confermato, ma elenco non aggiornato.":"."),updated===false||sectionUnavailable("news"));});
+    })
+    .catch(function(error){editorialFeedback("newsChangeFeedback",error.message,true);showToast(error.message);})
     .finally(function(){pendingNewsChanges.delete(String(id));renderNews();});
 }
 function addSource(){

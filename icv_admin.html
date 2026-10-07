@@ -1426,6 +1426,7 @@ function firstAutomationError(res, depth){
     return !isIgnorableAutomationError([item && item.source || "", item && item.error || ""].join(": "));
   });
   if(errors.length){var first=errors[0]||{};var message=typeof first==="string"?first:[first.source||first.title||first.draft||"",first.error||""].filter(Boolean).join(": ");if(message)return message;}
+  if(res.warning)return String(res.warning);
   var tasks=Array.isArray(res.tasks)?res.tasks:[];
   for(var task of tasks){var problem=firstAutomationError(task,depth+1);if(problem)return [task.type||"",problem].filter(Boolean).join(": ");}
   if(res.result){var nested=firstAutomationError(res.result,depth+1);if(nested)return nested;}

@@ -4,6 +4,12 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 
 const admin = readFileSync(new URL('../icv_admin.html', import.meta.url), 'utf8');
+test('partial scans and nested home warnings are not presented as clean completion', () => {
+  const context = vm.createContext({});
+  vm.runInContext(admin.slice(admin.indexOf('function firstAutomationError('), admin.indexOf('function friendlyAutomationError(')), context);
+  assert.equal(context.firstAutomationError({ok:true,warning:'Giro parziale'}),'Giro parziale');
+  assert.equal(context.firstAutomationError({ok:true,tasks:[{type:'news',result:{ok:true,warning:'Giro parziale'}}]}),'news: Giro parziale');
+});
 function client(fetch) {
   const context = { fetch, AbortController, setTimeout, clearTimeout, token: () => 'test-only', state: { drafts: ['previous'] }, showToast: message => context.toast = message };
   vm.createContext(context);

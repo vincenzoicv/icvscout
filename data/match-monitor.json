@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-10T14:46:31Z",
+  "updated_at": "2026-10-10T19:50:41Z",
   "match": {
     "home": "Cagliari Calcio",
     "away": "Juventus FC",
@@ -36,12 +36,12 @@
   "updates": [
     {
       "category": "Conferenza stampa",
-      "title": "Spalletti fa il punto su Cambiaso e Zhegrova",
-      "summary": "Alla vigilia di Cagliari-Juventus, il tecnico conferma che Cambiaso ha svolto regolarmente tutti gli allenamenti. Zhegrova \u00e8 stato provato tra i titolari nelle ultime due sedute: le scelte definitive restano da confermare.",
-      "detail": "Alla vigilia di Cagliari-Juventus, il tecnico conferma che Cambiaso ha svolto regolarmente tutti gli allenamenti. Zhegrova \u00e8 stato provato tra i titolari nelle ultime due sedute: le scelte definitive restano da confermare.",
-      "source": "JuventusNews24",
-      "source_url": "https://www.juventusnews24.com/conferenza-stampa-spalletti-pre-cagliari-juve-live-parole-vigilia-serie-a-2026-27/",
-      "published_at": "2026-10-10T14:24:00Z",
+      "title": "Spalletti: Cambiaso in gruppo, Zhegrova e Sarr candidati dal primo minuto",
+      "summary": "Cambiaso ha svolto regolarmente tutti gli allenamenti. Il tecnico valuta Zhegrova e Sarr tra le possibili novit\u00e0 dall'inizio e chiede intensit\u00e0 contro un Cagliari capace di ripartire rapidamente. Le scelte definitive restano da confermare.",
+      "detail": "Cambiaso ha svolto regolarmente tutti gli allenamenti. Il tecnico valuta Zhegrova e Sarr tra le possibili novit\u00e0 dall'inizio e chiede intensit\u00e0 contro un Cagliari capace di ripartire rapidamente. Le scelte definitive restano da confermare.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/cagliari-juventus-la-conferenza-stampa-di-luciano-spalletti",
+      "published_at": "2026-10-10T14:56:58.233Z",
       "significant": true
     },
     {

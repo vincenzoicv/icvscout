@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-10T12:41:03Z",
+  "updated_at": "2026-10-10T14:46:31Z",
   "match": {
     "home": "Cagliari Calcio",
     "away": "Juventus FC",
@@ -35,6 +35,16 @@
   },
   "updates": [
     {
+      "category": "Conferenza stampa",
+      "title": "Spalletti fa il punto su Cambiaso e Zhegrova",
+      "summary": "Alla vigilia di Cagliari-Juventus, il tecnico conferma che Cambiaso ha svolto regolarmente tutti gli allenamenti. Zhegrova \u00e8 stato provato tra i titolari nelle ultime due sedute: le scelte definitive restano da confermare.",
+      "detail": "Alla vigilia di Cagliari-Juventus, il tecnico conferma che Cambiaso ha svolto regolarmente tutti gli allenamenti. Zhegrova \u00e8 stato provato tra i titolari nelle ultime due sedute: le scelte definitive restano da confermare.",
+      "source": "JuventusNews24",
+      "source_url": "https://www.juventusnews24.com/conferenza-stampa-spalletti-pre-cagliari-juve-live-parole-vigilia-serie-a-2026-27/",
+      "published_at": "2026-10-10T14:24:00Z",
+      "significant": true
+    },
+    {
       "category": "Squalifica",
       "title": "Neto squalificato: salta Cagliari-Juventus",
       "summary": "Il portiere deve scontare una giornata di squalifica maturata nella precedente esperienza al Botafogo e salta la trasferta di Cagliari.",
@@ -42,16 +52,6 @@
       "source": "La Gazzetta dello Sport",
       "source_url": "https://www.gazzetta.it/Calcio/Serie-A/Juventus/10-10-2026/cagliari-juve-neto-squalificato-i-motivi.shtml",
       "published_at": "2026-10-10T09:20:00Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Spalletti in conferenza oggi alle 16:00",
-      "summary": "Sabato 10 ottobre alle 16:00 Luciano Spalletti presenta Cagliari-Juventus e fa il punto sulla squadra alla vigilia della trasferta.",
-      "detail": "Sabato 10 ottobre alle 16:00 Luciano Spalletti presenta Cagliari-Juventus e fa il punto sulla squadra alla vigilia della trasferta.",
-      "source": "TuttoCagliari",
-      "source_url": "https://www.tuttocagliari.net/avversari/juventus-domani-16-conferenza-stampa-luciano-spalletti-185822",
-      "published_at": "2026-10-09T13:45:00Z",
       "significant": true
     }
   ]

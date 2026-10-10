@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-10T12:31:52Z",
+  "updated_at": "2026-10-10T12:41:03Z",
   "match": {
     "home": "Cagliari Calcio",
     "away": "Juventus FC",
@@ -28,10 +28,22 @@
     ],
     "details": [
       { "label": "Fonte", "text": "Probabile formazione secondo Sky Sport, non ancora ufficiale. Le altre testate indicano scelte differenti." },
-      { "label": "Ballottaggi", "text": "Sky Sport non indica ballottaggi nella pagina consultata. Undici e modulo possono cambiare fino alla formazione ufficiale." }
+      { "label": "Ballottaggi", "text": "Sky Sport non indica ballottaggi nella pagina consultata. Undici e modulo possono cambiare fino alla formazione ufficiale." },
+      { "label": "Squalificati", "text": "Neto salta Cagliari-Juventus per squalifica, come riportato da Sky Sport e La Gazzetta dello Sport." },
+      { "label": "Indisponibili", "text": "Sky Sport indica assenti Yildiz, Ekhator, Cabal, Thuram, Locatelli, Boga e Grabara." }
     ]
   },
   "updates": [
+    {
+      "category": "Squalifica",
+      "title": "Neto squalificato: salta Cagliari-Juventus",
+      "summary": "Il portiere deve scontare una giornata di squalifica maturata nella precedente esperienza al Botafogo e non sara disponibile per la trasferta di Cagliari. Lo riportano La Gazzetta dello Sport e Sky Sport.",
+      "detail": "Il portiere deve scontare una giornata di squalifica maturata nella precedente esperienza al Botafogo e non sara disponibile per la trasferta di Cagliari. Lo riportano La Gazzetta dello Sport e Sky Sport.",
+      "source": "La Gazzetta dello Sport",
+      "source_url": "https://www.gazzetta.it/Calcio/Serie-A/Juventus/10-10-2026/cagliari-juve-neto-squalificato-i-motivi.shtml",
+      "published_at": "2026-10-10T09:20:00Z",
+      "significant": true
+    },
     {
       "category": "Conferenza stampa",
       "title": "Spalletti in conferenza oggi alle 16:00",

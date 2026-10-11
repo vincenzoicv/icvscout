@@ -57,8 +57,8 @@
     if(window.ICVPrivacy&&typeof window.ICVPrivacy.enabled==="function") return window.ICVPrivacy.enabled("analytics");
     try{
       var stored=JSON.parse(localStorage.getItem("icv_privacy_preferences")||"null");
-      return !stored||stored.analytics!==false;
-    }catch(e){ return true; }
+      return !!stored && stored.version===2 && stored.analytics===true && Date.now()-Date.parse(stored.updated_at)>=0 && Date.now()-Date.parse(stored.updated_at)<180*24*60*60*1000;
+    }catch(e){ return false; }
   }
   function track(name,meta){
     if(!allowed.has(name)||!isAnalyticsEnabled()||isInternalTraffic()) return;
@@ -67,6 +67,11 @@
     fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:body,keepalive:true}).catch(function(){});
   }
   window.ICVAnalytics={track:track,isInternalTraffic:isInternalTraffic,isEnabled:isAnalyticsEnabled};
+  var consentPageTracked = isAnalyticsEnabled();
+  window.addEventListener("icv:privacychange",function(){
+    if(isAnalyticsEnabled()&&!consentPageTracked){consentPageTracked=true;track("page_view");}
+    if(!isAnalyticsEnabled()) consentPageTracked=false;
+  });
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){track("page_view")},{once:true}); else track("page_view");
   document.addEventListener("click",function(event){
     var el=event.target.closest("a[href],[data-analytics-event]"); if(!el) return;

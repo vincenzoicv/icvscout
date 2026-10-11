@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-11T00:42:34Z",
+  "updated_at": "2026-10-11T10:47:27Z",
   "match": {
     "home": "Cagliari Calcio",
     "away": "Juventus FC",
@@ -12,7 +12,7 @@
     "status": "Probabile",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-6/cagliari-juventus/formazioni",
-    "updated_at": "2026-10-11T00:42:34Z",
+    "updated_at": "2026-10-11T10:47:27Z",
     "players": [
       { "name": "Vicario", "x": 0, "z": 6.5 },
       { "name": "Kalulu", "x": 3.9, "z": 3.5 },
@@ -30,10 +30,20 @@
       { "label": "Nota", "text": "Formazione non ancora ufficiale, soggetta a variazioni." },
       { "label": "Ballottaggi", "text": "Nessun ballottaggio segnalato." },
       { "label": "Squalificati", "text": "Neto." },
-      { "label": "Indisponibili", "text": "Yildiz, Ekhator, Cabal, Thuram, Locatelli, Boga e Grabara." }
+      { "label": "Indisponibili", "text": "Yildiz, Ekhator, Thuram, Locatelli, Boga e Grabara. Cabal torna tra i convocati ufficiali." }
     ]
   },
   "updates": [
+    {
+      "category": "Convocati",
+      "title": "Cabal torna a disposizione: 22 convocati per Cagliari-Juventus",
+      "summary": "Cabal e Cambiaso figurano nell'elenco ufficiale per la trasferta. Convocati anche Alajbegovic e il portiere Radu. Neto non \u00e8 nell'elenco: resta squalificato.",
+      "detail": "Cabal e Cambiaso figurano nell'elenco ufficiale per la trasferta. Convocati anche Alajbegovic e il portiere Radu. Neto non \u00e8 nell'elenco: resta squalificato.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-cagliari-juventus-i-convocati",
+      "published_at": "2026-10-11T08:03:56.463Z",
+      "significant": true
+    },
     {
       "category": "Conferenza stampa",
       "title": "Spalletti: Cambiaso in gruppo, Zhegrova e Sarr candidati dal primo minuto",

@@ -1840,7 +1840,7 @@ function matchHubTeamKey(value) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
-    .replace(/\b(fc|ac|us|bc|calcio|football club)\b/g, "")
+    .replace(/\b(fc|ac|us|bc|ss|calcio|football club)\b/g, "")
     .replace(/[^a-z0-9]/g, "");
   var europeanClubs = [
     [/nijmegen|^nec$/, "necnijmegen"], [/rennes|rennais/, "rennes"],

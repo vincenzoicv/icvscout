@@ -110,7 +110,9 @@ test("dopo Cagliari-Juventus le prossime tre iniziano da Celta-Juventus", async 
   const merged = allRows([{match_id:'uel-nec',match_date:'2026-09-17T19:00:00Z',status:'scheduled',competition:'Europa League',source_payload:{homeTeam:{name:'Juventus FC'},awayTeam:{name:'N.E.C.'},matchday:1}}]);
   assert.equal(merged.filter(match => match.date === '2026-09-17T19:00:00Z').length, 1);
   assert.equal(merged.find(match => match.date === '2026-09-17T19:00:00Z').status, 'finished');
-  render(allRows([]));
+  const upcomingRows = allRows([{match_id:'lazio',match_date:'2026-10-18T18:45:00Z',status:'scheduled',competition:'Serie A',source_payload:{homeTeam:{name:'Juventus FC'},awayTeam:{name:'SS Lazio'},matchday:7}}]);
+  assert.equal(upcomingRows.filter(match => match.matchday === 7 && match.competition === 'Serie A').length, 1);
+  render(upcomingRows);
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
   assert.match(box.innerHTML, /Celta Vigo[\s\S]*Lazio[\s\S]*Rennes/);

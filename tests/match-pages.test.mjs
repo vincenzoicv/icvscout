@@ -84,6 +84,27 @@ test('public match enriches a finished stored score with missing goals and lineu
   assert.equal(body.sourceUrl, 'https://www.juventus.com/it/news/articoli/serie-a-juventus-atalanta-il-tabellino-x3128');
 });
 
+test('Cagliari final report includes verified scorers without editorial awards', async t => {
+  t.mock.method(globalThis, 'fetch', async () => Response.json([{
+    match_id: '558584', match_date: '2026-10-11T18:45:00Z', status: 'finished', competition: 'Serie A',
+    source_payload: {
+      homeTeam: { name: 'Cagliari Calcio' }, awayTeam: { name: 'Juventus FC' },
+      score: { fullTime: { home: 1, away: 1 } }, goals: [], matchday: 6,
+    },
+  }]));
+  const response = await onRequest({ request: new Request('https://site.test/api/public/match?match_id=558584'), env });
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.scorers, "Maldini 20' · Kolo Muani 81'");
+  assert.equal(body.homeScore, 1);
+  assert.equal(body.awayScore, 1);
+  assert.equal(body.awayLineup.length, 11);
+  assert.equal(body.awayFormation, '4-2-3-1');
+  assert.equal(body.substitutions.length, 10);
+  assert.ok(!body.mvp);
+  assert.ok(!body.worst);
+});
+
 test('public search spans published news, fixtures and Instagram posts', async t => {
   t.mock.method(globalThis, 'fetch', async input => {
     const url = new URL(input);

@@ -98,12 +98,12 @@ test("i marcatori sono sotto il risultato e spariscono senza dati", async () => 
   assert.equal(element.hidden, true);
 });
 
-test("dopo Juventus-Atalanta le prossime tre iniziano da Cagliari-Juventus", async () => {
+test("dopo Cagliari-Juventus le prossime tre iniziano da Celta-Juventus", async () => {
   const html = await read("index.html");
   const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function renderMatchHubScorers("));
   const panel = {hidden:true};
   const box = {innerHTML:""};
-  class MatchDate extends Date { static now() { return Date.parse("2026-09-20T18:05:00Z"); } }
+  class MatchDate extends Date { static now() { return Date.parse("2026-10-11T20:50:00Z"); } }
   const {allRows, render} = new Function("document", "Date", source + ";return {allRows:allMatchHubRows,render:renderMatchHubUpcoming}")({
     getElementById:id => id === "matchHubUpcomingPanel" ? panel : box,
   }, MatchDate);
@@ -113,7 +113,11 @@ test("dopo Juventus-Atalanta le prossime tre iniziano da Cagliari-Juventus", asy
   render(allRows([]));
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.match(box.innerHTML, /Cagliari[\s\S]*Celta Vigo[\s\S]*Lazio/);
+  assert.match(box.innerHTML, /Celta Vigo[\s\S]*Lazio[\s\S]*Rennes/);
+  assert.doesNotMatch(box.innerHTML, /Cagliari/);
+  const last = allRows([]).find(match => match.matchday === 6 && match.competition === 'Serie A');
+  assert.equal(last.status, 'finished');
+  assert.equal(last.scorers, "Maldini 20' · Kolo Muani 81'");
   assert.doesNotMatch(box.innerHTML, /Atalanta/);
   assert.doesNotMatch(box.innerHTML, /Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Milan/);

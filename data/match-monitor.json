@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-11T10:47:27Z",
+  "updated_at": "2026-10-11T20:50:00Z",
   "match": {
     "home": "Cagliari Calcio",
     "away": "Juventus FC",
@@ -9,31 +9,40 @@
   },
   "formation": {
     "module": "4-2-3-1",
-    "status": "Probabile",
-    "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-6/cagliari-juventus/formazioni",
-    "updated_at": "2026-10-11T10:47:27Z",
+    "status": "Ufficiale",
+    "source": "Juventus.com",
+    "source_url": "https://www.juventus.com/it/news/articoli/serie-a-cagliari-juventus-il-tabellino-x8571",
+    "updated_at": "2026-10-11T20:40:32.685Z",
     "players": [
       { "name": "Vicario", "x": 0, "z": 6.5 },
       { "name": "Kalulu", "x": 3.9, "z": 3.5 },
       { "name": "Bremer", "x": 1.3, "z": 3.5 },
-      { "name": "Kelly", "x": -1.3, "z": 3.5 },
-      { "name": "Cambiaso", "x": -3.9, "z": 3.5 },
+      { "name": "Lucumi", "x": -1.3, "z": 3.5 },
+      { "name": "Celik", "x": -3.9, "z": 3.5 },
       { "name": "Douglas Luiz", "x": 2, "z": 0.5 },
       { "name": "Sarr", "x": -2, "z": 0.5 },
       { "name": "Conceicao", "x": 3.6, "z": -2.7 },
       { "name": "McKennie", "x": 0, "z": -2.7 },
-      { "name": "Alajbegovic", "x": -3.6, "z": -2.7 },
+      { "name": "Nico Gonzalez", "x": -3.6, "z": -2.7 },
       { "name": "Kolo Muani", "x": 0, "z": -6 }
     ],
     "details": [
-      { "label": "Nota", "text": "Formazione non ancora ufficiale, soggetta a variazioni." },
-      { "label": "Ballottaggi", "text": "Nessun ballottaggio segnalato." },
+      { "label": "Nota", "text": "Undici titolari confermati dal tabellino ufficiale della partita conclusa." },
       { "label": "Squalificati", "text": "Neto." },
       { "label": "Indisponibili", "text": "Yildiz, Ekhator, Thuram, Locatelli, Boga e Grabara. Cabal torna tra i convocati ufficiali." }
     ]
   },
   "updates": [
+    {
+      "category": "Referto",
+      "title": "Cagliari-Juventus 1-1: Kolo Muani risponde a Maldini",
+      "summary": "Maldini 20' e Kolo Muani 81': un punto a testa all'Unipol Domus nella sesta giornata di Serie A.",
+      "detail": "Maldini 20' e Kolo Muani 81': un punto a testa all'Unipol Domus nella sesta giornata di Serie A.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-cagliari-juventus-il-tabellino-x8571",
+      "published_at": "2026-10-11T20:40:32.685Z",
+      "significant": true
+    },
     {
       "category": "Convocati",
       "title": "Cabal torna a disposizione: 22 convocati per Cagliari-Juventus",

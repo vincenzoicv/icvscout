@@ -900,6 +900,29 @@ async function publicMatch(env, url, skipEnrichment = false) {
 }
 
 const VERIFIED_PUBLIC_MATCH_DETAILS = {
+  "558584": {
+    sourceUrl: "https://www.juventus.com/it/news/articoli/serie-a-cagliari-juventus-il-tabellino-x8571",
+    homeFormation: "4-3-2-1",
+    awayFormation: "4-2-3-1",
+    goals: [
+      { minute: 20, injuryTime: null, scorer: { name: "Maldini" }, team: { name: "Cagliari Calcio" }, type: "REGULAR" },
+      { minute: 81, injuryTime: null, scorer: { name: "Kolo Muani" }, team: { name: "Juventus FC" }, type: "REGULAR" },
+    ],
+    homeLineup: [
+      ["Caprile", "Goalkeeper"], ["Ze Pedro", "Defence"], ["Mina", "Defence"], ["Rodriguez", "Defence"], ["Obert", "Defence"],
+      ["Adopo", "Midfield"], ["Winks", "Midfield"], ["Romano", "Midfield"], ["Massolin", "Forward"], ["Maldini", "Forward"], ["Mendy", "Forward"],
+    ].map(([name, position]) => ({ name, position })),
+    awayLineup: [
+      ["Vicario", "Goalkeeper"], ["Kalulu", "Defence"], ["Bremer", "Defence"], ["Lucumi", "Defence"], ["Celik", "Defence"],
+      ["Douglas Luiz", "Midfield"], ["Sarr", "Midfield"], ["Conceicao", "Forward"], ["McKennie", "Midfield"], ["Nico Gonzalez", "Forward"], ["Kolo Muani", "Forward"],
+    ].map(([name, position]) => ({ name, position })),
+    substitutions: [
+      [46, "Deiola", "Rodriguez", "Cagliari Calcio"], [46, "Zhegrova", "Conceicao", "Juventus FC"], [46, "Alajbegovic", "McKennie", "Juventus FC"],
+      [60, "Fadera", "Massolin", "Cagliari Calcio"], [60, "Woltemade", "Nico Gonzalez", "Juventus FC"], [64, "Cambiaso", "Celik", "Juventus FC"],
+      [69, "Sugawara", "Maldini", "Cagliari Calcio"], [69, "Nzola", "Mendy", "Cagliari Calcio"],
+      [84, "Fazzini", "Obert", "Cagliari Calcio"], [84, "Koopmeiners", "Douglas Luiz", "Juventus FC"],
+    ].map(([minute, player, replacedPlayer, team]) => ({ minute, player, replacedPlayer, team })),
+  },
   "558595": {
     sourceUrl: "https://www.juventus.com/it/news/articoli/serie-a-juventus-atalanta-il-tabellino-x3128",
     homeFormation: "4-2-3-1",

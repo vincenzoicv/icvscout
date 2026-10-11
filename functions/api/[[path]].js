@@ -4,6 +4,7 @@ import { belongsToMatch, namesMatch, matchDay, communityMatchKey } from '../lib/
 import { adminMatchGallery, readMatchGallery, publicMatchGallery, publicMatchAlbums, matchPhotoResponse } from '../lib/match-gallery.js';
 import { standingsResponse } from '../lib/standings.js';
 import { readVideos, publicVideos, adminVideos, videoFile } from '../lib/videos.js';
+import { privacyReceipt } from '../lib/privacy-receipts.js';
 
 const JSON_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
@@ -185,7 +186,10 @@ export async function onRequest(context) {
     if (path === "juventus/calendar.ics") return juventusCalendar(request, env);
     if (path === "subscribe") return subscribeWorldCup(request, env);
     if (path === "quiz-result") return sendQuizResult(request, env);
-    if (path === "analytics") return analyticsRoute(request, env, url);
+  if (path === "privacy/receipt") return privacyReceipt(request, receipt => sb(env, "/privacy_receipts?on_conflict=id", {
+    method: "POST", body: [receipt], prefer: "resolution=ignore-duplicates,return=minimal"
+  }));
+  if (path === "analytics") return analyticsRoute(request, env, url);
     if (path === "admin/analytics") return adminAnalytics(request, env, url);
     if (path === "community/config") return communityConfig(env);
     if (path === "community/feed" || path.startsWith("community/")) return await communityRoute(request, env, url, path.replace(/^community\/?/, ""));

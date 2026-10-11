@@ -2,7 +2,10 @@
   "use strict";
 
   var STORAGE_KEY = "icv_privacy_preferences";
-  var VERSION = 2;
+  var VERSION = 3;
+  var QUEUE_KEY = "icv_privacy_receipt_queue";
+  var queue = [];
+  var sending = false;
   var MAX_AGE = 180 * 24 * 60 * 60 * 1000;
   var modal;
   var banner;
@@ -27,7 +30,9 @@
           version: VERSION,
           analytics: stored.analytics === true,
           external_media: stored.external_media === true,
-          updated_at: stored.updated_at || null
+          updated_at: stored.updated_at || null,
+          receipt_id: stored.receipt_id || null,
+          recorded: stored.recorded === true
         };
       }
     } catch (error) {}
@@ -41,12 +46,14 @@
     return read()[category] === true;
   }
 
-  function save(preferences) {
+  function save(preferences, action) {
     var next = {
       version: VERSION,
       analytics: preferences.analytics === true && navigator.doNotTrack !== "1",
       external_media: preferences.external_media === true,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
+      receipt_id: crypto.randomUUID(),
+      recorded: false
     };
     sessionPreferences = next;
     if (banner) { banner.remove(); banner = null; }
@@ -55,7 +62,48 @@
       if (!next.analytics) sessionStorage.removeItem("icv_analytics_session");
     } catch (error) {}
     window.dispatchEvent(new CustomEvent("icv:privacychange", { detail: next }));
+    queue.push({id: next.receipt_id, version: VERSION, analytics: next.analytics,
+      external_media: next.external_media, chosen_at: next.updated_at, action: action || "customize"});
+    persistQueue();
+    flushReceipts();
     return next;
+  }
+
+  function persistQueue() {
+    try { localStorage.setItem(QUEUE_KEY, JSON.stringify(queue)); } catch (error) {}
+  }
+
+  function receiptStatus() {
+    if (!modal) return;
+    var preferences = read();
+    var status = modal.querySelector(".icv-privacy-receipt");
+    status.textContent = !preferences.updated_at ? "Nessuna scelta salvata." :
+      (preferences.recorded ? "Scelta registrata. Ricevuta: " + preferences.receipt_id :
+      "Scelta applicata. Registrazione non ancora confermata.");
+  }
+
+  async function flushReceipts() {
+    if (sending || !queue.length) return;
+    sending = true;
+    try {
+      while (queue.length) {
+        var receipt = queue[0];
+        var response = await window.fetch("/api/privacy/receipt", {method:"POST",
+          headers:{"Content-Type":"application/json"}, body:JSON.stringify(receipt), keepalive:true});
+        if (!response.ok) break;
+        var result = await response.json();
+        if (!result.accepted || result.id !== receipt.id) break;
+        queue.shift();
+        persistQueue();
+        var preferences = read();
+        if (preferences.receipt_id === receipt.id) {
+          preferences.recorded = true;
+          sessionPreferences = preferences;
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences)); } catch (error) {}
+        }
+        receiptStatus();
+      }
+    } catch (error) {} finally { sending = false; }
   }
 
   function injectStyles() {
@@ -103,20 +151,23 @@
         '<div class="icv-privacy-head"><div><h2 id="icvPrivacyTitle">Preferenze privacy</h2></div><button type="button" aria-label="Chiudi">&times;</button></div>' +
         "<p>Le categorie facoltative sono disattivate finch\u00e9 non scegli di consentirle.</p>" +
         '<label class="icv-privacy-option"><span><strong>Funzioni tecniche</strong><span>Accesso, sicurezza, preferenze e funzionamento del servizio.</span></span><input type="checkbox" checked disabled aria-label="Funzioni tecniche sempre attive"></label>' +
-        '<label class="icv-privacy-option"><span><strong>Analytics anonimo ICV</strong><span>Nessun indirizzo IP, dato scritto o profilo pubblicitario.</span></span><input id="icvPrivacyAnalytics" type="checkbox" ' + (preferences.analytics ? "checked" : "") + "></label>" +
+        '<label class="icv-privacy-option"><span><strong>Statistiche ICV</strong><span>Eventi di utilizzo e identificativo di sessione, senza IP o profili pubblicitari.</span></span><input id="icvPrivacyAnalytics" type="checkbox" ' + (preferences.analytics ? "checked" : "") + "></label>" +
         '<label class="icv-privacy-option"><span><strong>Video Instagram, TikTok e YouTube</strong><span>I player ricevono dati di navigazione e possono usare cookie propri. Con il consenso, le anteprime TikTok si caricano quando entrano nello schermo, senza riproduzione automatica. Instagram e YouTube si caricano al clic.</span></span><input id="icvPrivacyMedia" type="checkbox" ' + (preferences.external_media ? "checked" : "") + '></label>' +
+        '<p class="icv-privacy-receipt" role="status" style="overflow-wrap:anywhere"></p>' +
         '<div class="icv-privacy-actions"><span><a href="/privacy">Privacy Policy</a> · <a href="/cookie-policy">Cookie Policy</a></span><button class="icv-privacy-save" type="button">Salva preferenze</button></div>' +
       "</section>";
     document.body.appendChild(modal);
     modal.querySelector(".icv-privacy-head button").addEventListener("click", close);
     modal.querySelector(".icv-privacy-save").addEventListener("click", function () {
-      save({ analytics: modal.querySelector("#icvPrivacyAnalytics").checked, external_media: modal.querySelector("#icvPrivacyMedia").checked });
+      save({ analytics: modal.querySelector("#icvPrivacyAnalytics").checked, external_media: modal.querySelector("#icvPrivacyMedia").checked }, "customize");
       close();
     });
     modal.addEventListener("click", function (event) {
       if (event.target === modal) close();
     });
     document.addEventListener("keydown", modalKeys);
+    receiptStatus();
+    flushReceipts();
     modal.querySelector("#icvPrivacyAnalytics").focus();
   }
 
@@ -147,7 +198,7 @@
         if (!button) return;
         var choice = button.getAttribute("data-choice");
         if (choice === "customize") { open(); return; }
-        save({analytics: choice === "accept", external_media: choice === "accept"});
+        save({analytics: choice === "accept", external_media: choice === "accept"}, choice);
       });
       document.body.appendChild(banner);
     }
@@ -163,6 +214,14 @@
     sessionPreferences = null;
     window.dispatchEvent(new CustomEvent("icv:privacychange", {detail: read()}));
   });
+  try {
+    var pending = JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
+    if (Array.isArray(pending)) queue = pending.filter(function(item) {
+      return item && item.version === VERSION && Date.now() - Date.parse(item.chosen_at) < MAX_AGE;
+    });
+  } catch (error) {}
+  window.addEventListener("online", flushReceipts);
+  flushReceipts();
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
   else init();
 })();

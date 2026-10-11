@@ -722,7 +722,7 @@ test("privacy, regolamento e sitemap sono pubblicabili", async () => {
   ]);
   assert.match(privacy, /cancellare definitivamente account e dati/i);
   assert.match(privacy, /Supabase/);
-  assert.match(cookies, /Analytics anonimo ICV/);
+  assert.match(cookies, /Statistiche ICV/);
   assert.match(cookies, /data-privacy-settings/);
   assert.match(rules, /Moderazione/);
   assert.match(sitemap, /<loc>https:\/\/ilcalciodivince\.com\/privacy<\/loc>/);

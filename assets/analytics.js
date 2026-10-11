@@ -57,7 +57,7 @@
     if(window.ICVPrivacy&&typeof window.ICVPrivacy.enabled==="function") return window.ICVPrivacy.enabled("analytics");
     try{
       var stored=JSON.parse(localStorage.getItem("icv_privacy_preferences")||"null");
-      return !!stored && stored.version===2 && stored.analytics===true && Date.now()-Date.parse(stored.updated_at)>=0 && Date.now()-Date.parse(stored.updated_at)<180*24*60*60*1000;
+      return !!stored && stored.version===3 && stored.analytics===true && Date.now()-Date.parse(stored.updated_at)>=0 && Date.now()-Date.parse(stored.updated_at)<180*24*60*60*1000;
     }catch(e){ return false; }
   }
   function track(name,meta){

@@ -2553,13 +2553,7 @@ function loadAndRenderNews() {
 function loadMercatoNews() {
   var el = document.getElementById("mercatoFeed");
   if (!el || el.dataset.loaded) return;
-  var RSS2JSON = "https://api.rss2json.com/v1/api.json?rss_url=";
-  var feeds = [
-    {url:"https://news.google.com/rss/search?q=Juventus+calciomercato&hl=it&gl=IT&ceid=IT:it", mode:"google"},
-    {url:"https://feeds.footballco.com/ilbianconero/feed/x2mb7fql9vce6t1p", mode:"xml", label:"Il Bianconero"}
-  ];
   var results = [];
-  var done = 0;
   function finish() {
     if (!results.length) {
       el.innerHTML = "<div class='news-empty-state'>Nessun tema mercato disponibile al momento.</div>";
@@ -2574,28 +2568,14 @@ function loadMercatoNews() {
     }).join("");
     el.dataset.loaded = "1";
   }
-  feeds.forEach(function(feed) {
-    var p;
-    if (feed.mode === "xml") {
-      p = fetch(feed.url).then(function(r){return r.text();}).then(function(xml){
-        var doc = new DOMParser().parseFromString(xml,"text/xml");
-        Array.prototype.slice.call(doc.querySelectorAll("item"),0,4).forEach(function(node){
-          var t = node.querySelector("title"), pd = node.querySelector("pubDate");
-          if (t && t.textContent.trim()) results.push({title:t.textContent.trim(), source:feed.label, date:pd?pd.textContent:""});
-        });
-      });
-    } else {
-      p = fetch(RSS2JSON + encodeURIComponent(feed.url)).then(function(r){return r.json();}).then(function(data){
-        if (data.status !== "ok") return;
-        (data.items||[]).slice(0,4).forEach(function(item){
-          var raw = (item.title||"").trim();
-          var parts = raw.match(/^(.+?)\s+-\s+([^-]{3,50})$/);
-          results.push({title:parts?parts[1].trim():raw, source:parts?parts[2].trim():"Google News", date:item.pubDate||""});
-        });
-      });
-    }
-    p.catch(function(){}).finally(function(){ done++; if (done===feeds.length) finish(); });
-  });
+  fetch("/api/public/home").then(function(response) {
+    if (!response.ok) throw new Error("Mercato non disponibile");
+    return response.json();
+  }).then(function(data) {
+    results = (data.market || []).map(function(item) {
+      return {title:item.title || item.player || "", source:item.source || "ICV Scout", date:item.updated_at || item.created_at || ""};
+    }).filter(function(item) { return item.title; });
+  }).catch(function(){}).finally(finish);
 }
 
 var origShowSection = showSection;
@@ -3014,7 +2994,7 @@ if ('serviceWorker' in navigator) {
 }
 
 </script>
-<script defer src="/assets/privacy-controls.js?v=20261011-1"></script>
-<script defer src="/assets/analytics.js?v=20261011-1"></script>
+<script defer src="/assets/privacy-controls.js?v=20261011-2"></script>
+<script defer src="/assets/analytics.js?v=20261011-2"></script>
 </body>
 </html>

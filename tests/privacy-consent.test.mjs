@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
-function privacy(stored, dnt = '0') {
+function privacy(stored, dnt = '0', fetch = async () => ({ok:false})) {
   const values = new Map(stored ? [['icv_privacy_preferences', JSON.stringify(stored)]] : []);
-  const window = {addEventListener(){}, dispatchEvent(){}};
+  const window = {addEventListener(){}, dispatchEvent(){}, fetch};
   vm.runInNewContext(fs.readFileSync('assets/privacy-controls.js', 'utf8'), {
-    window, navigator:{doNotTrack:dnt}, Date, JSON,
+    window, navigator:{doNotTrack:dnt}, Date, JSON, crypto:{randomUUID:()=> '12345678-1234-4123-8123-123456789abc'},
     document:{readyState:'loading', addEventListener(){}},
     localStorage:{getItem:key=>values.get(key), setItem:(key,value)=>values.set(key,value)},
     sessionStorage:{removeItem(){}}, CustomEvent:class {constructor(name,options){Object.assign(this,options);}}
@@ -16,7 +16,7 @@ function privacy(stored, dnt = '0') {
 }
 
 test('optional categories deny by default and legacy preferences require a new choice', () => {
-  for (const stored of [null,{version:1,analytics:true,external_media:true,updated_at:new Date().toISOString()}]) {
+  for (const stored of [null,...[1,2].map(version=>({version,analytics:true,external_media:true,updated_at:new Date().toISOString()}))]) {
     const api=privacy(stored);
     assert.equal(api.enabled('analytics'),false);
     assert.equal(api.enabled('external_media'),false);
@@ -37,10 +37,29 @@ test('explicit consent persists, revocation disables both and Do Not Track wins'
 });
 test('expired and malformed preferences cannot activate tracking',()=>{
   for(const updated_at of ['invalid',new Date(Date.now()-181*86400000).toISOString()]){
-    const api=privacy({version:2,updated_at,analytics:true,external_media:true});
+    const api=privacy({version:3,updated_at,analytics:true,external_media:true});
     assert.equal(api.enabled('analytics'),false);
     assert.equal(api.enabled('external_media'),false);
   }
+});
+
+test('receipt failure never prevents refusal; success is acknowledged only by the server', async()=>{
+  const calls=[];
+  const api=privacy(null,'0',async(url, options)=>{
+    calls.push(JSON.parse(options.body));
+    return {ok:true,json:async()=>({accepted:true,id:calls.at(-1).id})};
+  });
+  api.save({analytics:false,external_media:false},'reject');
+  assert.equal(api.get().recorded,false);
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(api.get().recorded,true);
+  assert.equal(calls[0].action,'reject');
+  assert.deepEqual(Object.keys(calls[0]).sort(),['action','analytics','chosen_at','external_media','id','version']);
+  const offline=privacy();
+  offline.save({analytics:false,external_media:false},'reject');
+  await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(offline.enabled('external_media'),false);
+  assert.equal(offline.get().recorded,false);
 });
 
 test('analytics sends no request or session identifier before consent or after refusal',()=>{

@@ -378,6 +378,26 @@ main{padding-top:58px;position:relative;z-index:1;}
 .stat-sub{font-family:Barlow;font-size:13px;color:var(--t3);margin-top:4px;}
 .chart-box{background:var(--surface);border:1px solid var(--bdr);border-radius:10px;padding:24px;margin-bottom:16px;transition:all 0.3s;}
 .chart-box:hover{border-color:rgba(196,150,42,0.22);}
+.season-insights{margin:28px 0;border-top:1px solid var(--bdr);padding-top:24px;}
+.season-insights h3{font-size:20px;margin:0 0 8px;}
+.season-insights .insight-meta{color:var(--t2);font-size:13px;margin:0 0 16px;}
+.season-table-wrap,.points-scroll{overflow-x:auto;scrollbar-color:var(--gold-d) var(--d2);scrollbar-width:thin;}
+.season-table{width:100%;min-width:540px;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;}
+.season-table th,.season-table td{padding:12px 10px;border-bottom:1px solid var(--bdr);text-align:right;white-space:nowrap;}
+.season-table th:first-child{text-align:left;}
+.season-table thead th{color:var(--t2);font-weight:500;}
+.season-table tbody th{font-weight:600;}
+.season-table .points-total{color:var(--gold);font-weight:700;}
+.points-heading{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:28px;}
+.points-heading strong{font-size:20px;color:var(--gold);white-space:nowrap;}
+.points-chart{height:230px;display:flex;align-items:stretch;gap:12px;min-width:max-content;padding:12px 6px 0;margin:0;list-style:none;}
+.points-chart li{width:58px;display:flex;flex-direction:column;align-items:center;flex-shrink:0;font-variant-numeric:tabular-nums;}
+.points-track{height:168px;width:100%;display:flex;align-items:flex-end;justify-content:center;border-bottom:1px solid var(--bdr);}
+.points-bar{width:28px;min-height:2px;background:var(--gold);border-radius:3px 3px 0 0;position:relative;}
+.points-value{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:13px;padding-bottom:4px;}
+.points-round{font-size:12px;margin-top:8px;color:var(--t2);white-space:nowrap;}
+.points-gain{font-size:12px;margin-top:3px;}
+.insight-empty{color:var(--t2);padding:16px 0;}
 .chart-lbl{font-family:"Barlow Condensed";font-size:13px;font-weight:700;letter-spacing:3px;color:rgba(196,150,42,0.88);text-transform:uppercase;margin-bottom:16px;}
 .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
 .bar-label{font-family:"Barlow Condensed";font-size:14px;font-weight:600;color:var(--t2);width:100px;text-align:right;flex-shrink:0;}
@@ -1137,6 +1157,14 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
     <div class="bar-row"><span class="bar-label" id="barlbl2">Vittorie</span><div class="bar-track"><div class="bar-fill" id="barf2" style="width:100%"></div></div><span class="bar-val" id="barv2">1</span></div>
     <div class="bar-row"><span class="bar-label" id="barlbl3">Punti</span><div class="bar-track"><div class="bar-fill" id="barf3" style="width:100%"></div></div><span class="bar-val" id="barv3">3</span></div>
     <div class="bar-row"><span class="bar-label" id="barlbl4">Diff. Reti</span><div class="bar-track"><div class="bar-fill" id="barf4" style="width:33%"></div></div><span class="bar-val" id="barv4">+1</span></div>
+  </div>
+  <div class="season-insights" id="seasonInsights" aria-live="polite" aria-busy="true">
+    <h3>Casa e trasferta</h3>
+    <p class="insight-meta">Serie A 2026/27</p>
+    <div id="seasonVenueStats" class="season-table-wrap" tabindex="0" role="region" aria-label="Confronto casa e trasferta"><p class="insight-empty">Caricamento risultati...</p></div>
+    <div class="points-heading"><h3 id="seasonPointsHeading">Punti giornata per giornata</h3><strong id="seasonPointsTotal"></strong></div>
+    <div class="points-scroll" tabindex="0" role="region" aria-label="Andamento punti Juventus"><ol class="points-chart" id="seasonPointsChart" aria-labelledby="seasonPointsHeading"></ol></div>
+    <p class="insight-meta" id="seasonPointsMeta"></p>
   </div>
   <div class="sec-head" style="margin-top:24px;margin-bottom:14px;"><div class="sec-tag">Ultimi Risultati</div></div>
   <div class="results-list">
@@ -2132,11 +2160,66 @@ var matchHubRenderSignature = "";
 var matchReceiptSignature = "";
 var currentReceiptMatch = null;
 
+function buildSeasonInsights(matches) {
+  var rows = (Array.isArray(matches) ? matches : []).filter(function(match) {
+    var time = new Date(match.date).getTime();
+    return match.status === "finished" && matchHubIsSerieA(match)
+      && time >= Date.parse("2026-07-01T00:00:00Z") && time < Date.parse("2027-07-01T00:00:00Z") && time <= Date.now()
+      && (matchHubIsJuve(match.home) || matchHubIsJuve(match.away))
+      && Number.isInteger(match.homeScore) && match.homeScore >= 0 && Number.isInteger(match.awayScore) && match.awayScore >= 0;
+  }).sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+  function bucket() { return {games:0,points:0,won:0,draw:0,lost:0,goalsFor:0,goalsAgainst:0}; }
+  var home = bucket(), away = bucket(), total = bucket(), trend = [];
+  rows.forEach(function(match) {
+    var isHome = matchHubIsJuve(match.home);
+    var scored = isHome ? match.homeScore : match.awayScore;
+    var conceded = isHome ? match.awayScore : match.homeScore;
+    var gain = scored > conceded ? 3 : scored === conceded ? 1 : 0;
+    [isHome ? home : away, total].forEach(function(group) {
+      group.games++; group.points += gain; group.goalsFor += scored; group.goalsAgainst += conceded;
+      group[ gain === 3 ? "won" : gain === 1 ? "draw" : "lost" ]++;
+    });
+    trend.push({matchday:match.matchday,points:total.points,gain:gain,date:match.date,
+      opponent:matchHubCompactTeam(isHome ? match.away : match.home),side:isHome ? "Casa" : "Trasferta",score:scored + "-" + conceded});
+  });
+  return {home:home,away:away,total:total,trend:trend};
+}
+
+function renderSeasonInsights(matches) {
+  var panel = document.getElementById("seasonInsights");
+  if (!panel) return;
+  var data = buildSeasonInsights(matches);
+  var table = document.getElementById("seasonVenueStats");
+  var chart = document.getElementById("seasonPointsChart");
+  panel.setAttribute("aria-busy", "false");
+  var number = function(value) { return new Intl.NumberFormat("it-IT", {maximumFractionDigits:2}).format(value); };
+  document.getElementById("seasonPointsTotal").textContent = data.total.games ? data.total.points + " punti" : "";
+  chart.innerHTML = "";
+  if (!data.total.games) {
+    table.innerHTML = '<p class="insight-empty">Nessun risultato di Serie A disponibile.</p>';
+    document.getElementById("seasonPointsMeta").textContent = "";
+    return;
+  }
+  table.innerHTML = '<table class="season-table" aria-label="Rendimento Juventus casa e trasferta, Serie A 2026/27"><thead><tr><th scope="col">Campo</th><th scope="col">Gare</th><th scope="col">Punti</th><th scope="col">Media punti</th><th scope="col"><abbr title="Vittorie">V</abbr></th><th scope="col"><abbr title="Pareggi">N</abbr></th><th scope="col"><abbr title="Sconfitte">P</abbr></th><th scope="col"><abbr title="Gol fatti">GF</abbr></th><th scope="col"><abbr title="Gol subiti">GS</abbr></th></tr></thead><tbody>' +
+    [["Casa",data.home],["Trasferta",data.away],["Totale",data.total]].map(function(entry) {
+      var row = entry[1];
+      return '<tr><th scope="row">' + entry[0] + '</th><td>' + row.games + '</td><td class="points-total">' + row.points + '</td><td>' + (row.games ? number(row.points / row.games) : "-") + '</td><td>' + row.won + '</td><td>' + row.draw + '</td><td>' + row.lost + '</td><td>' + row.goalsFor + '</td><td>' + row.goalsAgainst + '</td></tr>';
+    }).join("") + '</tbody></table>';
+  var scale = Math.max(data.total.points, 3);
+  chart.innerHTML = data.trend.map(function(item, index) {
+    var round = item.matchday ? "G" + item.matchday : "Gara " + (index + 1);
+    var description = round + ": " + item.side + " contro " + item.opponent + ", " + item.score + ", +" + item.gain + " punti, totale " + item.points;
+    return '<li aria-label="' + icvEsc(description) + '" title="' + icvEsc(description) + '"><div class="points-track" aria-hidden="true"><div class="points-bar" style="height:' + Math.round(item.points / scale * 140) + 'px"><span class="points-value">' + item.points + '</span></div></div><span class="points-round" aria-hidden="true">' + round + '</span><span class="points-gain" aria-hidden="true">+' + item.gain + '</span></li>';
+  }).join("");
+  document.getElementById("seasonPointsMeta").textContent = "Serie A 2026/27 · " + data.total.games + " gare concluse · " + number(data.total.points / data.total.games) + " punti per gara";
+}
+
 function renderMatchHub(apiRows) {
   var hub = document.getElementById("homeMatchHub");
   if (!hub) return;
   hub.setAttribute("aria-busy", "false");
   var matches = allMatchHubRows(apiRows);
+  renderSeasonInsights(matches);
   var now = Date.now();
   var live = matches.find(function(match) { return match.status === "live"; });
   var upcoming = live || matches.find(function(match) {

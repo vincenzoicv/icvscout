@@ -11,6 +11,10 @@
   var banner;
   var sessionPreferences;
   var previousFocus;
+  var cmpMode = typeof location !== "undefined" && !/^\/icv_admin(?:\.html)?\/?$/.test(location.pathname);
+  var cmpVerified = false;
+  var cmpReady = false;
+  var cmpTimer;
 
   function defaults() {
     return {
@@ -22,6 +26,7 @@
   }
 
   function read() {
+    if (cmpMode && !cmpVerified) return defaults();
     try {
       var stored = sessionPreferences || JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
       var age = stored && Date.now() - Date.parse(stored.updated_at);
@@ -47,6 +52,10 @@
   }
 
   function save(preferences, action) {
+    if (cmpMode && action !== "iubenda") {
+      open();
+      return read();
+    }
     var next = {
       version: VERSION,
       analytics: preferences.analytics === true && navigator.doNotTrack !== "1",
@@ -62,6 +71,7 @@
       if (!next.analytics) sessionStorage.removeItem("icv_analytics_session");
     } catch (error) {}
     window.dispatchEvent(new CustomEvent("icv:privacychange", { detail: next }));
+    if (action === "iubenda") return next;
     queue.push({id: next.receipt_id, version: VERSION, analytics: next.analytics,
       external_media: next.external_media, chosen_at: next.updated_at, action: action || "customize"});
     persistQueue();
@@ -140,6 +150,11 @@
   }
 
   function open() {
+    if (cmpMode && cmpReady) {
+      window._iub.cs.api.openPreferences();
+      return;
+    }
+    if (cmpMode) return;
     close();
     previousFocus = document.activeElement;
     injectStyles();
@@ -185,8 +200,71 @@
     save: save
   };
 
+  function syncCmp() {
+    var api = window._iub && window._iub.cs && window._iub.cs.api;
+    if (!api) return;
+    cmpMode = true;
+    cmpReady = true;
+    window.clearTimeout(cmpTimer);
+    close();
+    if (banner) { banner.remove(); banner = null; }
+    var reopen = document.querySelector(".icv-privacy-reopen");
+    if (reopen) reopen.remove();
+    var preference = api.getPreferences();
+    if (!api.isPreferenceExpressed() || !preference || !preference.purposes) {
+      cmpVerified = false;
+      window.dispatchEvent(new CustomEvent("icv:privacychange", {detail: defaults()}));
+      return;
+    }
+    var next = {
+      analytics: preference.purposes[4] === true && navigator.doNotTrack !== "1",
+      external_media: preference.purposes[3] === true
+    };
+    var old = read();
+    cmpVerified = true;
+    if (!old.updated_at || old.analytics !== next.analytics || old.external_media !== next.external_media) {
+      save(next, "iubenda");
+    }
+  }
+
+  function cmpFallback() {
+    if (cmpReady || !cmpMode) return;
+    cmpMode = false;
+    sessionPreferences = defaults();
+    window.dispatchEvent(new CustomEvent("icv:privacychange", {detail: defaults()}));
+    init();
+  }
+
+  if (cmpMode) {
+    // Local gates remain authoritative even when the CMP is slow or unavailable.
+    window._iub = window._iub || [];
+    window._iub.csConfiguration = {
+      siteId: 4718046, cookiePolicyId: 81625927, lang: "it",
+      gdprAppliesGlobally: true, perPurposeConsent: true, purposes: "1,3,4",
+      cookiePolicyUrl: "https://ilcalciodivince.com/cookie-policy",
+      whitelabel: false, consentOnContinuedBrowsing: false,
+      preferenceCookie: {expireAfter: 180},
+      banner: {acceptButtonDisplay: true, rejectButtonDisplay: true,
+        customizeButtonDisplay: true, closeButtonDisplay: false, listPurposes: true},
+      callback: {onReady: syncCmp, onPreferenceExpressed: syncCmp,
+        onPreferenceChange: syncCmp, onStartupFailed: cmpFallback, onFatalError: cmpFallback}
+    };
+  }
+
   function init() {
     if (/^\/icv_admin(?:\.html)?\/?$/.test(location.pathname)) return;
+    if (cmpMode) {
+      if (!document.getElementById("icv-iubenda-cmp")) {
+        var script = document.createElement("script");
+        script.id = "icv-iubenda-cmp";
+        script.src = "https://embeds.iubenda.com/widgets/3c9725ce-06f0-418b-af95-3e6c3b4733d2.js";
+        script.async = true;
+        script.onerror = cmpFallback;
+        document.head.appendChild(script);
+        cmpTimer = window.setTimeout(cmpFallback, 12000);
+      }
+      return;
+    }
     injectStyles();
     if (!read().updated_at) {
       banner = document.createElement("section");
@@ -210,6 +288,7 @@
     document.body.appendChild(reopen);
   }
   window.addEventListener("storage", function(event) {
+    if (cmpMode) { syncCmp(); return; }
     if (event.key !== STORAGE_KEY && event.key !== null) return;
     sessionPreferences = null;
     window.dispatchEvent(new CustomEvent("icv:privacychange", {detail: read()}));

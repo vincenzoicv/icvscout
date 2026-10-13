@@ -34,6 +34,7 @@
     if(!selected || embed.childElementCount)return;
     if(!window.ICVPrivacy){status.textContent='Preferenze privacy non disponibili. Usa il link Guarda su YouTube.';return;}
     if(!window.ICVPrivacy.enabled('external_media'))window.ICVPrivacy.save({...window.ICVPrivacy.get(),external_media:true});
+    if(!window.ICVPrivacy.enabled('external_media'))return;
     const frame=document.createElement('iframe');
     frame.title='Highlights '+selected.title;
     frame.src='https://www.youtube-nocookie.com/embed/'+selected.video_id+'?playsinline=1';

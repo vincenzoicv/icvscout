@@ -24,6 +24,7 @@
     load.addEventListener('click',()=>{
       if(!window.ICVPrivacy){error.textContent='Preferenze privacy non disponibili. Ricarica la pagina.';error.hidden=false;return;}
       if(!window.ICVPrivacy.enabled('external_media'))window.ICVPrivacy.save({...window.ICVPrivacy.get(),external_media:true});
+      if(!window.ICVPrivacy.enabled('external_media'))return;
       stopAll(frame);player.dismissed=false;mount();
     });close.addEventListener('click',()=>player.close());frame.append(load,disclosure,close);
   }

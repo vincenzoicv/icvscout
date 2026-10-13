@@ -68,6 +68,7 @@
     if(!selected || embed.childElementCount)return;
     if(!window.ICVPrivacy){status.textContent='Preferenze privacy non disponibili. Puoi aprire il post su Instagram.';return;}
     if(!window.ICVPrivacy.enabled('external_media'))window.ICVPrivacy.save({...window.ICVPrivacy.get(),external_media:true});
+    if(!window.ICVPrivacy.enabled('external_media'))return;
     const frame=document.createElement('iframe');
     frame.title=selected.title;frame.src=postUrl(selected.post_url)+'embed/';
     frame.allow='fullscreen; encrypted-media; picture-in-picture';frame.referrerPolicy='strict-origin-when-cross-origin';

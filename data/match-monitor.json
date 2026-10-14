@@ -1,77 +1,33 @@
 {
   "version": 1,
-  "updated_at": "2026-10-11T20:50:00Z",
+  "updated_at": "2026-10-14T00:03:22.521Z",
   "match": {
-    "home": "Cagliari Calcio",
-    "away": "Juventus FC",
-    "kickoff": "2026-10-11T18:45:00Z",
-    "competition": "Serie A"
+    "home": "Celta Vigo",
+    "away": "Juventus",
+    "kickoff": "2026-10-15T19:00:00Z",
+    "competition": "Europa League"
   },
-  "formation": {
-    "module": "4-2-3-1",
-    "status": "Ufficiale",
-    "source": "Juventus.com",
-    "source_url": "https://www.juventus.com/it/news/articoli/serie-a-cagliari-juventus-il-tabellino-x8571",
-    "updated_at": "2026-10-11T20:40:32.685Z",
-    "players": [
-      { "name": "Vicario", "x": 0, "z": 6.5 },
-      { "name": "Kalulu", "x": 3.9, "z": 3.5 },
-      { "name": "Bremer", "x": 1.3, "z": 3.5 },
-      { "name": "Lucumi", "x": -1.3, "z": 3.5 },
-      { "name": "Celik", "x": -3.9, "z": 3.5 },
-      { "name": "Douglas Luiz", "x": 2, "z": 0.5 },
-      { "name": "Sarr", "x": -2, "z": 0.5 },
-      { "name": "Conceicao", "x": 3.6, "z": -2.7 },
-      { "name": "McKennie", "x": 0, "z": -2.7 },
-      { "name": "Nico Gonzalez", "x": -3.6, "z": -2.7 },
-      { "name": "Kolo Muani", "x": 0, "z": -6 }
-    ],
-    "details": [
-      { "label": "Nota", "text": "Undici titolari confermati dal tabellino ufficiale della partita conclusa." },
-      { "label": "Squalificati", "text": "Neto." },
-      { "label": "Indisponibili", "text": "Yildiz, Ekhator, Thuram, Locatelli, Boga e Grabara. Cabal torna tra i convocati ufficiali." }
-    ]
-  },
+  "formation": null,
   "updates": [
     {
-      "category": "Referto",
-      "title": "Cagliari-Juventus 1-1: Kolo Muani risponde a Maldini",
-      "summary": "Maldini 20' e Kolo Muani 81': un punto a testa all'Unipol Domus nella sesta giornata di Serie A.",
-      "detail": "Maldini 20' e Kolo Muani 81': un punto a testa all'Unipol Domus nella sesta giornata di Serie A.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-cagliari-juventus-il-tabellino-x8571",
-      "published_at": "2026-10-11T20:40:32.685Z",
-      "significant": true
+      "category": "Europa League",
+      "title": "Zhegrova fuori lista per la trasferta di Vigo",
+      "summary": "L'esterno non figura nella lista UEFA e non sar\u00e0 disponibile contro il Celta. L'assenza \u00e8 legata alla registrazione europea, non a un nuovo infortunio.",
+      "source": "La Gazzetta dello Sport; verifica lista UEFA",
+      "source_url": "https://www.gazzetta.it/calcio/fantanews/12-10-2026/juve-infortuni-i-giocatori-bianconeri-indisponibili-per-la-sfida-col-celta.shtml",
+      "published_at": "2026-10-12T08:02:00Z",
+      "significant": true,
+      "detail": "L'esterno non figura nella lista UEFA e non sar\u00e0 disponibile contro il Celta. L'assenza \u00e8 legata alla registrazione europea, non a un nuovo infortunio."
     },
     {
-      "category": "Convocati",
-      "title": "Cabal torna a disposizione: 22 convocati per Cagliari-Juventus",
-      "summary": "Cabal e Cambiaso figurano nell'elenco ufficiale per la trasferta. Convocati anche Alajbegovic e il portiere Radu. Neto non \u00e8 nell'elenco: resta squalificato.",
-      "detail": "Cabal e Cambiaso figurano nell'elenco ufficiale per la trasferta. Convocati anche Alajbegovic e il portiere Radu. Neto non \u00e8 nell'elenco: resta squalificato.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-cagliari-juventus-i-convocati",
-      "published_at": "2026-10-11T08:03:56.463Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Spalletti: Cambiaso in gruppo, Zhegrova e Sarr candidati dal primo minuto",
-      "summary": "Cambiaso ha svolto regolarmente tutti gli allenamenti. Il tecnico valuta Zhegrova e Sarr tra le possibili novit\u00e0 dall'inizio e chiede intensit\u00e0 contro un Cagliari capace di ripartire rapidamente. Le scelte definitive restano da confermare.",
-      "detail": "Cambiaso ha svolto regolarmente tutti gli allenamenti. Il tecnico valuta Zhegrova e Sarr tra le possibili novit\u00e0 dall'inizio e chiede intensit\u00e0 contro un Cagliari capace di ripartire rapidamente. Le scelte definitive restano da confermare.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/cagliari-juventus-la-conferenza-stampa-di-luciano-spalletti",
-      "published_at": "2026-10-10T14:56:58.233Z",
-      "significant": true
-    },
-    {
-      "category": "Squalifica",
-      "title": "Neto squalificato: salta Cagliari-Juventus",
-      "summary": "Il portiere deve scontare una giornata di squalifica maturata nella precedente esperienza al Botafogo e salta la trasferta di Cagliari.",
-      "detail": "Il portiere deve scontare una giornata di squalifica maturata nella precedente esperienza al Botafogo e salta la trasferta di Cagliari.",
-      "source": "La Gazzetta dello Sport",
-      "source_url": "https://www.gazzetta.it/Calcio/Serie-A/Juventus/10-10-2026/cagliari-juve-neto-squalificato-i-motivi.shtml",
-      "published_at": "2026-10-10T09:20:00Z",
-      "significant": true
+      "category": "Disponibilit\u00e0",
+      "title": "Neto torna convocabile in Europa League",
+      "summary": "Dopo il turno di squalifica scontato contro il Cagliari, Neto torna convocabile per il Celta. La presenza nella lista UEFA non equivale alla conferma tra i convocati o nell'undici titolare.",
+      "source": "La Gazzetta dello Sport; verifica lista UEFA",
+      "source_url": "https://www.gazzetta.it/calcio/fantanews/12-10-2026/juve-infortuni-i-giocatori-bianconeri-indisponibili-per-la-sfida-col-celta.shtml",
+      "published_at": "2026-10-12T08:02:00Z",
+      "significant": true,
+      "detail": "Dopo il turno di squalifica scontato contro il Cagliari, Neto torna convocabile per il Celta. La presenza nella lista UEFA non equivale alla conferma tra i convocati o nell'undici titolare."
     }
   ]
 }

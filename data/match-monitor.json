@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-14T00:03:22.521Z",
+  "updated_at": "2026-10-14T15:05:02.230Z",
   "match": {
     "home": "Celta Vigo",
     "away": "Juventus",
@@ -10,24 +10,24 @@
   "formation": null,
   "updates": [
     {
-      "category": "Europa League",
-      "title": "Zhegrova fuori lista per la trasferta di Vigo",
-      "summary": "L'esterno non figura nella lista UEFA e non sar\u00e0 disponibile contro il Celta. L'assenza \u00e8 legata alla registrazione europea, non a un nuovo infortunio.",
-      "source": "La Gazzetta dello Sport; verifica lista UEFA",
-      "source_url": "https://www.gazzetta.it/calcio/fantanews/12-10-2026/juve-infortuni-i-giocatori-bianconeri-indisponibili-per-la-sfida-col-celta.shtml",
-      "published_at": "2026-10-12T08:02:00Z",
-      "significant": true,
-      "detail": "L'esterno non figura nella lista UEFA e non sar\u00e0 disponibile contro il Celta. L'assenza \u00e8 legata alla registrazione europea, non a un nuovo infortunio."
+      "category": "Convocati",
+      "title": "Venti convocati per il Celta: presenti Neto e Celik",
+      "summary": "Neto e Celik figurano nell'elenco ufficiale dei 20 convocati per Vigo. Presente anche Cabal. Boga non compare nell'elenco; Zhegrova resta fuori dalla lista europea.",
+      "detail": "Neto e Celik figurano nell'elenco ufficiale dei 20 convocati per Vigo. Presente anche Cabal. Boga non compare nell'elenco; Zhegrova resta fuori dalla lista europea.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-celta-vigo-juventus-i-convocati",
+      "published_at": "2026-10-14T12:35:43.529Z",
+      "significant": true
     },
     {
-      "category": "Disponibilit\u00e0",
-      "title": "Neto torna convocabile in Europa League",
-      "summary": "Dopo il turno di squalifica scontato contro il Cagliari, Neto torna convocabile per il Celta. La presenza nella lista UEFA non equivale alla conferma tra i convocati o nell'undici titolare.",
+      "category": "Europa League",
+      "title": "Zhegrova fuori lista per la trasferta di Vigo",
+      "summary": "L'esterno non figura nella lista UEFA e non sarà disponibile contro il Celta. L'assenza è legata alla registrazione europea, non a un nuovo infortunio.",
       "source": "La Gazzetta dello Sport; verifica lista UEFA",
       "source_url": "https://www.gazzetta.it/calcio/fantanews/12-10-2026/juve-infortuni-i-giocatori-bianconeri-indisponibili-per-la-sfida-col-celta.shtml",
       "published_at": "2026-10-12T08:02:00Z",
       "significant": true,
-      "detail": "Dopo il turno di squalifica scontato contro il Cagliari, Neto torna convocabile per il Celta. La presenza nella lista UEFA non equivale alla conferma tra i convocati o nell'undici titolare."
+      "detail": "L'esterno non figura nella lista UEFA e non sarà disponibile contro il Celta. L'assenza è legata alla registrazione europea, non a un nuovo infortunio."
     }
   ]
 }

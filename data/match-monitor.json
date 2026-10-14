@@ -1,14 +1,105 @@
 {
   "version": 1,
-  "updated_at": "2026-10-14T15:05:02.230Z",
+  "updated_at": "2026-10-14T19:57:33.416Z",
   "match": {
     "home": "Celta Vigo",
     "away": "Juventus",
     "kickoff": "2026-10-15T19:00:00Z",
     "competition": "Europa League"
   },
-  "formation": null,
+  "formation": {
+    "module": "3-4-2-1",
+    "status": "Probabile",
+    "source": "Sky Sport",
+    "source_url": "https://sport.sky.it/calcio/europa-league/2026/10/14/celta-vigo-juventus-probabili-formazioni-2-giornata",
+    "updated_at": "2026-10-14T19:57:33.416Z",
+    "players": [
+      {
+        "name": "Vicario",
+        "x": 0,
+        "z": 6.5
+      },
+      {
+        "name": "Kalulu",
+        "x": 3,
+        "z": 3.5
+      },
+      {
+        "name": "Gatti",
+        "x": 0,
+        "z": 3.5
+      },
+      {
+        "name": "Kelly",
+        "x": -3,
+        "z": 3.5
+      },
+      {
+        "name": "Nico Gonzalez",
+        "x": 4.5,
+        "z": 0.4
+      },
+      {
+        "name": "Koopmeiners",
+        "x": 1.5,
+        "z": 0.4
+      },
+      {
+        "name": "Sarr",
+        "x": -1.5,
+        "z": 0.4
+      },
+      {
+        "name": "Cambiaso",
+        "x": -4.5,
+        "z": 0.4
+      },
+      {
+        "name": "Conceicao",
+        "x": 2,
+        "z": -3
+      },
+      {
+        "name": "Alajbegovic",
+        "x": -2,
+        "z": -3
+      },
+      {
+        "name": "Woltemade",
+        "x": 0,
+        "z": -6
+      }
+    ],
+    "details": [
+      {
+        "label": "Nota",
+        "text": "Formazione probabile, non ancora ufficiale."
+      },
+      {
+        "label": "Ballottaggi",
+        "text": "Kelly favorito su Bremer; Nico Gonzalez avanti su McKennie."
+      },
+      {
+        "label": "Squalificati",
+        "text": "Nessuno segnalato per questa gara."
+      },
+      {
+        "label": "Indisponibili",
+        "text": "Non convocati: Yildiz, Ekhator, Thuram, Locatelli, Boga e Grabara. Zhegrova fuori lista UEFA."
+      }
+    ]
+  },
   "updates": [
+    {
+      "category": "Conferenza stampa",
+      "title": "Spalletti prepara le rotazioni: spazio da dare a Gatti e Woltemade",
+      "summary": "Il tecnico annuncia rotazioni per distribuire le energie negli impegni ravvicinati e indica Gatti e Woltemade tra i giocatori meritevoli di spazio. Chiede maggiore incisivita nei momenti decisivi; l'undici resta da ufficializzare.",
+      "detail": "Il tecnico annuncia rotazioni per distribuire le energie negli impegni ravvicinati e indica Gatti e Woltemade tra i giocatori meritevoli di spazio. Chiede maggiore incisivita nei momenti decisivi; l'undici resta da ufficializzare.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/uel-le-parole-di-spalletti-e-conceicao-alla-vigilia-di-celta-vigo-juventus",
+      "published_at": "2026-10-14T17:39:51.062Z",
+      "significant": true
+    },
     {
       "category": "Convocati",
       "title": "Venti convocati per il Celta: presenti Neto e Celik",

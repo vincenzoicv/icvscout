@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-15T00:59:34.379Z",
+  "updated_at": "2026-10-15T21:55:39.021Z",
   "match": {
     "home": "Celta Vigo",
     "away": "Juventus",
@@ -9,10 +9,10 @@
   },
   "formation": {
     "module": "3-4-2-1",
-    "status": "Probabile",
-    "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/europa-league/2026/10/14/celta-vigo-juventus-probabili-formazioni-2-giornata",
-    "updated_at": "2026-10-15T00:59:34.379Z",
+    "status": "Ufficiale",
+    "source": "Juventus.com",
+    "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-celta-juventus-le-formazioni-ufficiali",
+    "updated_at": "2026-10-15T21:55:39.021Z",
     "players": [
       {
         "name": "Vicario",
@@ -73,11 +73,7 @@
     "details": [
       {
         "label": "Nota",
-        "text": "Formazione probabile, non ancora ufficiale."
-      },
-      {
-        "label": "Ballottaggi",
-        "text": "Kelly favorito su Bremer; McKennie avanti su Nico Gonzalez."
+        "text": "Undici ufficiale sceso in campo contro il Celta Vigo."
       },
       {
         "label": "Squalificati",
@@ -90,6 +86,16 @@
     ]
   },
   "updates": [
+    {
+      "category": "Finale",
+      "title": "Celta Vigo-Juventus 1-2: decide Kolo Muani nel recupero",
+      "summary": "Hugo Alvarez 18' · Woltemade 58' · Kolo Muani 90+2'. Seconda vittoria in due gare di Europa League, ora sei punti. Prossimo impegno: Juventus-Lazio, 18 ottobre alle 20:45.",
+      "detail": "Hugo Alvarez 18' · Woltemade 58' · Kolo Muani 90+2'. Seconda vittoria in due gare di Europa League, ora sei punti. Prossimo impegno: Juventus-Lazio, 18 ottobre alle 20:45.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-celta-juventus-il-tabellino",
+      "published_at": "2026-10-15T20:55:54.506Z",
+      "significant": true
+    },
     {
       "category": "Conferenza stampa",
       "title": "Spalletti prepara le rotazioni: spazio da dare a Gatti e Woltemade",

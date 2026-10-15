@@ -98,7 +98,27 @@ test("i marcatori sono sotto il risultato e spariscono senza dati", async () => 
   assert.equal(element.hidden, true);
 });
 
-test("dopo Cagliari-Juventus le prossime tre iniziano da Celta-Juventus", async () => {
+test("dopo il Celta il referto e le prossime tre sono aggiornati", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function renderMatchHubScorers("));
+  const panel = {hidden:true};
+  const box = {innerHTML:""};
+  class MatchDate extends Date { static now() { return Date.parse("2026-10-15T22:00:00Z"); } }
+  const {allRows, render} = new Function("document", "Date", source + ";return {allRows:allMatchHubRows,render:renderMatchHubUpcoming}")({getElementById:id => id === "matchHubUpcomingPanel" ? panel : box}, MatchDate);
+  const rows = allRows([]);
+  const last = rows.find(match => match.home === "Celta Vigo");
+  assert.equal(last.status, "finished");
+  assert.equal(last.homeScore, 1);
+  assert.equal(last.awayScore, 2);
+  assert.equal(last.scorers, "Hugo Alvarez 18' · Woltemade 58' · Kolo Muani 90+2'");
+  assert.equal(last.mvp, undefined);
+  assert.equal(last.worst, undefined);
+  render(rows);
+  assert.match(box.innerHTML, /Lazio[\s\S]*Rennes[\s\S]*Lecce/);
+  assert.doesNotMatch(box.innerHTML, /Celta Vigo/);
+});
+
+test("il calendario deduplica le gare e conserva il referto di Cagliari", async () => {
   const html = await read("index.html");
   const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function renderMatchHubScorers("));
   const panel = {hidden:true};
@@ -115,7 +135,7 @@ test("dopo Cagliari-Juventus le prossime tre iniziano da Celta-Juventus", async 
   render(upcomingRows);
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.match(box.innerHTML, /Celta Vigo[\s\S]*Lazio[\s\S]*Rennes/);
+  assert.match(box.innerHTML, /Lazio[\s\S]*Rennes[\s\S]*Lecce/);
   assert.doesNotMatch(box.innerHTML, /Cagliari/);
   const last = allRows([]).find(match => match.matchday === 6 && match.competition === 'Serie A');
   assert.equal(last.status, 'finished');

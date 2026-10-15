@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-14T19:57:33.416Z",
+  "updated_at": "2026-10-15T00:59:34.379Z",
   "match": {
     "home": "Celta Vigo",
     "away": "Juventus",
@@ -12,7 +12,7 @@
     "status": "Probabile",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/europa-league/2026/10/14/celta-vigo-juventus-probabili-formazioni-2-giornata",
-    "updated_at": "2026-10-14T19:57:33.416Z",
+    "updated_at": "2026-10-15T00:59:34.379Z",
     "players": [
       {
         "name": "Vicario",
@@ -35,7 +35,7 @@
         "z": 3.5
       },
       {
-        "name": "Nico Gonzalez",
+        "name": "McKennie",
         "x": 4.5,
         "z": 0.4
       },
@@ -77,7 +77,7 @@
       },
       {
         "label": "Ballottaggi",
-        "text": "Kelly favorito su Bremer; Nico Gonzalez avanti su McKennie."
+        "text": "Kelly favorito su Bremer; McKennie avanti su Nico Gonzalez."
       },
       {
         "label": "Squalificati",

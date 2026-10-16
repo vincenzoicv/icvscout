@@ -1,18 +1,18 @@
 {
   "version": 1,
-  "updated_at": "2026-10-15T21:55:39.021Z",
+  "updated_at": "2026-10-16T18:45:00Z",
   "match": {
-    "home": "Celta Vigo",
-    "away": "Juventus",
-    "kickoff": "2026-10-15T19:00:00Z",
-    "competition": "Europa League"
+    "home": "Juventus",
+    "away": "Lazio",
+    "kickoff": "2026-10-18T18:45:00Z",
+    "competition": "Serie A"
   },
   "formation": {
     "module": "3-4-2-1",
-    "status": "Ufficiale",
-    "source": "Juventus.com",
-    "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-celta-juventus-le-formazioni-ufficiali",
-    "updated_at": "2026-10-15T21:55:39.021Z",
+    "status": "Probabile",
+    "source": "Sky Sport",
+    "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/16/probabili-formazioni-serie-a-giornata-7-ultime-news",
+    "updated_at": "2026-10-16T18:45:00Z",
     "players": [
       {
         "name": "Vicario",
@@ -25,12 +25,12 @@
         "z": 3.5
       },
       {
-        "name": "Gatti",
+        "name": "Bremer",
         "x": 0,
         "z": 3.5
       },
       {
-        "name": "Kelly",
+        "name": "Lucumi",
         "x": -3,
         "z": 3.5
       },
@@ -40,7 +40,7 @@
         "z": 0.4
       },
       {
-        "name": "Koopmeiners",
+        "name": "Douglas Luiz",
         "x": 1.5,
         "z": 0.4
       },
@@ -50,22 +50,22 @@
         "z": 0.4
       },
       {
-        "name": "Cambiaso",
+        "name": "Celik",
         "x": -4.5,
         "z": 0.4
       },
       {
-        "name": "Conceicao",
+        "name": "Nico Gonzalez",
         "x": 2,
         "z": -3
       },
       {
-        "name": "Alajbegovic",
+        "name": "Woltemade",
         "x": -2,
         "z": -3
       },
       {
-        "name": "Woltemade",
+        "name": "Kolo Muani",
         "x": 0,
         "z": -6
       }
@@ -73,58 +73,62 @@
     "details": [
       {
         "label": "Nota",
-        "text": "Undici ufficiale sceso in campo contro il Celta Vigo."
+        "text": "Formazione probabile, non ancora ufficiale."
+      },
+      {
+        "label": "Ballottaggi",
+        "text": "Nessun ballottaggio segnalato per la Juventus nella pagina consultata."
       },
       {
         "label": "Squalificati",
-        "text": "Nessuno segnalato per questa gara."
+        "text": "Nessun calciatore. Spalletti squalificato per una giornata; in panchina Domenichini."
       },
       {
         "label": "Indisponibili",
-        "text": "Non convocati: Yildiz, Ekhator, Thuram, Locatelli, Boga e Grabara. Zhegrova fuori lista UEFA."
+        "text": "Yildiz, Ekhator, Thuram, Locatelli e Grabara. Boga resta tra gli assenti della probabile, ma il rientro in gruppo e segnalato dalle ultime notizie: convocazione da confermare."
       }
     ]
   },
   "updates": [
     {
-      "category": "Finale",
-      "title": "Celta Vigo-Juventus 1-2: decide Kolo Muani nel recupero",
-      "summary": "Hugo Alvarez 18' · Woltemade 58' · Kolo Muani 90+2'. Seconda vittoria in due gare di Europa League, ora sei punti. Prossimo impegno: Juventus-Lazio, 18 ottobre alle 20:45.",
-      "detail": "Hugo Alvarez 18' · Woltemade 58' · Kolo Muani 90+2'. Seconda vittoria in due gare di Europa League, ora sei punti. Prossimo impegno: Juventus-Lazio, 18 ottobre alle 20:45.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-celta-juventus-il-tabellino",
-      "published_at": "2026-10-15T20:55:54.506Z",
+      "category": "Probabile formazione",
+      "title": "Ipotesi Kolo Muani-Woltemade insieme contro la Lazio",
+      "summary": "Nel 3-4-2-1 previsto Nico Gonzalez e Woltemade agirebbero alle spalle di Kolo Muani. McKennie e Celik sulle fasce, Douglas Luiz e Sarr in mediana. Scelte non ancora ufficiali.",
+      "detail": "Nel 3-4-2-1 previsto Nico Gonzalez e Woltemade agirebbero alle spalle di Kolo Muani. McKennie e Celik sulle fasce, Douglas Luiz e Sarr in mediana. Scelte non ancora ufficiali.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/16/probabili-formazioni-serie-a-giornata-7-ultime-news",
+      "published_at": "2026-10-16T16:00:00Z",
       "significant": true
     },
     {
       "category": "Conferenza stampa",
-      "title": "Spalletti prepara le rotazioni: spazio da dare a Gatti e Woltemade",
-      "summary": "Il tecnico annuncia rotazioni per distribuire le energie negli impegni ravvicinati e indica Gatti e Woltemade tra i giocatori meritevoli di spazio. Chiede maggiore incisivita nei momenti decisivi; l'undici resta da ufficializzare.",
-      "detail": "Il tecnico annuncia rotazioni per distribuire le energie negli impegni ravvicinati e indica Gatti e Woltemade tra i giocatori meritevoli di spazio. Chiede maggiore incisivita nei momenti decisivi; l'undici resta da ufficializzare.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/uel-le-parole-di-spalletti-e-conceicao-alla-vigilia-di-celta-vigo-juventus",
-      "published_at": "2026-10-14T17:39:51.062Z",
+      "title": "Spalletti presenta Juventus-Lazio il 17 ottobre alle 16:00",
+      "summary": "Appuntamento sabato 17 ottobre alle 16:00 per la conferenza stampa di vigilia di Juventus-Lazio.",
+      "detail": "Appuntamento sabato 17 ottobre alle 16:00 per la conferenza stampa di vigilia di Juventus-Lazio.",
+      "source": "Tuttosport",
+      "source_url": "https://next2026.tuttosport.com/news/calcio/serie-a/juventus/2026/10/16-151936178/juve-lazio_le_ultime_dai_campi_spalletti_ritrova_due_frecce_ecco_quando_parla",
+      "published_at": "2026-10-16T15:04:45Z",
       "significant": true
     },
     {
-      "category": "Convocati",
-      "title": "Venti convocati per il Celta: presenti Neto e Celik",
-      "summary": "Neto e Celik figurano nell'elenco ufficiale dei 20 convocati per Vigo. Presente anche Cabal. Boga non compare nell'elenco; Zhegrova resta fuori dalla lista europea.",
-      "detail": "Neto e Celik figurano nell'elenco ufficiale dei 20 convocati per Vigo. Presente anche Cabal. Boga non compare nell'elenco; Zhegrova resta fuori dalla lista europea.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-celta-vigo-juventus-i-convocati",
-      "published_at": "2026-10-14T12:35:43.529Z",
+      "category": "Condizioni",
+      "title": "Boga e Celik in gruppo, Ekhator ancora a parte",
+      "summary": "Segnalata una seduta completa in gruppo per Boga e Celik. Ekhator prosegue il lavoro personalizzato. Il rientro di Boga tra i convocati resta da confermare con l'elenco ufficiale.",
+      "detail": "Segnalata una seduta completa in gruppo per Boga e Celik. Ekhator prosegue il lavoro personalizzato. Il rientro di Boga tra i convocati resta da confermare con l'elenco ufficiale.",
+      "source": "Tuttosport; La Gazzetta dello Sport",
+      "source_url": "https://next2026.tuttosport.com/news/calcio/serie-a/juventus/2026/10/16-151936178/juve-lazio_le_ultime_dai_campi_spalletti_ritrova_due_frecce_ecco_quando_parla",
+      "published_at": "2026-10-16T15:04:45Z",
       "significant": true
     },
     {
-      "category": "Europa League",
-      "title": "Zhegrova fuori lista per la trasferta di Vigo",
-      "summary": "L'esterno non figura nella lista UEFA e non sarà disponibile contro il Celta. L'assenza è legata alla registrazione europea, non a un nuovo infortunio.",
-      "source": "La Gazzetta dello Sport; verifica lista UEFA",
-      "source_url": "https://www.gazzetta.it/calcio/fantanews/12-10-2026/juve-infortuni-i-giocatori-bianconeri-indisponibili-per-la-sfida-col-celta.shtml",
-      "published_at": "2026-10-12T08:02:00Z",
-      "significant": true,
-      "detail": "L'esterno non figura nella lista UEFA e non sarà disponibile contro il Celta. L'assenza è legata alla registrazione europea, non a un nuovo infortunio."
+      "category": "Squalifica",
+      "title": "Spalletti salta Juventus-Lazio: in panchina Domenichini",
+      "summary": "Il Giudice Sportivo ha fermato il tecnico per una giornata dopo l'espulsione al termine di Cagliari-Juventus. Nessun calciatore bianconero squalificato per questa gara.",
+      "detail": "Il Giudice Sportivo ha fermato il tecnico per una giornata dopo l'espulsione al termine di Cagliari-Juventus. Nessun calciatore bianconero squalificato per questa gara.",
+      "source": "Lega Serie A; La Gazzetta dello Sport",
+      "source_url": "https://www.legaseriea.it/serie-a/news/le-decisioni-del-giudice-sportivo-x9431",
+      "published_at": "2026-10-13T13:32:24.358Z",
+      "significant": true
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-17T14:46:00Z",
+  "updated_at": "2026-10-17T19:43:00Z",
   "match": {
     "home": "Juventus",
     "away": "Lazio",
@@ -11,8 +11,8 @@
     "module": "3-4-2-1",
     "status": "Probabile",
     "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/16/probabili-formazioni-serie-a-giornata-7-ultime-news",
-    "updated_at": "2026-10-17T14:46:00Z",
+    "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/17/juventus-lazio-probabili-formazioni-7-giornata",
+    "updated_at": "2026-10-17T19:43:00Z",
     "players": [
       {
         "name": "Vicario",
@@ -35,7 +35,7 @@
         "z": 3.5
       },
       {
-        "name": "McKennie",
+        "name": "Celik",
         "x": 4.5,
         "z": 0.4
       },
@@ -50,7 +50,7 @@
         "z": 0.4
       },
       {
-        "name": "Celik",
+        "name": "McKennie",
         "x": -4.5,
         "z": 0.4
       },
@@ -60,7 +60,7 @@
         "z": -3
       },
       {
-        "name": "Woltemade",
+        "name": "Alajbegovic",
         "x": -2,
         "z": -3
       },
@@ -91,23 +91,23 @@
   },
   "updates": [
     {
+      "category": "Probabile formazione",
+      "title": "Alajbegovic con Nico Gonzalez dietro Kolo Muani",
+      "summary": "La nuova ipotesi resta il 3-4-2-1: Alajbegovic al posto di Woltemade sulla trequarti, Celik a destra e McKennie a sinistra. Confermati Douglas Luiz e Sarr in mezzo, Kalulu-Bremer-Lucumi davanti a Vicario. Formazione non ufficiale.",
+      "detail": "La nuova ipotesi resta il 3-4-2-1: Alajbegovic al posto di Woltemade sulla trequarti, Celik a destra e McKennie a sinistra. Confermati Douglas Luiz e Sarr in mezzo, Kalulu-Bremer-Lucumi davanti a Vicario. Formazione non ufficiale.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/17/juventus-lazio-probabili-formazioni-7-giornata",
+      "published_at": "2026-10-17T16:19:21.606Z",
+      "significant": true
+    },
+    {
       "category": "Conferenza stampa",
       "title": "Boga disponibile, coppia Kolo Muani-Woltemade da valutare",
       "summary": "Nella conferenza del 17 ottobre Spalletti ha confermato il rientro di Boga, con circa mezz'ora di autonomia. Ancora da decidere l'impiego delle due punte insieme dall'inizio, tenendo conto anche dei cambi e degli impegni ravvicinati.",
       "detail": "Nella conferenza del 17 ottobre Spalletti ha confermato il rientro di Boga, con circa mezz'ora di autonomia. Ancora da decidere l'impiego delle due punte insieme dall'inizio, tenendo conto anche dei cambi e degli impegni ravvicinati.",
-      "source": "JuventusNews24",
-      "source_url": "https://www.juventusnews24.com/conferenza-stampa-spalletti-pre-juve-lazio-live-parole-vigilia-serie-a-2026-27/",
-      "published_at": "2026-10-17T14:44:00Z",
-      "significant": true
-    },
-    {
-      "category": "Probabile formazione",
-      "title": "Ipotesi Kolo Muani-Woltemade insieme contro la Lazio",
-      "summary": "Nel 3-4-2-1 previsto Nico Gonzalez e Woltemade agirebbero alle spalle di Kolo Muani. McKennie e Celik sulle fasce, Douglas Luiz e Sarr in mediana. Scelte non ancora ufficiali.",
-      "detail": "Nel 3-4-2-1 previsto Nico Gonzalez e Woltemade agirebbero alle spalle di Kolo Muani. McKennie e Celik sulle fasce, Douglas Luiz e Sarr in mediana. Scelte non ancora ufficiali.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/16/probabili-formazioni-serie-a-giornata-7-ultime-news",
-      "published_at": "2026-10-16T16:00:00Z",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/le-parole-di-luciano-spalletti-alla-vigilia-di-juventus-lazio",
+      "published_at": "2026-10-17T15:09:36.895Z",
       "significant": true
     },
     {

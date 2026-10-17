@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-16T18:45:00Z",
+  "updated_at": "2026-10-17T14:46:00Z",
   "match": {
     "home": "Juventus",
     "away": "Lazio",
@@ -12,7 +12,7 @@
     "status": "Probabile",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/16/probabili-formazioni-serie-a-giornata-7-ultime-news",
-    "updated_at": "2026-10-16T18:45:00Z",
+    "updated_at": "2026-10-17T14:46:00Z",
     "players": [
       {
         "name": "Vicario",
@@ -85,11 +85,21 @@
       },
       {
         "label": "Indisponibili",
-        "text": "Yildiz, Ekhator, Thuram, Locatelli e Grabara. Boga resta tra gli assenti della probabile, ma il rientro in gruppo e segnalato dalle ultime notizie: convocazione da confermare."
+        "text": "Yildiz, Ekhator, Thuram, Locatelli e Grabara. Boga torna a disposizione: Spalletti ha indicato circa mezz'ora di autonomia nella conferenza del 17 ottobre."
       }
     ]
   },
   "updates": [
+    {
+      "category": "Conferenza stampa",
+      "title": "Boga disponibile, coppia Kolo Muani-Woltemade da valutare",
+      "summary": "Nella conferenza del 17 ottobre Spalletti ha confermato il rientro di Boga, con circa mezz'ora di autonomia. Ancora da decidere l'impiego delle due punte insieme dall'inizio, tenendo conto anche dei cambi e degli impegni ravvicinati.",
+      "detail": "Nella conferenza del 17 ottobre Spalletti ha confermato il rientro di Boga, con circa mezz'ora di autonomia. Ancora da decidere l'impiego delle due punte insieme dall'inizio, tenendo conto anche dei cambi e degli impegni ravvicinati.",
+      "source": "JuventusNews24",
+      "source_url": "https://www.juventusnews24.com/conferenza-stampa-spalletti-pre-juve-lazio-live-parole-vigilia-serie-a-2026-27/",
+      "published_at": "2026-10-17T14:44:00Z",
+      "significant": true
+    },
     {
       "category": "Probabile formazione",
       "title": "Ipotesi Kolo Muani-Woltemade insieme contro la Lazio",
@@ -98,26 +108,6 @@
       "source": "Sky Sport",
       "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/16/probabili-formazioni-serie-a-giornata-7-ultime-news",
       "published_at": "2026-10-16T16:00:00Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Spalletti presenta Juventus-Lazio il 17 ottobre alle 16:00",
-      "summary": "Appuntamento sabato 17 ottobre alle 16:00 per la conferenza stampa di vigilia di Juventus-Lazio.",
-      "detail": "Appuntamento sabato 17 ottobre alle 16:00 per la conferenza stampa di vigilia di Juventus-Lazio.",
-      "source": "Tuttosport",
-      "source_url": "https://next2026.tuttosport.com/news/calcio/serie-a/juventus/2026/10/16-151936178/juve-lazio_le_ultime_dai_campi_spalletti_ritrova_due_frecce_ecco_quando_parla",
-      "published_at": "2026-10-16T15:04:45Z",
-      "significant": true
-    },
-    {
-      "category": "Condizioni",
-      "title": "Boga e Celik in gruppo, Ekhator ancora a parte",
-      "summary": "Segnalata una seduta completa in gruppo per Boga e Celik. Ekhator prosegue il lavoro personalizzato. Il rientro di Boga tra i convocati resta da confermare con l'elenco ufficiale.",
-      "detail": "Segnalata una seduta completa in gruppo per Boga e Celik. Ekhator prosegue il lavoro personalizzato. Il rientro di Boga tra i convocati resta da confermare con l'elenco ufficiale.",
-      "source": "Tuttosport; La Gazzetta dello Sport",
-      "source_url": "https://next2026.tuttosport.com/news/calcio/serie-a/juventus/2026/10/16-151936178/juve-lazio_le_ultime_dai_campi_spalletti_ritrova_due_frecce_ecco_quando_parla",
-      "published_at": "2026-10-16T15:04:45Z",
       "significant": true
     },
     {

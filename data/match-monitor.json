@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-17T19:43:00Z",
+  "updated_at": "2026-10-18T15:42:00Z",
   "match": {
     "home": "Juventus",
     "away": "Lazio",
@@ -12,7 +12,7 @@
     "status": "Probabile",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/17/juventus-lazio-probabili-formazioni-7-giornata",
-    "updated_at": "2026-10-17T19:43:00Z",
+    "updated_at": "2026-10-18T15:42:00Z",
     "players": [
       {
         "name": "Vicario",
@@ -85,11 +85,21 @@
       },
       {
         "label": "Indisponibili",
-        "text": "Yildiz, Ekhator, Thuram, Locatelli e Grabara. Boga torna a disposizione: Spalletti ha indicato circa mezz'ora di autonomia nella conferenza del 17 ottobre."
+        "text": "Yildiz, Ekhator, Thuram, Locatelli e Grabara non convocati. Boga e nella lista ufficiale dei 23; Spalletti ha indicato circa mezz'ora di autonomia."
       }
     ]
   },
   "updates": [
+    {
+      "category": "Convocati",
+      "title": "Boga tra i 23 convocati per Juventus-Lazio",
+      "summary": "Confermato il rientro di Boga nell'elenco ufficiale. Presenti anche Neto e tutti gli undici della probabile formazione; fuori Yildiz, Ekhator, Thuram, Locatelli e Grabara.",
+      "detail": "Confermato il rientro di Boga nell'elenco ufficiale. Presenti anche Neto e tutti gli undici della probabile formazione; fuori Yildiz, Ekhator, Thuram, Locatelli e Grabara.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-lazio-i-convocati",
+      "published_at": "2026-10-18T11:20:19.001Z",
+      "significant": true
+    },
     {
       "category": "Probabile formazione",
       "title": "Alajbegovic con Nico Gonzalez dietro Kolo Muani",

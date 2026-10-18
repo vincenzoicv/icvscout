@@ -1689,7 +1689,7 @@ var ICV_MATCH_FALLBACKS = [
   {date:"2026-09-13T20:45:00+02:00",status:"finished",competition:"Serie A",home:"US Sassuolo Calcio",away:"Juventus FC",homeScore:3,awayScore:2,venue:"Mapei Stadium · Reggio Emilia",matchday:4,scorers:"Esposito 65' · Zhegrova 82' · Bowie 89' · Zhegrova 90+1' · Adzic 90+4'",mvp:"Zhegrova"},
   {date:"2026-09-20T18:00:00+02:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Atalanta BC",homeScore:2,awayScore:0,venue:"Allianz Stadium · Torino",matchday:5,scorers:"Conceicao 28' · Bremer 77'"},
   {date:"2026-10-11T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Cagliari Calcio",away:"Juventus FC",homeScore:1,awayScore:1,venue:"Unipol Domus",matchday:6,scorers:"Maldini 20' · Kolo Muani 81'"},
-  {date:"2026-10-18T20:45:00+02:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Lazio",venue:"Allianz Stadium · Torino",matchday:7},
+  {date:"2026-10-18T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Lazio",homeScore:0,awayScore:3,venue:"Allianz Stadium · Torino",matchday:7,scorers:"Provstgaard 37' · Isaksen 66' · Dele-Bashiru 89'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-juventus-lazio-il-tabellino-x9255"},
   {date:"2026-10-25T18:00:00+01:00",status:"scheduled",competition:"Serie A",home:"Lecce",away:"Juventus FC",matchday:8},
   {date:"2026-10-28T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Genoa",away:"Juventus FC",matchday:9},
   {date:"2026-11-01T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Napoli",venue:"Allianz Stadium · Torino",matchday:10},
@@ -1714,6 +1714,14 @@ var ICV_MATCH_FALLBACKS = [
 ];
 
 var ICV_VERIFIED_MATCH_DATA = {
+  "558570": {
+    scorers:"Provstgaard 37' · Isaksen 66' · Dele-Bashiru 89'",
+    goals:[
+      {kind:"goal",minute:37,injuryTime:null,player:"Provstgaard",team:"SS Lazio",type:"REGULAR"},
+      {kind:"goal",minute:66,injuryTime:null,player:"Isaksen",team:"SS Lazio",type:"REGULAR"},
+      {kind:"goal",minute:89,injuryTime:null,player:"Dele-Bashiru",team:"SS Lazio",type:"REGULAR"}
+    ]
+  },
   "558584": {
     scorers:"Maldini 20' · Kolo Muani 81'",
     goals:[

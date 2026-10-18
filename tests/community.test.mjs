@@ -114,8 +114,30 @@ test("dopo il Celta il referto e le prossime tre sono aggiornati", async () => {
   assert.equal(last.mvp, undefined);
   assert.equal(last.worst, undefined);
   render(rows);
-  assert.match(box.innerHTML, /Lazio[\s\S]*Rennes[\s\S]*Lecce/);
+  assert.match(box.innerHTML, /Rennes[\s\S]*Lecce[\s\S]*Genoa/);
   assert.doesNotMatch(box.innerHTML, /Celta Vigo/);
+});
+
+test("il finale con la Lazio conserva marcatori verificati e prossime tre senza premi", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function renderMatchHubScorers("));
+  const box = {innerHTML:""};
+  class MatchDate extends Date { static now() { return Date.parse("2026-10-18T21:40:00Z"); } }
+  const {allRows, normalize, render} = new Function("document", "Date", source + ";return {allRows:allMatchHubRows,normalize:normalizeMatchHubRows,render:renderMatchHubUpcoming}")({getElementById:id => id === "matchHubUpcomingPanel" ? {hidden:true} : box}, MatchDate);
+  const match = normalize([{match_id:"558570",match_date:"2026-10-18T18:45:00Z",status:"finished",competition:"Serie A",source_payload:{homeTeam:{name:"Juventus FC"},awayTeam:{name:"SS Lazio"},score:{fullTime:{home:0,away:3}},matchday:7}}])[0];
+  assert.equal(match.scorers, "Provstgaard 37' · Isaksen 66' · Dele-Bashiru 89'");
+  assert.equal(match.goals.length, 3);
+  assert.equal(match.mvp, "");
+  assert.equal(match.worst, "");
+  const rows = allRows([]);
+  const fallback = rows.find(row => row.date === "2026-10-18T20:45:00+02:00");
+  assert.equal(fallback.status, "finished");
+  assert.equal(fallback.homeScore, 0);
+  assert.equal(fallback.awayScore, 3);
+  assert.equal(fallback.scorers, match.scorers);
+  render(rows);
+  assert.match(box.innerHTML, /Rennes[\s\S]*Lecce[\s\S]*Genoa/);
+  assert.doesNotMatch(box.innerHTML, /Lazio/);
 });
 
 test("il calendario deduplica le gare e conserva il referto di Cagliari", async () => {
@@ -135,7 +157,7 @@ test("il calendario deduplica le gare e conserva il referto di Cagliari", async 
   render(upcomingRows);
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.match(box.innerHTML, /Lazio[\s\S]*Rennes[\s\S]*Lecce/);
+  assert.match(box.innerHTML, /Rennes[\s\S]*Lecce[\s\S]*Genoa/);
   assert.doesNotMatch(box.innerHTML, /Cagliari/);
   const last = allRows([]).find(match => match.matchday === 6 && match.competition === 'Serie A');
   assert.equal(last.status, 'finished');

@@ -1,133 +1,22 @@
 {
   "version": 1,
-  "updated_at": "2026-10-18T15:42:00Z",
+  "updated_at": "2026-10-18T21:42:00Z",
   "match": {
     "home": "Juventus",
     "away": "Lazio",
     "kickoff": "2026-10-18T18:45:00Z",
     "competition": "Serie A"
   },
-  "formation": {
-    "module": "3-4-2-1",
-    "status": "Probabile",
-    "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/17/juventus-lazio-probabili-formazioni-7-giornata",
-    "updated_at": "2026-10-18T15:42:00Z",
-    "players": [
-      {
-        "name": "Vicario",
-        "x": 0,
-        "z": 6.5
-      },
-      {
-        "name": "Kalulu",
-        "x": 3,
-        "z": 3.5
-      },
-      {
-        "name": "Bremer",
-        "x": 0,
-        "z": 3.5
-      },
-      {
-        "name": "Lucumi",
-        "x": -3,
-        "z": 3.5
-      },
-      {
-        "name": "Celik",
-        "x": 4.5,
-        "z": 0.4
-      },
-      {
-        "name": "Douglas Luiz",
-        "x": 1.5,
-        "z": 0.4
-      },
-      {
-        "name": "Sarr",
-        "x": -1.5,
-        "z": 0.4
-      },
-      {
-        "name": "McKennie",
-        "x": -4.5,
-        "z": 0.4
-      },
-      {
-        "name": "Nico Gonzalez",
-        "x": 2,
-        "z": -3
-      },
-      {
-        "name": "Alajbegovic",
-        "x": -2,
-        "z": -3
-      },
-      {
-        "name": "Kolo Muani",
-        "x": 0,
-        "z": -6
-      }
-    ],
-    "details": [
-      {
-        "label": "Nota",
-        "text": "Formazione probabile, non ancora ufficiale."
-      },
-      {
-        "label": "Ballottaggi",
-        "text": "Nessun ballottaggio segnalato per la Juventus nella pagina consultata."
-      },
-      {
-        "label": "Squalificati",
-        "text": "Nessun calciatore. Spalletti squalificato per una giornata; in panchina Domenichini."
-      },
-      {
-        "label": "Indisponibili",
-        "text": "Yildiz, Ekhator, Thuram, Locatelli e Grabara non convocati. Boga e nella lista ufficiale dei 23; Spalletti ha indicato circa mezz'ora di autonomia."
-      }
-    ]
-  },
+  "formation": null,
   "updates": [
     {
-      "category": "Convocati",
-      "title": "Boga tra i 23 convocati per Juventus-Lazio",
-      "summary": "Confermato il rientro di Boga nell'elenco ufficiale. Presenti anche Neto e tutti gli undici della probabile formazione; fuori Yildiz, Ekhator, Thuram, Locatelli e Grabara.",
-      "detail": "Confermato il rientro di Boga nell'elenco ufficiale. Presenti anche Neto e tutti gli undici della probabile formazione; fuori Yildiz, Ekhator, Thuram, Locatelli e Grabara.",
+      "category": "Finale",
+      "title": "Juventus-Lazio 0-3: referto ufficiale",
+      "summary": "Provstgaard 37', Isaksen 66' e Dele-Bashiru 89' decidono la settima giornata. Prossimo impegno: Juventus-Rennes, giovedi 22 ottobre alle 18:45, in Europa League.",
+      "detail": "Provstgaard 37', Isaksen 66' e Dele-Bashiru 89' decidono la settima giornata. Prossimo impegno: Juventus-Rennes, giovedi 22 ottobre alle 18:45, in Europa League.",
       "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-lazio-i-convocati",
-      "published_at": "2026-10-18T11:20:19.001Z",
-      "significant": true
-    },
-    {
-      "category": "Probabile formazione",
-      "title": "Alajbegovic con Nico Gonzalez dietro Kolo Muani",
-      "summary": "La nuova ipotesi resta il 3-4-2-1: Alajbegovic al posto di Woltemade sulla trequarti, Celik a destra e McKennie a sinistra. Confermati Douglas Luiz e Sarr in mezzo, Kalulu-Bremer-Lucumi davanti a Vicario. Formazione non ufficiale.",
-      "detail": "La nuova ipotesi resta il 3-4-2-1: Alajbegovic al posto di Woltemade sulla trequarti, Celik a destra e McKennie a sinistra. Confermati Douglas Luiz e Sarr in mezzo, Kalulu-Bremer-Lucumi davanti a Vicario. Formazione non ufficiale.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/17/juventus-lazio-probabili-formazioni-7-giornata",
-      "published_at": "2026-10-17T16:19:21.606Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Boga disponibile, coppia Kolo Muani-Woltemade da valutare",
-      "summary": "Nella conferenza del 17 ottobre Spalletti ha confermato il rientro di Boga, con circa mezz'ora di autonomia. Ancora da decidere l'impiego delle due punte insieme dall'inizio, tenendo conto anche dei cambi e degli impegni ravvicinati.",
-      "detail": "Nella conferenza del 17 ottobre Spalletti ha confermato il rientro di Boga, con circa mezz'ora di autonomia. Ancora da decidere l'impiego delle due punte insieme dall'inizio, tenendo conto anche dei cambi e degli impegni ravvicinati.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/le-parole-di-luciano-spalletti-alla-vigilia-di-juventus-lazio",
-      "published_at": "2026-10-17T15:09:36.895Z",
-      "significant": true
-    },
-    {
-      "category": "Squalifica",
-      "title": "Spalletti salta Juventus-Lazio: in panchina Domenichini",
-      "summary": "Il Giudice Sportivo ha fermato il tecnico per una giornata dopo l'espulsione al termine di Cagliari-Juventus. Nessun calciatore bianconero squalificato per questa gara.",
-      "detail": "Il Giudice Sportivo ha fermato il tecnico per una giornata dopo l'espulsione al termine di Cagliari-Juventus. Nessun calciatore bianconero squalificato per questa gara.",
-      "source": "Lega Serie A; La Gazzetta dello Sport",
-      "source_url": "https://www.legaseriea.it/serie-a/news/le-decisioni-del-giudice-sportivo-x9431",
-      "published_at": "2026-10-13T13:32:24.358Z",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-lazio-il-tabellino-x9255",
+      "published_at": "2026-10-18T20:43:59.646Z",
       "significant": true
     }
   ]

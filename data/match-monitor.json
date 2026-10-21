@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-20T16:50:00Z",
+  "updated_at": "2026-10-21T12:50:00Z",
   "match": {
     "home": "Juventus",
     "away": "Rennes",
@@ -9,6 +9,16 @@
   },
   "formation": null,
   "updates": [
+    {
+      "category": "Allenamento",
+      "title": "Rifinitura verso il Rennes: provati assetti a tre e a quattro",
+      "summary": "Nella partitella della vigilia sono stati provati due assetti difensivi diversi: non sono indicazioni di formazione ufficiale. Assenti Conceicao, Locatelli, Yildiz, Thuram, Grabara ed Ekhator.",
+      "detail": "Nella partitella della vigilia sono stati provati due assetti difensivi diversi: non sono indicazioni di formazione ufficiale. Assenti Conceicao, Locatelli, Yildiz, Thuram, Grabara ed Ekhator.",
+      "source": "Tuttosport",
+      "source_url": "https://www.tuttosport.com/news/calcio/serie-a/juventus/2026/10/21-152039528/allenamento_juve_partitella_e_doppia_difesa_cosa_dice_il_campo_prima_del_rennes",
+      "published_at": "2026-10-21T10:50:00Z",
+      "significant": true
+    },
     {
       "category": "Conferenza stampa",
       "title": "Spalletti presenta Juventus-Rennes il 21 ottobre alle 15:00",

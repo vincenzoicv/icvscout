@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-21T17:50:00Z",
+  "updated_at": "2026-10-21T22:47:00Z",
   "match": {
     "home": "Juventus",
     "away": "Rennes",
@@ -12,16 +12,16 @@
     "module": "3-4-1-2",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/europa-league/2026/10/21/juventus-rennes-probabili-formazioni-3-giornata",
-    "updated_at": "2026-10-21T14:50:00Z",
+    "updated_at": "2026-10-21T20:00:51.809Z",
     "players": [
       {"name": "Vicario", "x": 0, "z": 7.4},
-      {"name": "Kalulu", "x": 3.1, "z": 4.5},
-      {"name": "Gatti", "x": 0, "z": 4.5},
+      {"name": "Gatti", "x": 3.1, "z": 4.5},
+      {"name": "Bremer", "x": 0, "z": 4.5},
       {"name": "Kelly", "x": -3.1, "z": 4.5},
-      {"name": "Celik", "x": 4.5, "z": 0.8},
+      {"name": "Kalulu", "x": 4.5, "z": 0.8},
       {"name": "Douglas Luiz", "x": 1.5, "z": 0.8},
       {"name": "Koopmeiners", "x": -1.5, "z": 0.8},
-      {"name": "Cambiaso", "x": -4.5, "z": 0.8},
+      {"name": "Celik", "x": -4.5, "z": 0.8},
       {"name": "McKennie", "x": 0, "z": -2.8},
       {"name": "Woltemade", "x": -2, "z": -5.7},
       {"name": "Kolo Muani", "x": 2, "z": -5.7}

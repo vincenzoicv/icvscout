@@ -1,14 +1,49 @@
 {
   "version": 1,
-  "updated_at": "2026-10-21T12:50:00Z",
+  "updated_at": "2026-10-21T17:50:00Z",
   "match": {
     "home": "Juventus",
     "away": "Rennes",
     "kickoff": "2026-10-22T16:45:00Z",
     "competition": "Europa League"
   },
-  "formation": null,
+  "formation": {
+    "status": "Probabile",
+    "module": "3-4-1-2",
+    "source": "Sky Sport",
+    "source_url": "https://sport.sky.it/calcio/europa-league/2026/10/21/juventus-rennes-probabili-formazioni-3-giornata",
+    "updated_at": "2026-10-21T14:50:00Z",
+    "players": [
+      {"name": "Vicario", "x": 0, "z": 7.4},
+      {"name": "Kalulu", "x": 3.1, "z": 4.5},
+      {"name": "Gatti", "x": 0, "z": 4.5},
+      {"name": "Kelly", "x": -3.1, "z": 4.5},
+      {"name": "Celik", "x": 4.5, "z": 0.8},
+      {"name": "Douglas Luiz", "x": 1.5, "z": 0.8},
+      {"name": "Koopmeiners", "x": -1.5, "z": 0.8},
+      {"name": "Cambiaso", "x": -4.5, "z": 0.8},
+      {"name": "McKennie", "x": 0, "z": -2.8},
+      {"name": "Woltemade", "x": -2, "z": -5.7},
+      {"name": "Kolo Muani", "x": 2, "z": -5.7}
+    ],
+    "details": [
+      {"label": "Nota", "text": "Formazione non ufficiale."},
+      {"label": "Ballottaggio", "text": "Kelly in vantaggio su Lucumi."},
+      {"label": "Squalificati", "text": "Non indicati nella pagina consultata."},
+      {"label": "Indisponibili", "text": "Non elencati nella pagina consultata; le assenze verificate sono riportate negli aggiornamenti."}
+    ]
+  },
   "updates": [
+    {
+      "category": "Conferenza stampa",
+      "title": "Spalletti conferma Kolo Muani e Woltemade insieme contro il Rennes",
+      "summary": "Nella conferenza del 21 ottobre il tecnico ha annunciato l'impiego delle due punte e chiesto una reazione piu unita dopo la Lazio. Kolo Muani punta alla terza vittoria europea; l'undici completo non e ancora ufficiale.",
+      "detail": "Nella conferenza del 21 ottobre il tecnico ha annunciato l'impiego delle due punte e chiesto una reazione piu unita dopo la Lazio. Kolo Muani punta alla terza vittoria europea; l'undici completo non e ancora ufficiale.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/juventus-rennes-la-conferenza-stampa-di-spalletti-e-kolo-muani",
+      "published_at": "2026-10-21T14:22:42.069Z",
+      "significant": true
+    },
     {
       "category": "Allenamento",
       "title": "Rifinitura verso il Rennes: provati assetti a tre e a quattro",
@@ -17,16 +52,6 @@
       "source": "Tuttosport",
       "source_url": "https://www.tuttosport.com/news/calcio/serie-a/juventus/2026/10/21-152039528/allenamento_juve_partitella_e_doppia_difesa_cosa_dice_il_campo_prima_del_rennes",
       "published_at": "2026-10-21T10:50:00Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Spalletti presenta Juventus-Rennes il 21 ottobre alle 15:00",
-      "summary": "Conferenza di vigilia mercoledi 21 ottobre alle 15:00 all'Allianz Stadium, con Spalletti e un calciatore. Allenamento al JTC alle 11:15, con i primi 15 minuti aperti ai media.",
-      "detail": "Conferenza di vigilia mercoledi 21 ottobre alle 15:00 all'Allianz Stadium, con Spalletti e un calciatore. Allenamento al JTC alle 11:15, con i primi 15 minuti aperti ai media.",
-      "source": "JuventusNews24",
-      "source_url": "https://www.juventusnews24.com/juve-rennes-programma-vigilia-europa-league-2026-27/",
-      "published_at": "2026-10-20T11:53:55Z",
       "significant": true
     },
     {

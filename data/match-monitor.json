@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-22T18:43:15Z",
+  "updated_at": "2026-10-22T19:46:00Z",
   "match": {
     "home": "Juventus",
     "away": "Rennes",
@@ -33,6 +33,16 @@
     ]
   },
   "updates": [
+    {
+      "category": "Referto finale",
+      "title": "Juventus-Rennes 2-2: Celik e Woltemade a segno",
+      "summary": "Terza giornata di Europa League: Celik apre al 5', Al-Tamari pareggia al 15' e Dia segna su rigore al 43'. Woltemade firma il 2-2 su rigore al 67'. Il tabellino ufficiale conferma al 5' la prima rete.",
+      "detail": "Terza giornata di Europa League: Celik apre al 5', Al-Tamari pareggia al 15' e Dia segna su rigore al 43'. Woltemade firma il 2-2 su rigore al 67'. Il tabellino ufficiale conferma al 5' la prima rete.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-juventus-rennes-il-tabellino",
+      "published_at": "2026-10-22T18:49:15.091Z",
+      "significant": true
+    },
     {
       "category": "Formazione ufficiale",
       "title": "Celik e Cambiaso titolari, confermate le due punte",

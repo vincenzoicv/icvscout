@@ -14,10 +14,10 @@
   <link rel="stylesheet" href="/assets/match-pages.css?v=20260925-1">
   <script defer src="/assets/lucide.min.js"></script>
   <script defer src="/assets/section-pages.js?v=20261004-2"></script>
-  <link rel="stylesheet" href="/assets/search-page.css?v=20261004-1">
+  <link rel="stylesheet" href="/assets/search-page.css?v=20261022-1">
   <link rel="stylesheet" href="/assets/content-links.css?v=20261004-1">
   <script defer src="/assets/privacy-controls.js?v=20261013-3"></script>
-  <script defer src="/assets/search-page.js?v=20261004-2"></script>
+  <script defer src="/assets/search-page.js?v=20261022-1"></script>
 </head>
 <body class="match-page search-page">
   <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
@@ -41,6 +41,11 @@
     <div id="searchFilters" class="search-filters" role="group" aria-label="Filtra risultati" hidden></div>
     <button id="searchRetry" class="match-primary-link" type="button" hidden><i data-lucide="rotate-cw" aria-hidden="true"></i>Riprova</button>
     <div id="searchResults" class="search-results" aria-label="Risultati della ricerca" aria-busy="false"></div>
+    <nav id="searchPagination" class="search-pagination" aria-label="Pagine dei risultati" hidden>
+      <button type="button" id="searchPrevious" aria-label="Pagina precedente"><i data-lucide="chevron-left" aria-hidden="true"></i></button>
+      <span id="searchPageLabel"></span>
+      <button type="button" id="searchNext" aria-label="Pagina successiva"><i data-lucide="chevron-right" aria-hidden="true"></i></button>
+    </nav>
   </main>
   <footer class="page-footer"><a href="/">ICV Scout · Il Calcio di Vince</a><a href="/privacy">Privacy</a><a href="/cookie-policy">Cookie</a><a href="/calendario-juventus">Calendario Juventus</a></footer>
 </body>

@@ -15,4 +15,13 @@
 #searchRetry{gap:8px;margin-block:16px;min-height:44px}
 #searchRetry svg{width:16px;height:16px}
 .search-page [hidden]{display:none!important}
+.search-pagination{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid var(--line);padding-top:20px;margin-top:24px}
+.search-pagination button{display:grid;place-items:center;flex:none;width:44px;height:44px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--text);cursor:pointer}
+.search-pagination button:disabled{opacity:.4;cursor:default}
+.search-pagination button:not(:disabled):hover{border-color:var(--gold)}
+.search-pagination button:focus-visible{outline:3px solid var(--gold2);outline-offset:3px}
+.search-pagination svg{width:20px;height:20px}
+.search-pagination span{font:500 14px/1.5 Barlow,sans-serif;color:var(--muted);text-align:center}
+#searchStatus{scroll-margin-top:150px}
+.search-page .search-result:focus-visible{outline:2px solid var(--gold2);outline-offset:4px}
 @media(max-width:640px){.search-page .search-result{grid-template-columns:24px minmax(0,1fr) 18px;gap:10px}.search-page .search-result strong{font-size:21px}.search-result-icon{width:24px}}

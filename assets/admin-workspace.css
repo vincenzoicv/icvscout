@@ -78,6 +78,18 @@ input,select{min-height:44px}
 .admin-skip{position:fixed;top:8px;left:16px;z-index:60;transform:translateY(-160%);background:var(--gold-l);color:#060606;padding:10px 16px;border-radius:4px}
 .admin-skip:focus{transform:none}
 .login p{letter-spacing:0;text-transform:none;color:var(--t2);font-size:15px}
+.form label,.form-grid label,#highlightsForm label{display:block;font:600 14px/1.5 Barlow,sans-serif;text-transform:none;color:var(--white);margin-bottom:5px}
+.form input,.form textarea,.form select,.form-grid select,#highlightsForm input,#highlightsForm select{font-size:16px;min-width:0}
+.admin-overview{margin-bottom:20px;border-block:1px solid var(--bdr2)}
+.admin-overview summary{min-height:44px;padding:12px 0;cursor:pointer;font:600 14px/1.5 Barlow,sans-serif;color:var(--t2)}
+.admin-overview summary:focus-visible{outline:2px solid var(--gold-l);outline-offset:3px}
+.admin-overview[open] summary{margin-bottom:12px}
+.form .row>div{min-width:0}
+.form input:hover,.form textarea:hover,.form select:hover{border-color:#777}
+.admin-unsaved{border-left:3px solid var(--orange);padding:12px 14px;margin:0 0 20px;background:#1d170b;color:#f3d290;font-size:14px;overflow-wrap:anywhere}
+.admin-unsaved[hidden]{display:none}
+.form :where(input,textarea,select):focus-visible{outline:2px solid var(--gold-l);outline-offset:3px}
+.card h2,.card h3{scroll-margin-top:190px}
 .toast{max-width:calc(100% - 32px);overflow-wrap:anywhere;text-transform:none;font-size:15px}
 #adminReadWarnings{padding:14px;margin-bottom:16px;border-left:3px solid var(--orange);background:#1d170b;color:#f3d290;line-height:1.5}
 #adminReadWarnings[hidden]{display:none}

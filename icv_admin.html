@@ -43,7 +43,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
-<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261007-2">
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261022-2">
 </head>
 <body>
 <header>
@@ -77,7 +77,10 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
     </div>
 
     <section id="automationActivity" class="automation-activity" aria-label="Operazioni manuali" aria-live="polite" aria-atomic="true" hidden></section>
+    <p id="adminUnsavedStatus" class="admin-unsaved" role="status" aria-live="polite" hidden></p>
 
+    <details class="admin-overview" id="adminOverview" open>
+    <summary>Riepilogo operativo</summary>
     <div class="stats">
       <div class="stat"><strong id="stDrafts">0</strong><span>Da approvare</span></div>
       <div class="stat"><strong id="stReady">0</strong><span>Pronte</span></div>
@@ -88,6 +91,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 
     <div class="status-grid" id="automationStatus"></div>
     <div class="admin-alerts" id="adminAlerts"></div>
+    </details>
     <div id="adminReadWarnings" role="status" aria-live="polite" hidden></div>
 
     <div class="admin-section-picker"><label for="adminSection">Sezione</label><select id="adminSection" onchange="setAdminTab(this.value)"><option value="drafts">Da approvare</option><option value="live">Live Desk</option><option value="published">Pubblicate</option><option value="market">Mercato</option><option value="social">Social</option><option value="graphics">Grafiche</option><option value="photos">Foto partite</option><option value="videos">Interviste e video</option><option value="highlights">Highlights</option><option value="community">Community</option><option value="analytics">Analytics</option><option value="monitor">Monitor</option><option value="sources">Fonti</option><option value="advanced">Avanzate</option></select></div>
@@ -226,11 +230,11 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
         <div class="card admin-panel" data-panel="published">
           <h2>Nuova News Manuale</h2>
           <div class="form">
-            <div><label>Categoria</label><select id="manualCategory"><option value="juventus">Juventus</option><option value="calciomercato">Calciomercato</option><option value="tattica">Tattica</option><option value="infortuni">Infortuni</option></select></div>
-            <div><label>Titolo</label><input id="manualTitle" placeholder="Titolo"></div>
-            <div><label>Testo</label><textarea id="manualBody" placeholder="Sintesi ICV"></textarea></div>
-            <div><label>Fonte</label><input id="manualSource" placeholder="ICV / Juventus / Sky..."></div>
-            <button class="primary" onclick="publishManual()">Pubblica</button>
+            <div><label for="manualCategory">Categoria</label><select id="manualCategory"><option value="juventus">Juventus</option><option value="calciomercato">Calciomercato</option><option value="tattica">Tattica</option><option value="infortuni">Infortuni</option></select></div>
+            <div><label for="manualTitle">Titolo</label><input id="manualTitle" placeholder="Titolo"></div>
+            <div><label for="manualBody">Testo</label><textarea id="manualBody" placeholder="Sintesi ICV"></textarea></div>
+            <div><label for="manualSource">Fonte</label><input id="manualSource" placeholder="ICV / Juventus / Sky..."></div>
+            <button class="primary" id="publishManual" onclick="publishManual()">Pubblica</button>
           </div>
         </div>
 
@@ -246,11 +250,11 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <p id="sourceResults" class="meta" role="status" aria-live="polite"></p>
           <div id="sourceList"></div>
           <div class="form" style="margin-top:12px">
-            <input id="sourceName" placeholder="Nome fonte">
-            <input id="sourceUrl" placeholder="URL RSS">
+            <label for="sourceName">Nome fonte</label><input id="sourceName" placeholder="Nome fonte">
+            <label for="sourceUrl">URL RSS</label><input id="sourceUrl" type="url" placeholder="https://...">
             <div class="row">
-              <select id="sourceReliability"><option value="official">Fonte ufficiale</option><option value="trusted">Fonte affidabile</option><option value="rumor">Voce</option><option value="aggregator">Aggregatore</option><option value="blacklist">Blacklist</option></select>
-              <select id="sourceCategory"><option value="juventus">Juventus</option><option value="calciomercato">Calciomercato</option></select>
+              <div><label for="sourceReliability">Affidabilita</label><select id="sourceReliability"><option value="official">Fonte ufficiale</option><option value="trusted">Fonte affidabile</option><option value="rumor">Voce</option><option value="aggregator">Aggregatore</option><option value="blacklist">Blacklist</option></select></div>
+              <div><label for="sourceCategory">Categoria fonte</label><select id="sourceCategory"><option value="juventus">Juventus</option><option value="calciomercato">Calciomercato</option></select></div>
             </div>
             <button class="ghost" onclick="addSource()">Aggiungi Fonte</button>
           </div>
@@ -265,21 +269,21 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <div class="item-head"><div><h2>Match Center</h2><div class="meta">Dati ufficiali con correzione manuale di emergenza</div></div><button class="ghost small" onclick="runAutomation('match_center')">Aggiorna ora</button></div>
           <div class="form" id="matchOverrideForm" style="margin:14px 0 18px">
             <input id="matchOverrideId" type="hidden">
-            <div><label>Partita selezionata</label><select id="matchOverrideSelect" onchange="loadMatchOverride(Number(this.value))"></select></div>
+            <div><label for="matchOverrideSelect">Partita selezionata</label><select id="matchOverrideSelect" onchange="loadMatchOverride(Number(this.value))"></select></div>
             <div class="row">
-              <div><label>Stato</label><select id="matchOverrideStatus"><option value="pre_match">Pre partita</option><option value="in_play">In diretta</option><option value="halftime">Intervallo</option><option value="finished">Finale</option><option value="postponed">Rinviata</option><option value="suspended">Sospesa</option><option value="cancelled">Annullata</option></select></div>
-              <div><label>Minuto</label><input id="matchOverrideMinute" type="number" min="0" max="130" placeholder="Es. 67"></div>
+              <div><label for="matchOverrideStatus">Stato</label><select id="matchOverrideStatus"><option value="pre_match">Pre partita</option><option value="in_play">In diretta</option><option value="halftime">Intervallo</option><option value="finished">Finale</option><option value="postponed">Rinviata</option><option value="suspended">Sospesa</option><option value="cancelled">Annullata</option></select></div>
+              <div><label for="matchOverrideMinute">Minuto</label><input id="matchOverrideMinute" type="number" min="0" max="130" placeholder="Es. 67"></div>
             </div>
             <div class="row">
-              <div><label>Gol casa</label><input id="matchOverrideHomeScore" type="number" min="0" max="30" placeholder="0"></div>
-              <div><label>Gol trasferta</label><input id="matchOverrideAwayScore" type="number" min="0" max="30" placeholder="0"></div>
+              <div><label for="matchOverrideHomeScore">Gol casa</label><input id="matchOverrideHomeScore" type="number" min="0" max="30" placeholder="0"></div>
+              <div><label for="matchOverrideAwayScore">Gol trasferta</label><input id="matchOverrideAwayScore" type="number" min="0" max="30" placeholder="0"></div>
             </div>
-            <div><label>Marcatori</label><input id="matchOverrideScorers" placeholder="Es. Yildiz 34' · Kolo Muani 78'"></div>
+            <div><label for="matchOverrideScorers">Marcatori</label><input id="matchOverrideScorers" placeholder="Es. Yildiz 34' · Kolo Muani 78'"></div>
             <div class="row">
-              <div><label>MVP ICV</label><input id="matchOverrideMvp" placeholder="Nome giocatore"></div>
-              <div><label>Peggiore ICV</label><input id="matchOverrideWorst" placeholder="Nome giocatore"></div>
+              <div><label for="matchOverrideMvp">MVP ICV</label><input id="matchOverrideMvp" placeholder="Nome giocatore"></div>
+              <div><label for="matchOverrideWorst">Peggiore ICV</label><input id="matchOverrideWorst" placeholder="Nome giocatore"></div>
             </div>
-            <div><label>Nota</label><input id="matchOverrideNote" placeholder="Dato o contesto utile"></div>
+            <div><label for="matchOverrideNote">Nota</label><input id="matchOverrideNote" placeholder="Dato o contesto utile"></div>
             <div class="item-actions"><button class="primary" onclick="saveMatchOverride()">Salva correzione</button><button class="danger" onclick="clearMatchOverride()">Ripristina fonte</button></div>
           </div>
           <div id="matchList"></div>
@@ -345,6 +349,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="/assets/admin-editors.js?v=20261022-1"></script>
 <script>
 var state = { drafts: [], news: [], sources: [], social: [], graphics: [], market: [], matches: [], liveDesk: [], runs: [], automationMonitor: null, communityPosts: [], communityReports: [], communityProfiles: [], communityComments: [], communityModerationActions: [], communityNotes: [], analytics: null, latestFetch: null, adminTab: "drafts", filters: { draftReliability:"all", draftStatus:"all", draftQuery:"", newsReliability:"all", newsVisibility:"all", newsQuery:"", sourceReliability:"all", sourceActive:"all", sourceHealth:"all", sourceQuery:"" } };
 var OFFICIAL_SERIE_A_CALENDAR = {
@@ -413,7 +418,7 @@ function login(){
     showToast(err.message);
   });
 }
-function logout(){ sessionStorage.removeItem("icv_admin_token"); sessionStorage.removeItem("icv_admin_activity_v1"); location.reload(); }
+function logout(){ if(!ICVAdminEditors.confirmLeave())return; sessionStorage.removeItem("icv_admin_token"); sessionStorage.removeItem("icv_admin_activity_v1"); location.reload(); }
 function load(strict){
   return api("/api/admin/news").then(function(data){
     state.readWarnings = Array.isArray(data.read_warnings) ? data.read_warnings : [];
@@ -561,6 +566,7 @@ function resetNewsFilters(){
 function setAdminTab(tab, btn){
   if(!document.querySelector('#adminNav button[data-tab="'+tab+'"]')) return;
   state.adminTab = tab;
+  document.getElementById('adminOverview').open=tab==='drafts';
   document.querySelectorAll("#adminNav button").forEach(function(el){
     var selected = el.getAttribute("data-tab") === tab;
     el.classList.toggle("active", selected);
@@ -607,13 +613,15 @@ function renderAnalytics(){
   document.getElementById("analyticsNotice").textContent=(data.capped?"Intervallo limitato agli ultimi 10.000 eventi. ":"")+"La raccolta parte dal momento del deploy e non ricostruisce visite precedenti.";
 }
 function publishManual(){
+  var button=document.getElementById('publishManual');if(button.disabled)return;
   var title = val("manualTitle"), body = val("manualBody");
   if(!title || !body) return showToast("Titolo e testo richiesti");
-  api("/api/admin/news", {method:"POST", body:{
+  var submitted=ICVAdminEditors.snapshot('news');button.disabled=true;
+  return api("/api/admin/news", {method:"POST", body:{
     type:"manual_news", title:title, body:body, category:val("manualCategory"),
     editorial_status:"News", source:val("manualSource") || "ICV",
     reliability:"trusted"
-  }}).then(function(){ clearManual(); showToast("News pubblicata"); load(); }).catch(function(err){ showToast(err.message); });
+  }}).then(function(data){if(!data||!data.news||!data.news.id)throw new Error('Pubblicazione non confermata. Testo conservato.');if(ICVAdminEditors.snapshot('news')===submitted)clearManual();showToast("News pubblicata");return load();}).catch(function(err){ showToast(err.message); }).finally(function(){button.disabled=false;});
 }
 var pendingDraftReviews = new Set();
 function approveDraft(id){return reviewDraft(id,"approve_draft")}
@@ -1112,6 +1120,7 @@ function adminMatchScore(match){
 function loadMatchOverride(index){
   var match=state.matches[index];
   if(!match)return;
+  if(ICVAdminEditors.dirty('match')&&!confirm('Scartare le modifiche non salvate alla partita?')){document.getElementById('matchOverrideSelect').value=String(state.matches.findIndex(function(row){return String(row.match_id)===val('matchOverrideId')}));return;}
   var payload=adminMatchPayload(match),manual=payload.icv_manual||{},score=adminMatchScore(match);
   document.getElementById("matchOverrideId").value=match.match_id||"";
   document.getElementById("matchOverrideSelect").value=String(index);
@@ -1123,12 +1132,18 @@ function loadMatchOverride(index){
   document.getElementById("matchOverrideMvp").value=manual.mvp||"";
   document.getElementById("matchOverrideWorst").value=manual.worst||"";
   document.getElementById("matchOverrideNote").value=manual.note||"";
+  ICVAdminEditors.mark('match');
 }
+var matchOverridePending=false;
+function setMatchOverridePending(pending){matchOverridePending=pending;document.querySelectorAll('#matchOverrideForm button').forEach(function(button){button.disabled=pending;});}
 function saveMatchOverride(){
+  if(matchOverridePending)return;
   var matchId=document.getElementById("matchOverrideId").value;
   if(!matchId){showToast("Seleziona una partita");return}
+  var submitted=ICVAdminEditors.snapshot('match');
+  setMatchOverridePending(true);
   showToast("Aggiornamento partita in corso");
-  api("/api/admin/news",{method:"PATCH",body:{
+  return api("/api/admin/news",{method:"PATCH",body:{
     type:"match_override",
     match_id:matchId,
     status:document.getElementById("matchOverrideStatus").value,
@@ -1139,14 +1154,17 @@ function saveMatchOverride(){
     mvp:document.getElementById("matchOverrideMvp").value,
     worst:document.getElementById("matchOverrideWorst").value,
     note:document.getElementById("matchOverrideNote").value
-  }}).then(function(){showToast("Partita aggiornata");return load()}).catch(function(error){showToast(error.message)});
+  }}).then(function(data){if(!data||!data.match||String(data.match.match_id)!==matchId)throw new Error('Salvataggio non confermato. Modifiche conservate.');ICVAdminEditors.accept('match',submitted);showToast("Partita aggiornata");return load()}).catch(function(error){showToast(error.message)}).finally(function(){setMatchOverridePending(false)});
 }
 function clearMatchOverride(){
+  if(matchOverridePending)return;
   var matchId=document.getElementById("matchOverrideId").value;
   if(!matchId){showToast("Seleziona una partita");return}
-  api("/api/admin/news",{method:"PATCH",body:{type:"match_override",match_id:matchId,clear:true}})
-    .then(function(){showToast("Ripristinati i dati ufficiali");return runAutomation("match_center")})
-    .catch(function(error){showToast(error.message)});
+  if(!confirm('Rimuovere la correzione manuale e ripristinare i dati della fonte?'))return;
+  var submitted=ICVAdminEditors.snapshot('match');setMatchOverridePending(true);
+  return api("/api/admin/news",{method:"PATCH",body:{type:"match_override",match_id:matchId,clear:true}})
+    .then(function(data){if(!data||!data.match||String(data.match.match_id)!==matchId)throw new Error('Ripristino non confermato. Modifiche conservate.');ICVAdminEditors.accept('match',submitted);showToast("Ripristinati i dati ufficiali");return runAutomation("match_center")})
+    .catch(function(error){showToast(error.message)}).finally(function(){setMatchOverridePending(false)});
 }
 function renderMatches(){
   var list = document.getElementById("matchList");
@@ -1154,22 +1172,30 @@ function renderMatches(){
   var select=document.getElementById("matchOverrideSelect"),currentId=document.getElementById("matchOverrideId").value;
   if(select){
     select.innerHTML=state.matches.map(function(match,index){return "<option value='"+index+"'>"+esc(match.title||match.opponent||("Partita "+(index+1)))+" · "+esc(date(match.match_date))+"</option>"}).join("");
+    if(ICVAdminEditors.dirty('match')){
+      var selectedIndex=state.matches.findIndex(function(match){return String(match.match_id||'')===String(currentId)});
+      if(selectedIndex<0)select.add(new Option('Partita in modifica non presente nell’elenco aggiornato','-1'));
+      select.value=String(selectedIndex);
+    }
   }
   var official = "<div class='item'><span class='pill official'>Fonte ufficiale</span><h3>"+esc(OFFICIAL_SERIE_A_CALENDAR.title)+"</h3><p>"+esc(OFFICIAL_SERIE_A_CALENDAR.summary)+"</p><div class='meta'><a href='"+escAttr(OFFICIAL_SERIE_A_CALENDAR.juventusUrl)+"' target='_blank' style='color:var(--gold-l)'>Juventus.com</a> · <a href='"+escAttr(OFFICIAL_SERIE_A_CALENDAR.legaUrl)+"' target='_blank' style='color:var(--gold-l)'>Lega Serie A</a></div></div>";
-  if(!state.matches.length){ if(select)select.innerHTML="";list.innerHTML = official + "<div class='empty'>Prossima partita non ancora attiva nel Match Center.</div>"; return; }
+  if(!state.matches.length){ if(select&&!ICVAdminEditors.dirty('match'))select.innerHTML="";list.innerHTML = official + "<div class='empty'>Prossima partita non ancora attiva nel Match Center.</div>"; return; }
   list.innerHTML = official + state.matches.slice(0,6).map(function(m,index){
     var payload=adminMatchPayload(m),manual=payload.icv_manual&&payload.icv_manual.active!==false;
     return "<div class='item'><div class='item-head'><div><span class='pill "+(manual?"rumor":"trusted")+"'>"+esc(manual?"correzione manuale":(m.status||"pre_match"))+"</span><h3>"+esc(m.title || m.opponent || "Match")+"</h3></div><button class='ghost small' onclick='loadMatchOverride("+index+")'>Modifica</button></div><p>"+esc(m.summary || "")+"</p><div class='meta'>"+esc(m.competition || "")+(m.match_date ? " · "+date(m.match_date) : "")+"</div></div>";
   }).join("");
   var currentIndex=state.matches.findIndex(function(match){return String(match.match_id||"")===String(currentId||"")});
-  loadMatchOverride(currentIndex>=0?currentIndex:0);
+  if(!ICVAdminEditors.dirty('match'))loadMatchOverride(currentIndex>=0?currentIndex:0);
 }
 function renderSocial(){
   var setting=state.conferenceConfig || {mode:'auto'};
+  if(!ICVAdminEditors.dirty('conference')){
   document.getElementById('conferenceMode').value=setting.mode;
   document.getElementById('conferencePost').innerHTML=(state.conferenceOptions || []).map(function(row){return '<option value="'+Number(row.id)+'">'+esc((row.hook || 'Video Instagram')+' · '+date(row.published_at))+'</option>';}).join('');
   if(setting.post_id) document.getElementById('conferencePost').value=setting.post_id;
   document.getElementById('conferenceManualPhase').value=setting.phase || 'press';
+  ICVAdminEditors.mark('conference');
+  }
   document.getElementById('conferenceCurrent').textContent=state.conference ? 'In evidenza: '+state.conference.title : 'Nessuna conferenza in evidenza';
   toggleConferenceFields();
   var list = document.getElementById("socialList");
@@ -1181,10 +1207,13 @@ function renderSocial(){
 }
 function renderHighlightsSettings(){
   var setting=state.highlightsConfig || {mode:'off'};
+  if(!ICVAdminEditors.dirty('highlights')){
   document.getElementById('highlightsMode').value=setting.mode;
   document.getElementById('highlightsTitle').value=setting.title || '';
   document.getElementById('highlightsUrl').value=setting.video_url || '';
   document.getElementById('highlightsMatchDate').value=setting.match_date || '';
+  ICVAdminEditors.mark('highlights');
+  }
   document.getElementById('highlightsCurrent').textContent=setting.mode==='off'?'Highlights nascosti':'In evidenza: '+setting.title;
   toggleHighlightsFields();
 }
@@ -1196,9 +1225,10 @@ function toggleHighlightsFields(){
 function saveHighlightsSelection(){
   var button=document.getElementById('saveHighlights'),status=document.getElementById('highlightsCurrent');
   if(button.disabled)return;
+  var submitted=ICVAdminEditors.snapshot('highlights');
   button.disabled=true;status.textContent='Salvataggio...';
   return api('/api/admin/news',{method:'PATCH',body:{type:'featured_highlights',mode:val('highlightsMode'),title:val('highlightsTitle'),video_url:val('highlightsUrl'),match_date:val('highlightsMatchDate')}})
-    .then(function(data){state.highlightsConfig=data.highlights_config;renderHighlightsSettings();showToast('Highlights salvati');})
+    .then(function(data){if(!data||!data.highlights_config)throw new Error('Salvataggio non confermato. Modifiche conservate.');state.highlightsConfig=data.highlights_config;ICVAdminEditors.accept('highlights',submitted);renderHighlightsSettings();showToast('Highlights salvati');})
     .catch(function(error){status.textContent=error.message;showToast(error.message);})
     .finally(function(){button.disabled=false;});
 }
@@ -1206,9 +1236,10 @@ function toggleConferenceFields(){
   document.getElementById('conferenceManual').hidden=document.getElementById('conferenceMode').value!=='manual';
 }
 function saveConferenceSelection(){
-  var button=document.getElementById('saveConference');button.disabled=true;
-  api('/api/admin/news',{method:'PATCH',body:{type:'featured_conference',mode:val('conferenceMode'),post_id:Number(val('conferencePost')),phase:val('conferenceManualPhase')}})
-  .then(function(data){state.conferenceConfig=data.conference_config;state.conference=data.featured_conference;renderSocial();showToast('Selezione Sala stampa salvata');})
+  var button=document.getElementById('saveConference');if(button.disabled)return;button.disabled=true;
+  var submitted=ICVAdminEditors.snapshot('conference');
+  return api('/api/admin/news',{method:'PATCH',body:{type:'featured_conference',mode:val('conferenceMode'),post_id:Number(val('conferencePost')),phase:val('conferenceManualPhase')}})
+  .then(function(data){if(!data||!data.conference_config)throw new Error('Salvataggio non confermato. Modifiche conservate.');state.conferenceConfig=data.conference_config;state.conference=data.featured_conference;ICVAdminEditors.accept('conference',submitted);renderSocial();showToast('Selezione Sala stampa salvata');})
   .catch(function(error){showToast(error.message || 'Salvataggio non riuscito');})
   .finally(function(){button.disabled=false;});
 }
@@ -1481,7 +1512,7 @@ function youtubeScoutAlert(run){
 function countLabel(count, singular, plural){
   return count + " " + (count === 1 ? singular : plural);
 }
-function clearManual(){ ["manualTitle","manualBody","manualSource"].forEach(function(id){ document.getElementById(id).value = ""; }); }
+function clearManual(){ ["manualTitle","manualBody","manualSource"].forEach(function(id){ document.getElementById(id).value = ""; }); ICVAdminEditors.mark('news'); }
 function esc(value){ return String(value == null ? "" : value).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
 function escAttr(value){ return esc(value).replace(/"/g,"&quot;"); }
 function date(value){ if(!value) return ""; return new Date(value).toLocaleDateString("it-IT",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}); }

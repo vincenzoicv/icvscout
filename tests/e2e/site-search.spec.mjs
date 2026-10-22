@@ -7,11 +7,13 @@ const results=[
   {type:'social',title:'Social Juventus',summary:'Post dal campo',href:'https://www.instagram.com/p/test/'}
 ];
 test.beforeEach(async({page})=>{
+  const reject=page.getByRole('button',{name:'Rifiuta tutti',exact:true});
+  await page.addLocatorHandler(reject,()=>reject.click());
   await page.route('https://**',route=>route.abort());
   await page.route('**/api/public/search?*',route=>route.fulfill({json:{results}}));
 });
 test('search filters results, dates and external sources and shares its active filter',async({page})=>{
-  await page.goto('/cerca.html?q=Juventus');
+  await page.goto('/cerca.html?q=Juventus',{waitUntil:'domcontentloaded'});
   await expect(page.locator('.search-result')).toHaveCount(5);
   await expect(page.locator('.search-result').first()).toContainText('3 ott 2026');
   await expect(page.locator('.search-result').first()).toHaveAttribute('target','_blank');
@@ -20,7 +22,7 @@ test('search filters results, dates and external sources and shares its active f
   await expect(page.locator('.search-result')).toHaveCount(1);
   await expect(page).toHaveURL(/tipo=match/);
   await expect(page.locator('.search-result')).not.toHaveAttribute('target','_blank');
-  await page.reload();
+  await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.getByRole('button',{name:'Partite (1)'})).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('.search-result')).toHaveCount(1);
   await page.locator('#siteSearchInput').fill('Atalanta');
@@ -32,7 +34,7 @@ test('search filters results, dates and external sources and shares its active f
 test('context links connect search to the player archive and market',async({page})=>{
   await page.route('**/api/public/players?**',route=>route.fulfill({json:[{name:'Bremer',slug:'bremer',market:[],news_count:1}]}));
   await page.route('**/api/public/home',route=>route.fulfill({json:{market:[]}}));
-  await page.goto('/cerca.html');
+  await page.goto('/cerca.html',{waitUntil:'domcontentloaded'});
   const nav=page.getByRole('navigation',{name:'Archivi ICV'});
   await nav.getByRole('link',{name:'Giocatori',exact:true}).click();
   await expect(page).toHaveURL(/\/giocatori/);
@@ -45,7 +47,7 @@ test('context links connect search to the player archive and market',async({page
 });
 test('failed response exposes keyboard retry and unsafe links are excluded',async({page})=>{
   await page.route('**/api/public/search?*',route=>route.fulfill({status:503,body:'<!DOCTYPE html> upstream'}));
-  await page.goto('/cerca.html?q=Juventus');
+  await page.goto('/cerca.html?q=Juventus',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#searchRetry')).toBeVisible();
   await expect(page.locator('#searchStatus')).not.toContainText('DOCTYPE');
   await page.route('**/api/public/search?*',route=>route.fulfill({json:{results:[...results,{type:'news',title:'Unsafe',href:'javascript:alert(1)'},{type:'news',title:'Missing URL'}]}}));
@@ -62,7 +64,7 @@ test('latest search wins even when the previous response arrives late',async({pa
     if(new URL(route.request().url()).searchParams.get('q')==='prima')await held;
     await route.fulfill({json:{results:[{...results[0],title:route.request().url().includes('seconda')?'Seconda ricerca':'Prima ricerca'}]}}).catch(()=>{});
   });
-  await page.goto('/cerca.html?q=prima');
+  await page.goto('/cerca.html?q=prima',{waitUntil:'domcontentloaded'});
   await page.locator('#siteSearchInput').fill('seconda');
   await page.getByRole('button',{name:'Cerca',exact:true}).click();
   await expect(page.locator('.search-result')).toContainText('Seconda ricerca');
@@ -70,7 +72,7 @@ test('latest search wins even when the previous response arrives late',async({pa
   await expect(page.locator('.search-result')).not.toContainText('Prima ricerca');
 });
 test('empty states, history and phone/tablet widths remain usable',async({page})=>{
-  await page.goto('/cerca.html');
+  await page.goto('/cerca.html',{waitUntil:'domcontentloaded'});
   await expect(page.locator('.search-result')).toHaveCount(0);
   await page.locator('#siteSearchInput').fill('Juventus');
   await page.getByRole('button',{name:'Cerca',exact:true}).click();
@@ -80,7 +82,7 @@ test('empty states, history and phone/tablet widths remain usable',async({page})
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     await page.screenshot({path:'/tmp/icv-search-'+width+'.png',fullPage:false});
   }
-  await page.goBack();
+  await page.goBack({waitUntil:'domcontentloaded'});
   await expect(page.locator('#siteSearchInput')).toHaveValue('');
   await expect(page.locator('.search-result')).toHaveCount(0);
   await page.route('**/api/public/search?*',route=>route.fulfill({json:{results:[]}}));
@@ -88,4 +90,41 @@ test('empty states, history and phone/tablet widths remain usable',async({page})
   await page.getByRole('button',{name:'Cerca',exact:true}).click();
   await expect(page.locator('#searchStatus')).toContainText('Nessun risultato');
   await expect(page.locator('#searchFilters')).toBeHidden();
+});
+
+test('long searches paginate with keyboard focus, shareable pages and category reset',async({page})=>{
+  const many=Array.from({length:45},(_,i)=>({...results[0],title:'Risultato '+(i+1),href:'/news?id='+i}));
+  await page.route('**/api/public/search?*',route=>route.fulfill({json:{results:[...many,results[1]]}}));
+  await page.goto('/cerca.html?q=Juventus',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.search-result')).toHaveCount(20);
+  await expect(page.locator('#searchPageLabel')).toHaveText('Pagina 1 di 3');
+  await expect(page.locator('#searchPrevious')).toBeDisabled();
+  await page.getByRole('button',{name:'Pagina successiva'}).click();
+  await expect(page.locator('#searchStatus')).toBeFocused();
+  await expect(page.locator('#searchStatus')).toContainText('21–40');
+  await expect(page.locator('.search-result').first()).toContainText('Risultato 21');
+  await expect(page).toHaveURL(/pagina=2/);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect(page.locator('#searchPageLabel')).toHaveText('Pagina 2 di 3');
+  await page.getByRole('button',{name:'Pagina successiva'}).click();
+  await expect(page.locator('.search-result')).toHaveCount(6);
+  await expect(page.locator('#searchNext')).toBeDisabled();
+  await page.goBack({waitUntil:'domcontentloaded'});
+  await expect(page.locator('#searchPageLabel')).toHaveText('Pagina 2 di 3');
+  await page.getByRole('button',{name:'Partite (1)',exact:true}).click();
+  await expect(page.locator('.search-result')).toHaveCount(1);
+  await expect(page.locator('#searchPagination')).toBeHidden();
+  await expect(page).not.toHaveURL(/pagina=/);
+});
+
+test('out of range search pages are clamped and pagination fits phone widths',async({page})=>{
+  await page.route('**/api/public/search?*',route=>route.fulfill({json:{results:Array.from({length:21},(_,i)=>({...results[0],title:'Notizia '+i}))}}));
+  await page.goto('/cerca.html?q=Juventus&pagina=999',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#searchPageLabel')).toHaveText('Pagina 2 di 2');
+  await expect(page).toHaveURL(/pagina=2/);
+  for(const width of [320,390,820,1440]){
+    await page.setViewportSize({width,height:900});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.screenshot({path:'/tmp/icv-search-pagination-'+width+'.png',fullPage:true});
+  }
 });

@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 async function workspace(page) {
   await page.route('https://**', route => route.abort());
   await page.route('**/api/admin/**', route => route.abort());
-  await page.goto('/icv_admin.html');
+  await page.goto('/icv_admin.html',{waitUntil:'domcontentloaded'});
   await page.evaluate(() => {
     document.getElementById('login').style.display = 'none';
     document.getElementById('panel').style.display = 'block';

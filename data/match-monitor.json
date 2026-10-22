@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-21T22:47:00Z",
+  "updated_at": "2026-10-22T13:40:40Z",
   "match": {
     "home": "Juventus",
     "away": "Rennes",
@@ -34,6 +34,16 @@
     ]
   },
   "updates": [
+    {
+      "category": "Convocati",
+      "title": "Juventus-Rennes: 21 convocati, presente anche Merola",
+      "summary": "Spalletti ha a disposizione 21 giocatori per la sfida del 22 ottobre alle 18:45. Nell'elenco ci sono Bremer, Kelly, Kalulu, Douglas Luiz, Koopmeiners, McKennie, Woltemade e Kolo Muani. Convocato anche Merola; l'undici titolare non e ancora ufficiale.",
+      "detail": "Spalletti ha a disposizione 21 giocatori per la sfida del 22 ottobre alle 18:45. Nell'elenco ci sono Bremer, Kelly, Kalulu, Douglas Luiz, Koopmeiners, McKennie, Woltemade e Kolo Muani. Convocato anche Merola; l'undici titolare non e ancora ufficiale.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-juventus-stade-rennais-f-c-i-convocati",
+      "published_at": "2026-10-22T10:28:28.677Z",
+      "significant": true
+    },
     {
       "category": "Conferenza stampa",
       "title": "Spalletti conferma Kolo Muani e Woltemade insieme contro il Rennes",

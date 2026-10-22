@@ -2122,6 +2122,13 @@ function renderMatchHubProbable(data, active) {
     window.ICV_LINEUP_DATA = null;
     return;
   }
+  var official = formation.status === "Ufficiale";
+  var formationTitle = official ? "Formazione ufficiale" : "Probabile formazione";
+  var heading = panel.querySelector("h4");
+  if (heading) heading.textContent = formationTitle;
+  panel.setAttribute("aria-label", formationTitle + " Juventus");
+  if (textList) textList.setAttribute("aria-label", official ? "Undici ufficiale" : "Undici probabile");
+  if (graphic) graphic.alt = formationTitle + " della Juventus, modulo " + formation.module;
   var graphicUrl = typeof formation.graphic_url === "string" && /^\/assets\/[a-z0-9._/-]+$/i.test(formation.graphic_url) ? formation.graphic_url : "";
   if (graphic) {
     if (graphicUrl) graphic.src = graphicUrl;

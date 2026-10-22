@@ -35,3 +35,11 @@ test('lineup exposes a safe source link and rejects duplicate or extra players',
     else await expect(page.locator('#matchHubProbable')).toBeHidden();
   }
 });
+test('official lineups replace probable headings and accessible labels',async({page})=>{
+  await page.evaluate(data=>{data.formation.status='Ufficiale';renderMatchHubProbable(data,true);},registry);
+  await expect(page.locator('#matchHubProbable h4')).toHaveText('Formazione ufficiale');
+  await expect(page.locator('#matchHubProbable')).toHaveAttribute('aria-label','Formazione ufficiale Juventus');
+  await expect(page.locator('#matchHubLineupText')).toHaveAttribute('aria-label','Undici ufficiale');
+  await page.evaluate(data=>renderMatchHubProbable(data,true),registry);
+  await expect(page.locator('#matchHubProbable h4')).toHaveText('Probabile formazione');
+});

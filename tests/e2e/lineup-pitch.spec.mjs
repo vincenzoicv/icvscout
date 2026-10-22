@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 async function preview(page) {
   await page.route('https://**',route=>route.abort());
   await page.route('**/api/**',route=>route.abort());
-  await page.goto('/');
+  await page.goto('/',{waitUntil:'domcontentloaded'});
   await page.evaluate(async () => {
     await document.fonts.ready;
     const positions=[[0,6.4],[-3.2,3.7],[0,3.7],[3.2,3.7],[-4.1,.4],[-1.4,.4],[1.4,.4],[4.1,.4],[-2,-3],[2,-3],[0,-5.8]];

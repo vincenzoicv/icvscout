@@ -865,7 +865,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 <script defer src="/assets/icv-stories.js?v=20260831-1"></script>
 <link rel="stylesheet" href="/assets/classifica-nav.css?v=20260831-1">
 <script defer src="/assets/section-pages.js?v=20261004-2"></script>
-<link rel="stylesheet" href="/assets/lineup-pitch.css?v=20261005-2">
+<link rel="stylesheet" href="/assets/lineup-pitch.css?v=20261022-1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
@@ -1931,7 +1931,7 @@ function matchHubOutcome(match) {
 function matchHubDate(match, includeStatus) {
   if (!match) return "Da programmare";
   var date = new Date(match.date);
-  var options = {day:"numeric", month:"long", year:"numeric"};
+  var options = {timeZone:"Europe/Rome", day:"numeric", month:"long", year:"numeric"};
   if (!match.dateOnly) { options.hour = "2-digit"; options.minute = "2-digit"; }
   var label = date.toLocaleDateString("it-IT", options);
   return includeStatus ? label + " · Finale" : label;
@@ -1981,7 +1981,7 @@ function matchHubPhase(upcoming, latest, live) {
   if (live) return "live";
   if (latest && latest.status === "finished" && Date.now() - new Date(latest.date).getTime() < 18 * 3600000) return "final";
   if (!upcoming) return latest ? "post" : "buildup";
-  return new Date(upcoming.date).getTime() - Date.now() <= 24 * 3600000 ? "matchday" : "buildup";
+  return matchHubRomeDayNumber(upcoming.date) === matchHubRomeDayNumber(new Date()) ? "matchday" : "buildup";
 }
 
 function matchHubPhaseContent(phase, match) {
@@ -2113,8 +2113,9 @@ function renderMatchHubProbable(data, active) {
   var formation = data && data.formation;
   var players = Array.isArray(formation && formation.players) ? formation.players.filter(function(player) {
     return player && typeof player.name === "string" && player.name.trim() && Number.isFinite(Number(player.x)) && Number.isFinite(Number(player.z));
-  }).slice(0, 11) : [];
-  var visible = !!active && players.length === 11 && typeof formation.module === "string";
+  }) : [];
+  var uniqueNames = new Set(players.map(function(player) { return player.name.trim().toLocaleLowerCase("it-IT"); }));
+  var visible = !!active && players.length === 11 && formation.players.length === 11 && uniqueNames.size === 11 && typeof formation.module === "string";
   if (!panel) return;
   panel.hidden = !visible;
   if (!visible) {
@@ -2144,7 +2145,21 @@ function renderMatchHubProbable(data, active) {
   if (note) {
     var source = formation.source || "Fonti verificate";
     var updated = matchMonitorTime(formation.updated_at || data.updated_at);
-    note.textContent = source + " · " + updated;
+    note.textContent = "";
+    var sourceUrl;
+    try { sourceUrl = new URL(formation.source_url); } catch (error) { sourceUrl = null; }
+    if (sourceUrl && sourceUrl.protocol === "https:") {
+      var sourceLink = document.createElement("a");
+      sourceLink.href = sourceUrl.href;
+      sourceLink.target = "_blank";
+      sourceLink.rel = "noopener noreferrer";
+      sourceLink.textContent = source;
+      sourceLink.setAttribute("aria-label", source + ": apri la fonte della formazione (nuova scheda)");
+      note.appendChild(sourceLink);
+      note.appendChild(document.createTextNode(" · " + updated));
+    } else {
+      note.textContent = source + " · " + updated;
+    }
   }
   if (textList) textList.innerHTML = safeFormation.players.map(function(player) {
     return "<li>" + icvEsc(player.name) + "</li>";
@@ -2157,7 +2172,7 @@ function renderMatchHubProbable(data, active) {
   if (window.ICVLineupPitch) {
     window.ICVLineupPitch.render(safeFormation);
   } else if (!window.ICVLineupPitchLoading) {
-    window.ICVLineupPitchLoading = import("/assets/lineup-pitch-3d.js?v=20261005-2").catch(function() {
+    window.ICVLineupPitchLoading = import("/assets/lineup-pitch-3d.js?v=20261022-1").catch(function() {
       var stage = document.getElementById("matchHubLineupStage");
       if (stage) stage.classList.add("is-2d");
     });

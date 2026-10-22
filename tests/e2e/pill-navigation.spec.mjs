@@ -3,7 +3,7 @@ test.beforeEach(async({page})=>{
   await page.route('https://**',route=>route.abort());
 });
 test('shared navigation keeps links, current page and keyboard dropdown',async({page})=>{
-  await page.goto('/cerca.html');
+  await page.goto('/cerca.html',{waitUntil:'domcontentloaded'});
   const nav=page.getByRole('navigation',{name:'Menu principale'});
   await expect(nav).toHaveClass(/icv-pill-nav/);
   await expect(nav.getByRole('link',{name:'Cerca',exact:true})).toHaveAttribute('aria-current','page');
@@ -25,7 +25,7 @@ test('shared navigation keeps links, current page and keyboard dropdown',async({
 });
 test('home indicator follows pointer and reduced motion is static',async({page})=>{
   await page.setViewportSize({width:1440,height:1000});
-  await page.goto('/');
+  await page.goto('/',{waitUntil:'domcontentloaded'});
   const nav=page.getByRole('navigation',{name:'Menu principale'});
   await expect(nav.getByRole('button',{name:'Home',exact:true})).toHaveClass(/icv-pill-target/);
   await nav.getByRole('link',{name:'Calendario'}).hover();

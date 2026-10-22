@@ -120,7 +120,12 @@ function draw() {
     const left = parseFloat(marker.style.left);
     const neighbors = projectedLabels.filter(item => item.marker !== marker && Math.abs(Number(item.player.z) - Number(player.z)) < .8);
     const gap = neighbors.length ? Math.min(...neighbors.map(item => Math.abs(parseFloat(item.marker.style.left) - left))) * canvas.clientWidth / 100 : 130;
-    marker.style.width = `${Math.min(120,canvas.clientWidth * .22,gap * .88)}px`;
+    marker.style.width = `${Math.min(130,canvas.clientWidth * .24,gap * .94)}px`;
+    marker.style.fontSize = "";
+    if (marker.scrollWidth > marker.clientWidth) {
+      const fontSize = parseFloat(getComputedStyle(marker).fontSize);
+      marker.style.fontSize = `${fontSize * (marker.clientWidth - 8) / marker.scrollWidth}px`;
+    }
   });
 }
 

@@ -1,86 +1,113 @@
 {
   "version": 1,
-  "updated_at": "2026-10-22T19:46:00Z",
+  "updated_at": "2026-10-23T17:05:00Z",
   "match": {
-    "home": "Juventus",
-    "away": "Rennes",
-    "kickoff": "2026-10-22T16:45:00Z",
-    "competition": "Europa League"
+    "home": "Lecce",
+    "away": "Juventus",
+    "kickoff": "2026-10-25T17:00:00Z",
+    "competition": "Serie A"
   },
   "formation": {
-    "status": "Ufficiale",
+    "status": "Probabile",
     "module": "3-4-1-2",
-    "source": "Juventus.com",
-    "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-juventus-rennes-le-formazioni-ufficiali",
-    "updated_at": "2026-10-22T15:40:04.057Z",
+    "source": "Sky Sport",
+    "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/23/probabili-formazioni-serie-a-giornata-8-ultime-news",
+    "updated_at": "2026-10-23T15:26:38.271Z",
     "players": [
-      {"name": "Vicario", "x": 0, "z": 7.4},
-      {"name": "Gatti", "x": 3.1, "z": 4.5},
-      {"name": "Bremer", "x": 0, "z": 4.5},
-      {"name": "Kelly", "x": -3.1, "z": 4.5},
-      {"name": "Celik", "x": 4.5, "z": 0.8},
-      {"name": "Douglas Luiz", "x": 1.5, "z": 0.8},
-      {"name": "Koopmeiners", "x": -1.5, "z": 0.8},
-      {"name": "Cambiaso", "x": -4.5, "z": 0.8},
-      {"name": "McKennie", "x": 0, "z": -2.8},
-      {"name": "Woltemade", "x": -2, "z": -5.7},
-      {"name": "Kolo Muani", "x": 2, "z": -5.7}
+      {
+        "name": "Vicario",
+        "x": 0,
+        "z": 7.4
+      },
+      {
+        "name": "Kalulu",
+        "x": 3.1,
+        "z": 4.5
+      },
+      {
+        "name": "Bremer",
+        "x": 0,
+        "z": 4.5
+      },
+      {
+        "name": "Lucumi",
+        "x": -3.1,
+        "z": 4.5
+      },
+      {
+        "name": "McKennie",
+        "x": 4.5,
+        "z": 0.8
+      },
+      {
+        "name": "Douglas Luiz",
+        "x": 1.5,
+        "z": 0.8
+      },
+      {
+        "name": "Sarr",
+        "x": -1.5,
+        "z": 0.8
+      },
+      {
+        "name": "Cambiaso",
+        "x": -4.5,
+        "z": 0.8
+      },
+      {
+        "name": "Alajbegovic",
+        "x": 0,
+        "z": -2.8
+      },
+      {
+        "name": "Woltemade",
+        "x": -2,
+        "z": -5.7
+      },
+      {
+        "name": "Kolo Muani",
+        "x": 2,
+        "z": -5.7
+      }
     ],
     "details": [
-      {"label": "Nota", "text": "Undici ufficiale comunicato dal club. Disposizione tattica indicativa."},
-      {"label": "Squalificati", "text": "Non indicati nel comunicato."},
-      {"label": "Indisponibili", "text": "Non elencati nel comunicato; le assenze verificate sono riportate negli aggiornamenti."}
+      {
+        "label": "Nota",
+        "text": "Formazione probabile, non ufficiale."
+      },
+      {
+        "label": "Alternative",
+        "text": "Alajbegovic candidato sulla trequarti; alternativa Zhegrova in fascia con McKennie avanzato. Kelly pronto in caso di rotazione in difesa."
+      },
+      {
+        "label": "Squalificati",
+        "text": "Nessuno."
+      },
+      {
+        "label": "Indisponibili",
+        "text": "Yildiz, Ekhator, Thuram, Locatelli, Grabara, Conceicao, Celik, Nico Gonzalez."
+      }
     ]
   },
   "updates": [
     {
-      "category": "Referto finale",
-      "title": "Juventus-Rennes 2-2: Celik e Woltemade a segno",
-      "summary": "Terza giornata di Europa League: Celik apre al 5', Al-Tamari pareggia al 15' e Dia segna su rigore al 43'. Woltemade firma il 2-2 su rigore al 67'. Il tabellino ufficiale conferma al 5' la prima rete.",
-      "detail": "Terza giornata di Europa League: Celik apre al 5', Al-Tamari pareggia al 15' e Dia segna su rigore al 43'. Woltemade firma il 2-2 su rigore al 67'. Il tabellino ufficiale conferma al 5' la prima rete.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-juventus-rennes-il-tabellino",
-      "published_at": "2026-10-22T18:49:15.091Z",
+      "category": "Probabile formazione",
+      "title": "Verso Lecce: Alajbegovic dietro Woltemade e Kolo Muani",
+      "summary": "Ipotesi 3-4-1-2 con McKennie a destra, Cambiaso a sinistra e Alajbegovic sulla trequarti. L'alternativa e Zhegrova in fascia con McKennie avanzato; Kelly puo trovare spazio in caso di rotazione difensiva. Non e la formazione ufficiale.",
+      "detail": "Ipotesi 3-4-1-2 con McKennie a destra, Cambiaso a sinistra e Alajbegovic sulla trequarti. L'alternativa e Zhegrova in fascia con McKennie avanzato; Kelly puo trovare spazio in caso di rotazione difensiva. Non e la formazione ufficiale.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/23/probabili-formazioni-serie-a-giornata-8-ultime-news",
+      "published_at": "2026-10-23T15:26:38.271Z",
       "significant": true
     },
     {
-      "category": "Formazione ufficiale",
-      "title": "Celik e Cambiaso titolari, confermate le due punte",
-      "summary": "Spalletti ha scelto Vicario, Gatti, Bremer, Kelly, Celik, Douglas Luiz, Koopmeiners, Cambiaso, McKennie, Woltemade e Kolo Muani. Kalulu parte dalla panchina; non ci sono piu ballottaggi nell'undici iniziale.",
-      "detail": "Spalletti ha scelto Vicario, Gatti, Bremer, Kelly, Celik, Douglas Luiz, Koopmeiners, Cambiaso, McKennie, Woltemade e Kolo Muani. Kalulu parte dalla panchina; non ci sono piu ballottaggi nell'undici iniziale.",
+      "category": "Bollettino medico",
+      "title": "Celik e Nico Gonzalez: lesioni muscolari di basso grado",
+      "summary": "Gli accertamenti al J|medical hanno evidenziato una lesione di basso grado del bicipite femorale sinistro per Celik e del soleo destro per Nico Gonzalez. Entrambi hanno iniziato la riabilitazione. Il club non ha comunicato tempi di recupero.",
+      "detail": "Gli accertamenti al J|medical hanno evidenziato una lesione di basso grado del bicipite femorale sinistro per Celik e del soleo destro per Nico Gonzalez. Entrambi hanno iniziato la riabilitazione. Il club non ha comunicato tempi di recupero.",
       "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-juventus-rennes-le-formazioni-ufficiali",
-      "published_at": "2026-10-22T15:34:56.321Z",
-      "significant": true
-    },
-    {
-      "category": "Convocati",
-      "title": "Juventus-Rennes: 21 convocati, presente anche Merola",
-      "summary": "Spalletti ha convocato 21 giocatori per la sfida del 22 ottobre alle 18:45. Nell'elenco ci sono Bremer, Kelly, Kalulu, Douglas Luiz, Koopmeiners, McKennie, Woltemade e Kolo Muani. Convocato anche Merola.",
-      "detail": "Spalletti ha convocato 21 giocatori per la sfida del 22 ottobre alle 18:45. Nell'elenco ci sono Bremer, Kelly, Kalulu, Douglas Luiz, Koopmeiners, McKennie, Woltemade e Kolo Muani. Convocato anche Merola.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-juventus-stade-rennais-f-c-i-convocati",
-      "published_at": "2026-10-22T10:28:28.677Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Spalletti conferma Kolo Muani e Woltemade insieme contro il Rennes",
-      "summary": "Nella conferenza del 21 ottobre il tecnico ha annunciato l'impiego delle due punte e chiesto una reazione piu unita dopo la Lazio. La scelta di Woltemade e Kolo Muani e stata poi confermata nell'undici ufficiale.",
-      "detail": "Nella conferenza del 21 ottobre il tecnico ha annunciato l'impiego delle due punte e chiesto una reazione piu unita dopo la Lazio. La scelta di Woltemade e Kolo Muani e stata poi confermata nell'undici ufficiale.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/juventus-rennes-la-conferenza-stampa-di-spalletti-e-kolo-muani",
-      "published_at": "2026-10-21T14:22:42.069Z",
-      "significant": true
-    },
-    {
-      "category": "Allenamento",
-      "title": "Rifinitura verso il Rennes: provati assetti a tre e a quattro",
-      "summary": "Nella partitella della vigilia sono stati provati due assetti difensivi diversi: non sono indicazioni di formazione ufficiale. Assenti Conceicao, Locatelli, Yildiz, Thuram, Grabara ed Ekhator.",
-      "detail": "Nella partitella della vigilia sono stati provati due assetti difensivi diversi: non sono indicazioni di formazione ufficiale. Assenti Conceicao, Locatelli, Yildiz, Thuram, Grabara ed Ekhator.",
-      "source": "Tuttosport",
-      "source_url": "https://www.tuttosport.com/news/calcio/serie-a/juventus/2026/10/21-152039528/allenamento_juve_partitella_e_doppia_difesa_cosa_dice_il_campo_prima_del_rennes",
-      "published_at": "2026-10-21T10:50:00Z",
+      "source_url": "https://www.juventus.com/it/news/articoli/bollettino-medico-le-condizioni-di-celik-e-nico-gonzalez",
+      "published_at": "2026-10-23T13:26:33.513Z",
       "significant": true
     },
     {

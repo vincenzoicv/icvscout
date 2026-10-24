@@ -847,6 +847,21 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   .news-card.featured .news-card-link{grid-template-columns:1fr;}
   .news-section{padding:24px 12px 40px;}
 }
+.home-sync-status{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-block:1px solid var(--bdr2);color:var(--t2);font-size:14px;line-height:1.5;}
+.home-sync-status[hidden]{display:none;}
+.home-sync-status p{margin:0;min-width:0;overflow-wrap:anywhere;}
+.home-sync-status button{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border:1px solid var(--bdr2);border-radius:6px;background:var(--bg);color:var(--gold-l);cursor:pointer;}
+.home-sync-status button:hover{border-color:var(--gold);}
+.home-sync-status button:focus-visible{outline:2px solid var(--gold-l);outline-offset:3px;}
+.home-sync-status button:disabled{opacity:.5;cursor:wait;}
+.home-sync-status svg{width:19px;height:19px;}
+.install-card{max-height:calc(100dvh - 100px);overflow-y:auto;}
+/* Keep the video frame stable before its optional stylesheet arrives. */
+.icv-stories{grid-column:1/-1;min-width:0;}
+.icv-story-stage{position:relative;aspect-ratio:16/9;}
+.icv-story-stage video,.icv-story-play{position:absolute;inset:0;display:block;width:100%;height:100%;margin:0;}
+.icv-story-play{min-width:0;max-width:100%;padding:0;border:0;}
+.icv-story-poster{display:block;width:100%;max-width:100%;height:100%;object-fit:contain;}
 </style>
 <link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260925-1">
 <link rel="stylesheet" href="/assets/news-editorial.css?v=20261003-2">
@@ -942,6 +957,10 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   <a class="hero-scroll-cue" href="#homeDash">Entra nel match <span aria-hidden="true"></span></a>
 </div>
 <section class="home-dash" id="homeDash">
+  <div class="home-sync-status" id="homeSyncStatus" hidden>
+    <p id="homeSyncMessage" role="status" aria-live="polite"></p>
+    <button id="homeSyncRetry" type="button" onclick="loadHomeDashboard()" aria-label="Riprova aggiornamento" title="Riprova aggiornamento"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg></button>
+  </div>
   <article class="home-panel home-match-hub" id="homeMatchHub" data-state="loading" aria-live="polite" aria-busy="true">
     <div class="match-hub-head">
       <div class="match-hub-brand">
@@ -2429,6 +2448,18 @@ function renderLiveDesk(rows) {
 }
 
 var homeDashboardTimer = null;
+var homeDashboardRequest = null;
+var homeDashboardLoadedAt = null;
+function setHomeSyncStatus(message, pending) {
+  var status = document.getElementById("homeSyncStatus");
+  var label = document.getElementById("homeSyncMessage");
+  var retry = document.getElementById("homeSyncRetry");
+  if (!status || !label || !retry) return;
+  status.hidden = !message;
+  label.textContent = message || "";
+  retry.disabled = !!pending;
+  status.setAttribute("aria-busy", String(!!pending));
+}
 function homeDashboardInterval(matches) {
   var normalized = normalizeMatchHubRows(matches);
   if (normalized.some(function(match) { return match.status === "live" || match.status === "halftime"; })) return 45000;
@@ -2444,7 +2475,13 @@ function scheduleHomeDashboard(delay) {
   homeDashboardTimer = window.setTimeout(loadHomeDashboard, delay);
 }
 function loadHomeDashboard() {
-  fetch("/api/public/home", {cache:"no-store"})
+  if (homeDashboardRequest) return homeDashboardRequest;
+  window.clearTimeout(homeDashboardTimer);
+  var controller = new AbortController();
+  var timeout = window.setTimeout(function() { controller.abort(); }, 12000);
+  var status = document.getElementById("homeSyncStatus");
+  if (status && !status.hidden) setHomeSyncStatus("Aggiornamento in corso...", true);
+  homeDashboardRequest = fetch("/api/public/home", {cache:"no-store", signal:controller.signal})
   .then(function(r){ if(!r.ok)throw new Error("Home API " + r.status);return r.json(); })
   .then(function(data) {
     data = data || {};
@@ -2471,19 +2508,34 @@ function loadHomeDashboard() {
       return {title:s.hook || "Post Instagram", meta:mediaLabel + " · Instagram", url:s.post_url || "https://www.instagram.com/ilcalciodivince_/"};
     }, "Nessun post importato al momento.");
     alignHashedSection();
+    homeDashboardLoadedAt = new Date();
+    setHomeSyncStatus("", false);
     scheduleHomeDashboard(homeDashboardInterval(matches));
   })
   .catch(function() {
-    renderLiveDesk([]);
-    renderMatchHub([]);
-    renderMatchMonitor(null, []);
-    renderHomeList("homeNewsList", [], null, "News non disponibili in questo momento.");
-    renderHomeList("homeMarketList", [], null, "Mercato non disponibile in questo momento.");
-    renderHomeLinks("homeInstagramList", [], null, "Instagram non disponibile in questo momento.");
+    if (!homeDashboardLoadedAt) {
+      renderLiveDesk([]);
+      renderMatchHub([]);
+      renderMatchMonitor(null, []);
+      renderHomeList("homeNewsList", [], null, "News non disponibili in questo momento.");
+      renderHomeList("homeMarketList", [], null, "Mercato non disponibile in questo momento.");
+      renderHomeLinks("homeInstagramList", [], null, "Instagram non disponibile in questo momento.");
+    }
+    var message = navigator.onLine === false ? "Sei offline. Riprova quando torna la connessione." : "Aggiornamento non riuscito. Puoi riprovare.";
+    if (homeDashboardLoadedAt) message += " Dati conservati dalle " + homeDashboardLoadedAt.toLocaleTimeString("it-IT", {hour:"2-digit", minute:"2-digit"}) + ".";
+    setHomeSyncStatus(message, false);
     alignHashedSection();
     scheduleHomeDashboard(2 * 60000);
+  }).finally(function() {
+    window.clearTimeout(timeout);
+    homeDashboardRequest = null;
   });
+  return homeDashboardRequest;
 }
+window.addEventListener("online", function() {
+  var status = document.getElementById("homeSyncStatus");
+  if (status && !status.hidden) loadHomeDashboard();
+});
 
 function loadHomeGraphics() {
   fetch("/api/public/graphics?meta=1&limit=6")
@@ -3012,6 +3064,8 @@ var deferredInstallPrompt = null;
 var installPromptDismissKey = "icv_install_prompt_dismissed_v1";
 var installPromptDelay = 7000;
 var installPromptCooldown = 14 * 24 * 60 * 60 * 1000;
+var installCardTimer = null;
+var installPreviousFocus = null;
 function isStandaloneApp(){
   return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 }
@@ -3041,24 +3095,37 @@ function updateInstallCopy(){
   confirm.textContent = "Ho capito";
   confirm.style.display = "";
 }
-function openInstallCard(){
+function openInstallCard(automatic){
+  if (isStandaloneApp()) return;
   updateInstallCopy();
   var card = document.getElementById("installCard");
   if (!card) return;
+  installPreviousFocus = automatic ? null : document.activeElement;
   card.classList.add("show");
   card.setAttribute("aria-hidden", "false");
+  if (!automatic) card.querySelector(".install-close").focus();
 }
 function closeInstallCard(remember){
   var card = document.getElementById("installCard");
   if (!card) return;
   card.classList.remove("show");
   card.setAttribute("aria-hidden", "true");
+  var restore = installPreviousFocus && installPreviousFocus.isConnected ? installPreviousFocus : document.getElementById("installAppBtn");
+  if (card.contains(document.activeElement) && restore) restore.focus();
+  installPreviousFocus = null;
   if (remember) {
     try { localStorage.setItem(installPromptDismissKey, String(Date.now())); } catch (error) {}
   }
 }
 function canAutoOpenInstallCard(){
   if (isStandaloneApp()) return false;
+  var card = document.getElementById("installCard");
+  if (card && card.classList.contains("show")) return false;
+  if (!deferredInstallPrompt) return false;
+  if (!window.ICVPrivacy || !window.ICVPrivacy.get().updated_at) return false;
+  var blocking = document.querySelectorAll('#iubenda-cs-banner,.icv-cookie-banner,.icv-privacy-layer,[aria-modal="true"],dialog[open]');
+  if (Array.from(blocking).some(function(el) { return el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden"; })) return false;
+  if (document.activeElement && document.activeElement.matches('input,textarea,select,[contenteditable="true"]')) return false;
   try {
     var dismissedAt = Number(localStorage.getItem(installPromptDismissKey) || 0);
     return !dismissedAt || Date.now() - dismissedAt >= installPromptCooldown;
@@ -3067,10 +3134,11 @@ function canAutoOpenInstallCard(){
   }
 }
 function scheduleInstallCard(){
+  window.clearTimeout(installCardTimer);
   if (window.matchMedia("(max-width: 768px)").matches) return;
   if (!canAutoOpenInstallCard()) return;
-  window.setTimeout(function(){
-    if (document.visibilityState === "visible" && canAutoOpenInstallCard()) openInstallCard();
+  installCardTimer = window.setTimeout(function(){
+    if (document.visibilityState === "visible" && canAutoOpenInstallCard()) openInstallCard(true);
   }, installPromptDelay);
 }
 function installApp(){
@@ -3093,6 +3161,18 @@ window.addEventListener("beforeinstallprompt", function(event){
   deferredInstallPrompt = event;
   var btn = document.getElementById("installAppBtn");
   if (btn && !isStandaloneApp()) btn.classList.remove("is-hidden");
+  scheduleInstallCard();
+});
+document.addEventListener("keydown", function(event) {
+  var card = document.getElementById("installCard");
+  if (event.key === "Escape" && card && card.classList.contains("show")) closeInstallCard(true);
+});
+document.addEventListener("click", function(event) {
+  if (event.target.closest("[data-privacy-settings]")) closeInstallCard(false);
+});
+window.addEventListener("icv:privacychange", function() {
+  if (window.ICVPrivacy && !window.ICVPrivacy.get().updated_at) closeInstallCard(false);
+  scheduleInstallCard();
 });
 window.addEventListener("appinstalled", function(){
   closeInstallCard(false);

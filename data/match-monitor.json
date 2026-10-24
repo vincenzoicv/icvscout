@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-23T17:05:00Z",
+  "updated_at": "2026-10-24T18:01:00Z",
   "match": {
     "home": "Lecce",
     "away": "Juventus",
@@ -90,6 +90,16 @@
     ]
   },
   "updates": [
+    {
+      "category": "Convocati",
+      "title": "Lecce-Juventus: ufficiali i 20 convocati",
+      "summary": "Per la trasferta del 25 ottobre alle 18:00 sono disponibili anche Rugani, Cabal e Neto. Presenti tutti gli undici della probabile; la formazione titolare non e ancora ufficiale.",
+      "detail": "Convocati: Bremer, Gatti, Kelly, Koopmeiners, Kolo Muani, Zhegrova, Douglas Luiz, Boga, Kalulu, Alajbegovic, Cambiaso, McKennie, Pinsoglio, Rugani, Vicario, Lucumi, Woltemade, Sarr, Cabal e Neto. La partita si gioca il 25 ottobre alle 18:00; la formazione titolare non e ancora ufficiale.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-lecce-juventus-i-convocati",
+      "published_at": "2026-10-24T15:24:57.156Z",
+      "significant": true
+    },
     {
       "category": "Probabile formazione",
       "title": "Verso Lecce: Alajbegovic dietro Woltemade e Kolo Muani",

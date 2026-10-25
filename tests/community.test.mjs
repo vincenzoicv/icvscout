@@ -114,7 +114,7 @@ test("dopo il Celta il referto e le prossime tre sono aggiornati", async () => {
   assert.equal(last.mvp, undefined);
   assert.equal(last.worst, undefined);
   render(rows);
-  assert.match(box.innerHTML, /Lecce[\s\S]*Genoa[\s\S]*Napoli/);
+  assert.match(box.innerHTML, /Genoa[\s\S]*Napoli[\s\S]*AZ Alkmaar/);
   assert.doesNotMatch(box.innerHTML, /Celta Vigo/);
 });
 
@@ -136,7 +136,7 @@ test("il finale con la Lazio conserva marcatori verificati e prossime tre senza 
   assert.equal(fallback.awayScore, 3);
   assert.equal(fallback.scorers, match.scorers);
   render(rows);
-  assert.match(box.innerHTML, /Lecce[\s\S]*Genoa[\s\S]*Napoli/);
+  assert.match(box.innerHTML, /Genoa[\s\S]*Napoli[\s\S]*AZ Alkmaar/);
   assert.doesNotMatch(box.innerHTML, /Lazio/);
 });
 
@@ -159,10 +159,42 @@ test("il finale col Rennes usa il tabellino ufficiale e deduplica Genoa CFC", as
   assert.equal(phase(null, last, null), "final");
   assert.equal(rows.filter(match => /genoa/i.test(match.home)).length, 1);
   render(rows);
-  assert.match(box.innerHTML, /Lecce[\s\S]*Genoa[\s\S]*Napoli/);
+  assert.match(box.innerHTML, /Genoa[\s\S]*Napoli[\s\S]*AZ Alkmaar/);
   assert.doesNotMatch(box.innerHTML, /Rennes/);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.deepEqual(rows.filter(match => match.status === "finished").slice(-5).map(match => [match.homeScore,match.awayScore]), [[2,0],[1,1],[1,2],[0,3],[2,2]]);
+  assert.deepEqual(rows.filter(match => match.status === "finished" && new Date(match.date).getTime() <= MatchDate.now()).slice(-5).map(match => [match.homeScore,match.awayScore]), [[2,0],[1,1],[1,2],[0,3],[2,2]]);
+});
+
+test("il finale di Lecce resiste a un provider obsoleto e aggiorna forma e prossime tre", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function renderMatchHubScorers("));
+  const box = {innerHTML:""};
+  class MatchDate extends Date { static now() { return Date.parse("2026-10-25T19:55:00Z"); } }
+  const {allRows, render, outcome} = new Function("document", "Date", source + ";return {allRows:allMatchHubRows,render:renderMatchHubUpcoming,outcome:matchHubOutcome}")({getElementById:id => id === "matchHubUpcomingPanel" ? {hidden:true} : box}, MatchDate);
+  const rows = allRows([
+    {match_date:"2026-10-25T17:00:00Z",status:"scheduled",competition:"Serie A",source_payload:{homeTeam:{name:"US Lecce"},awayTeam:{name:"Juventus FC"},matchday:8}},
+    {match_date:"2026-11-01T19:45:00Z",status:"scheduled",competition:"Serie A",source_payload:{homeTeam:{name:"Juventus FC"},awayTeam:{name:"SSC Napoli"},matchday:10}}
+  ]);
+  assert.equal(rows.filter(match => /napoli/i.test(match.away)).length, 1);
+  const last = rows.filter(match => match.status === "finished").at(-1);
+  assert.equal(last.home, "Lecce");
+  assert.equal(last.homeScore, 0);
+  assert.equal(last.awayScore, 2);
+  assert.equal(last.matchday, 8);
+  assert.equal(last.scorers, "McKennie 29' · Douglas Luiz 41'");
+  assert.match(last.sourceUrl, /lecce-juventus-il-tabellino-x3027$/);
+  assert.equal(last.mvp, undefined);
+  assert.equal(last.worst, undefined);
+  assert.equal(outcome(last), "win");
+  assert.deepEqual(rows.filter(match => match.status === "finished").slice(-5).map(outcome), ["draw", "win", "loss", "draw", "win"]);
+  render(rows);
+  assert.match(box.innerHTML, /Genoa[\s\S]*Napoli[\s\S]*AZ Alkmaar/);
+  assert.doesNotMatch(box.innerHTML, /Lecce/);
+  const monitor = JSON.parse(await read("data/match-monitor.json"));
+  assert.equal(monitor.formation.status, "Ufficiale");
+  assert.equal(new Set(monitor.formation.players.map(player => player.name)).size, 11);
+  assert.equal(monitor.formation.players.length, 11);
+  assert.ok(monitor.updates.length <= 6);
 });
 
 test("il calendario deduplica le gare e conserva il referto di Cagliari", async () => {
@@ -182,7 +214,7 @@ test("il calendario deduplica le gare e conserva il referto di Cagliari", async 
   render(upcomingRows);
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.match(box.innerHTML, /Lecce[\s\S]*Genoa[\s\S]*Napoli/);
+  assert.match(box.innerHTML, /Genoa[\s\S]*Napoli[\s\S]*AZ Alkmaar/);
   assert.doesNotMatch(box.innerHTML, /Cagliari/);
   const last = allRows([]).find(match => match.matchday === 6 && match.competition === 'Serie A');
   assert.equal(last.status, 'finished');

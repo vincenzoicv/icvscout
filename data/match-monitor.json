@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-24T18:01:00Z",
+  "updated_at": "2026-10-25T19:55:41Z",
   "match": {
     "home": "Lecce",
     "away": "Juventus",
@@ -8,11 +8,11 @@
     "competition": "Serie A"
   },
   "formation": {
-    "status": "Probabile",
+    "status": "Ufficiale",
     "module": "3-4-1-2",
-    "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/23/probabili-formazioni-serie-a-giornata-8-ultime-news",
-    "updated_at": "2026-10-23T15:26:38.271Z",
+    "source": "Juventus.com",
+    "source_url": "https://www.juventus.com/it/news/articoli/serie-a-lecce-juventus-le-formazioni-ufficiali",
+    "updated_at": "2026-10-25T15:57:00Z",
     "players": [
       {
         "name": "Vicario",
@@ -20,7 +20,7 @@
         "z": 7.4
       },
       {
-        "name": "Kalulu",
+        "name": "Gatti",
         "x": 3.1,
         "z": 4.5
       },
@@ -35,7 +35,7 @@
         "z": 4.5
       },
       {
-        "name": "McKennie",
+        "name": "Kalulu",
         "x": 4.5,
         "z": 0.8
       },
@@ -45,7 +45,7 @@
         "z": 0.8
       },
       {
-        "name": "Sarr",
+        "name": "Koopmeiners",
         "x": -1.5,
         "z": 0.8
       },
@@ -55,7 +55,7 @@
         "z": 0.8
       },
       {
-        "name": "Alajbegovic",
+        "name": "McKennie",
         "x": 0,
         "z": -2.8
       },
@@ -73,28 +73,36 @@
     "details": [
       {
         "label": "Nota",
-        "text": "Formazione probabile, non ufficiale."
-      },
-      {
-        "label": "Alternative",
-        "text": "Alajbegovic candidato sulla trequarti; alternativa Zhegrova in fascia con McKennie avanzato. Kelly pronto in caso di rotazione in difesa."
-      },
-      {
-        "label": "Squalificati",
-        "text": "Nessuno."
-      },
-      {
-        "label": "Indisponibili",
-        "text": "Yildiz, Ekhator, Thuram, Locatelli, Grabara, Conceicao, Celik, Nico Gonzalez."
+        "text": "Undici ufficiale di Lecce-Juventus del 25 ottobre 2026."
       }
     ]
   },
   "updates": [
     {
+      "category": "Risultato finale",
+      "title": "Lecce-Juventus 0-2: McKennie e Douglas Luiz decidono nel primo tempo",
+      "summary": "Ottava giornata di Serie A: McKennie 29' e Douglas Luiz 41'. Prossima partita Genoa-Juventus, mercoledi 28 ottobre alle 20:45.",
+      "detail": "Finale al Via del Mare: Lecce-Juventus 0-2. Marcatori: McKennie 29' · Douglas Luiz 41'. Prossima partita Genoa-Juventus, mercoledi 28 ottobre alle 20:45.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-lecce-juventus-il-tabellino-x3027",
+      "published_at": "2026-10-25T19:01:00Z",
+      "significant": true
+    },
+    {
+      "category": "Formazione ufficiale",
+      "title": "Lecce-Juventus: Gatti in difesa, McKennie dietro le due punte",
+      "summary": "Vicario; Gatti, Bremer, Lucumi; Kalulu, Douglas Luiz, Koopmeiners, Cambiaso; McKennie; Woltemade, Kolo Muani.",
+      "detail": "Vicario; Gatti, Bremer, Lucumi; Kalulu, Douglas Luiz, Koopmeiners, Cambiaso; McKennie; Woltemade, Kolo Muani.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-lecce-juventus-le-formazioni-ufficiali",
+      "published_at": "2026-10-25T15:57:00Z",
+      "significant": true
+    },
+    {
       "category": "Convocati",
       "title": "Lecce-Juventus: ufficiali i 20 convocati",
-      "summary": "Per la trasferta del 25 ottobre alle 18:00 sono disponibili anche Rugani, Cabal e Neto. Presenti tutti gli undici della probabile; la formazione titolare non e ancora ufficiale.",
-      "detail": "Convocati: Bremer, Gatti, Kelly, Koopmeiners, Kolo Muani, Zhegrova, Douglas Luiz, Boga, Kalulu, Alajbegovic, Cambiaso, McKennie, Pinsoglio, Rugani, Vicario, Lucumi, Woltemade, Sarr, Cabal e Neto. La partita si gioca il 25 ottobre alle 18:00; la formazione titolare non e ancora ufficiale.",
+      "summary": "Per la trasferta del 25 ottobre convocati anche Rugani, Cabal e Neto.",
+      "detail": "Convocati: Bremer, Gatti, Kelly, Koopmeiners, Kolo Muani, Zhegrova, Douglas Luiz, Boga, Kalulu, Alajbegovic, Cambiaso, McKennie, Pinsoglio, Rugani, Vicario, Lucumi, Woltemade, Sarr, Cabal e Neto.",
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/serie-a-lecce-juventus-i-convocati",
       "published_at": "2026-10-24T15:24:57.156Z",

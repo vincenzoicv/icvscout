@@ -1,6 +1,6 @@
 // ICV Scout — Service Worker
 // Strategia: cache-first per risorse statiche, network-only per API/Supabase
-const CACHE = 'icv-v23';
+const CACHE = 'icv-v24';
 const STATIC = [
   '/',
   '/index.html',
@@ -9,24 +9,13 @@ const STATIC = [
   '/community.html',
   '/calendario-juventus.html',
   '/manifest.json',
-  '/icon-180.png',
   '/icon-192.png',
-  '/icon-512.png',
-  '/icon-maskable-512.png',
-  '/splash-750x1334.png',
-  '/splash-1125x2436.png',
-  '/splash-1170x2532.png',
-  '/splash-1179x2556.png',
-  '/splash-1290x2796.png',
-  '/splash-2048x2732.png',
-  '/og-image.png',
   '/assets/icv-logo-160.jpg',
-  '/assets/hero-allianz-user-2026.webp',
-  '/assets/hero-allianz-user-mobile-2026.jpg',
+  '/assets/home-20261025.min.css',
+  '/assets/fonts.css',
   '/assets/vb-motion-effects.css?v=20261003-1',
   '/assets/vince-hero.css?v=20261003-1',
-  '/assets/vince-hero.js?v=20261003-1',
-  '/assets/community-stadium.jpg'
+  '/assets/vince-hero.js?v=20261003-1'
 ];
 
 self.addEventListener('install', e => {
@@ -50,6 +39,7 @@ self.addEventListener('fetch', e => {
   const reqUrl = new URL(url);
   // Lascia passare normalmente API, Supabase, RSS, font Google
   if (
+    e.request.method !== 'GET' || reqUrl.origin !== self.location.origin ||
     url.includes('/api/') ||
     url.includes('supabase.co') ||
     url.includes('rss2json') ||
@@ -66,7 +56,18 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+  // Cache requested static assets, not every device's images during installation.
+  if (!/^\/assets\/.*\.(?:css|js|woff2|png|jpe?g|webp|svg|ico)$/.test(reqUrl.pathname)) return;
+  e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request).then(response => {
+    if (response.ok && !/text\/html/i.test(response.headers.get('content-type') || '')) {
+      const copy = response.clone();
+      e.waitUntil(caches.open(CACHE).then(async cache => {
+        await cache.put(e.request, copy);
+        const keys = await cache.keys();
+        const runtime = keys.filter(key => !STATIC.includes(new URL(key.url).pathname + new URL(key.url).search));
+        await Promise.all(runtime.slice(0, Math.max(0, runtime.length - 80)).map(key => cache.delete(key)));
+      }));
+    }
+    return response;
+  })));
 });

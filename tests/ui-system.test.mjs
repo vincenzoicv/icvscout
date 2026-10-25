@@ -14,7 +14,11 @@ const ui=readFileSync(new URL('assets/icv-ui-system.css',root),'utf8');
 test('le pagine pubbliche usano la base visiva condivisa',()=>{
   for(const page of publicPages){
     const html=readFileSync(new URL(page,root),'utf8');
-    assert.match(html,/\/assets\/icv-ui-system\.css\?v=20260925-1/,page);
+    if(page==='index.html') {
+      assert.match(html,/\/assets\/home-20261025\.min\.css/,page);
+      assert.match(readFileSync(new URL('src/home.css',root),'utf8'),/@import '\.\.\/assets\/icv-ui-system\.css'/);
+      assert.match(readFileSync(new URL('assets/home-20261025.min.css',root),'utf8'),/--icv-font-display:/);
+    } else assert.match(html,/\/assets\/icv-ui-system\.css\?v=20260925-1/,page);
   }
 });
 

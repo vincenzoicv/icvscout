@@ -43,9 +43,10 @@
 <link rel="apple-touch-startup-image" href="/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
 <link rel="apple-touch-startup-image" href="/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)">
 
-<link rel="stylesheet" href="/assets/fonts.css?v=20260728-1">
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/JTUSjIg69CK48gW7PXoo9WlhyyTh89Y.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/nuFRD-vYSZviVYUb_rj3ij__anPXDTnCjmHKM4nYO7KN_k-UXtHA-X-uE0qEEw.woff2" crossorigin>
 <link rel="preload" as="image" href="/assets/hero-allianz-user-2026.webp" media="(min-width: 769px)" fetchpriority="high">
-<link rel="preload" as="image" href="/assets/hero-allianz-user-mobile-2026.jpg" media="(max-width: 768px)" fetchpriority="high">
+<link rel="preload" as="image" href="/assets/hero-allianz-user-mobile-20261025.webp" media="(max-width: 768px)" fetchpriority="high">
 <style>
 :root{--gold:#C4962A;--gold-l:#E8B84B;--gold-d:#8B6520;--black:#060606;--d1:#0f0f0f;--d2:#151515;--d3:#1c1c1c;--surface:linear-gradient(145deg,#161616,#131313);--surface-soft:linear-gradient(145deg,#121212,#0f0f0f);--surface-hi:linear-gradient(145deg,#1d1d1d,#151515);--white:#f0f0f0;--t2:rgba(255,255,255,0.65);--t3:rgba(255,255,255,0.40);--bdr:rgba(196,150,42,0.15);--bdr2:rgba(255,255,255,0.06);}
 *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
@@ -863,24 +864,14 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 .icv-story-play{min-width:0;max-width:100%;padding:0;border:0;}
 .icv-story-poster{display:block;width:100%;max-width:100%;height:100%;object-fit:contain;}
 </style>
-<link rel="stylesheet" href="/assets/icv-ui-system.css?v=20260925-1">
-<link rel="stylesheet" href="/assets/news-editorial.css?v=20261003-2">
-<link rel="stylesheet" href="/assets/vb-motion-effects.css?v=20261003-1">
-<link rel="stylesheet" href="/assets/vince-hero.css?v=20261003-1">
+<link rel="stylesheet" href="/assets/home-20261025.min.css">
 <script defer src="/assets/vince-hero.js?v=20261003-1"></script>
-<link rel="stylesheet" href="/assets/featured-conference.css?v=20260831-4">
-<link rel="stylesheet" href="/assets/editorial-videos.css?v=20261005-2">
 <script defer src="/assets/editorial-videos.js?v=20261013-3"></script>
 <script defer src="/assets/featured-conference.js?v=20261013-3"></script>
-<link rel="stylesheet" href="/assets/featured-highlights.css?v=20260831-1">
 <script defer src="/assets/featured-highlights.js?v=20261013-3"></script>
-<link rel="stylesheet" href="/assets/match-gallery.css?v=20260830-1">
 <script defer src="/assets/match-gallery.js?v=20260924-1"></script>
-<link rel="stylesheet" href="/assets/icv-stories.css?v=20260831-1">
 <script defer src="/assets/icv-stories.js?v=20260831-1"></script>
-<link rel="stylesheet" href="/assets/classifica-nav.css?v=20260831-1">
 <script defer src="/assets/section-pages.js?v=20261004-2"></script>
-<link rel="stylesheet" href="/assets/lineup-pitch.css?v=20261022-1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
@@ -940,6 +931,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
 <div class="hero" id="immersiveHero">
   <div class="hero-stadium-media" aria-hidden="true">
     <picture>
+      <source media="(max-width: 768px)" type="image/webp" srcset="/assets/hero-allianz-user-mobile-20261025.webp">
       <source media="(max-width: 768px)" srcset="/assets/hero-allianz-user-mobile-2026.jpg">
       <img class="hero-stadium-img" src="/assets/hero-allianz-user-2026.webp" alt="" width="1280" height="720" fetchpriority="high" decoding="async">
     </picture>
@@ -1232,7 +1224,7 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
   <button class="mob-btn" onclick="location.href='/news'"><svg viewBox="0 0 24 24"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><line x1="11" y1="6" x2="17" y2="6"/><line x1="11" y1="10" x2="17" y2="10"/><line x1="11" y1="14" x2="13" y2="14"/></svg>News</button>
 </nav>
 <div class="tooltip" id="tooltip"><div class="tt-name" id="ttName"></div><div class="tt-pos" id="ttPos"></div></div>
-<script src="/assets/anime.umd.min.js?v=4.5.0"></script>
+<script defer src="/assets/anime.umd.min.js?v=4.5.0" onload="setupIcvAnimations()"></script>
 <script>
 var lineup=[
   {num:1, name:"Perin",     pos:"POR"},
@@ -2197,13 +2189,36 @@ function renderMatchHubProbable(data, active) {
   window.ICV_LINEUP_DATA = safeFormation;
   if (window.ICVLineupPitch) {
     window.ICVLineupPitch.render(safeFormation);
-  } else if (!window.ICVLineupPitchLoading) {
+  } else queueMatchHubPitch();
+}
+
+var matchHubPitchObserver;
+function loadMatchHubPitch(view) {
+  if (matchHubPitchObserver) matchHubPitchObserver.disconnect();
+  if (!window.ICVLineupPitchLoading) {
     window.ICVLineupPitchLoading = import("/assets/lineup-pitch-3d.js?v=20261022-1").catch(function() {
       var stage = document.getElementById("matchHubLineupStage");
       if (stage) stage.classList.add("is-2d");
     });
   }
+  return window.ICVLineupPitchLoading.then(function() {
+    if (view && window.ICVLineupPitch) window.ICVLineupPitch.setView(view);
+  });
 }
+function queueMatchHubPitch() {
+  if (window.ICVLineupPitchLoading || matchHubPitchObserver) return;
+  var stage = document.getElementById("matchHubLineupStage");
+  if (!stage) return;
+  if (!window.IntersectionObserver) { loadMatchHubPitch(); return; }
+  // The textual lineup is already available; load WebGL only near the pitch.
+  matchHubPitchObserver = new IntersectionObserver(function(entries) {
+    if (entries.some(function(entry) { return entry.isIntersecting; })) loadMatchHubPitch();
+  }, {rootMargin:"100px"});
+  matchHubPitchObserver.observe(stage);
+}
+document.querySelectorAll("[data-lineup-view]").forEach(function(button) {
+  button.addEventListener("click", function() { loadMatchHubPitch(button.dataset.lineupView); });
+});
 
 var matchHubRenderSignature = "";
 var matchReceiptSignature = "";

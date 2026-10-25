@@ -24,7 +24,7 @@ test('failed refresh keeps loaded news and retry restores the healthy state',asy
 });
 
 test('first load error offers a keyboard-accessible retry without horizontal overflow',async({page})=>{
-  await page.route('**/assets/icv-stories.css*',route=>route.abort());
+  await page.route('**/assets/home-20261025.min.css',route=>route.abort());
   await page.route('**/api/public/home',route=>route.fulfill({status:503,json:{}}));
   await page.goto('/',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#homeSyncMessage')).toContainText('Aggiornamento non riuscito');

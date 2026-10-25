@@ -204,7 +204,7 @@ test("la home lascia le amichevoli al calendario ufficiale", async () => {
 
 test("Anime.js anima la home rispettando Riduci movimento", async () => {
   const html = await read("index.html");
-  assert.match(html, /<script src="\/assets\/anime\.umd\.min\.js\?v=4\.5\.0"><\/script>/);
+  assert.match(html, /<script defer src="\/assets\/anime\.umd\.min\.js\?v=4\.5\.0" onload="setupIcvAnimations\(\)"><\/script>/);
   assert.match(html, /function setupIcvAnimations\(\)/);
   assert.match(html, /function animateLiveDeskRows\(\)/);
   assert.match(html, /prefers-reduced-motion: reduce/);
@@ -234,8 +234,8 @@ test("la home apre con fotografie reali dello Stadium su desktop e mobile", asyn
     "pointer:fine",
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.match(html, /prefers-reduced-motion: reduce/);
-  assert.match(worker, /hero-allianz-user-2026\.webp/);
-  assert.match(worker, /hero-allianz-user-mobile-2026\.jpg/);
+  assert.match(worker, /Cache requested static assets/);
+  assert.match(html, /hero-allianz-user-mobile-20261025\.webp/);
   assert.doesNotMatch(html, /hero h1[^}]*background:linear-gradient/);
 });
 
@@ -259,7 +259,7 @@ test("la home propone l'installazione PWA senza essere invadente", async () => {
   assert.match(html, /onclick="closeInstallCard\(true\)"/);
   assert.match(html, /window\.addEventListener\("load", scheduleInstallCard\)/);
   assert.match(manifest, /"display": "standalone"/);
-  assert.match(worker, /const CACHE = 'icv-v23'/);
+  assert.match(worker, /const CACHE = 'icv-v24'/);
   assert.match(worker, /\/assets\/vince-hero\.css\?v=20261003-1/);
   assert.match(worker, /\/assets\/vince-hero\.js\?v=20261003-1/);
 });

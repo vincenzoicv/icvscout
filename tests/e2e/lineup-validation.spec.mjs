@@ -10,6 +10,7 @@ test.beforeEach(async({page})=>{
 test('long names fit their 3D labels on small and large screens',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.evaluate(data=>renderMatchHubProbable(data,true),registry);
+  await page.locator('#matchHubProbable').scrollIntoViewIfNeeded();
   await expect(page.locator('.lineup-projected-label')).toHaveCount(11);
   for(const width of [320,390,1440]){
     await page.setViewportSize({width,height:1000});
@@ -42,4 +43,29 @@ test('official lineups replace probable headings and accessible labels',async({p
   await expect(page.locator('#matchHubLineupText')).toHaveAttribute('aria-label','Undici ufficiale');
   await page.evaluate(data=>renderMatchHubProbable(data,true),registry);
   await expect(page.locator('#matchHubProbable h4')).toHaveText('Probabile formazione');
+});
+test('WebGL is deferred offscreen and both pitch views work when reached',async({page})=>{
+  let downloads=0;
+  page.on('request',request=>{if(request.url().includes('lineup-pitch-3d.js'))downloads++;});
+  await page.evaluate(data=>renderMatchHubProbable(data,true),registry);
+  await expect(page.locator('#matchHubLineupText li')).toHaveCount(11);
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  expect(downloads).toBe(0);
+  await page.locator('#matchHubProbable').scrollIntoViewIfNeeded();
+  await expect(page.locator('.lineup-projected-label')).toHaveCount(11);
+  expect(downloads).toBe(1);
+  await expect.poll(()=>page.evaluate(()=>{
+    const canvas=document.getElementById('matchHubLineupCanvas');
+    const gl=canvas.getContext('webgl2');
+    if(!gl)return false;
+    window.dispatchEvent(new Event('resize'));
+    const pixel=new Uint8Array(4);
+    gl.readPixels(Math.floor(canvas.width/2),Math.floor(canvas.height/2),1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);
+    return pixel[3]>0 && pixel[0]+pixel[1]+pixel[2]>0;
+  })).toBe(true);
+  await page.locator('#matchHubProbable').screenshot({path:`/tmp/icv-lazy-pitch-${test.info().project.name}.png`});
+  await page.locator('[data-lineup-view="2d"]').click();
+  await expect(page.locator('#matchHubLineupStage')).toHaveClass(/is-2d/);
+  await page.locator('[data-lineup-view="3d"]').click();
+  await expect(page.locator('#matchHubLineupStage')).not.toHaveClass(/is-2d/);
 });

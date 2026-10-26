@@ -388,7 +388,7 @@ async function readHomeMatchReports(env) {
   return rows.map(row => {
     if (row.source_payload) return row;
     const report = Object.fromEntries(fields.map(key => [key, row[key]]));
-    const payload = Object.fromEntries(payloadFields.map(key => [key, row["payload_" + key]]));
+    const payload = Object.fromEntries(payloadFields.filter(key => row["payload_" + key] != null).map(key => [key, row["payload_" + key]]));
     for (const team of ["homeTeam", "awayTeam"]) payload[team] = Object.fromEntries(["name", "formation", "lineup"].map(key => [key, row[team + "_" + key]]));
     return { ...report, source_payload: payload };
   });

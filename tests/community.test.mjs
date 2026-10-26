@@ -191,7 +191,7 @@ test("il finale di Lecce resiste a un provider obsoleto e aggiorna forma e pross
   assert.match(box.innerHTML, /Genoa[\s\S]*Napoli[\s\S]*AZ Alkmaar/);
   assert.doesNotMatch(box.innerHTML, /Lecce/);
   const monitor = JSON.parse(await read("data/match-monitor.json"));
-  assert.equal(monitor.formation.status, "Ufficiale");
+  assert.ok(["Probabile", "Ufficiale"].includes(monitor.formation.status));
   assert.equal(new Set(monitor.formation.players.map(player => player.name)).size, 11);
   assert.equal(monitor.formation.players.length, 11);
   assert.ok(monitor.updates.length <= 6);

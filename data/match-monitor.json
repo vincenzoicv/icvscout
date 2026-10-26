@@ -1,18 +1,18 @@
 {
   "version": 1,
-  "updated_at": "2026-10-25T19:55:41Z",
+  "updated_at": "2026-10-26T19:45:18Z",
   "match": {
-    "home": "Lecce",
+    "home": "Genoa",
     "away": "Juventus",
-    "kickoff": "2026-10-25T17:00:00Z",
+    "kickoff": "2026-10-28T19:45:00Z",
     "competition": "Serie A"
   },
   "formation": {
-    "status": "Ufficiale",
+    "status": "Probabile",
     "module": "3-4-1-2",
-    "source": "Juventus.com",
-    "source_url": "https://www.juventus.com/it/news/articoli/serie-a-lecce-juventus-le-formazioni-ufficiali",
-    "updated_at": "2026-10-25T15:57:00Z",
+    "source": "Sky Sport",
+    "source_url": "https://sport.sky.it/calcio/serie-a/probabili-formazioni",
+    "updated_at": "2026-10-26T18:44:00Z",
     "players": [
       {
         "name": "Vicario",
@@ -45,7 +45,7 @@
         "z": 0.8
       },
       {
-        "name": "Koopmeiners",
+        "name": "Sarr",
         "x": -1.5,
         "z": 0.8
       },
@@ -73,11 +73,29 @@
     "details": [
       {
         "label": "Nota",
-        "text": "Undici ufficiale di Lecce-Juventus del 25 ottobre 2026."
+        "text": "Formazione probabile, non ufficiale."
+      },
+      {
+        "label": "Squalificati",
+        "text": "Nessuno."
+      },
+      {
+        "label": "Indisponibili",
+        "text": "Yildiz, Ekhator, Thuram, Locatelli, Grabara, Conceicao, Celik, Nico Gonzalez."
       }
     ]
   },
   "updates": [
+    {
+      "category": "Probabile formazione",
+      "title": "Verso Genoa: Sarr in mezzo, McKennie dietro le due punte",
+      "summary": "Ipotesi 3-4-1-2 con Sarr accanto a Douglas Luiz, McKennie sulla trequarti e Woltemade-Kolo Muani in attacco. Non e la formazione ufficiale.",
+      "detail": "Ipotesi 3-4-1-2: Vicario; Gatti, Bremer, Lucumi; Kalulu, Douglas Luiz, Sarr, Cambiaso; McKennie; Woltemade, Kolo Muani. Non e la formazione ufficiale.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/probabili-formazioni",
+      "published_at": "2026-10-26T18:44:00Z",
+      "significant": true
+    },
     {
       "category": "Risultato finale",
       "title": "Lecce-Juventus 0-2: McKennie e Douglas Luiz decidono nel primo tempo",
@@ -86,36 +104,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/serie-a-lecce-juventus-il-tabellino-x3027",
       "published_at": "2026-10-25T19:01:00Z",
-      "significant": true
-    },
-    {
-      "category": "Formazione ufficiale",
-      "title": "Lecce-Juventus: Gatti in difesa, McKennie dietro le due punte",
-      "summary": "Vicario; Gatti, Bremer, Lucumi; Kalulu, Douglas Luiz, Koopmeiners, Cambiaso; McKennie; Woltemade, Kolo Muani.",
-      "detail": "Vicario; Gatti, Bremer, Lucumi; Kalulu, Douglas Luiz, Koopmeiners, Cambiaso; McKennie; Woltemade, Kolo Muani.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-lecce-juventus-le-formazioni-ufficiali",
-      "published_at": "2026-10-25T15:57:00Z",
-      "significant": true
-    },
-    {
-      "category": "Convocati",
-      "title": "Lecce-Juventus: ufficiali i 20 convocati",
-      "summary": "Per la trasferta del 25 ottobre convocati anche Rugani, Cabal e Neto.",
-      "detail": "Convocati: Bremer, Gatti, Kelly, Koopmeiners, Kolo Muani, Zhegrova, Douglas Luiz, Boga, Kalulu, Alajbegovic, Cambiaso, McKennie, Pinsoglio, Rugani, Vicario, Lucumi, Woltemade, Sarr, Cabal e Neto.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-lecce-juventus-i-convocati",
-      "published_at": "2026-10-24T15:24:57.156Z",
-      "significant": true
-    },
-    {
-      "category": "Probabile formazione",
-      "title": "Verso Lecce: Alajbegovic dietro Woltemade e Kolo Muani",
-      "summary": "Ipotesi 3-4-1-2 con McKennie a destra, Cambiaso a sinistra e Alajbegovic sulla trequarti. L'alternativa e Zhegrova in fascia con McKennie avanzato; Kelly puo trovare spazio in caso di rotazione difensiva. Non e la formazione ufficiale.",
-      "detail": "Ipotesi 3-4-1-2 con McKennie a destra, Cambiaso a sinistra e Alajbegovic sulla trequarti. L'alternativa e Zhegrova in fascia con McKennie avanzato; Kelly puo trovare spazio in caso di rotazione difensiva. Non e la formazione ufficiale.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/23/probabili-formazioni-serie-a-giornata-8-ultime-news",
-      "published_at": "2026-10-23T15:26:38.271Z",
       "significant": true
     },
     {

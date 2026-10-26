@@ -4,7 +4,10 @@ const MATCH_CRON = "* * * * *";
 
 export default {
   async scheduled(controller, env, ctx) {
-    const promise = runCronJob(env, jobFromCron(controller && controller.cron), controller && controller.cron);
+    const job = jobFromCron(controller && controller.cron);
+    const promise = job === "match"
+      ? runScheduledMatch(env, controller && controller.scheduledTime || Date.now())
+      : runCronJob(env, job, controller && controller.cron);
     if (ctx && typeof ctx.waitUntil === "function") ctx.waitUntil(promise);
     return promise;
   },
@@ -40,13 +43,36 @@ function jobFromCron(cron) {
   return "home";
 }
 
-async function runCronJob(env, job, cron) {
+async function runScheduledMatch(env, now) {
+  const cache = typeof caches !== "undefined" ? caches.default : null;
+  const key = new Request("https://icv-scout-cron.internal/match-poll-plan-v1");
+  if (cache) {
+    try {
+      const response = await cache.match(key);
+      const plan = response && await response.json();
+      if (Date.parse(plan?.next_check_at) > now) return { ok: true, skipped: true, reason: "match_interval_not_elapsed", ...plan };
+    } catch { /* A missing or evicted plan must trigger a fresh check. */ }
+  }
+  const result = await runCronJob(env, "match", MATCH_CRON, true);
+  const next = Date.parse(result.payload?.next_check_at);
+  if (cache && result.ok && next > now) {
+    try {
+      await cache.put(key, new Response(JSON.stringify({ next_check_at: new Date(next).toISOString() }), {
+        headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=" + Math.min(1800, Math.max(1, Math.floor((next - now) / 1000))) },
+      }));
+    } catch { /* Cache is an optimization; the API remains authoritative. */ }
+  }
+  return result;
+}
+
+async function runCronJob(env, job, cron, scheduledMatch = false) {
   const secret = env.CRON_SECRET || env.ADMIN_TOKEN;
   if (!secret) return { ok: false, error: "Configura CRON_SECRET nel Worker cron", job, cron };
 
   const origin = String(env.ICV_ORIGIN || DEFAULT_ORIGIN).replace(/\/$/, "");
   const target = new URL("/api/cron/autopilot", origin);
   target.searchParams.set("job", job);
+  if (scheduledMatch) target.searchParams.set("scheduled", "1");
 
   const response = await fetch(target.toString(), {
     method: "POST",

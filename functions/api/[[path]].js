@@ -238,10 +238,10 @@ async function cronAutopilot(request, env) {
   if (!expected || token !== expected) return json({ error: "Token cron non valido" }, 401);
 
   const job = url.searchParams.get("job") || "all";
-  return json(await runScheduledAutomations({ env, cron: "manual:" + job, scheduledTime: Date.now(), job }));
+  return json(await runScheduledAutomations({ env, cron: "manual:" + job, scheduledTime: Date.now(), job, scheduledMatch: url.searchParams.get("scheduled") === "1" }));
 }
 
-async function runScheduledAutomations({ env, cron = "", scheduledTime = Date.now(), job = "" }) {
+async function runScheduledAutomations({ env, cron = "", scheduledTime = Date.now(), job = "", scheduledMatch = false }) {
   const tasks = [];
   const normalizedJob = cleanText(job || "").toLowerCase();
   const shouldRunYoutube = youtubeScoutEnabled(env) && (normalizedJob === "all" || normalizedJob === "youtube" || cron === "15 6 * * *");
@@ -252,9 +252,9 @@ async function runScheduledAutomations({ env, cron = "", scheduledTime = Date.no
     : cron !== "15 6 * * *";
 
   if (shouldRunMatch) {
-    const matchResult = await generateMatchCenter(env);
+    const matchResult = scheduledMatch ? await generateScheduledMatchCenter(env) : await generateMatchCenter(env);
     tasks.push({ type: "match_center", result: matchResult });
-    await logRun(env, "match_center", matchResult);
+    if (!matchResult.skipped) await logRun(env, "match_center", matchResult);
   }
 
   if (shouldRunHome) {
@@ -276,8 +276,9 @@ async function runScheduledAutomations({ env, cron = "", scheduledTime = Date.no
     cron,
     scheduled_at: new Date(scheduledTime).toISOString(),
     tasks,
+    ...(shouldRunMatch && tasks[0]?.result?.next_check_at ? { next_check_at: tasks[0].result.next_check_at } : {}),
   };
-  await logRun(env, "scheduled_autopilot", result);
+  if (!tasks.every(task => task.result?.skipped)) await logRun(env, "scheduled_autopilot", result);
   return result;
 }
 
@@ -300,16 +301,30 @@ async function publicHome(env, request, context) {
     });
   }
 
+  // Cache only the public snapshot, before querying or transforming its sources.
+  const cache = request?.method === "GET" && typeof caches !== "undefined" ? caches.default : null;
+  const cacheKey = cache ? new Request(new URL("/api/cache/public-home-v2", request.url)) : null;
+  if (cacheKey) {
+    try {
+      const cached = await cache.match(cacheKey);
+      if (cached) return new Response(cached.body, { headers: { ...JSON_HEADERS, "Cache-Control": "no-store", "X-ICV-Cache": "HIT" } });
+    } catch {}
+  }
+  let readsFailed = false;
+  const read = async (operation, fallback) => {
+    try { return await operation(); }
+    catch { readsFailed = true; return fallback; }
+  };
   const [news, market, marketNews, matches, social, auto, radar, conference, highlights] = await Promise.all([
-    safeAdminRead(() => sb(env, "/news?visible=eq.true&order=created_at.desc&limit=48"), []),
-    safeAdminRead(() => sb(env, "/market_items?order=updated_at.desc&limit=12"), []),
-    safeAdminRead(() => sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=18"), []),
-    safeAdminRead(() => sb(env, "/match_reports?order=match_date.asc&limit=80"), []),
-    safeAdminRead(() => sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&post_url=not.is.null&order=published_at.desc.nullslast,created_at.desc&limit=12"), []),
-    safeAdminRead(() => latestAutomationRun(env, "home_autopilot"), null),
-    safeAdminRead(() => getSiteSetting(env, "radar_home", DEFAULT_RADAR), DEFAULT_RADAR),
-    safeAdminRead(() => publicConferences(env), null),
-    safeAdminRead(() => readHighlightsSetting(env), null),
+    read(() => sb(env, "/news?visible=eq.true&order=created_at.desc&limit=48"), []),
+    read(() => sb(env, "/market_items?order=updated_at.desc&limit=12"), []),
+    read(() => sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=18"), []),
+    read(() => sb(env, "/match_reports?order=match_date.asc&limit=80"), []),
+    read(() => sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&post_url=not.is.null&order=published_at.desc.nullslast,created_at.desc&limit=12"), []),
+    read(() => latestAutomationRun(env, "home_autopilot"), null),
+    read(() => getSiteSetting(env, "radar_home", DEFAULT_RADAR), DEFAULT_RADAR),
+    read(() => publicConferences(env), null),
+    read(() => readHighlightsSetting(env), null),
   ]);
   let allCleanNews = publicNewsRows(news);
   const orderedMatches = orderPublicMatches(matches).slice(0, 12);
@@ -348,20 +363,15 @@ async function publicHome(env, request, context) {
     radar,
     auto: { enabled: true, interval_hours: Math.max(Number(env.HOME_AUTO_INTERVAL_HOURS || 6), 1), last_run_at: auto && auto.created_at },
   };
-  const cache = typeof caches !== "undefined" ? caches.default : null;
-  const cacheKey = cache && request ? new Request(new URL("/api/cache/public-home", request.url), { method: "GET" }) : null;
   const hasContent = linkedNews.length || aggregatedMarket.length || resolvedMatches.length || payload.social.length || conference?.featured || highlights;
-  if (!hasContent && cache && cacheKey) {
-    try {
-      const cached = await cache.match(cacheKey);
-      if (cached) return new Response(await cached.text(), { headers: { ...JSON_HEADERS, "X-ICV-Data": "stale" } });
-    } catch {}
-  }
   const response = json(payload);
-  if (hasContent && cache && cacheKey) {
-    const stored = new Response(JSON.stringify(payload), { headers: { ...JSON_HEADERS, "Cache-Control": "public, max-age=604800" } });
+  response.headers.set("Cache-Control", "no-store");
+  response.headers.set("X-ICV-Cache", "MISS");
+  if (hasContent && !readsFailed && cacheKey) {
+    const stored = response.clone();
+    stored.headers.set("Cache-Control", "public, max-age=30");
     try {
-      const write = cache.put(cacheKey, stored);
+      const write = cache.put(cacheKey, stored).catch(() => {});
       if (context && typeof context.waitUntil === "function") context.waitUntil(write);
       else await write;
     } catch {}
@@ -3099,7 +3109,37 @@ function isStaleMarketDraft(draft) {
   return Date.now() - createdAt > 72 * 3600000;
 }
 
-async function generateMatchCenter(env) {
+export async function generateScheduledMatchCenter(env, now = new Date()) {
+  if (!env.FOOTBALL_DATA_KEY) return { ok: false, error: "FOOTBALL_DATA_KEY non configurata" };
+  const time = now.getTime();
+  const rows = await sb(env, "/match_reports?select=match_id,match_date,status&match_date=gte." + encodeURIComponent(new Date(time - 4 * 3600000).toISOString()) + "&order=match_date.asc&limit=30");
+  const eligible = rows.filter(row => !["postponed", "cancelled", "suspended"].includes(String(row.status).toLowerCase()));
+  const active = eligible.filter(row => /^\d+$/.test(String(row.match_id)) && Date.parse(row.match_date) >= time - 4 * 3600000 && Date.parse(row.match_date) <= time + 90 * 60000);
+  if (active.length) {
+    let changed = 0;
+    for (const row of active.slice(0, 2)) {
+      const sourceUrl = "https://api.football-data.org/v4/matches/" + row.match_id;
+      const match = await fetchJson(sourceUrl, { "X-Auth-Token": env.FOOTBALL_DATA_KEY, "X-Unfold-Lineups": "true", "X-Unfold-Bookings": "true", "X-Unfold-Subs": "true", "X-Unfold-Goals": "true" });
+      const report = matchReportFromFootballData(match, { sourceUrl });
+      if (!report) throw new Error("Il provider non ha restituito la partita richiesta");
+      if (await upsertMatchReport(env, report)) changed++;
+    }
+    const finished = active.every(row => ["finished", "awarded"].includes(String(row.status).toLowerCase()));
+    return { ok: true, mode: "match_window", matches: active.length, changed, next_check_at: new Date(time + (finished ? 300000 : 60000)).toISOString() };
+  }
+  const lastCalendar = await latestAutomationRun(env, "match_calendar");
+  let refreshed = null;
+  if (!lastCalendar || lastCalendar.status === "error" || !Number.isFinite(Date.parse(lastCalendar.created_at)) || time - Date.parse(lastCalendar.created_at) >= 6 * 3600000) {
+    refreshed = await generateMatchCenter(env, { calendarOnly: true });
+    await logRun(env, "match_calendar", refreshed);
+  }
+  const nextMatch = eligible.find(row => Date.parse(row.match_date) > time);
+  const kickoff = Math.min(Date.parse(nextMatch?.match_date) || Infinity, Date.parse(refreshed?.next_match_at) || Infinity);
+  const next = Math.max(time + 60000, Math.min(time + 30 * 60000, kickoff - 90 * 60000));
+  return { ok: refreshed?.ok !== false, skipped: !refreshed, reason: "outside_match_window", ...(refreshed ? { calendar: refreshed } : {}), next_check_at: new Date(next).toISOString() };
+}
+
+async function generateMatchCenter(env, options = {}) {
   const key = env.FOOTBALL_DATA_KEY;
   if (!key) return { ok: false, error: "FOOTBALL_DATA_KEY non configurata" };
 
@@ -3108,25 +3148,31 @@ async function generateMatchCenter(env) {
   const dateTo = isoDateOffset(now, 60);
   const headers = {
     "X-Auth-Token": key,
+    ...(!options.calendarOnly ? {
     "X-Unfold-Lineups": "true",
     "X-Unfold-Bookings": "true",
     "X-Unfold-Subs": "true",
     "X-Unfold-Goals": "true",
+    } : {}),
   };
   const sourceUrl = "https://api.football-data.org/v4/teams/109/matches?dateFrom=" + dateFrom + "&dateTo=" + dateTo + "&limit=30";
   const data = await fetchJson(sourceUrl, headers);
-  const reports = (data.matches || []).map(match => matchReportFromFootballData(match, { sourceUrl })).filter(Boolean);
-  if (!reports.length) {
+  if (!Array.isArray(data.matches)) return { ok: false, error: "Risposta calendario del provider non valida" };
+  const reports = (data.matches || []).map(match => matchReportFromFootballData(match, { sourceUrl })).filter(Boolean)
+    .filter(report => !options.calendarOnly || report.status === "pre_match" && Date.parse(report.match_date) > now.getTime());
+  if (!reports.length && !options.calendarOnly) {
     return { ok: false, error: "Il provider non ha restituito partite Juventus nel periodo controllato", date_from: dateFrom, date_to: dateTo };
   }
-  await Promise.all(reports.map(report => upsertMatchReport(env, report)));
+  const writes = await Promise.all(reports.map(report => upsertMatchReport(env, report, options)));
   const live = reports.filter(report => ["live", "in_play", "paused", "halftime"].includes(report.status));
   const finished = reports.filter(report => report.status === "finished");
   const scheduled = reports.filter(report => report.status === "pre_match").sort((a, b) => new Date(a.match_date) - new Date(b.match_date));
   return {
     ok: true,
     matches: reports.length,
+    changed: writes.filter(Boolean).length,
     next_match: scheduled[0] ? scheduled[0].title : null,
+    next_match_at: scheduled[0]?.match_date || null,
     final_results: finished.length,
     live_matches: live.length,
     checked_at: new Date().toISOString(),
@@ -3215,18 +3261,37 @@ function matchReportFromFootballData(match, options = {}) {
   };
 }
 
-async function upsertMatchReport(env, report) {
-  const existing = await sb(env, "/match_reports?match_id=eq." + encodeURIComponent(report.match_id) + "&select=id,source_payload&limit=1");
+export async function upsertMatchReport(env, report, options = {}) {
+  const existing = await sb(env, "/match_reports?match_id=eq." + encodeURIComponent(report.match_id) + "&select=id,source_payload,opponent,competition,match_date,status,title,summary,tactical_key&limit=1");
   if (existing.length) {
     const previousPayload = matchSourcePayload(existing[0].source_payload);
+    if (options.calendarOnly) {
+      report = { ...report, source_payload: { ...previousPayload, ...report.source_payload, goals: previousPayload.goals || report.source_payload.goals } };
+    }
     const manual = previousPayload.icv_manual;
     const nextReport = manual && manual.active !== false
       ? { ...report, source_payload: { ...report.source_payload, icv_manual: manual }, ...manualMatchReportFields(report, manual) }
       : report;
+    if (matchReportSnapshot(existing[0]) === matchReportSnapshot(nextReport)) return false;
     await sb(env, "/match_reports?id=eq." + existing[0].id, { method: "PATCH", body: nextReport });
-    return;
+    return true;
   }
   await sb(env, "/match_reports", { method: "POST", body: [report] });
+  return true;
+}
+
+function matchReportSnapshot(report) {
+  const payload = matchSourcePayload(report.source_payload);
+  const { fetched_at, ...meta } = payload.icv_meta || {};
+  const snapshot = {
+    opponent: report.opponent, competition: report.competition, match_date: report.match_date,
+    status: report.status, title: report.title, summary: report.summary, tactical_key: report.tactical_key,
+    source_payload: { ...payload, icv_meta: meta },
+  };
+  // PostgreSQL JSONB can return object keys in a different order than the provider.
+  const canonical = value => Array.isArray(value) ? value.map(canonical)
+    : value && typeof value === "object" ? Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
+  return JSON.stringify(canonical(snapshot));
 }
 
 function matchSourcePayload(value) {

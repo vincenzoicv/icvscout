@@ -183,7 +183,7 @@ export async function onRequest(context) {
     if (path === "world-cup/overview") return worldCupOverview(request, env, context);
     if (path === "world-cup/live") return worldCupLive(request, env);
     if (path === "world-cup/calendar.ics") return worldCupCalendar(request, env);
-    if (path === "juventus/calendar.ics") return juventusCalendar(request, env);
+    if (path === "juventus/calendar.ics") return juventusCalendar(request, env, context);
     if (path === "subscribe") return subscribeWorldCup(request, env);
     if (path === "quiz-result") return sendQuizResult(request, env);
   if (path === "privacy/receipt") return privacyReceipt(request, receipt => sb(env, "/privacy_receipts?on_conflict=id", {
@@ -3937,16 +3937,32 @@ function nextCalendarDate(date) {
   return value.toISOString().slice(0, 10);
 }
 
-async function juventusCalendar(request, env) {
+async function juventusCalendar(request, env, context) {
   if (request.method !== "GET") return json({ error: "Metodo non consentito" }, 405);
 
+  const cache = typeof caches !== "undefined" ? caches.default : null;
+  const key = new Request(new URL("/api/cache/juventus-calendar-2026-27-v1", request.url));
+  if (cache) {
+    try {
+      const cached = await cache.match(key);
+      if (cached) {
+        const response = new Response(cached.body, cached);
+        response.headers.set("X-ICV-Cache", "HIT");
+        return response;
+      }
+    } catch {}
+  }
+
   let providerMatches = [];
+  let providerAvailable = true;
   if (env.FOOTBALL_DATA_KEY) {
     try {
       const headers = { "X-Auth-Token": env.FOOTBALL_DATA_KEY };
       const data = await fetchJson("https://api.football-data.org/v4/teams/109/matches?season=2026", headers);
       providerMatches = Array.isArray(data.matches) ? data.matches : [];
+      providerAvailable = Array.isArray(data.matches);
     } catch (error) {
+      providerAvailable = false;
       console.warn("Calendario Juventus: aggiornamento esterno non disponibile", error);
     }
   }
@@ -4029,14 +4045,23 @@ async function juventusCalendar(request, env) {
 
   lines.push("END:VCALENDAR");
   const calendar = lines.map(foldIcsLine).join("\r\n") + "\r\n";
-  return new Response(calendar, {
+  const response = new Response(calendar, {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'attachment; filename="ICV-Juventus-2026-27.ics"',
       "Cache-Control": "public, max-age=900, stale-while-revalidate=3600",
+      "X-ICV-Cache": "MISS",
       "Access-Control-Allow-Origin": "*",
     },
   });
+  if (cache && providerAvailable) {
+    try {
+      const write = cache.put(key, response.clone()).catch(() => {});
+      if (context && typeof context.waitUntil === "function") context.waitUntil(write);
+      else await write;
+    } catch {}
+  }
+  return response;
 }
 
 async function subscribeWorldCup(request, env) {
@@ -4306,13 +4331,13 @@ function escapeIcsText(value) {
     .replace(/,/g, "\\,");
 }
 
-function foldIcsLine(line) {
-  const encoder = new TextEncoder();
+export function foldIcsLine(line) {
   const parts = [];
   let current = "";
   let bytes = 0;
   for (const char of String(line)) {
-    const size = encoder.encode(char).length;
+    const point = char.codePointAt(0);
+    const size = point < 0x80 ? 1 : point < 0x800 ? 2 : point < 0x10000 ? 3 : 4;
     if (current && bytes + size > 73) {
       parts.push(current);
       current = " " + char;

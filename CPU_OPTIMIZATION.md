@@ -20,6 +20,11 @@ caches that plan and avoids calling Pages until the next check is due.
 - Cache expiry, eviction or failure triggers a fresh authoritative check. Failed
   API calls do not populate the scheduler cache and are retried at the next tick.
 
+The Apple/Google calendar feed also uses a 15-minute shared cache, matching its
+existing browser freshness period. Provider failures do not populate that cache.
+UTF-8 calendar line folding counts code-point bytes directly instead of allocating
+an encoded buffer for every character; event IDs, dates and content are preserved.
+
 CPU limits remain per invocation. Verify production `exceededCpu` outcomes and
 request CPU after deploying; local test durations are not Cloudflare CPU metrics.
 The calendar and home cache misses still execute real upstream reads, so a short

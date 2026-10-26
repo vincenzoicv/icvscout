@@ -4,6 +4,8 @@ The public home response is cached for 30 seconds before upstream reads or data
 transformations. The shared key ignores tracking parameters. Failed source reads
 are not cached; a cache outage falls back to the normal public read. Browsers
 receive `Cache-Control: no-store` and `X-ICV-Cache: HIT` or `MISS`.
+Home cache misses select only match data needed by the home UI and the automation
+timestamp, avoiding parsing full season payloads and automation history reports.
 
 The cron trigger still wakes every minute so it can follow matches accurately.
 For scheduled match jobs, the Pages API returns `next_check_at`; the cron Worker

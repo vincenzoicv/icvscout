@@ -26,7 +26,7 @@ test('the public calendar cache avoids provider calls and preserves all events a
   let stored, reads = 0;
   Object.defineProperty(globalThis, 'caches', { configurable: true, value: { default: {
     async match() { return stored?.clone(); },
-    async put(key, response) { stored = response; },
+    async put(key, response) { assert.equal(response.headers.get('Cache-Control'), 'public, max-age=900'); stored = response; },
   } } });
   t.after(() => previous ? Object.defineProperty(globalThis, 'caches', previous) : delete globalThis.caches);
   t.mock.method(globalThis, 'fetch', async () => { reads++; return Response.json({ matches: [] }); });

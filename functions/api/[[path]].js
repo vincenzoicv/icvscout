@@ -319,9 +319,9 @@ async function publicHome(env, request, context) {
     read(() => sb(env, "/news?visible=eq.true&order=created_at.desc&limit=48"), []),
     read(() => sb(env, "/market_items?order=updated_at.desc&limit=12"), []),
     read(() => sb(env, "/news?visible=eq.true&category=eq.calciomercato&order=created_at.desc&limit=18"), []),
-    read(() => sb(env, "/match_reports?order=match_date.asc&limit=80"), []),
+    read(() => readHomeMatchReports(env), []),
     read(() => sb(env, "/social_drafts?platform=eq.instagram&visible=eq.true&post_url=not.is.null&order=published_at.desc.nullslast,created_at.desc&limit=12"), []),
-    read(() => latestAutomationRun(env, "home_autopilot"), null),
+    read(async () => (await sb(env, "/automation_runs?type=eq.home_autopilot&select=created_at&order=created_at.desc&limit=1"))[0] || null, null),
     read(() => getSiteSetting(env, "radar_home", DEFAULT_RADAR), DEFAULT_RADAR),
     read(() => publicConferences(env), null),
     read(() => readHighlightsSetting(env), null),
@@ -377,6 +377,21 @@ async function publicHome(env, request, context) {
     } catch {}
   }
   return response;
+}
+
+async function readHomeMatchReports(env) {
+  const fields = ["id", "match_id", "opponent", "competition", "match_date", "status", "title", "summary", "tactical_key", "created_at", "updated_at"];
+  const payloadFields = ["id", "score", "goals", "bookings", "minute", "venue", "matchday", "competition", "icv_manual", "icv_meta"];
+  const selection = [...fields, ...payloadFields.map(key => "payload_" + key + ":source_payload->" + key),
+    ...["homeTeam", "awayTeam"].flatMap(team => ["name", "formation", "lineup"].map(key => team + "_" + key + ":source_payload->" + team + "->" + key))];
+  const rows = await sb(env, "/match_reports?order=match_date.asc&limit=80&select=" + encodeURIComponent(selection.join(",")));
+  return rows.map(row => {
+    if (row.source_payload) return row;
+    const report = Object.fromEntries(fields.map(key => [key, row[key]]));
+    const payload = Object.fromEntries(payloadFields.map(key => [key, row["payload_" + key]]));
+    for (const team of ["homeTeam", "awayTeam"]) payload[team] = Object.fromEntries(["name", "formation", "lineup"].map(key => [key, row[team + "_" + key]]));
+    return { ...report, source_payload: payload };
+  });
 }
 
 async function emergencyPublicHome(env, requested) {
@@ -3948,6 +3963,7 @@ async function juventusCalendar(request, env, context) {
       if (cached) {
         const response = new Response(cached.body, cached);
         response.headers.set("X-ICV-Cache", "HIT");
+        response.headers.set("Cache-Control", "public, max-age=900, stale-while-revalidate=3600");
         return response;
       }
     } catch {}
@@ -4051,12 +4067,15 @@ async function juventusCalendar(request, env, context) {
       "Content-Disposition": 'attachment; filename="ICV-Juventus-2026-27.ics"',
       "Cache-Control": "public, max-age=900, stale-while-revalidate=3600",
       "X-ICV-Cache": "MISS",
+      "X-ICV-Data": providerAvailable ? "live" : "fallback",
       "Access-Control-Allow-Origin": "*",
     },
   });
   if (cache && providerAvailable) {
     try {
-      const write = cache.put(key, response.clone()).catch(() => {});
+      const stored = response.clone();
+      stored.headers.set("Cache-Control", "public, max-age=900");
+      const write = cache.put(key, stored).catch(() => {});
       if (context && typeof context.waitUntil === "function") context.waitUntil(write);
       else await write;
     } catch {}

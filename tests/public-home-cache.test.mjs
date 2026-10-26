@@ -86,3 +86,24 @@ test('non-GET home requests never use the shared cache', async t => {
   assert.equal((await state.home('', 'POST')).headers.get('X-ICV-Cache'), 'MISS');
   assert.ok(state.requests() > initialRequests);
 });
+
+test('home reads a compact match projection while preserving lineup, score and editorial corrections', async t => {
+  const payload = { id: 99, score: { fullTime: { home: 2, away: 0 } }, goals: [{ scorer: { name: 'Scorer' } }], bookings: [], minute: 90, venue: 'Stadium', matchday: 8, competition: { code: 'SA' }, icv_manual: { active: true, status: 'finished', scorers: "Scorer 90'" }, icv_meta: { provider: 'Official' } };
+  let selection;
+  t.mock.method(globalThis, 'fetch', async input => {
+    const url = new URL(typeof input === 'string' ? input : input.url);
+    if (url.pathname.endsWith('/match_reports')) {
+      selection = url.searchParams.get('select');
+      return Response.json([{ id: 7, match_id: '99', match_date: new Date().toISOString(), status: 'finished', ...Object.fromEntries(Object.entries(payload).map(([key, value]) => ['payload_' + key, value])), homeTeam_name: 'Juventus', homeTeam_formation: '3-4-1-2', homeTeam_lineup: [{ name: 'Player' }], awayTeam_name: 'Opponent', awayTeam_formation: '4-3-3', awayTeam_lineup: [] }]);
+    }
+    if (url.pathname.endsWith('/news')) return Response.json([{ title: 'Notizia', created_at: new Date().toISOString() }]);
+    return Response.json([]);
+  });
+  const response = await onRequest({ request: new Request('https://example.test/api/public/home'), env });
+  const data = await response.json();
+  assert.match(selection, /payload_score:source_payload->score/);
+  assert.doesNotMatch(selection, /(?:^|,)source_payload(?:,|$)/);
+  assert.deepEqual(data.matches[0].source_payload.icv_manual, payload.icv_manual);
+  assert.deepEqual(data.matches[0].source_payload.score, payload.score);
+  assert.deepEqual(data.matches[0].source_payload.homeTeam.lineup, [{ name: 'Player' }]);
+});

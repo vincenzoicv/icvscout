@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-26T19:45:18Z",
+  "updated_at": "2026-10-27T16:21:21Z",
   "match": {
     "home": "Genoa",
     "away": "Juventus",
@@ -9,10 +9,10 @@
   },
   "formation": {
     "status": "Probabile",
-    "module": "3-4-1-2",
+    "module": "3-5-1-1",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/probabili-formazioni",
-    "updated_at": "2026-10-26T18:44:00Z",
+    "updated_at": "2026-10-27T16:09:00Z",
     "players": [
       {
         "name": "Vicario",
@@ -40,13 +40,18 @@
         "z": 0.8
       },
       {
-        "name": "Douglas Luiz",
-        "x": 1.5,
+        "name": "McKennie",
+        "x": 2.2,
         "z": 0.8
       },
       {
-        "name": "Sarr",
-        "x": -1.5,
+        "name": "Douglas Luiz",
+        "x": 0,
+        "z": 0.8
+      },
+      {
+        "name": "Koopmeiners",
+        "x": -2.2,
         "z": 0.8
       },
       {
@@ -55,18 +60,13 @@
         "z": 0.8
       },
       {
-        "name": "McKennie",
+        "name": "Alajbegovic",
         "x": 0,
         "z": -2.8
       },
       {
         "name": "Woltemade",
-        "x": -2,
-        "z": -5.7
-      },
-      {
-        "name": "Kolo Muani",
-        "x": 2,
+        "x": 0,
         "z": -5.7
       }
     ],
@@ -86,6 +86,26 @@
     ]
   },
   "updates": [
+    {
+      "category": "Probabile formazione",
+      "title": "Verso Genoa: ipotesi Alajbegovic dietro Woltemade",
+      "summary": "Ipotesi 3-5-1-1 con Alajbegovic alle spalle di Woltemade e Koopmeiners in mezzo. Kolo Muani e Sarr tra le riserve indicate. Formazione non ufficiale.",
+      "detail": "Ipotesi 3-5-1-1: Vicario; Gatti, Bremer, Lucumi; Kalulu, McKennie, Douglas Luiz, Koopmeiners, Cambiaso; Alajbegovic; Woltemade. Kolo Muani e Sarr tra le riserve indicate. Formazione non ufficiale.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/probabili-formazioni",
+      "published_at": "2026-10-27T16:09:00Z",
+      "significant": true
+    },
+    {
+      "category": "Conferenza stampa",
+      "title": "Spalletti conferma il recupero di Sarr",
+      "summary": "Nella conferenza del 27 ottobre il tecnico ha confermato Sarr a disposizione e spiegato la possibilita di alternare gli assetti tattici, anche con un esterno vicino alla punta.",
+      "detail": "Sarr e recuperato. Il tecnico valuta diverse soluzioni nel mezzo spazio e la possibilita di passare al 3-4-2-1 durante la gara, tenendo conto anche dell'impegno successivo contro il Napoli. Nessuna formazione titolare annunciata.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/genoa-juventus-le-parole-di-luciano-spalletti-alla-vigilia",
+      "published_at": "2026-10-27T15:57:40.937Z",
+      "significant": true
+    },
     {
       "category": "Probabile formazione",
       "title": "Verso Genoa: Sarr in mezzo, McKennie dietro le due punte",

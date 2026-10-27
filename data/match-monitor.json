@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-27T16:21:21Z",
+  "updated_at": "2026-10-27T20:43:54Z",
   "match": {
     "home": "Genoa",
     "away": "Juventus",
@@ -11,8 +11,8 @@
     "status": "Probabile",
     "module": "3-5-1-1",
     "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/probabili-formazioni",
-    "updated_at": "2026-10-27T16:09:00Z",
+    "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/27/genoa-juventus-probabili-formazioni-9-giornata",
+    "updated_at": "2026-10-27T16:20:00Z",
     "players": [
       {
         "name": "Vicario",
@@ -76,6 +76,10 @@
         "text": "Formazione probabile, non ufficiale."
       },
       {
+        "label": "Ballottaggio",
+        "text": "Alajbegovic-Kolo Muani alle spalle di Woltemade; Alajbegovic nell'undici probabile."
+      },
+      {
         "label": "Squalificati",
         "text": "Nessuno."
       },
@@ -89,11 +93,11 @@
     {
       "category": "Probabile formazione",
       "title": "Verso Genoa: ipotesi Alajbegovic dietro Woltemade",
-      "summary": "Ipotesi 3-5-1-1 con Alajbegovic alle spalle di Woltemade e Koopmeiners in mezzo. Kolo Muani e Sarr tra le riserve indicate. Formazione non ufficiale.",
-      "detail": "Ipotesi 3-5-1-1: Vicario; Gatti, Bremer, Lucumi; Kalulu, McKennie, Douglas Luiz, Koopmeiners, Cambiaso; Alajbegovic; Woltemade. Kolo Muani e Sarr tra le riserve indicate. Formazione non ufficiale.",
+      "summary": "Ipotesi 3-5-1-1 con Alajbegovic alle spalle di Woltemade e Koopmeiners in mezzo. Alajbegovic e in ballottaggio con Kolo Muani. Formazione non ufficiale.",
+      "detail": "Ipotesi 3-5-1-1: Vicario; Gatti, Bremer, Lucumi; Kalulu, McKennie, Douglas Luiz, Koopmeiners, Cambiaso; Alajbegovic; Woltemade. Ballottaggio Alajbegovic-Kolo Muani alle spalle di Woltemade. Formazione non ufficiale.",
       "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/probabili-formazioni",
-      "published_at": "2026-10-27T16:09:00Z",
+      "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/27/genoa-juventus-probabili-formazioni-9-giornata",
+      "published_at": "2026-10-27T16:20:00Z",
       "significant": true
     },
     {

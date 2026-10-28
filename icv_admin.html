@@ -43,7 +43,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
 @media(max-width:900px){.grid,.row,.stats,.status-grid{grid-template-columns:1fr}.actions{width:100%}.actions button{flex:1}.title h1{font-size:36px}}
 @media(max-width:900px){.analytics-kpis,.analytics-grid,.monitor-grid{grid-template-columns:1fr 1fr}.reliability-guide{grid-template-columns:repeat(3,1fr)}}@media(max-width:620px){.graphic-admin-card,.analytics-kpis,.analytics-grid,.monitor-grid,.monitor-kpis,.filter-toolbar,.reliability-guide{grid-template-columns:1fr}.graphic-thumb{width:100%;max-height:360px}.monitor-history-row{grid-template-columns:1fr auto}.monitor-history-row time{grid-column:1/-1;text-align:left}}
 </style>
-<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261022-2">
+<link rel="stylesheet" href="/assets/admin-workspace.css?v=20261028-1">
 </head>
 <body>
 <header>
@@ -174,6 +174,7 @@ main{max-width:1180px;margin:0 auto;padding:26px 18px 70px;position:relative}.lo
           <div class="draft-results"><p id="draftResults" role="status" aria-live="polite"></p><button class="ghost small" id="draftResetFilters" type="button" onclick="resetDraftFilters()" hidden>Azzera filtri</button></div>
           <div id="draftList"></div>
           <p id="draftReviewFeedback" class="editorial-feedback" role="status" aria-live="polite" hidden></p>
+          <nav class="news-pagination draft-pagination" id="draftPagination" aria-label="Pagine bozze" hidden><button class="ghost small" id="draftPrevious" type="button" onclick="changeDraftPage(-1)" aria-label="Bozze precedenti" title="Bozze precedenti"><i data-lucide="arrow-left" aria-hidden="true"></i></button><span id="draftPageLabel"></span><button class="ghost small" id="draftNext" type="button" onclick="changeDraftPage(1)" aria-label="Bozze successive" title="Bozze successive"><i data-lucide="arrow-right" aria-hidden="true"></i></button></nav>
           <div id="fetchResults" style="margin-top:16px"></div>
         </div>
 
@@ -934,18 +935,32 @@ function renderAutomationMonitor(){
   var rows=(monitor.recent_runs||[]).filter(function(run){var outcome=run.outcome||(run.status==="error"?"error":run.warning_count?"warning":["ok","success"].includes(run.status)?"completed":"unknown");return(jobFilter==="all"||run.type===jobFilter)&&(outcomeFilter==="all"||(outcomeFilter==="problems"?["error","warning"].includes(outcome):outcome===outcomeFilter))});
   history.innerHTML=rows.map(function(run){var outcome=run.outcome||(run.status==="error"?"error":run.warning_count?"warning":["ok","success"].includes(run.status)?"completed":"unknown"),status={completed:"healthy",warning:"degraded",error:"error",skipped:"idle",unknown:"idle"}[outcome]||"idle",label={completed:"Completata",warning:"Con avvisi",error:"Errore",skipped:"Non eseguita",unknown:"Da verificare"}[outcome]||"Da verificare",reason=run.reason==="interval_not_elapsed"?"Intervallo minimo non ancora trascorso":run.reason==="disabled"?"Processo disattivato":run.reason;var details=(run.problems||[]).map(function(problem){return"<p>"+esc(problem)+"</p>"}).join("");return"<div class='monitor-history-row'><strong>"+esc(String(run.type||"").replaceAll("_"," "))+"</strong><span class='health-badge "+status+"'>"+esc(label)+"</span><time>"+esc(monitorDate(run.created_at))+"</time>"+(reason||details?"<div class='monitor-run-detail'>"+(reason?"<p>"+esc(reason)+"</p>":"")+details+"</div>":"")+"</div>"}).join("")||"<div class='empty'>Nessuna esecuzione corrisponde ai filtri.</div>";
 }
+var draftPage=0,draftPageFilterKey="";
+function changeDraftPage(direction){
+  draftPage+=direction;renderDrafts();
+  var heading=document.querySelector('[data-panel="drafts"] h2');heading.setAttribute("tabindex","-1");heading.focus();
+}
 function renderDrafts(){
   var list = document.getElementById("draftList");
   var drafts = visibleDrafts().filter(function(d){ return d.review_status !== "approved" && d.review_status !== "discarded"; });
   var total=drafts.length,unavailable=sectionUnavailable("drafts");
   var filters=state.filters||{};
+  var filterKey=JSON.stringify([filters.draftReliability,filters.draftStatus,filters.draftQuery]);
+  if(filterKey!==draftPageFilterKey){draftPage=0;draftPageFilterKey=filterKey;}
   if(filters.draftReliability!=="all")drafts=drafts.filter(function(d){return d.reliability===filters.draftReliability});
   if(filters.draftStatus!=="all")drafts=drafts.filter(function(d){return filters.draftStatus==="pending"?d.review_status!=="ready":d.review_status===filters.draftStatus});
   if(filters.draftQuery)drafts=drafts.filter(function(d){return[d.title,d.body,d.source_name].join(" ").toLowerCase().includes(filters.draftQuery)});
-  document.getElementById("draftResults").textContent=unavailable?"Elenco non aggiornato: conteggio da verificare.":drafts.length+" di "+total+" bozze in attesa";
+  var pages=Math.max(1,Math.ceil(drafts.length/20));
+  draftPage=Math.max(0,Math.min(draftPage,pages-1));
+  var start=draftPage*20,shown=drafts.slice(start,start+20);
+  document.getElementById("draftResults").textContent=unavailable?"Elenco non aggiornato: conteggio da verificare.":drafts.length+" di "+total+" bozze in attesa"+(pages>1?" · Mostrate "+(start+1)+"-"+(start+shown.length):"");
+  document.getElementById("draftPagination").hidden=pages<=1;
+  document.getElementById("draftPrevious").disabled=draftPage===0;
+  document.getElementById("draftNext").disabled=draftPage===pages-1;
+  document.getElementById("draftPageLabel").textContent="Pagina "+(draftPage+1)+" di "+pages;
   document.getElementById("draftResetFilters").hidden=filters.draftReliability==="all"&&filters.draftStatus==="all"&&!filters.draftQuery;
   if(!drafts.length){ list.innerHTML = "<div class='empty'>"+(sectionUnavailable("drafts")?"Bozze non disponibili. Riprova ad aggiornare.":"Nessuna bozza in questa vista.")+"</div>"; return; }
-  list.innerHTML = drafts.map(function(d){
+  list.innerHTML = shown.map(function(d){
     return "<div class='item' data-draft-id='"+Number(d.id)+"'><div class='item-head'><div>"+reliabilityBadge(d.reliability)+"<span class='pill blacklist'>"+esc(d.review_status||"pending")+"</span><h3>"+esc(d.title)+"</h3></div><div class='meta'>"+date(d.created_at)+"</div></div><p>"+esc(d.body)+"</p><div class='meta'>"+esc(d.source_name || "")+(d.source_url?" · <a href='"+escAttr(d.source_url)+"' target='_blank' style='color:var(--gold-l)'>fonte</a>":"")+"</div><div class='item-actions' style='margin-top:10px'><button class='primary small' onclick='approveDraft("+d.id+")'"+(pendingDraftReviews.has(String(d.id))?" disabled":"")+">Approva</button><button class='danger small' onclick='discardDraft("+d.id+")'"+(pendingDraftReviews.has(String(d.id))?" disabled":"")+">Scarta</button></div></div>";
   }).join("");
   list.querySelectorAll("[data-draft-id]").forEach(function(row){
@@ -1531,6 +1546,7 @@ function hoursSince(value){
 function labelRel(value){ return {official:"Fonte ufficiale",trusted:"Fonte affidabile",rumor:"Voce",aggregator:"Aggregatore",blacklist:"Ignorata"}[value] || value || "Fonte affidabile"; }
 function showToast(msg){ var t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); setTimeout(function(){t.classList.remove("show")},2600); }
 document.getElementById("tokenInput").addEventListener("keydown", function(e){ if(e.key==="Enter") login(); });
+document.addEventListener("DOMContentLoaded",function(){window.lucide?.createIcons();});
 document.querySelectorAll("#adminNav button").forEach(function(el){el.setAttribute("aria-pressed",String(el.getAttribute("data-tab") === state.adminTab));});
 var graphicFileInput = document.getElementById("graphicFile");
 if(graphicFileInput) graphicFileInput.addEventListener("change", previewGraphicFile);

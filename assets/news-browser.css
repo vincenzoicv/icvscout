@@ -7,4 +7,13 @@
 .news-scope{margin:0 0 28px;color:var(--muted);font-size:13px}
 .news-scope a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
 .news-item-meta span{overflow-wrap:anywhere}
+.news-pagination[hidden]{display:none}
+.news-pagination{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center;gap:16px;border-bottom:1px solid var(--line);padding:24px 0;margin-top:8px}
+.news-pagination span{text-align:center;color:var(--muted);font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}
+.news-pagination button{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer}
+.news-pagination button svg{width:18px;height:18px}
+.news-pagination button:disabled{opacity:.35;cursor:default}
+.news-pagination button:focus-visible,.news-item h2:focus{outline:2px solid var(--gold);outline-offset:4px}
+.news-item h2{scroll-margin-top:140px}
+@media(hover:hover){.news-pagination button:not(:disabled):hover{border-color:var(--gold);color:var(--gold)}}
 @media(max-width:600px){.news-refine{gap:12px}.news-refine label{min-width:0;flex-basis:100%}}

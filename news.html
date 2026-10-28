@@ -13,9 +13,9 @@
   <link rel="stylesheet" href="/assets/news-editorial.css?v=20261003-2">
   <script defer src="/assets/lucide.min.js"></script>
   <script defer src="/assets/section-pages.js?v=20261004-2"></script>
-  <link rel="stylesheet" href="/assets/news-browser.css?v=20261004-1">
+  <link rel="stylesheet" href="/assets/news-browser.css?v=20261028-1">
   <script defer src="/assets/privacy-controls.js?v=20261013-3"></script>
-  <script defer src="/assets/news-page.js?v=20261004-1"></script>
+  <script defer src="/assets/news-page.js?v=20261028-1"></script>
 </head>
 <body class="news-page">
   <a class="skip-link" href="#main-content">Vai al contenuto principale</a>
@@ -37,6 +37,11 @@
     <p class="news-status" id="newsStatus" role="status" aria-live="polite">Caricamento notizie…</p>
     <button class="news-retry" id="newsRetry" type="button" hidden>Riprova</button>
     <div class="news-list" id="newsList" aria-busy="true"></div>
+    <nav class="news-pagination" id="newsPagination" aria-label="Pagine notizie" hidden>
+      <button id="newsPrevious" type="button" aria-label="Notizie precedenti" title="Notizie precedenti"><i data-lucide="arrow-left" aria-hidden="true"></i></button>
+      <span id="newsPageLabel" role="status" aria-live="polite"></span>
+      <button id="newsNext" type="button" aria-label="Notizie successive" title="Notizie successive"><i data-lucide="arrow-right" aria-hidden="true"></i></button>
+    </nav>
   </main>
   <footer class="page-footer"><span>© 2026 Il Calcio di Vince · ICV Scout</span><a href="/privacy">Privacy</a><a href="/cookie-policy">Cookie</a><a href="/">Home</a></footer>
 </body>

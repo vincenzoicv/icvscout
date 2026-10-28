@@ -41,6 +41,36 @@ test('published news paging reaches all loaded rows and resets on filter changes
   await page.screenshot({path:'/tmp/icv-news-pagination-320.png',fullPage:true});
 });
 
+test('draft paging reaches all rows, resets filters and clamps after reviews',async({page})=>{
+  await workspace(page);
+  await page.evaluate(()=>{
+    state.drafts=Array.from({length:45},(_,i)=>({id:i+1,title:'Bozza '+(i+1),body:'Testo',review_status:i%2?'ready':'pending',reliability:'trusted'}));
+    renderDrafts();
+  });
+  await expect(page.locator('#draftList .item')).toHaveCount(20);
+  await expect(page.locator('#draftPrevious')).toBeDisabled();
+  await page.locator('#draftNext').click();
+  await expect(page.getByRole('heading',{name:'Bozze Automatiche',exact:true})).toBeFocused();
+  await expect(page.locator('#draftResults')).toContainText('21-40');
+  await page.locator('#draftNext').click();
+  await expect(page.locator('#draftList .item')).toHaveCount(5);
+  await expect(page.locator('#draftList')).toContainText('Bozza 45');
+  await expect(page.locator('#draftNext')).toBeDisabled();
+  await page.evaluate(()=>{state.drafts=state.drafts.slice(0,40);renderDrafts();});
+  await expect(page.locator('#draftPageLabel')).toHaveText('Pagina 2 di 2');
+  await page.getByLabel('Filtra bozze per stato').selectOption('ready');
+  await expect(page.locator('#draftPageLabel')).toHaveText('Pagina 1 di 1');
+  await expect(page.locator('#draftPagination')).toBeHidden();
+  await page.locator('#draftResetFilters').click();
+  await expect(page.locator('#draftPageLabel')).toHaveText('Pagina 1 di 2');
+  for(const width of [320,1440]){
+    await page.setViewportSize({width,height:900});
+    await page.locator('#draftPagination').scrollIntoViewIfNeeded();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.screenshot({path:'/tmp/icv-draft-paging-'+width+'.png'});
+  }
+});
+
 test('published news changes prevent repeated requests and disable stale actions',async({page})=>{
   await workspace(page);
   const result=await page.evaluate(async()=>{

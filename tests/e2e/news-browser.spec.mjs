@@ -11,7 +11,7 @@ test.beforeEach(async({page})=>{
   await page.route('**/api/public/news?*',route=>route.fulfill({json:news}));
 });
 test('source, period and category combine and survive reload; reset restores results',async({page})=>{
-  await page.goto('/news.html');
+  await page.goto('/news.html',{waitUntil:'domcontentloaded'});
   await expect(page.locator('.news-item')).toHaveCount(4);
   await page.locator('#newsSource').selectOption('Sky Sport');
   await page.locator('#newsPeriod').selectOption('week');
@@ -19,7 +19,7 @@ test('source, period and category combine and survive reload; reset restores res
   await expect(page.locator('.news-item')).toHaveCount(1);
   await expect(page).toHaveURL(/categoria=calciomercato/);
   await expect(page).toHaveURL(/periodo=week/);
-  await page.reload();
+  await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('.news-item')).toHaveCount(1);
   await expect(page.locator('#newsSource')).toHaveValue('Sky Sport');
   await expect(page.locator('.news-item-actions').first()).toContainText('nuova scheda');
@@ -31,7 +31,7 @@ test('source, period and category combine and survive reload; reset restores res
 });
 test('shared query and keyboard retry have usable focus and no leaked HTML',async({page})=>{
   await page.route('**/api/public/news?*',route=>route.fulfill({status:503,body:'<!doctype html> failure'}));
-  await page.goto('/news.html?q=campo');
+  await page.goto('/news.html?q=campo',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#newsRetry')).toBeVisible();
   await expect(page.locator('#newsStatus')).not.toContainText('doctype');
   await page.route('**/api/public/news?*',route=>route.fulfill({json:news}));
@@ -43,7 +43,7 @@ test('shared query and keyboard retry have usable focus and no leaked HTML',asyn
   await expect(page.locator('#newsStatus')).toContainText('Nessuna notizia');
 });
 test('phone, tablet, desktop and light theme fit without clipped controls',async({page})=>{
-  await page.goto('/news.html');
+  await page.goto('/news.html',{waitUntil:'domcontentloaded'});
   await expect(page.locator('.news-item')).toHaveCount(4);
   for(const width of [320,820,1440]){
     await page.setViewportSize({width,height:1000});
@@ -55,4 +55,41 @@ test('phone, tablet, desktop and light theme fit without clipped controls',async
   await expect(page.locator('.news-item h2 a').first()).toHaveCSS('color','rgb(23, 23, 23)');
   await expect(page.locator('.news-item-actions a').first()).toHaveCSS('color','rgb(129, 96, 12)');
   await page.screenshot({path:'/tmp/icv-news-light.png'});
+});
+
+test('news pagination reaches every article and shared pages survive reload',async({page})=>{
+  // Consent behavior is covered separately; isolate pagination from the external CMP.
+  await page.route('**/assets/privacy-controls.js?*',route=>route.fulfill({contentType:'text/javascript',body:''}));
+  const rows=Array.from({length:26},(_,i)=>({...news[0],id:i+1,title:'Notizia '+(i+1),category:i<12?'juventus':'tattica'}));
+  await page.route('**/api/public/news?*',route=>route.fulfill({json:rows}));
+  await page.goto('/news.html',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('.news-item')).toHaveCount(10);
+  await expect(page.locator('#newsCount')).toHaveText('26 notizie');
+  await expect(page.locator('#newsPrevious')).toBeDisabled();
+  await page.locator('#newsNext').click();
+  await expect(page.locator('.news-item h2').first()).toBeFocused();
+  await expect(page.locator('.news-lead')).toHaveCount(0);
+  await expect(page).toHaveURL(/pagina=2/);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect(page.locator('#newsPageLabel')).toContainText('11-20 di 26');
+  await page.locator('#newsNext').click();
+  await expect(page.locator('.news-item')).toHaveCount(6);
+  await expect(page.locator('#newsNext')).toBeDisabled();
+  await expect(page.locator('.news-item').last()).toContainText('Notizia 26');
+  await page.getByRole('button',{name:'Juventus',exact:true}).click();
+  await expect(page.locator('#newsPageLabel')).toContainText('Pagina 1 di 2');
+  expect(new URL(page.url()).searchParams.has('pagina')).toBe(false);
+  await page.locator('#newsSearch').fill('impossibile');
+  await expect(page.locator('#newsPagination')).toBeHidden();
+  await page.locator('#newsReset').click();
+  await expect(page.locator('.news-item')).toHaveCount(10);
+  await page.goto('/news.html?pagina=99999',{waitUntil:'domcontentloaded'});
+  await expect(page.locator('#newsPageLabel')).toContainText('Pagina 3 di 3');
+  await expect(page).toHaveURL(/pagina=3$/);
+  for(const width of [320,820,1440]){
+    await page.setViewportSize({width,height:900});
+    await page.locator('#newsPagination').scrollIntoViewIfNeeded();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    await page.screenshot({path:'/tmp/icv-news-paging-'+width+'.png'});
+  }
 });

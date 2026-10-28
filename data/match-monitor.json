@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-28T11:47:05Z",
+  "updated_at": "2026-10-28T21:49:37Z",
   "match": {
     "home": "Genoa",
     "away": "Juventus",
@@ -8,11 +8,11 @@
     "competition": "Serie A"
   },
   "formation": {
-    "status": "Probabile",
+    "status": "Ufficiale",
     "module": "3-5-1-1",
-    "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/27/genoa-juventus-probabili-formazioni-9-giornata",
-    "updated_at": "2026-10-27T16:20:00Z",
+    "source": "Juventus.com",
+    "source_url": "https://www.juventus.com/it/news/articoli/serie-a-genoa-juventus-le-formazioni-ufficiali",
+    "updated_at": "2026-10-28T18:48:00.789Z",
     "players": [
       {
         "name": "Vicario",
@@ -50,7 +50,7 @@
         "z": 0.8
       },
       {
-        "name": "Koopmeiners",
+        "name": "Sarr",
         "x": -2.2,
         "z": 0.8
       },
@@ -65,7 +65,7 @@
         "z": -2.8
       },
       {
-        "name": "Woltemade",
+        "name": "Kolo Muani",
         "x": 0,
         "z": -5.7
       }
@@ -73,11 +73,7 @@
     "details": [
       {
         "label": "Nota",
-        "text": "Formazione probabile, non ufficiale."
-      },
-      {
-        "label": "Ballottaggio",
-        "text": "Alajbegovic-Kolo Muani alle spalle di Woltemade; Alajbegovic nell'undici probabile."
+        "text": "Undici iniziale ufficiale: Sarr in mezzo, Alajbegovic e Kolo Muani in attacco."
       },
       {
         "label": "Squalificati",
@@ -90,6 +86,16 @@
     ]
   },
   "updates": [
+    {
+      "category": "Risultato finale",
+      "title": "Genoa-Juventus 2-0: decidono Ehizibue e Baldanzi",
+      "summary": "Nona giornata di Serie A: Ehizibue 12' e Baldanzi 28'. Prossimo impegno Juventus-Napoli, domenica 1 novembre alle 20:45.",
+      "detail": "Finale al Ferraris: Genoa-Juventus 2-0. Marcatori: Ehizibue 12' · Baldanzi 28'. Risultato e minuti confermati dal tabellino ufficiale e dalla Lega Serie A. Nessuna assegnazione editoriale MVP ICV.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-genoa-juventus-il-tabellino",
+      "published_at": "2026-10-28T21:43:15.295Z",
+      "significant": true
+    },
     {
       "category": "Convocati",
       "title": "Genoa-Juventus: 23 convocati, Sarr a disposizione",
@@ -118,16 +124,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/genoa-juventus-le-parole-di-luciano-spalletti-alla-vigilia",
       "published_at": "2026-10-27T15:57:40.937Z",
-      "significant": true
-    },
-    {
-      "category": "Probabile formazione",
-      "title": "Verso Genoa: Sarr in mezzo, McKennie dietro le due punte",
-      "summary": "Ipotesi 3-4-1-2 con Sarr accanto a Douglas Luiz, McKennie sulla trequarti e Woltemade-Kolo Muani in attacco. Non e la formazione ufficiale.",
-      "detail": "Ipotesi 3-4-1-2: Vicario; Gatti, Bremer, Lucumi; Kalulu, Douglas Luiz, Sarr, Cambiaso; McKennie; Woltemade, Kolo Muani. Non e la formazione ufficiale.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/probabili-formazioni",
-      "published_at": "2026-10-26T18:44:00Z",
       "significant": true
     },
     {

@@ -1702,7 +1702,7 @@ var ICV_MATCH_FALLBACKS = [
   {date:"2026-10-11T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Cagliari Calcio",away:"Juventus FC",homeScore:1,awayScore:1,venue:"Unipol Domus",matchday:6,scorers:"Maldini 20' · Kolo Muani 81'"},
   {date:"2026-10-18T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Lazio",homeScore:0,awayScore:3,venue:"Allianz Stadium · Torino",matchday:7,scorers:"Provstgaard 37' · Isaksen 66' · Dele-Bashiru 89'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-juventus-lazio-il-tabellino-x9255"},
   {date:"2026-10-25T18:00:00+01:00",status:"finished",competition:"Serie A",home:"Lecce",away:"Juventus FC",homeScore:0,awayScore:2,venue:"Stadio Ettore Giardiniero - Via del Mare",matchday:8,scorers:"McKennie 29' · Douglas Luiz 41'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-lecce-juventus-il-tabellino-x3027"},
-  {date:"2026-10-28T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Genoa",away:"Juventus FC",matchday:9},
+  {date:"2026-10-28T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Genoa",away:"Juventus FC",homeScore:2,awayScore:0,venue:"Stadio Luigi Ferraris · Genova",matchday:9,scorers:"Ehizibue 12' · Baldanzi 28'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-genoa-juventus-il-tabellino"},
   {date:"2026-11-01T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Napoli",venue:"Allianz Stadium · Torino",matchday:10},
   {date:"2026-11-08T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Fiorentina",away:"Juventus FC",matchday:11},
   {date:"2026-11-22T12:30:00+01:00",previousKickoff:"2026-11-23T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Venezia FC",venue:"Allianz Stadium · Torino",matchday:12,broadcaster:"DAZN"},
@@ -1725,6 +1725,13 @@ var ICV_MATCH_FALLBACKS = [
 ];
 
 var ICV_VERIFIED_MATCH_DATA = {
+  "558552": {
+    scorers:"Ehizibue 12' · Baldanzi 28'",
+    goals:[
+      {kind:"goal",minute:12,injuryTime:null,player:"Ehizibue",team:"Genoa CFC",type:"REGULAR"},
+      {kind:"goal",minute:28,injuryTime:null,player:"Baldanzi",team:"Genoa CFC",type:"REGULAR"}
+    ]
+  },
   "558570": {
     scorers:"Provstgaard 37' · Isaksen 66' · Dele-Bashiru 89'",
     goals:[

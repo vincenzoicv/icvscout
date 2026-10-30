@@ -1,18 +1,18 @@
 {
   "version": 1,
-  "updated_at": "2026-10-28T21:49:37Z",
+  "updated_at": "2026-10-30T19:48:00Z",
   "match": {
-    "home": "Genoa",
-    "away": "Juventus",
-    "kickoff": "2026-10-28T19:45:00Z",
+    "home": "Juventus",
+    "away": "Napoli",
+    "kickoff": "2026-11-01T19:45:00Z",
     "competition": "Serie A"
   },
   "formation": {
-    "status": "Ufficiale",
+    "status": "Probabile",
     "module": "3-5-1-1",
-    "source": "Juventus.com",
-    "source_url": "https://www.juventus.com/it/news/articoli/serie-a-genoa-juventus-le-formazioni-ufficiali",
-    "updated_at": "2026-10-28T18:48:00.789Z",
+    "source": "Sky Sport",
+    "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/30/probabili-formazioni-serie-a-giornata-10-ultime-news",
+    "updated_at": "2026-10-30T18:46:11.614Z",
     "players": [
       {
         "name": "Vicario",
@@ -40,12 +40,12 @@
         "z": 0.8
       },
       {
-        "name": "McKennie",
+        "name": "Douglas Luiz",
         "x": 2.2,
         "z": 0.8
       },
       {
-        "name": "Douglas Luiz",
+        "name": "Koopmeiners",
         "x": 0,
         "z": 0.8
       },
@@ -55,17 +55,17 @@
         "z": 0.8
       },
       {
-        "name": "Cambiaso",
+        "name": "McKennie",
         "x": -4.5,
         "z": 0.8
       },
       {
-        "name": "Alajbegovic",
+        "name": "Kolo Muani",
         "x": 0,
         "z": -2.8
       },
       {
-        "name": "Kolo Muani",
+        "name": "Woltemade",
         "x": 0,
         "z": -5.7
       }
@@ -73,7 +73,11 @@
     "details": [
       {
         "label": "Nota",
-        "text": "Undici iniziale ufficiale: Sarr in mezzo, Alajbegovic e Kolo Muani in attacco."
+        "text": "Formazione probabile, non ufficiale. Kolo Muani alle spalle di Woltemade."
+      },
+      {
+        "label": "Ballottaggio",
+        "text": "Sarr-Cabal: con Cabal sulla sinistra, McKennie si sposterebbe da esterno a interno di centrocampo."
       },
       {
         "label": "Squalificati",
@@ -81,11 +85,31 @@
       },
       {
         "label": "Indisponibili",
-        "text": "Yildiz, Ekhator, Thuram, Locatelli, Grabara, Conceicao, Celik, Nico Gonzalez."
+        "text": "Yildiz, Thuram, Locatelli, Grabara, Conceicao, Celik, Nico Gonzalez."
       }
     ]
   },
   "updates": [
+    {
+      "category": "Probabile formazione",
+      "title": "Juventus-Napoli: Kolo Muani dietro Woltemade",
+      "summary": "Ipotesi 3-5-1-1 con McKennie sulla sinistra e Koopmeiners in mezzo. Ballottaggio Sarr-Cabal con possibile cambio di posizione per McKennie. Formazione non ufficiale.",
+      "detail": "Vicario; Gatti, Bremer, Lucumi; Kalulu, Douglas Luiz, Koopmeiners, Sarr, McKennie; Kolo Muani; Woltemade. Se gioca Cabal a sinistra, McKennie si sposta in mezzo al posto di Sarr. Nessuno squalificato; indisponibili Yildiz, Thuram, Locatelli, Grabara, Conceicao, Celik e Nico Gonzalez. Previsione aggiornata il 30 ottobre, non una formazione ufficiale.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/30/probabili-formazioni-serie-a-giornata-10-ultime-news",
+      "published_at": "2026-10-30T18:46:11.614Z",
+      "significant": true
+    },
+    {
+      "category": "Recuperi",
+      "title": "Ekhator torna ad allenarsi con il gruppo",
+      "summary": "L'attaccante ha completato il programma di allenamento con i compagni. Ritiro al J Hotel dal 30 ottobre fino alla sfida con il Napoli del 1 novembre alle 20:45.",
+      "detail": "Ekhator ha svolto l'intera seduta insieme alla squadra dopo i problemi muscolari. Il ritorno in gruppo non equivale a una convocazione ufficiale o a una maglia da titolare. La squadra alloggia al J Hotel e si allena alla Continassa nel ritiro disposto in vista del Napoli.",
+      "source": "ANSA",
+      "source_url": "https://www.ansa.it/piemonte/notizie/2026/10/30/juve-spalletti-ritrova-ekhator-e-tornato-in-gruppo_e94b5a09-76c7-46a9-aa06-03d47c21a47e.html",
+      "published_at": "2026-10-30T15:35:00Z",
+      "significant": true
+    },
     {
       "category": "Risultato finale",
       "title": "Genoa-Juventus 2-0: decidono Ehizibue e Baldanzi",
@@ -94,26 +118,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/serie-a-genoa-juventus-il-tabellino",
       "published_at": "2026-10-28T21:43:15.295Z",
-      "significant": true
-    },
-    {
-      "category": "Convocati",
-      "title": "Genoa-Juventus: 23 convocati, Sarr a disposizione",
-      "summary": "Sarr figura nei 23 convocati per la trasferta del 28 ottobre alle 20:45. Presenti anche Boga e Cabal; confermate le otto assenze della vigilia.",
-      "detail": "Convocati: Bremer, Gatti, Kelly, Koopmeiners, Kolo Muani, Zhegrova, Douglas Luiz, Boga, Kalulu, Alajbegovic, Cambiaso, McKennie, Pinsoglio, Rugani, Vicario, Lucumi, Woltemade, Sarr, Cabal, Neto, Owusu, Pagnucco e Durmisi. Non figurano in lista Yildiz, Ekhator, Thuram, Locatelli, Grabara, Conceicao, Celik e Nico Gonzalez. La lista non costituisce la formazione ufficiale.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-genoa-juventus-i-convocati-x5609",
-      "published_at": "2026-10-28T10:02:15.049Z",
-      "significant": true
-    },
-    {
-      "category": "Probabile formazione",
-      "title": "Verso Genoa: ipotesi Alajbegovic dietro Woltemade",
-      "summary": "Ipotesi 3-5-1-1 con Alajbegovic alle spalle di Woltemade e Koopmeiners in mezzo. Alajbegovic e in ballottaggio con Kolo Muani. Formazione non ufficiale.",
-      "detail": "Ipotesi 3-5-1-1: Vicario; Gatti, Bremer, Lucumi; Kalulu, McKennie, Douglas Luiz, Koopmeiners, Cambiaso; Alajbegovic; Woltemade. Ballottaggio Alajbegovic-Kolo Muani alle spalle di Woltemade. Formazione non ufficiale.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/27/genoa-juventus-probabili-formazioni-9-giornata",
-      "published_at": "2026-10-27T16:20:00Z",
       "significant": true
     },
     {

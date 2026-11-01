@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-10-31T20:42:21Z",
+  "updated_at": "2026-11-01T06:46:13Z",
   "match": {
     "home": "Juventus",
     "away": "Napoli",
@@ -12,7 +12,7 @@
     "module": "3-5-2",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/30/juventus-napoli-probabili-formazioni-10-giornata",
-    "updated_at": "2026-10-31T18:52:00.457Z",
+    "updated_at": "2026-11-01T06:23:59.201Z",
     "players": [
       {
         "name": "Vicario",
@@ -40,7 +40,7 @@
         "z": 0.8
       },
       {
-        "name": "McKennie",
+        "name": "Sarr",
         "x": 2.2,
         "z": 0.8
       },
@@ -55,17 +55,17 @@
         "z": 0.8
       },
       {
-        "name": "Cabal",
+        "name": "McKennie",
         "x": -4.5,
         "z": 0.8
       },
       {
-        "name": "Kolo Muani",
+        "name": "Woltemade",
         "x": 1.8,
         "z": -5.3
       },
       {
-        "name": "Woltemade",
+        "name": "Kolo Muani",
         "x": -1.8,
         "z": -5.3
       }
@@ -73,11 +73,11 @@
     "details": [
       {
         "label": "Nota",
-        "text": "Formazione probabile, non ufficiale. Kelly in difesa, Cabal a sinistra e Kolo Muani-Woltemade in attacco."
+        "text": "Formazione probabile, non ufficiale. Kelly in difesa, Sarr in mezzo e McKennie a sinistra. Woltemade-Kolo Muani in attacco."
       },
       {
         "label": "Ballottaggio",
-        "text": "Cabal-Sarr: con Cabal a sinistra, McKennie gioca in mezzo al posto di Sarr."
+        "text": "Sarr favorito su Cabal: con il senegalese in mezzo, McKennie agisce sulla fascia sinistra."
       },
       {
         "label": "Squalificati",
@@ -92,12 +92,12 @@
   "updates": [
     {
       "category": "Probabile formazione",
-      "title": "Juventus-Napoli: ipotesi 3-5-2 con Kelly e Cabal",
-      "summary": "Kelly nel terzetto difensivo, Cabal a sinistra e McKennie in mezzo. Kolo Muani e Woltemade in coppia davanti. Formazione non ufficiale.",
-      "detail": "Vicario; Bremer, Lucumi, Kelly; Kalulu, McKennie, Douglas Luiz, Koopmeiners, Cabal; Kolo Muani, Woltemade. Nell'ipotesi aggiornata del 31 ottobre Kelly e Cabal prendono il posto di Gatti e Sarr rispetto alla precedente previsione. Resta l'alternativa Sarr-Cabal, con McKennie in mezzo se gioca il colombiano a sinistra. Nessuno squalificato; indisponibili Yildiz, Thuram, Locatelli, Grabara, Conceicao, Celik e Nico Gonzalez.",
+      "title": "Juventus-Napoli: Sarr favorito, McKennie a sinistra",
+      "summary": "Confermato il 3-5-2 con Kelly in difesa. Sarr torna favorito su Cabal: il suo impiego in mezzo sposta McKennie sulla fascia sinistra. Formazione non ufficiale.",
+      "detail": "Vicario; Bremer, Lucumi, Kelly; Kalulu, Sarr, Douglas Luiz, Koopmeiners, McKennie; Woltemade, Kolo Muani. Nell'aggiornamento del 1 novembre Sarr e favorito nel ballottaggio con Cabal, con McKennie sulla sinistra. Nessuno squalificato; indisponibili Yildiz, Thuram, Locatelli, Grabara, Conceicao, Celik e Nico Gonzalez.",
       "source": "Sky Sport",
       "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/30/juventus-napoli-probabili-formazioni-10-giornata",
-      "published_at": "2026-10-31T18:52:00.457Z",
+      "published_at": "2026-11-01T06:23:59.201Z",
       "significant": true
     },
     {

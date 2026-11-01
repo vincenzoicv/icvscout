@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-01T16:47:55Z",
+  "updated_at": "2026-11-01T21:45:01.909Z",
   "match": {
     "home": "Juventus",
     "away": "Napoli",
@@ -8,11 +8,11 @@
     "competition": "Serie A"
   },
   "formation": {
-    "status": "Probabile",
-    "module": "3-5-2",
-    "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/30/juventus-napoli-probabili-formazioni-10-giornata",
-    "updated_at": "2026-11-01T06:23:59.201Z",
+    "status": "Ufficiale",
+    "module": "4-3-3",
+    "source": "Juventus.com",
+    "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-le-formazioni-ufficiali",
+    "updated_at": "2026-11-01T18:40:41.298Z",
     "players": [
       {
         "name": "Vicario",
@@ -20,64 +20,60 @@
         "z": 7.4
       },
       {
+        "name": "Kalulu",
+        "x": 4.5,
+        "z": 4.5
+      },
+      {
         "name": "Bremer",
-        "x": 3.1,
+        "x": 1.5,
         "z": 4.5
       },
       {
         "name": "Lucumi",
-        "x": 0,
+        "x": -1.5,
         "z": 4.5
       },
       {
-        "name": "Kelly",
-        "x": -3.1,
+        "name": "Cabal",
+        "x": -4.5,
         "z": 4.5
-      },
-      {
-        "name": "Kalulu",
-        "x": 4.5,
-        "z": 0.8
-      },
-      {
-        "name": "Sarr",
-        "x": 2.2,
-        "z": 0.8
       },
       {
         "name": "Douglas Luiz",
-        "x": 0,
+        "x": 3.1,
         "z": 0.8
       },
       {
         "name": "Koopmeiners",
-        "x": -2.2,
+        "x": 0,
         "z": 0.8
       },
       {
         "name": "McKennie",
-        "x": -4.5,
+        "x": -3.1,
         "z": 0.8
       },
       {
+        "name": "Alajbegovic",
+        "x": 3.8,
+        "z": -5.3
+      },
+      {
         "name": "Woltemade",
-        "x": 1.8,
+        "x": 0,
         "z": -5.3
       },
       {
         "name": "Kolo Muani",
-        "x": -1.8,
+        "x": -3.8,
         "z": -5.3
       }
     ],
     "details": [
       {
         "label": "Nota",
-        "text": "Formazione probabile, non ufficiale. Kelly in difesa, Sarr in mezzo e McKennie a sinistra. Woltemade-Kolo Muani in attacco."
-      },
-      {
-        "label": "Ballottaggio",
-        "text": "Sarr favorito su Cabal: con il senegalese in mezzo, McKennie agisce sulla fascia sinistra."
+        "text": "Undici ufficiale. Disposizione secondo l'ordine del tabellino: Kalulu, Bremer, Lucumi e Cabal in difesa; Douglas Luiz, Koopmeiners e McKennie in mezzo; Alajbegovic, Woltemade e Kolo Muani davanti."
       },
       {
         "label": "Squalificati",
@@ -91,6 +87,16 @@
   },
   "updates": [
     {
+      "category": "Risultato finale",
+      "title": "Juventus-Napoli 2-0: Alajbegovic e Boga firmano la vittoria",
+      "summary": "Decima giornata di Serie A: Alajbegovic 70' e Boga 87'. Prossimo impegno AZ-Juventus, giovedi 5 novembre alle 21:00.",
+      "detail": "Finale all'Allianz Stadium: Juventus-Napoli 2-0. Marcatori: Alajbegovic 70' · Boga 87'.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-il-tabellino-x1174",
+      "published_at": "2026-11-01T21:39:42.951Z",
+      "significant": true
+    },
+    {
       "category": "Convocati",
       "title": "Juventus-Napoli: Ekhator nei 21 convocati",
       "summary": "Ekhator torna nella lista ufficiale per la sfida del 1 novembre alle 20:45. A disposizione anche Sarr, Boga e Zhegrova; confermate le sette assenze.",
@@ -98,16 +104,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-i-convocati",
       "published_at": "2026-11-01T12:01:16.324Z",
-      "significant": true
-    },
-    {
-      "category": "Probabile formazione",
-      "title": "Juventus-Napoli: Sarr favorito, McKennie a sinistra",
-      "summary": "Confermato il 3-5-2 con Kelly in difesa. Sarr torna favorito su Cabal: il suo impiego in mezzo sposta McKennie sulla fascia sinistra. Formazione non ufficiale.",
-      "detail": "Vicario; Bremer, Lucumi, Kelly; Kalulu, Sarr, Douglas Luiz, Koopmeiners, McKennie; Woltemade, Kolo Muani. Nell'aggiornamento del 1 novembre Sarr e favorito nel ballottaggio con Cabal, con McKennie sulla sinistra. Nessuno squalificato; indisponibili Yildiz, Thuram, Locatelli, Grabara, Conceicao, Celik e Nico Gonzalez.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/2026/10/30/juventus-napoli-probabili-formazioni-10-giornata",
-      "published_at": "2026-11-01T06:23:59.201Z",
       "significant": true
     },
     {

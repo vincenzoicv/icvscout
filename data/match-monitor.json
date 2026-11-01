@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-01T06:46:13Z",
+  "updated_at": "2026-11-01T16:47:55Z",
   "match": {
     "home": "Juventus",
     "away": "Napoli",
@@ -91,6 +91,16 @@
   },
   "updates": [
     {
+      "category": "Convocati",
+      "title": "Juventus-Napoli: Ekhator nei 21 convocati",
+      "summary": "Ekhator torna nella lista ufficiale per la sfida del 1 novembre alle 20:45. A disposizione anche Sarr, Boga e Zhegrova; confermate le sette assenze.",
+      "detail": "Convocati: Bremer, Gatti, Kelly, Koopmeiners, Kolo Muani, Zhegrova, Douglas Luiz, Boga, Kalulu, Alajbegovic, Ekhator, Cambiaso, McKennie, Pinsoglio, Rugani, Vicario, Lucumi, Woltemade, Sarr, Cabal e Neto. Non figurano Yildiz, Thuram, Locatelli, Grabara, Conceicao, Celik e Nico Gonzalez. La convocazione non costituisce la formazione ufficiale.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-i-convocati",
+      "published_at": "2026-11-01T12:01:16.324Z",
+      "significant": true
+    },
+    {
       "category": "Probabile formazione",
       "title": "Juventus-Napoli: Sarr favorito, McKennie a sinistra",
       "summary": "Confermato il 3-5-2 con Kelly in difesa. Sarr torna favorito su Cabal: il suo impiego in mezzo sposta McKennie sulla fascia sinistra. Formazione non ufficiale.",
@@ -128,16 +138,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/serie-a-genoa-juventus-il-tabellino",
       "published_at": "2026-10-28T21:43:15.295Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Spalletti conferma il recupero di Sarr",
-      "summary": "Nella conferenza del 27 ottobre il tecnico ha confermato Sarr a disposizione e spiegato la possibilita di alternare gli assetti tattici, anche con un esterno vicino alla punta.",
-      "detail": "Sarr e recuperato. Il tecnico valuta diverse soluzioni nel mezzo spazio e la possibilita di passare al 3-4-2-1 durante la gara, tenendo conto anche dell'impegno successivo contro il Napoli. Nessuna formazione titolare annunciata.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/genoa-juventus-le-parole-di-luciano-spalletti-alla-vigilia",
-      "published_at": "2026-10-27T15:57:40.937Z",
       "significant": true
     },
     {

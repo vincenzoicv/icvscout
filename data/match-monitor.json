@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-04T06:03:29.289Z",
+  "updated_at": "2026-11-04T16:00:59.214Z",
   "match": {
     "home": "AZ Alkmaar",
     "away": "Juventus",
@@ -10,13 +10,13 @@
   "formation": null,
   "updates": [
     {
-      "category": "Condizioni",
-      "title": "McKennie in dubbio per la trasferta di Alkmaar",
-      "summary": "McKennie resta in dubbio per l'AZ dopo l'affaticamento accusato contro il Napoli. Nuova valutazione alla ripresa del 4 novembre.",
-      "detail": "McKennie ha accusato un affaticamento muscolare contro il Napoli. Le sue condizioni saranno valutate alla ripresa degli allenamenti del 4 novembre; la sua disponibilita per l'AZ non e ancora confermata.",
-      "source": "ANSA",
-      "source_url": "https://videoembed.ansa.it/sito/notizie/sport/calcio/2026/11/03/juventus-a-riposo-bianconeri-in-campo-alla-vigilia-delleuropa-league_696fefa0-f035-411d-b3dc-5d940994dce9.html",
-      "published_at": "2026-11-03T12:42:00Z",
+      "category": "Convocati",
+      "title": "AZ-Juventus: McKennie non convocato, ci sono Cabal e Alajbegovic",
+      "summary": "Spalletti convoca 22 giocatori per la trasferta di Alkmaar. McKennie non figura nella lista; presenti anche Ekhator e i giovani Owusu, Pagnucco, Elimoghale e Merola.",
+      "detail": "Convocati: Bremer, Gatti, Kelly, Koopmeiners, Kolo Muani, Douglas Luiz, Boga, Kalulu, Alajbegovic, Ekhator, Cambiaso, Pinsoglio, Vicario, Lucumi, Woltemade, Sarr, Cabal, Neto, Owusu, Pagnucco, Elimoghale e Merola. McKennie non e nella lista ufficiale.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-az-alkmaar-juventus-i-convocati",
+      "published_at": "2026-11-04T14:21:27.364Z",
       "significant": true
     },
     {

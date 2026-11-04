@@ -1,91 +1,24 @@
 {
   "version": 1,
-  "updated_at": "2026-11-01T21:45:01.909Z",
+  "updated_at": "2026-11-04T06:03:29.289Z",
   "match": {
-    "home": "Juventus",
-    "away": "Napoli",
-    "kickoff": "2026-11-01T19:45:00Z",
-    "competition": "Serie A"
+    "home": "AZ Alkmaar",
+    "away": "Juventus",
+    "kickoff": "2026-11-05T20:00:00Z",
+    "competition": "Europa League"
   },
-  "formation": {
-    "status": "Ufficiale",
-    "module": "4-3-3",
-    "source": "Juventus.com",
-    "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-le-formazioni-ufficiali",
-    "updated_at": "2026-11-01T18:40:41.298Z",
-    "players": [
-      {
-        "name": "Vicario",
-        "x": 0,
-        "z": 7.4
-      },
-      {
-        "name": "Kalulu",
-        "x": 4.5,
-        "z": 4.5
-      },
-      {
-        "name": "Bremer",
-        "x": 1.5,
-        "z": 4.5
-      },
-      {
-        "name": "Lucumi",
-        "x": -1.5,
-        "z": 4.5
-      },
-      {
-        "name": "Cabal",
-        "x": -4.5,
-        "z": 4.5
-      },
-      {
-        "name": "Douglas Luiz",
-        "x": 3.1,
-        "z": 0.8
-      },
-      {
-        "name": "Koopmeiners",
-        "x": 0,
-        "z": 0.8
-      },
-      {
-        "name": "McKennie",
-        "x": -3.1,
-        "z": 0.8
-      },
-      {
-        "name": "Alajbegovic",
-        "x": 3.8,
-        "z": -5.3
-      },
-      {
-        "name": "Woltemade",
-        "x": 0,
-        "z": -5.3
-      },
-      {
-        "name": "Kolo Muani",
-        "x": -3.8,
-        "z": -5.3
-      }
-    ],
-    "details": [
-      {
-        "label": "Nota",
-        "text": "Undici ufficiale. Disposizione secondo l'ordine del tabellino: Kalulu, Bremer, Lucumi e Cabal in difesa; Douglas Luiz, Koopmeiners e McKennie in mezzo; Alajbegovic, Woltemade e Kolo Muani davanti."
-      },
-      {
-        "label": "Squalificati",
-        "text": "Nessuno."
-      },
-      {
-        "label": "Indisponibili",
-        "text": "Yildiz, Thuram, Locatelli, Grabara, Conceicao, Celik, Nico Gonzalez."
-      }
-    ]
-  },
+  "formation": null,
   "updates": [
+    {
+      "category": "Condizioni",
+      "title": "McKennie in dubbio per la trasferta di Alkmaar",
+      "summary": "McKennie resta in dubbio per l'AZ dopo l'affaticamento accusato contro il Napoli. Nuova valutazione alla ripresa del 4 novembre.",
+      "detail": "McKennie ha accusato un affaticamento muscolare contro il Napoli. Le sue condizioni saranno valutate alla ripresa degli allenamenti del 4 novembre; la sua disponibilita per l'AZ non e ancora confermata.",
+      "source": "ANSA",
+      "source_url": "https://videoembed.ansa.it/sito/notizie/sport/calcio/2026/11/03/juventus-a-riposo-bianconeri-in-campo-alla-vigilia-delleuropa-league_696fefa0-f035-411d-b3dc-5d940994dce9.html",
+      "published_at": "2026-11-03T12:42:00Z",
+      "significant": true
+    },
     {
       "category": "Risultato finale",
       "title": "Juventus-Napoli 2-0: Alajbegovic e Boga firmano la vittoria",
@@ -94,36 +27,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-il-tabellino-x1174",
       "published_at": "2026-11-01T21:39:42.951Z",
-      "significant": true
-    },
-    {
-      "category": "Convocati",
-      "title": "Juventus-Napoli: Ekhator nei 21 convocati",
-      "summary": "Ekhator torna nella lista ufficiale per la sfida del 1 novembre alle 20:45. A disposizione anche Sarr, Boga e Zhegrova; confermate le sette assenze.",
-      "detail": "Convocati: Bremer, Gatti, Kelly, Koopmeiners, Kolo Muani, Zhegrova, Douglas Luiz, Boga, Kalulu, Alajbegovic, Ekhator, Cambiaso, McKennie, Pinsoglio, Rugani, Vicario, Lucumi, Woltemade, Sarr, Cabal e Neto. Non figurano Yildiz, Thuram, Locatelli, Grabara, Conceicao, Celik e Nico Gonzalez. La convocazione non costituisce la formazione ufficiale.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-i-convocati",
-      "published_at": "2026-11-01T12:01:16.324Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Spalletti: Zhegrova e Boga pronti anche a gara in corso",
-      "summary": "Nella conferenza del 31 ottobre il tecnico ha indicato Zhegrova e Boga come soluzioni per la ripresa qualora non partano titolari. Chiesti equilibrio e una risposta diversa rispetto a Genova.",
-      "detail": "Alla vigilia del Napoli, Spalletti ha spiegato che Zhegrova e Boga potranno entrare nella ripresa se non saranno nell'undici iniziale. Ha ribadito che Locatelli non e a disposizione e indicato McKennie tra i riferimenti del gruppo. Nessuna formazione ufficiale annunciata.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/la-conferenza-stampa-di-luciano-spalletti-alla-vigilia-di-juventus-napoli",
-      "published_at": "2026-10-31T16:56:54.344Z",
-      "significant": true
-    },
-    {
-      "category": "Recuperi",
-      "title": "Ekhator torna ad allenarsi con il gruppo",
-      "summary": "L'attaccante ha completato il programma di allenamento con i compagni. Ritiro al J Hotel dal 30 ottobre fino alla sfida con il Napoli del 1 novembre alle 20:45.",
-      "detail": "Ekhator ha svolto l'intera seduta insieme alla squadra dopo i problemi muscolari. Il ritorno in gruppo non equivale a una convocazione ufficiale o a una maglia da titolare. La squadra alloggia al J Hotel e si allena alla Continassa nel ritiro disposto in vista del Napoli.",
-      "source": "ANSA",
-      "source_url": "https://www.ansa.it/piemonte/notizie/2026/10/30/juve-spalletti-ritrova-ekhator-e-tornato-in-gruppo_e94b5a09-76c7-46a9-aa06-03d47c21a47e.html",
-      "published_at": "2026-10-30T15:35:00Z",
       "significant": true
     },
     {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-04T16:00:59.214Z",
+  "updated_at": "2026-11-04T21:03:02.929Z",
   "match": {
     "home": "AZ Alkmaar",
     "away": "Juventus",
@@ -9,6 +9,16 @@
   },
   "formation": null,
   "updates": [
+    {
+      "category": "Conferenza stampa",
+      "title": "Spalletti annuncia Sarr e Cambiaso titolari contro l'AZ",
+      "summary": "Sarr e Cambiaso partiranno dall'inizio. Spalletti annuncia tre attaccanti e riposo iniziale per uno tra Bremer e Lucumi.",
+      "detail": "Nella conferenza del 4 novembre, Spalletti ha annunciato Sarr e Cambiaso titolari, ha detto che Douglas Luiz ha bisogno di rifiatare e che uno tra Bremer e Lucumi partira fuori. Kolo Muani e una possibilita dal primo minuto; Alajbegovic avra spazio dall'inizio o a gara in corso. L'undici completo non e stato annunciato.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-az-alkmaar-juventus-la-conferenza-stampa-di-spalletti-e-koopmeiners",
+      "published_at": "2026-11-04T19:04:15.664Z",
+      "significant": true
+    },
     {
       "category": "Convocati",
       "title": "AZ-Juventus: McKennie non convocato, ci sono Cabal e Alajbegovic",

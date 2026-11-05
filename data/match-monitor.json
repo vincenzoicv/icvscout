@@ -1,13 +1,90 @@
 {
   "version": 1,
-  "updated_at": "2026-11-04T21:03:02.929Z",
+  "updated_at": "2026-11-05T02:01:36.544Z",
   "match": {
     "home": "AZ Alkmaar",
     "away": "Juventus",
     "kickoff": "2026-11-05T20:00:00Z",
     "competition": "Europa League"
   },
-  "formation": null,
+  "formation": {
+    "status": "Probabile",
+    "module": "3-4-2-1",
+    "source": "Sky Sport",
+    "source_url": "https://sport.sky.it/calcio/europa-league/2026/11/04/az-alkmaar-juventus-probabili-formazioni-4-giornata",
+    "updated_at": "2026-11-04T19:12:23.442Z",
+    "players": [
+      {
+        "name": "Vicario",
+        "x": 0,
+        "z": 7.4
+      },
+      {
+        "name": "Gatti",
+        "x": 3.3,
+        "z": 4.5
+      },
+      {
+        "name": "Bremer",
+        "x": 0,
+        "z": 4.5
+      },
+      {
+        "name": "Kelly",
+        "x": -3.3,
+        "z": 4.5
+      },
+      {
+        "name": "Kalulu",
+        "x": 4.5,
+        "z": 0.8
+      },
+      {
+        "name": "Sarr",
+        "x": 1.5,
+        "z": 0.8
+      },
+      {
+        "name": "Koopmeiners",
+        "x": -1.5,
+        "z": 0.8
+      },
+      {
+        "name": "Cambiaso",
+        "x": -4.5,
+        "z": 0.8
+      },
+      {
+        "name": "Alajbegovic",
+        "x": 0,
+        "z": -2.5
+      },
+      {
+        "name": "Woltemade",
+        "x": 2,
+        "z": -5.3
+      },
+      {
+        "name": "Kolo Muani",
+        "x": -2,
+        "z": -5.3
+      }
+    ],
+    "details": [
+      {
+        "label": "Nota",
+        "text": "Undici non ufficiale. Alajbegovic alle spalle di Woltemade e Kolo Muani; Gatti e Kelly con Bremer in difesa."
+      },
+      {
+        "label": "Squalificati",
+        "text": "Nessuno segnalato."
+      },
+      {
+        "label": "Indisponibili",
+        "text": "McKennie (affaticamento)."
+      }
+    ]
+  },
   "updates": [
     {
       "category": "Conferenza stampa",

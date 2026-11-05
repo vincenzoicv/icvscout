@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-05T02:01:36.544Z",
+  "updated_at": "2026-11-05T22:55:23.062Z",
   "match": {
     "home": "AZ Alkmaar",
     "away": "Juventus",
@@ -8,11 +8,11 @@
     "competition": "Europa League"
   },
   "formation": {
-    "status": "Probabile",
-    "module": "3-4-2-1",
-    "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/europa-league/2026/11/04/az-alkmaar-juventus-probabili-formazioni-4-giornata",
-    "updated_at": "2026-11-04T19:12:23.442Z",
+    "status": "Ufficiale",
+    "module": "3-4-1-2",
+    "source": "Juventus.com",
+    "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-az-alkmaar-juventus-le-formazioni-ufficiali",
+    "updated_at": "2026-11-05T18:58:06.182Z",
     "players": [
       {
         "name": "Vicario",
@@ -25,7 +25,7 @@
         "z": 4.5
       },
       {
-        "name": "Bremer",
+        "name": "Lucumi",
         "x": 0,
         "z": 4.5
       },
@@ -73,19 +73,21 @@
     "details": [
       {
         "label": "Nota",
-        "text": "Undici non ufficiale. Alajbegovic alle spalle di Woltemade e Kolo Muani; Gatti e Kelly con Bremer in difesa."
-      },
-      {
-        "label": "Squalificati",
-        "text": "Nessuno segnalato."
-      },
-      {
-        "label": "Indisponibili",
-        "text": "McKennie (affaticamento)."
+        "text": "Undici ufficiale: Gatti, Lucumi e Kelly in difesa, Alajbegovic alle spalle di Woltemade e Kolo Muani."
       }
     ]
   },
   "updates": [
+    {
+      "category": "Risultato finale",
+      "title": "AZ-Juventus 1-2: Koopmeiners e Kolo Muani firmano la vittoria",
+      "summary": "Quarta giornata di Europa League: Koopmeiners 19', Kolo Muani 37', Meerdink 88'. Prossimo impegno a Firenze l'8 novembre alle 20:45.",
+      "detail": "Finale ad Alkmaar: AZ-Juventus 1-2. Marcatori: Koopmeiners 19' · Kolo Muani 37' · Meerdink 88'.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-az-alkmaar-juventus-il-tabellino",
+      "published_at": "2026-11-05T22:12:39.143Z",
+      "significant": true
+    },
     {
       "category": "Conferenza stampa",
       "title": "Spalletti annuncia Sarr e Cambiaso titolari contro l'AZ",

@@ -1,18 +1,18 @@
 {
   "version": 1,
-  "updated_at": "2026-11-05T22:55:23.062Z",
+  "updated_at": "2026-11-06T19:45:00Z",
   "match": {
-    "home": "AZ Alkmaar",
+    "home": "Fiorentina",
     "away": "Juventus",
-    "kickoff": "2026-11-05T20:00:00Z",
-    "competition": "Europa League"
+    "kickoff": "2026-11-08T19:45:00Z",
+    "competition": "Serie A"
   },
   "formation": {
-    "status": "Ufficiale",
-    "module": "3-4-1-2",
-    "source": "Juventus.com",
-    "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-az-alkmaar-juventus-le-formazioni-ufficiali",
-    "updated_at": "2026-11-05T18:58:06.182Z",
+    "status": "Probabile",
+    "module": "4-4-2",
+    "source": "Sky Sport",
+    "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-11/fiorentina-juventus/formazioni",
+    "updated_at": "2026-11-06T19:45:00Z",
     "players": [
       {
         "name": "Vicario",
@@ -20,52 +20,52 @@
         "z": 7.4
       },
       {
-        "name": "Gatti",
-        "x": 3.3,
+        "name": "Kalulu",
+        "x": 4.5,
+        "z": 4.5
+      },
+      {
+        "name": "Bremer",
+        "x": 1.5,
         "z": 4.5
       },
       {
         "name": "Lucumi",
-        "x": 0,
+        "x": -1.5,
         "z": 4.5
       },
       {
-        "name": "Kelly",
-        "x": -3.3,
+        "name": "Cabal",
+        "x": -4.5,
         "z": 4.5
       },
       {
-        "name": "Kalulu",
+        "name": "McKennie",
         "x": 4.5,
-        "z": 0.8
+        "z": 0.5
       },
       {
-        "name": "Sarr",
+        "name": "Douglas Luiz",
         "x": 1.5,
-        "z": 0.8
+        "z": 0.5
       },
       {
         "name": "Koopmeiners",
         "x": -1.5,
-        "z": 0.8
-      },
-      {
-        "name": "Cambiaso",
-        "x": -4.5,
-        "z": 0.8
+        "z": 0.5
       },
       {
         "name": "Alajbegovic",
-        "x": 0,
-        "z": -2.5
+        "x": -4.5,
+        "z": 0.5
       },
       {
-        "name": "Woltemade",
+        "name": "Kolo Muani",
         "x": 2,
         "z": -5.3
       },
       {
-        "name": "Kolo Muani",
+        "name": "Woltemade",
         "x": -2,
         "z": -5.3
       }
@@ -73,11 +73,33 @@
     "details": [
       {
         "label": "Nota",
-        "text": "Undici ufficiale: Gatti, Lucumi e Kelly in difesa, Alajbegovic alle spalle di Woltemade e Kolo Muani."
+        "text": "Formazione probabile, non ufficiale. McKennie a destra, Alajbegovic a sinistra; Kolo Muani e Woltemade in attacco."
+      },
+      {
+        "label": "In dubbio",
+        "text": "Conceicao e Celik: possibile panchina, disponibilita non confermata."
+      },
+      {
+        "label": "Squalificati",
+        "text": "Nessuno."
+      },
+      {
+        "label": "Indisponibili",
+        "text": "Yildiz, Thuram, Locatelli, Grabara, Nico Gonzalez."
       }
     ]
   },
   "updates": [
+    {
+      "category": "Recuperi",
+      "title": "Verso Firenze: McKennie nella probabile, Celik e Conceicao in dubbio",
+      "summary": "McKennie ha smaltito il problema muscolare secondo le ultime indicazioni e torna nella probabile. Celik e Conceicao sono monitorati per un possibile posto in panchina.",
+      "detail": "Indicazioni pre-partita, non convocazioni ufficiali. Il 4-4-2 proposto prevede McKennie e Alajbegovic sulle fasce, Douglas Luiz e Koopmeiners in mezzo, Kolo Muani e Woltemade davanti. La disponibilita di Celik e Conceicao non e ancora confermata.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/serie-a/2026/11/06/probabili-formazioni-serie-a-giornata-11-ultime-news",
+      "published_at": "2026-11-06T11:43:42.644Z",
+      "significant": true
+    },
     {
       "category": "Risultato finale",
       "title": "AZ-Juventus 1-2: Koopmeiners e Kolo Muani firmano la vittoria",
@@ -86,26 +108,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-az-alkmaar-juventus-il-tabellino",
       "published_at": "2026-11-05T22:12:39.143Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Spalletti annuncia Sarr e Cambiaso titolari contro l'AZ",
-      "summary": "Sarr e Cambiaso partiranno dall'inizio. Spalletti annuncia tre attaccanti e riposo iniziale per uno tra Bremer e Lucumi.",
-      "detail": "Nella conferenza del 4 novembre, Spalletti ha annunciato Sarr e Cambiaso titolari, ha detto che Douglas Luiz ha bisogno di rifiatare e che uno tra Bremer e Lucumi partira fuori. Kolo Muani e una possibilita dal primo minuto; Alajbegovic avra spazio dall'inizio o a gara in corso. L'undici completo non e stato annunciato.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-az-alkmaar-juventus-la-conferenza-stampa-di-spalletti-e-koopmeiners",
-      "published_at": "2026-11-04T19:04:15.664Z",
-      "significant": true
-    },
-    {
-      "category": "Convocati",
-      "title": "AZ-Juventus: McKennie non convocato, ci sono Cabal e Alajbegovic",
-      "summary": "Spalletti convoca 22 giocatori per la trasferta di Alkmaar. McKennie non figura nella lista; presenti anche Ekhator e i giovani Owusu, Pagnucco, Elimoghale e Merola.",
-      "detail": "Convocati: Bremer, Gatti, Kelly, Koopmeiners, Kolo Muani, Douglas Luiz, Boga, Kalulu, Alajbegovic, Ekhator, Cambiaso, Pinsoglio, Vicario, Lucumi, Woltemade, Sarr, Cabal, Neto, Owusu, Pagnucco, Elimoghale e Merola. McKennie non e nella lista ufficiale.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-az-alkmaar-juventus-i-convocati",
-      "published_at": "2026-11-04T14:21:27.364Z",
       "significant": true
     },
     {

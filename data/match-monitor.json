@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-08T21:44:10Z",
+  "updated_at": "2026-11-08T22:41:41Z",
   "match": {
     "home": "Fiorentina",
     "away": "Juventus",
@@ -87,6 +87,16 @@
   },
   "updates": [
     {
+      "category": "Risultato finale",
+      "title": "Fiorentina-Juventus 2-2: Woltemade e Bremer rispondono ai viola",
+      "summary": "Undicesima giornata di Serie A: Pellegrino 4', Woltemade 32', Njie 54', Bremer 66'. Prossimo impegno Juventus-Venezia, domenica 22 novembre alle 12:30.",
+      "detail": "Finale al Franchi: Fiorentina-Juventus 2-2. Marcatori: Pellegrino 4' · Woltemade 32' · Njie 54' · Bremer 66'.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-fiorentina-juventus-il-tabellino-x1037",
+      "published_at": "2026-11-08T21:48:14.985Z",
+      "significant": true
+    },
+    {
       "category": "Convocati",
       "title": "Firenze: tornano Celik e McKennie, assenti Conceicao e Cambiaso",
       "summary": "Celik e McKennie sono nell'elenco ufficiale per Fiorentina-Juventus. Conceicao e Cambiaso non figurano tra i convocati.",
@@ -134,16 +144,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/serie-a-genoa-juventus-il-tabellino",
       "published_at": "2026-10-28T21:43:15.295Z",
-      "significant": true
-    },
-    {
-      "category": "Bollettino medico",
-      "title": "Celik e Nico Gonzalez: lesioni muscolari di basso grado",
-      "summary": "Gli accertamenti al J|medical hanno evidenziato una lesione di basso grado del bicipite femorale sinistro per Celik e del soleo destro per Nico Gonzalez. Entrambi hanno iniziato la riabilitazione. Il club non ha comunicato tempi di recupero.",
-      "detail": "Gli accertamenti al J|medical hanno evidenziato una lesione di basso grado del bicipite femorale sinistro per Celik e del soleo destro per Nico Gonzalez. Entrambi hanno iniziato la riabilitazione. Il club non ha comunicato tempi di recupero.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/bollettino-medico-le-condizioni-di-celik-e-nico-gonzalez",
-      "published_at": "2026-10-23T13:26:33.513Z",
       "significant": true
     }
   ]

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-08T01:44:56Z",
+  "updated_at": "2026-11-08T11:46:03Z",
   "match": {
     "home": "Fiorentina",
     "away": "Juventus",
@@ -9,10 +9,10 @@
   },
   "formation": {
     "status": "Probabile",
-    "module": "3-4-3",
+    "module": "4-3-3",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-11/fiorentina-juventus/formazioni",
-    "updated_at": "2026-11-08T01:44:56Z",
+    "updated_at": "2026-11-08T11:46:03Z",
     "players": [
       {
         "name": "Vicario",
@@ -20,47 +20,47 @@
         "z": 7.4
       },
       {
-        "name": "Gatti",
-        "x": 3.6,
+        "name": "Kalulu",
+        "x": 4.5,
         "z": 4.5
       },
       {
         "name": "Bremer",
-        "x": 0,
+        "x": 1.5,
         "z": 4.5
       },
       {
         "name": "Lucumi",
-        "x": -3.6,
-        "z": 4.5
-      },
-      {
-        "name": "Kalulu",
-        "x": 4.5,
-        "z": 0.5
-      },
-      {
-        "name": "Douglas Luiz",
-        "x": 1.5,
-        "z": 0.5
-      },
-      {
-        "name": "McKennie",
         "x": -1.5,
-        "z": 0.5
+        "z": 4.5
       },
       {
         "name": "Cabal",
         "x": -4.5,
+        "z": 4.5
+      },
+      {
+        "name": "McKennie",
+        "x": 3.6,
         "z": 0.5
       },
       {
-        "name": "Kolo Muani",
+        "name": "Douglas Luiz",
+        "x": 0,
+        "z": 0.5
+      },
+      {
+        "name": "Koopmeiners",
+        "x": -3.6,
+        "z": 0.5
+      },
+      {
+        "name": "Zhegrova",
         "x": 3.6,
         "z": -5.3
       },
       {
-        "name": "Woltemade",
+        "name": "Kolo Muani",
         "x": 0,
         "z": -5.3
       },
@@ -73,11 +73,11 @@
     "details": [
       {
         "label": "Nota",
-        "text": "Formazione probabile, non ufficiale. Gatti, Bremer e Lucumi in difesa; Kalulu e Cabal sulle fasce, Douglas Luiz e McKennie in mezzo. Kolo Muani, Woltemade e Alajbegovic in attacco."
+        "text": "Formazione probabile, non ufficiale. Zhegrova, Kolo Muani e Alajbegovic in attacco; McKennie, Douglas Luiz e Koopmeiners a centrocampo."
       },
       {
-        "label": "In dubbio",
-        "text": "Conceicao e Celik: possibile panchina, disponibilita non confermata."
+        "label": "Convocazioni",
+        "text": "Celik e McKennie presenti nell'elenco ufficiale; Conceicao e Cambiaso non convocati."
       },
       {
         "label": "Squalificati",
@@ -85,11 +85,21 @@
       },
       {
         "label": "Indisponibili",
-        "text": "Yildiz, Thuram, Locatelli, Grabara, Nico Gonzalez."
+        "text": "Yildiz, Thuram, Locatelli, Grabara, Nico Gonzalez. Conceicao e Cambiaso non convocati; nessuna nuova diagnosi comunicata."
       }
     ]
   },
   "updates": [
+    {
+      "category": "Convocati",
+      "title": "Firenze: tornano Celik e McKennie, assenti Conceicao e Cambiaso",
+      "summary": "Celik e McKennie sono nell'elenco ufficiale per Fiorentina-Juventus. Conceicao e Cambiaso non figurano tra i convocati.",
+      "detail": "La lista comprende 21 giocatori, inclusi Woltemade, Zhegrova e Sarr. Il club non indica nuove diagnosi o tempi di recupero per gli assenti. Calcio d'inizio l'8 novembre alle 20:45.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-fiorentina-juventus-i-convocati",
+      "published_at": "2026-11-08T09:04:31.274Z",
+      "significant": true
+    },
     {
       "category": "Recuperi",
       "title": "Verso Firenze: McKennie nella probabile, Celik e Conceicao in dubbio",

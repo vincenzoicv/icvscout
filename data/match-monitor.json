@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-08T11:46:03Z",
+  "updated_at": "2026-11-08T21:44:10Z",
   "match": {
     "home": "Fiorentina",
     "away": "Juventus",
@@ -8,11 +8,11 @@
     "competition": "Serie A"
   },
   "formation": {
-    "status": "Probabile",
-    "module": "4-3-3",
-    "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-11/fiorentina-juventus/formazioni",
-    "updated_at": "2026-11-08T11:46:03Z",
+    "status": "Ufficiale",
+    "module": "4-2-3-1",
+    "source": "Juventus.com",
+    "source_url": "https://www.juventus.com/it/news/articoli/serie-a-fiorentina-juventus-le-formazioni-ufficiali",
+    "updated_at": "2026-11-08T18:47:07.640Z",
     "players": [
       {
         "name": "Vicario",
@@ -40,44 +40,40 @@
         "z": 4.5
       },
       {
-        "name": "McKennie",
-        "x": 3.6,
-        "z": 0.5
-      },
-      {
         "name": "Douglas Luiz",
-        "x": 0,
-        "z": 0.5
+        "x": 2,
+        "z": 1.5
       },
       {
         "name": "Koopmeiners",
-        "x": -3.6,
-        "z": 0.5
+        "x": -2,
+        "z": 1.5
       },
       {
-        "name": "Zhegrova",
-        "x": 3.6,
-        "z": -5.3
+        "name": "McKennie",
+        "x": 4,
+        "z": -2
+      },
+      {
+        "name": "Woltemade",
+        "x": 0,
+        "z": -2
+      },
+      {
+        "name": "Boga",
+        "x": -4,
+        "z": -2
       },
       {
         "name": "Kolo Muani",
         "x": 0,
-        "z": -5.3
-      },
-      {
-        "name": "Alajbegovic",
-        "x": -3.6,
-        "z": -5.3
+        "z": -5.8
       }
     ],
     "details": [
       {
         "label": "Nota",
-        "text": "Formazione probabile, non ufficiale. Zhegrova, Kolo Muani e Alajbegovic in attacco; McKennie, Douglas Luiz e Koopmeiners a centrocampo."
-      },
-      {
-        "label": "Convocazioni",
-        "text": "Celik e McKennie presenti nell'elenco ufficiale; Conceicao e Cambiaso non convocati."
+        "text": "Undici ufficiale. McKennie, Woltemade e Boga alle spalle di Kolo Muani; Douglas Luiz e Koopmeiners in mezzo."
       },
       {
         "label": "Squalificati",
@@ -85,7 +81,7 @@
       },
       {
         "label": "Indisponibili",
-        "text": "Yildiz, Thuram, Locatelli, Grabara, Nico Gonzalez. Conceicao e Cambiaso non convocati; nessuna nuova diagnosi comunicata."
+        "text": "Yildiz, Thuram, Locatelli, Grabara, Nico Gonzalez, Conceicao e Cambiaso non convocati."
       }
     ]
   },

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-06T19:45:00Z",
+  "updated_at": "2026-11-08T01:44:56Z",
   "match": {
     "home": "Fiorentina",
     "away": "Juventus",
@@ -9,10 +9,10 @@
   },
   "formation": {
     "status": "Probabile",
-    "module": "4-4-2",
+    "module": "3-4-3",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-11/fiorentina-juventus/formazioni",
-    "updated_at": "2026-11-06T19:45:00Z",
+    "updated_at": "2026-11-08T01:44:56Z",
     "players": [
       {
         "name": "Vicario",
@@ -20,27 +20,22 @@
         "z": 7.4
       },
       {
-        "name": "Kalulu",
-        "x": 4.5,
+        "name": "Gatti",
+        "x": 3.6,
         "z": 4.5
       },
       {
         "name": "Bremer",
-        "x": 1.5,
+        "x": 0,
         "z": 4.5
       },
       {
         "name": "Lucumi",
-        "x": -1.5,
+        "x": -3.6,
         "z": 4.5
       },
       {
-        "name": "Cabal",
-        "x": -4.5,
-        "z": 4.5
-      },
-      {
-        "name": "McKennie",
+        "name": "Kalulu",
         "x": 4.5,
         "z": 0.5
       },
@@ -50,30 +45,35 @@
         "z": 0.5
       },
       {
-        "name": "Koopmeiners",
+        "name": "McKennie",
         "x": -1.5,
         "z": 0.5
       },
       {
-        "name": "Alajbegovic",
+        "name": "Cabal",
         "x": -4.5,
         "z": 0.5
       },
       {
         "name": "Kolo Muani",
-        "x": 2,
+        "x": 3.6,
         "z": -5.3
       },
       {
         "name": "Woltemade",
-        "x": -2,
+        "x": 0,
+        "z": -5.3
+      },
+      {
+        "name": "Alajbegovic",
+        "x": -3.6,
         "z": -5.3
       }
     ],
     "details": [
       {
         "label": "Nota",
-        "text": "Formazione probabile, non ufficiale. McKennie a destra, Alajbegovic a sinistra; Kolo Muani e Woltemade in attacco."
+        "text": "Formazione probabile, non ufficiale. Gatti, Bremer e Lucumi in difesa; Kalulu e Cabal sulle fasce, Douglas Luiz e McKennie in mezzo. Kolo Muani, Woltemade e Alajbegovic in attacco."
       },
       {
         "label": "In dubbio",

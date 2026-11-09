@@ -378,7 +378,7 @@ test("la home propone l'installazione PWA senza essere invadente", async () => {
   assert.match(worker, /\/assets\/vince-hero\.js\?v=20261003-1/);
 });
 
-test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async () => {
+test("ICV Match Hub gestisce avvicinamento, live e finale senza stampante referto", async () => {
   const [html, api, admin, cron, cronConfig] = await Promise.all([
     read("index.html"),
     read("functions/api/[[path]].js"),
@@ -391,10 +391,6 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
     '<div class="match-hub-head">',
     "ICV Match Hub",
     "Prossimo incontro",
-    "ICV Match Receipt",
-    "Il referto della partita",
-    "downloadMatchReceipt",
-    "shareMatchReceipt",
     "function matchHubPhase",
     "function homeDashboardInterval",
     "cache:\"no-store\"",
@@ -442,8 +438,8 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(html, /\.match-hub-meta\{[^}]*justify-content:center/);
   assert.match(html, /data-state="final"\] \.match-hub-vs[^}]*font-size:72px/);
   assert.match(html, /Bremer 22'/);
-  assert.match(html, /FINO ALLA FINE\./);
-  assert.doesNotMatch(html, /id="receiptLineups/);
+  assert.doesNotMatch(html, /matchReceipt|receipt-printer|receipt-paper|receiptFeed|replayMatchReceipt|downloadMatchReceipt|shareMatchReceipt/);
+  assert.match(html, /function renderMatchHubScorers/);
   assert.doesNotMatch(html, /match\.lineupsText/);
   assert.doesNotMatch(html, /FORMAZIONI UFFICIALI/);
   assert.match(html, /countdownWrap\.hidden = phase === "final" \|\| phase === "post"/);
@@ -469,7 +465,6 @@ test("ICV Match Hub gestisce avvicinamento, live, finale e Match Receipt", async
   assert.match(api, /icv_manual/);
   assert.match(admin, /Salva correzione/);
   assert.match(admin, /id="matchOverrideWorst"/);
-  assert.match(html, /id="receiptWorstSection"/);
   assert.match(admin, /Ripristina fonte/);
   assert.match(cron, /const MATCH_CRON = "\* \* \* \* \*"/);
   assert.match(cron, /\["home", "market", "match", "all"\]\.includes\(job\)/);

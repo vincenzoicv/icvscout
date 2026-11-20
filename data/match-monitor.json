@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-20T11:30:00Z",
+  "updated_at": "2026-11-20T16:32:41Z",
   "match": {
     "home": "Juventus",
     "away": "Venezia",
@@ -12,7 +12,7 @@
     "module": "3-4-2-1",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-12/juventus-venezia/formazioni",
-    "updated_at": "2026-11-20T11:30:00Z",
+    "updated_at": "2026-11-20T16:32:41Z",
     "players": [
       {
         "name": "Vicario",
@@ -76,8 +76,8 @@
         "text": "Formazione probabile, non ufficiale. Gatti nella difesa a tre, McKennie esterno; Kolo Muani e Alajbegovic alle spalle di Woltemade."
       },
       {
-        "label": "Da valutare",
-        "text": "Celik e Cambiaso: disponibilita ancora da definire."
+        "label": "Rientri",
+        "text": "Celik e Cambiaso sono tornati in gruppo e sono a disposizione."
       },
       {
         "label": "Squalificati",
@@ -91,13 +91,13 @@
   },
   "updates": [
     {
-      "category": "Verso la partita",
-      "title": "Verso il Venezia: difesa a tre e disponibilita da valutare",
-      "summary": "La probabile prevede Gatti, Bremer e Lucumi dietro, McKennie e Cabal sulle fasce, Kolo Muani e Alajbegovic a supporto di Woltemade.",
-      "detail": "Schieramento non ufficiale. Celik e Cambiaso ancora da valutare; Zhegrova e regolarmente in gruppo. Kalulu non e disponibile. Nessuno squalificato.",
+      "category": "Rientri",
+      "title": "Celik e Cambiaso tornano in gruppo verso il Venezia",
+      "summary": "I due esterni si sono allenati con la squadra venerdi e sono a disposizione per domenica.",
+      "detail": "Celik e Cambiaso hanno ripreso ad allenarsi con i compagni alla Continassa. Non e ancora definito se partiranno dal primo minuto.",
       "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/2026/11/20/probabili-formazioni-serie-a-giornata-12-ultime-news",
-      "published_at": "2026-11-20T07:59:34.816Z",
+      "source_url": "https://sport.sky.it/calcio/serie-a/2026/11/20/juventus-cambiaso-celik-news",
+      "published_at": "2026-11-20T13:00:00Z",
       "significant": true
     },
     {

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-21T07:34:52Z",
+  "updated_at": "2026-11-21T12:29:56Z",
   "match": {
     "home": "Juventus",
     "away": "Venezia",
@@ -11,8 +11,8 @@
     "status": "Probabile",
     "module": "3-4-2-1",
     "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/partite/2026/giornata-12/juventus-venezia/formazioni",
-    "updated_at": "2026-11-20T16:32:41Z",
+    "source_url": "https://sport.sky.it/calcio/serie-a/2026/11/21/juventus-venezia-probabili-formazioni-12-giornata",
+    "updated_at": "2026-11-21T12:29:56Z",
     "players": [
       {
         "name": "Vicario",
@@ -74,6 +74,10 @@
       {
         "label": "Nota",
         "text": "Formazione probabile, non ufficiale. Gatti nella difesa a tre, McKennie esterno; Kolo Muani e Alajbegovic alle spalle di Woltemade."
+      },
+      {
+        "label": "Ballottaggi",
+        "text": "Alajbegovic favorito su Conceicao sulla trequarti."
       },
       {
         "label": "Rientri",

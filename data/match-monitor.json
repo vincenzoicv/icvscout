@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-21T17:35:00Z",
+  "updated_at": "2026-11-21T22:27:34Z",
   "match": {
     "home": "Juventus",
     "away": "Venezia",
@@ -12,7 +12,7 @@
     "module": "3-4-2-1",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/2026/11/21/juventus-venezia-probabili-formazioni-12-giornata",
-    "updated_at": "2026-11-21T12:29:56Z",
+    "updated_at": "2026-11-21T22:27:34Z",
     "players": [
       {
         "name": "Vicario",
@@ -77,11 +77,11 @@
       },
       {
         "label": "Ballottaggi",
-        "text": "Alajbegovic favorito su Conceicao sulla trequarti."
+        "text": "Alajbegovic favorito su Conceicao sulla trequarti; Cabal in vantaggio su Celik a sinistra."
       },
       {
         "label": "Rientri",
-        "text": "Celik e Cambiaso sono tornati in gruppo e sono a disposizione."
+        "text": "Celik e Cambiaso nella lista dei convocati."
       },
       {
         "label": "Squalificati",
@@ -95,6 +95,16 @@
   },
   "updates": [
     {
+      "category": "Convocati",
+      "title": "Juventus-Venezia: Celik e Cambiaso tra i 22 convocati",
+      "summary": "I due esterni tornano nella lista per la sfida di domenica 22 novembre alle 12:30.",
+      "detail": "Convocati anche Conceicao e Zhegrova. Kalulu e Nico Gonzalez non figurano nella lista.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-venezia-i-convocati",
+      "published_at": "2026-11-21T19:38:48.039Z",
+      "significant": true
+    },
+    {
       "category": "Conferenza stampa",
       "title": "Spalletti conferma: Kalulu e Nico Gonzalez saltano il Venezia",
       "summary": "Nella conferenza del 21 novembre, Spalletti ha confermato le due assenze oltre a quelle dei lungodegenti. Gli altri sono a disposizione.",
@@ -102,16 +112,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/la-conferenza-stampa-di-luciano-spalletti-alla-vigilia-di-juventus-venezia",
       "published_at": "2026-11-21T15:43:45.928Z",
-      "significant": true
-    },
-    {
-      "category": "Rientri",
-      "title": "Celik e Cambiaso tornano in gruppo verso il Venezia",
-      "summary": "I due esterni si sono allenati con la squadra venerdi e sono a disposizione per domenica.",
-      "detail": "Celik e Cambiaso hanno ripreso ad allenarsi con i compagni alla Continassa. Non e ancora definito se partiranno dal primo minuto.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/serie-a/2026/11/20/juventus-cambiaso-celik-news",
-      "published_at": "2026-11-20T13:00:00Z",
       "significant": true
     },
     {

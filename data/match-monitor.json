@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-21T12:29:56Z",
+  "updated_at": "2026-11-21T17:35:00Z",
   "match": {
     "home": "Juventus",
     "away": "Venezia",
@@ -96,12 +96,12 @@
   "updates": [
     {
       "category": "Conferenza stampa",
-      "title": "Spalletti, conferenza pre-Venezia sabato 21 novembre alle 16:00",
-      "summary": "La conferenza della vigilia e prevista per sabato 21 novembre alle 16:00, ora italiana.",
-      "detail": "Luciano Spalletti presentera Juventus-Venezia. L'orario e riportato dalla stampa; non risulta ancora un annuncio del club.",
-      "source": "Tifo Juventus",
-      "source_url": "https://www.tifojuventus.it/2026/11/20/juventus-allenamento-alla-continassa-celik-e-cambiaso-recuperati-domani-parla-spalletti-alle-16/",
-      "published_at": "2026-11-20T16:30:53Z",
+      "title": "Spalletti conferma: Kalulu e Nico Gonzalez saltano il Venezia",
+      "summary": "Nella conferenza del 21 novembre, Spalletti ha confermato le due assenze oltre a quelle dei lungodegenti. Gli altri sono a disposizione.",
+      "detail": "Il tecnico ha parlato di due buone sedute alla vigilia e ha sottolineato i progressi di Woltemade nella posizione in cui sta giocando.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/la-conferenza-stampa-di-luciano-spalletti-alla-vigilia-di-juventus-venezia",
+      "published_at": "2026-11-21T15:43:45.928Z",
       "significant": true
     },
     {

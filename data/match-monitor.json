@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-20T16:32:41Z",
+  "updated_at": "2026-11-21T07:34:52Z",
   "match": {
     "home": "Juventus",
     "away": "Venezia",
@@ -91,6 +91,16 @@
   },
   "updates": [
     {
+      "category": "Conferenza stampa",
+      "title": "Spalletti, conferenza pre-Venezia sabato 21 novembre alle 16:00",
+      "summary": "La conferenza della vigilia e prevista per sabato 21 novembre alle 16:00, ora italiana.",
+      "detail": "Luciano Spalletti presentera Juventus-Venezia. L'orario e riportato dalla stampa; non risulta ancora un annuncio del club.",
+      "source": "Tifo Juventus",
+      "source_url": "https://www.tifojuventus.it/2026/11/20/juventus-allenamento-alla-continassa-celik-e-cambiaso-recuperati-domani-parla-spalletti-alle-16/",
+      "published_at": "2026-11-20T16:30:53Z",
+      "significant": true
+    },
+    {
       "category": "Rientri",
       "title": "Celik e Cambiaso tornano in gruppo verso il Venezia",
       "summary": "I due esterni si sono allenati con la squadra venerdi e sono a disposizione per domenica.",
@@ -138,16 +148,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-il-tabellino-x1174",
       "published_at": "2026-11-01T21:39:42.951Z",
-      "significant": true
-    },
-    {
-      "category": "Risultato finale",
-      "title": "Genoa-Juventus 2-0: decidono Ehizibue e Baldanzi",
-      "summary": "Nona giornata di Serie A: Ehizibue 12' e Baldanzi 28'. Prossimo impegno Juventus-Napoli, domenica 1 novembre alle 20:45.",
-      "detail": "Finale al Ferraris: Genoa-Juventus 2-0. Marcatori: Ehizibue 12' · Baldanzi 28'. Risultato e minuti confermati dal tabellino ufficiale e dalla Lega Serie A. Nessuna assegnazione editoriale MVP ICV.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-genoa-juventus-il-tabellino",
-      "published_at": "2026-10-28T21:43:15.295Z",
       "significant": true
     }
   ]

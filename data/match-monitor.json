@@ -1,99 +1,24 @@
 {
   "version": 1,
-  "updated_at": "2026-11-21T22:27:34Z",
+  "updated_at": "2026-11-22T13:26:16Z",
   "match": {
     "home": "Juventus",
-    "away": "Venezia",
-    "kickoff": "2026-11-22T11:30:00Z",
-    "competition": "Serie A"
+    "away": "Omonia Nicosia",
+    "kickoff": "2026-11-26T20:00:00Z",
+    "competition": "Europa League"
   },
-  "formation": {
-    "status": "Probabile",
-    "module": "3-4-2-1",
-    "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/serie-a/2026/11/21/juventus-venezia-probabili-formazioni-12-giornata",
-    "updated_at": "2026-11-21T22:27:34Z",
-    "players": [
-      {
-        "name": "Vicario",
-        "x": 0,
-        "z": 7.4
-      },
-      {
-        "name": "Gatti",
-        "x": 3.6,
-        "z": 4.5
-      },
-      {
-        "name": "Bremer",
-        "x": 0,
-        "z": 4.5
-      },
-      {
-        "name": "Lucumi",
-        "x": -3.6,
-        "z": 4.5
-      },
-      {
-        "name": "McKennie",
-        "x": 4.5,
-        "z": 0.5
-      },
-      {
-        "name": "Douglas Luiz",
-        "x": 1.5,
-        "z": 0.5
-      },
-      {
-        "name": "Koopmeiners",
-        "x": -1.5,
-        "z": 0.5
-      },
-      {
-        "name": "Cabal",
-        "x": -4.5,
-        "z": 0.5
-      },
-      {
-        "name": "Kolo Muani",
-        "x": 2,
-        "z": -2.8
-      },
-      {
-        "name": "Alajbegovic",
-        "x": -2,
-        "z": -2.8
-      },
-      {
-        "name": "Woltemade",
-        "x": 0,
-        "z": -5.8
-      }
-    ],
-    "details": [
-      {
-        "label": "Nota",
-        "text": "Formazione probabile, non ufficiale. Gatti nella difesa a tre, McKennie esterno; Kolo Muani e Alajbegovic alle spalle di Woltemade."
-      },
-      {
-        "label": "Ballottaggi",
-        "text": "Alajbegovic favorito su Conceicao sulla trequarti; Cabal in vantaggio su Celik a sinistra."
-      },
-      {
-        "label": "Rientri",
-        "text": "Celik e Cambiaso nella lista dei convocati."
-      },
-      {
-        "label": "Squalificati",
-        "text": "Nessuno."
-      },
-      {
-        "label": "Indisponibili",
-        "text": "Kalulu, Yildiz, Thuram, Locatelli, Grabara e Nico Gonzalez."
-      }
-    ]
-  },
+  "formation": null,
   "updates": [
+    {
+      "category": "Risultato finale",
+      "title": "Juventus-Venezia 4-0: quattro gol nella ripresa",
+      "summary": "Dodicesima giornata di Serie A: Woltemade 53', Koopmeiners 59', Cabal 65', Kolo Muani 71' (rig.).",
+      "detail": "Finale all'Allianz Stadium. Prossimo impegno Juventus-Omonia Nicosia, giovedi 26 novembre alle 21:00, in Europa League.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-venezia-il-tabellino",
+      "published_at": "2026-11-22T13:22:57.957Z",
+      "significant": true
+    },
     {
       "category": "Convocati",
       "title": "Juventus-Venezia: Celik e Cambiaso tra i 22 convocati",
@@ -142,16 +67,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-az-alkmaar-juventus-il-tabellino",
       "published_at": "2026-11-05T22:12:39.143Z",
-      "significant": true
-    },
-    {
-      "category": "Risultato finale",
-      "title": "Juventus-Napoli 2-0: Alajbegovic e Boga firmano la vittoria",
-      "summary": "Decima giornata di Serie A: Alajbegovic 70' e Boga 87'. Prossimo impegno AZ-Juventus, giovedi 5 novembre alle 21:00.",
-      "detail": "Finale all'Allianz Stadium: Juventus-Napoli 2-0. Marcatori: Alajbegovic 70' · Boga 87'.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-il-tabellino-x1174",
-      "published_at": "2026-11-01T21:39:42.951Z",
       "significant": true
     }
   ]

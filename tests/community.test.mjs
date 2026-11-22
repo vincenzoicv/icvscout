@@ -114,7 +114,7 @@ test("dopo il Celta il referto e le prossime tre sono aggiornati", async () => {
   assert.equal(last.mvp, undefined);
   assert.equal(last.worst, undefined);
   render(rows);
-  assert.match(box.innerHTML, /Venezia[\s\S]*Omonia[\s\S]*Como/);
+  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Celta Vigo/);
 });
 
@@ -136,7 +136,7 @@ test("il finale con la Lazio conserva marcatori verificati e prossime tre senza 
   assert.equal(fallback.awayScore, 3);
   assert.equal(fallback.scorers, match.scorers);
   render(rows);
-  assert.match(box.innerHTML, /Venezia[\s\S]*Omonia[\s\S]*Como/);
+  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Lazio/);
 });
 
@@ -159,7 +159,7 @@ test("il finale col Rennes usa il tabellino ufficiale e deduplica Genoa CFC", as
   assert.equal(phase(null, last, null), "final");
   assert.equal(rows.filter(match => /genoa/i.test(match.home)).length, 1);
   render(rows);
-  assert.match(box.innerHTML, /Venezia[\s\S]*Omonia[\s\S]*Como/);
+  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Rennes/);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
   assert.deepEqual(rows.filter(match => match.status === "finished" && new Date(match.date).getTime() <= MatchDate.now()).slice(-5).map(match => [match.homeScore,match.awayScore]), [[2,0],[1,1],[1,2],[0,3],[2,2]]);
@@ -188,7 +188,7 @@ test("il finale di Lecce resiste a un provider obsoleto e aggiorna forma e pross
   assert.equal(outcome(last), "win");
   assert.deepEqual(rows.filter(match => match.status === "finished" && new Date(match.date).getTime() <= MatchDate.now()).slice(-5).map(outcome), ["draw", "win", "loss", "draw", "win"]);
   render(rows);
-  assert.match(box.innerHTML, /Venezia[\s\S]*Omonia[\s\S]*Como/);
+  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Lecce/);
   const monitor = JSON.parse(await read("data/match-monitor.json"));
   if (monitor.formation) {
@@ -225,7 +225,7 @@ test("il finale di Genoa conserva marcatori, forma e prossime tre senza premi", 
   assert.equal(fallback.mvp, undefined);
   assert.equal(fallback.worst, undefined);
   render(rows);
-  assert.match(box.innerHTML, /Venezia[\s\S]*Omonia[\s\S]*Como/);
+  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Genoa/);
 });
 
@@ -254,7 +254,7 @@ test("il finale col Napoli prevale sul live obsoleto e conserva marcatori e form
   assert.equal(rows.filter(row => /napoli/i.test(row.away)).length, 1);
   assert.deepEqual(rows.filter(row => row.status === "finished" && new Date(row.date).getTime() <= MatchDate.now()).slice(-5).map(outcome), ["loss","draw","win","loss","win"]);
   render(rows);
-  assert.match(box.innerHTML, /Venezia[\s\S]*Omonia[\s\S]*Como/);
+  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Napoli/);
 });
 
@@ -275,7 +275,7 @@ test("il referto AZ verificato aggiorna forma e calendario senza premi editorial
   assert.equal(last.worst, undefined);
   assert.deepEqual(rows.filter(row => row.status === "finished" && new Date(row.date).getTime() <= MatchDate.now()).slice(-5).map(outcome), ["draw","win","loss","win","win"]);
   render(rows);
-  assert.match(box.innerHTML, /Venezia[\s\S]*Omonia[\s\S]*Como/);
+  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /AZ Alkmaar/);
 });
 
@@ -296,17 +296,32 @@ test("il calendario deduplica le gare e conserva il referto di Cagliari", async 
   render(upcomingRows);
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.match(box.innerHTML, /Venezia[\s\S]*Omonia[\s\S]*Como/);
+  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Cagliari/);
   const last = allRows([]).find(match => match.matchday === 6 && match.competition === 'Serie A');
   assert.equal(last.status, 'finished');
   assert.equal(last.scorers, "Maldini 20' · Kolo Muani 81'");
   assert.doesNotMatch(box.innerHTML, /Atalanta/);
-  assert.doesNotMatch(box.innerHTML, /Sassuolo/);
   assert.doesNotMatch(box.innerHTML, /Milan/);
   assert.doesNotMatch(box.innerHTML, /Parma/);
   const api = await read("functions/api/[[path]].js");
   assert.match(api, /dateTo = isoDateOffset\(now, 60\)/);
+});
+
+test("il finale Venezia prevale sul prepartita del provider", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function renderMatchHubScorers("));
+  const {allRows, outcome} = new Function(source + ";return {allRows:allMatchHubRows,outcome:matchHubOutcome}")();
+  const rows = allRows([{match_id:"558521",match_date:"2026-11-22T11:30:00Z",status:"pre_match",competition:"Serie A",source_payload:{homeTeam:{name:"Juventus FC"},awayTeam:{name:"Venezia FC"},matchday:12}}]);
+  const venezia = rows.filter(row => /venezia/i.test(row.away));
+  assert.equal(venezia.length, 1);
+  const [match] = venezia;
+  assert.equal(match.status, "finished");
+  assert.deepEqual([match.homeScore,match.awayScore,match.matchday], [4,0,12]);
+  assert.equal(match.scorers, "Woltemade 53' · Koopmeiners 59' · Cabal 65' · Kolo Muani 71' (rig.)");
+  assert.equal(outcome(match), "win");
+  assert.equal(match.mvp, undefined);
+  assert.equal(match.worst, undefined);
 });
 
 test("la home lascia le amichevoli al calendario ufficiale", async () => {

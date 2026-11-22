@@ -1835,13 +1835,14 @@ function matchHubTeamKey(value) {
     .toLowerCase()
     .replace(/\b(fc|cfc|ac|acf|us|bc|ss|ssc|calcio|football club)\b/g, "")
     .replace(/[^a-z0-9]/g, "");
-  var europeanClubs = [
+  var clubAliases = [
+    [/^como1907$/, "como"],
     [/nijmegen|^nec$/, "necnijmegen"], [/rennes|rennais/, "rennes"],
     [/celta/, "celtavigo"], [/omonia/, "omonianicosia"],
     [/ferencvar/, "ferencvarosi"], [/beersheva/, "hapoelbeersheva"],
     [/alkmaar|^az$/, "azalkmaar"], [/realsociedad/, "realsociedad"]
   ];
-  var club = europeanClubs.find(function(entry) { return entry[0].test(key); });
+  var club = clubAliases.find(function(entry) { return entry[0].test(key); });
   return club ? club[1] : key;
 }
 

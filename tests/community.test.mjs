@@ -312,7 +312,11 @@ test("il finale Venezia prevale sul prepartita del provider", async () => {
   const html = await read("index.html");
   const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function renderMatchHubScorers("));
   const {allRows, outcome} = new Function(source + ";return {allRows:allMatchHubRows,outcome:matchHubOutcome}")();
-  const rows = allRows([{match_id:"558521",match_date:"2026-11-22T11:30:00Z",status:"pre_match",competition:"Serie A",source_payload:{homeTeam:{name:"Juventus FC"},awayTeam:{name:"Venezia FC"},matchday:12}}]);
+  const rows = allRows([
+    {match_id:"558521",match_date:"2026-11-22T11:30:00Z",status:"pre_match",competition:"Serie A",source_payload:{homeTeam:{name:"Juventus FC"},awayTeam:{name:"Venezia FC"},matchday:12}},
+    {match_id:"558511",match_date:"2026-11-29T19:45:00Z",status:"pre_match",competition:"Serie A",source_payload:{homeTeam:{name:"Como 1907"},awayTeam:{name:"Juventus FC"},matchday:13}}
+  ]);
+  assert.equal(rows.filter(row => /^Como/.test(row.home)).length, 1);
   const venezia = rows.filter(row => /venezia/i.test(row.away));
   assert.equal(venezia.length, 1);
   const [match] = venezia;

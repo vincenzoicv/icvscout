@@ -11,7 +11,7 @@ test.beforeEach(async({page})=>{
 });
 test('match media, gallery and discussion remain accessible without preloading external players',async({page})=>{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
-  await page.goto('/partita.html?match_id=558595');
+  await page.goto('/partita?match_id=558595',{waitUntil:'domcontentloaded'});
   await page.getByRole('link',{name:'Video',exact:true}).click();
   await expect(page.locator('#featuredHighlights')).toBeVisible();
   await expect(page.locator('iframe')).toHaveCount(0);
@@ -28,7 +28,7 @@ test('match media, gallery and discussion remain accessible without preloading e
 });
 test('content service failure keeps the score and exposes a retry',async({page})=>{
   await page.route('**/api/public/match-content?*',route=>route.fulfill({status:503,json:{error:'Unavailable'}}));
-  await page.goto('/partita.html?match_id=558595');
+  await page.goto('/partita?match_id=558595',{waitUntil:'domcontentloaded'});
   await page.locator('#matchExtras').scrollIntoViewIfNeeded();
   await expect(page.locator('#matchContentRetry')).toBeVisible();
   await expect(page.locator('.match-score')).toContainText('2');
@@ -38,25 +38,26 @@ test('content service failure keeps the score and exposes a retry',async({page})
   await expect(page.locator('#matchVideosEmpty')).toBeVisible();
 });
 test('finished and future matches distinguish missing data from a goalless result',async({page})=>{
-  await page.goto('/partita.html?match_id=558595');
+  await page.goto('/partita?match_id=558595',{waitUntil:'domcontentloaded'});
   await expect(page.locator('#matchDetail')).toContainText('La fonte non fornisce la formazione');
   await expect(page.locator('#matchDetail')).toContainText('La fonte non fornisce i marcatori');
   await page.route('**/api/public/match?*',route=>route.fulfill({json:{...match,status:'TIMED',homeScore:null,awayScore:null}}));
-  await page.reload();
+  await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('#matchDetail')).toContainText('Formazione ufficiale non ancora disponibile.');
   await expect(page.locator('#matchDetail')).toContainText('La partita non è ancora iniziata.');
   await page.route('**/api/public/match?*',route=>route.fulfill({json:{...match,homeScore:0,awayScore:0}}));
-  await page.reload();
+  await page.reload({waitUntil:'domcontentloaded'});
   await expect(page.locator('#matchDetail')).toContainText('Nessuna rete.');
 });
 test('timeline orders stoppage time and renders Italian roles and explicit substitutions',async({page})=>{
   await page.route('**/api/public/match?*',route=>route.fulfill({json:{...match,homeFormation:'4-3-3',homeLineup:[{name:'Portiere test',position:'Goalkeeper'},{name:'Difensore test',position:'Centre-Back'},{name:'Ruolo test',position:'Unknown'}],goals:[{minute:45,injuryTime:3,player:'Autogol test',type:'OWN_GOAL'},{minute:0,player:'Gol test',type:'PENALTY'}],bookings:[{minute:45,injuryTime:1,player:'Espulso test',card:'YELLOW_RED_CARD'}],substitutions:[{minute:46,player:'Entrante test',replacedPlayer:'Uscente test'}]}}));
-  await page.goto('/partita.html?match_id=558595');
+  await page.goto('/partita?match_id=558595',{waitUntil:'domcontentloaded'});
   await expect(page.locator('.match-event-label')).toHaveText(['Gol su rigore','Espulsione','Autogol','Sostituzione']);
   await expect(page.locator('.match-minute')).toHaveText(["0'","45+1'","45+3'","46'"]);
   await expect(page.locator('.match-change')).toContainText('Entra Entrante test');
   await expect(page.locator('.match-change')).toContainText('Esce Uscente test');
-  await expect(page.locator('.lineup-player span')).toHaveText(['Portiere','Difensore centrale','Ruolo non specificato']);
+  await expect(page.locator('.lineup-player span')).toHaveText(['Portiere','Difensore centrale']);
+  await expect(page.locator('.lineup-player').last()).toHaveText('Ruolo test');
   await expect(page.locator('.match-event-icon svg')).toHaveCount(4);
   for(const width of [320,820,1440]){
     await page.setViewportSize({width,height:1000});
@@ -65,7 +66,7 @@ test('timeline orders stoppage time and renders Italian roles and explicit subst
 });
 test('referto retry works from the keyboard without exposing server HTML',async({page})=>{
   await page.route('**/api/public/match?*',route=>route.fulfill({status:503,body:'<!DOCTYPE html><html>Server unavailable</html>'}));
-  await page.goto('/partita.html?match_id=558595');
+  await page.goto('/partita?match_id=558595',{waitUntil:'domcontentloaded'});
   const retry=page.getByRole('button',{name:'Riprova',exact:true});
   await expect(retry).toBeVisible();
   await expect(page.locator('#matchDetail')).not.toContainText('DOCTYPE');
@@ -80,7 +81,7 @@ test('referto retry works from the keyboard without exposing server HTML',async(
 });
 test('retry removes a gallery that is no longer published',async({page})=>{
   await page.route('**/api/public/match-content?*',route=>route.fulfill({json:{...content,partial:true}}));
-  await page.goto('/partita.html?match_id=558595');
+  await page.goto('/partita?match_id=558595',{waitUntil:'domcontentloaded'});
   await page.getByRole('link',{name:'Foto',exact:true}).click();
   await expect(page.locator('#matchGallery')).toBeVisible();
   await page.route('**/api/public/match-content?*',route=>route.fulfill({json:{...content,albums:[]}}));
@@ -88,10 +89,19 @@ test('retry removes a gallery that is no longer published',async({page})=>{
   await expect(page.locator('#matchGallery')).toBeHidden();
   await expect(page.locator('#matchPhotosEmpty')).toBeVisible();
 });
+test('partial media reads do not claim that there are no uploads',async({page})=>{
+  await page.route('**/api/public/match-content?*',route=>route.fulfill({json:{...content,partial:true,highlights:null,albums:[]}}));
+  await page.goto('/partita?match_id=558595',{waitUntil:'domcontentloaded'});
+  await page.locator('#matchExtras').scrollIntoViewIfNeeded();
+  await expect(page.locator('#matchContentRetry')).toBeVisible();
+  await expect(page.locator('#matchPhotosEmpty')).toBeHidden();
+  await expect(page.locator('#matchVideosEmpty')).toBeHidden();
+});
 test('small phone and iPad layouts fit and retain explicit player consent',async({page})=>{
+  await page.route('https://www.youtube-nocookie.com/embed/**',route=>route.fulfill({contentType:'text/html',body:'<title>Player</title>'}));
   for(const width of [320,820]){
     await page.setViewportSize({width,height:1180});
-    await page.goto('/partita.html?match_id=558595');
+    await page.goto('/partita?match_id=558595',{waitUntil:'domcontentloaded'});
     await page.getByRole('link',{name:'Video',exact:true}).click();
     await expect(page.locator('#featuredHighlights')).toBeVisible();
     await expect(page.locator('iframe')).toHaveCount(0);

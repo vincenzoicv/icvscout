@@ -84,6 +84,76 @@ test('public match enriches a finished stored score with missing goals and lineu
   assert.equal(body.sourceUrl, 'https://www.juventus.com/it/news/articoli/serie-a-juventus-atalanta-il-tabellino-x3128');
 });
 
+test('Venezia final report fills missing match data from the verified club report', async t => {
+  t.mock.method(globalThis, 'fetch', async () => Response.json([{
+    match_id: '558521', match_date: '2026-11-22T11:30:00Z', status: 'finished', competition: 'Serie A',
+    source_payload: {
+      homeTeam: { name: 'Juventus FC', lineup: [] }, awayTeam: { name: 'Venezia FC', lineup: [] },
+      score: { fullTime: { home: 4, away: 0 } }, goals: [], matchday: 12,
+      icv_meta: { provider: 'football-data.org' },
+    },
+  }]));
+  const response = await onRequest({ request: new Request('https://site.test/api/public/match?match_id=558521'), env });
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.scorers, "Woltemade 53' · Koopmeiners 59' · Cabal 65' · Kolo Muani 71' (rig.)");
+  assert.deepEqual(body.goals.map(goal => goal.minute), [53, 59, 65, 71]);
+  assert.equal(body.goals.at(-1).type, 'PENALTY');
+  assert.equal(body.homeLineup.length, 11);
+  assert.equal(body.awayLineup.length, 11);
+  assert.equal(body.substitutions.length, 10);
+  assert.equal(body.source, 'Juventus.com');
+  assert.match(body.sourceUrl, /juventus-venezia-il-tabellino$/);
+});
+
+test('the verified Venezia report works without an archive, while unknown IDs return 404', async () => {
+  const requestMatch = id => onRequest({ request: new Request('https://site.test/api/public/match?match_id=' + id), env: {} });
+  const response = await requestMatch('558521');
+  assert.equal(response.status, 200);
+  const match = await response.json();
+  assert.deepEqual([match.homeScore, match.awayScore], [4, 0]);
+  assert.equal(match.goals.length, 4);
+  assert.equal((await requestMatch('unknown')).status, 404);
+});
+
+test('recent verified results resolve by date and team aliases without the archive', async () => {
+  const fixtures = [
+    ['2026-10-28T19:45:00Z', 'Genoa', 'Juventus', '558552', 2, 0, [12, 28]],
+    ['2026-11-01T19:45:00Z', 'Juventus', 'Napoli', '558547', 2, 0, [70, 87]],
+    ['2026-11-05T20:00:00Z', 'AZ', 'Juventus', 'uel-az-20261105', 1, 2, [19, 37, 88]],
+    ['2026-11-08T20:45:00+01:00', 'Fiorentina', 'Juventus', '558529', 2, 2, [4, 32, 54, 66]],
+    ['2026-11-22T11:30:00Z', 'Juventus', 'Venezia', '558521', 4, 0, [53, 59, 65, 71]],
+  ];
+  for (const [date, home, away, id, homeScore, awayScore, minutes] of fixtures) {
+    const query = new URLSearchParams({ date, home, away });
+    const response = await onRequest({ request: new Request('https://site.test/api/public/match?' + query), env: {} });
+    assert.equal(response.status, 200);
+    const match = await response.json();
+    assert.equal(match.match_id, id);
+    assert.equal(match.status, 'finished');
+    assert.deepEqual([match.homeScore, match.awayScore], [homeScore, awayScore]);
+    assert.deepEqual(match.goals.map(goal => goal.minute), minutes);
+    assert.equal(match.homeLineup.length, 11);
+    assert.equal(match.awayLineup.length, 11);
+  }
+});
+
+test('the verified Fiorentina result replaces stale scheduled archive data', async t => {
+  t.mock.method(globalThis, 'fetch', async () => Response.json([{
+    id: 22, match_id: '558529', match_date: '2026-11-08T19:45:00Z', status: 'pre_match',
+    competition: 'Serie A', source_payload: {
+      homeTeam: { name: 'ACF Fiorentina' }, awayTeam: { name: 'Juventus FC' },
+      score: { fullTime: { home: null, away: null } }, matchday: 11,
+    },
+  }]));
+  const response = await onRequest({ request: new Request('https://site.test/api/public/match?match_id=558529'), env });
+  const match = await response.json();
+  assert.equal(match.community_key, '22');
+  assert.equal(match.status, 'finished');
+  assert.equal(match.scorers, "Pellegrino 4' · Woltemade 32' · Njie 54' · Bremer 66'");
+  assert.deepEqual([match.homeScore, match.awayScore], [2, 2]);
+});
+
 test('Cagliari final report includes verified scorers without editorial awards', async t => {
   t.mock.method(globalThis, 'fetch', async () => Response.json([{
     match_id: '558584', match_date: '2026-10-11T18:45:00Z', status: 'finished', competition: 'Serie A',
@@ -144,7 +214,7 @@ test('search requires at least two characters and the homepage exposes search', 
   assert.match(calendar, /detailHref = event => '\/partita\?date='/);
   assert.match(home, /href="\/cerca" class="header-search"/);
   assert.match(readFileSync(new URL('../cerca.html', import.meta.url), 'utf8'), /search-page\.js\?v=20261022-1/);
-  assert.match(readFileSync(new URL('../partita.html', import.meta.url), 'utf8'), /match-pages\.js\?v=20261003-3/);
+  assert.match(readFileSync(new URL('../partita.html', import.meta.url), 'utf8'), /match-pages\.js\?v=20261123-1/);
 });
 
 test('clean match URLs rely on Pages clean-URL handling without redirect loops', () => {

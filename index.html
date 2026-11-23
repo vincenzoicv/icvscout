@@ -246,6 +246,27 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-form-dot.win{color:#74df9b;border-color:rgba(116,223,155,.38);background:rgba(116,223,155,.09);}
 .match-hub-form-dot.draw{color:#f2cf73;border-color:rgba(242,207,115,.38);background:rgba(242,207,115,.08);}
 .match-hub-form-dot.loss{color:#ff7979;border-color:rgba(255,121,121,.36);background:rgba(255,121,121,.08);}
+.match-hub-form-dot{padding:0;cursor:pointer;flex:none;}
+.match-hub-form-dot:hover,.match-hub-form-dot:focus-visible{outline:2px solid currentColor;outline-offset:2px;}
+.match-hub-form-dialog{position:fixed;inset:0;margin:auto;width:min(460px,calc(100% - 24px));max-height:calc(100% - 24px);padding:0;overflow:auto;border:1px solid var(--bdr);border-top:3px solid var(--gold);border-radius:8px;background:var(--d2);color:var(--white);box-shadow:0 20px 64px rgba(0,0,0,.45);}
+.match-hub-form-dialog::backdrop{background:rgba(0,0,0,.72);}
+.match-hub-form-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;border-bottom:1px solid var(--bdr2);}
+.match-hub-form-dialog-kicker{color:var(--gold-l);font:800 .875rem/1.2 "Barlow Condensed",Barlow,sans-serif;text-transform:uppercase;overflow-wrap:anywhere;}
+.match-hub-form-dialog-scoreboard{padding:16px;text-align:center;background:var(--d1);}
+.home-panel .match-hub-form-dialog h3{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin:0;color:inherit;font:800 1.2rem/1.05 "Barlow Condensed",Barlow,sans-serif;letter-spacing:0;overflow-wrap:anywhere;}
+.match-hub-form-dialog-score{color:var(--gold-l);font-size:2.75rem;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.match-hub-form-dialog-meta{margin:8px 0 0;color:var(--t2);font-size:.875rem;line-height:1.4;}
+.match-hub-form-dialog-close{display:grid;place-items:center;width:44px;height:44px;border:1px solid var(--bdr2);border-radius:6px;background:transparent;color:inherit;cursor:pointer;}
+.match-hub-form-dialog-close:hover{background:var(--d3);}
+.match-hub-form-dialog svg{width:18px;height:18px;flex:none;}
+.match-hub-form-dialog-body{padding:14px 16px 16px;}
+.match-hub-form-dialog-scorers h4{font:800 .875rem/1.2 Barlow,sans-serif;}
+.match-hub-form-dialog-scorers ul{list-style:none;margin:8px 0 16px;color:var(--t2);font-size:.95rem;}
+.match-hub-form-dialog-scorers li{padding:5px 0;border-bottom:1px solid var(--bdr2);overflow-wrap:anywhere;}
+.match-hub-form-dialog-link{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding:8px 12px;border-radius:6px;background:var(--gold-l);color:#16130c;font-weight:800;text-decoration:none;}
+.match-hub-form-dialog-link:hover{background:var(--gold);}
+body.light .match-hub-form-dialog-kicker,body.light .match-hub-form-dialog-score{color:#785516;}
+@media(max-width:420px){.match-hub-form .match-hub-record{grid-column:1/-1;justify-self:start;}}
 .match-hub-record{font-family:"Barlow Condensed";font-size:10px;font-weight:800;letter-spacing:1.1px;color:var(--t2);text-transform:uppercase;text-align:right;white-space:nowrap;}
 .home-panel h2,.home-panel h3{font-family:"Barlow Condensed";font-size:12px;font-weight:800;letter-spacing:3px;color:var(--gold-l);text-transform:uppercase;margin-bottom:10px;}
 .home-news-panel,.home-market-panel{grid-column:span 2;}
@@ -980,6 +1001,23 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
       <div class="match-hub-form-list" id="matchHubForm" aria-label="Forma recente della Juventus"></div>
       <span class="match-hub-record" id="matchHubRecord">Forma in aggiornamento</span>
     </footer>
+    <dialog class="match-hub-form-dialog" id="matchHubFormDialog" aria-labelledby="matchHubFormTitle">
+      <div class="match-hub-form-dialog-head">
+        <span class="match-hub-form-dialog-kicker" id="matchHubFormCompetition"></span>
+        <form method="dialog"><button class="match-hub-form-dialog-close" type="submit" aria-label="Chiudi dettaglio partita" autofocus><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m18 6-12 12M6 6l12 12"/></svg></button></form>
+      </div>
+      <div class="match-hub-form-dialog-scoreboard">
+        <h3 id="matchHubFormTitle"><span id="matchHubFormHome"></span> <span class="match-hub-form-dialog-score" id="matchHubFormScore"></span> <span id="matchHubFormAway"></span></h3>
+        <p class="match-hub-form-dialog-meta" id="matchHubFormMeta"></p>
+      </div>
+      <div class="match-hub-form-dialog-body">
+        <section class="match-hub-form-dialog-scorers" id="matchHubFormScorers" hidden>
+          <h4>Marcatori</h4>
+          <ul id="matchHubFormGoals"></ul>
+        </section>
+        <a class="match-hub-form-dialog-link" id="matchHubFormSource">Vai al tabellino <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg></a>
+      </div>
+    </dialog>
   </article>
   <div class="home-panel live-desk-panel" id="homeLiveDeskPanel">
     <div class="live-desk-head">
@@ -1634,10 +1672,10 @@ var ICV_MATCH_FALLBACKS = [
   {date:"2026-10-11T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Cagliari Calcio",away:"Juventus FC",homeScore:1,awayScore:1,venue:"Unipol Domus",matchday:6,scorers:"Maldini 20' · Kolo Muani 81'"},
   {date:"2026-10-18T20:45:00+02:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Lazio",homeScore:0,awayScore:3,venue:"Allianz Stadium · Torino",matchday:7,scorers:"Provstgaard 37' · Isaksen 66' · Dele-Bashiru 89'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-juventus-lazio-il-tabellino-x9255"},
   {date:"2026-10-25T18:00:00+01:00",status:"finished",competition:"Serie A",home:"Lecce",away:"Juventus FC",homeScore:0,awayScore:2,venue:"Stadio Ettore Giardiniero - Via del Mare",matchday:8,scorers:"McKennie 29' · Douglas Luiz 41'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-lecce-juventus-il-tabellino-x3027"},
-  {date:"2026-10-28T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Genoa",away:"Juventus FC",homeScore:2,awayScore:0,venue:"Stadio Luigi Ferraris · Genova",matchday:9,scorers:"Ehizibue 12' · Baldanzi 28'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-genoa-juventus-il-tabellino"},
-  {date:"2026-11-01T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Napoli",homeScore:2,awayScore:0,venue:"Allianz Stadium · Torino",matchday:10,scorers:"Alajbegovic 70' · Boga 87'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-il-tabellino-x1174"},
-  {date:"2026-11-08T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Fiorentina",away:"Juventus FC",homeScore:2,awayScore:2,venue:"Stadio Artemio Franchi · Firenze",matchday:11,scorers:"Pellegrino 4' · Woltemade 32' · Njie 54' · Bremer 66'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-fiorentina-juventus-il-tabellino-x1037"},
-  {date:"2026-11-22T12:30:00+01:00",previousKickoff:"2026-11-23T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Venezia FC",homeScore:4,awayScore:0,venue:"Allianz Stadium · Torino",matchday:12,broadcaster:"DAZN",scorers:"Woltemade 53' · Koopmeiners 59' · Cabal 65' · Kolo Muani 71' (rig.)",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-juventus-venezia-il-tabellino"},
+  {matchId:"558552",date:"2026-10-28T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Genoa",away:"Juventus FC",homeScore:2,awayScore:0,venue:"Stadio Luigi Ferraris · Genova",matchday:9,scorers:"Ehizibue 12' · Baldanzi 28'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-genoa-juventus-il-tabellino"},
+  {matchId:"558547",date:"2026-11-01T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Napoli",homeScore:2,awayScore:0,venue:"Allianz Stadium · Torino",matchday:10,scorers:"Alajbegovic 70' · Boga 87'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-il-tabellino-x1174"},
+  {matchId:"558529",date:"2026-11-08T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Fiorentina",away:"Juventus FC",homeScore:2,awayScore:2,venue:"Stadio Artemio Franchi · Firenze",matchday:11,scorers:"Pellegrino 4' · Woltemade 32' · Njie 54' · Bremer 66'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-fiorentina-juventus-il-tabellino-x1037"},
+  {matchId:"558521",date:"2026-11-22T12:30:00+01:00",previousKickoff:"2026-11-23T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Venezia FC",homeScore:4,awayScore:0,venue:"Allianz Stadium · Torino",matchday:12,broadcaster:"DAZN",scorers:"Woltemade 53' · Koopmeiners 59' · Cabal 65' · Kolo Muani 71' (rig.)",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-juventus-venezia-il-tabellino"},
   {date:"2026-11-29T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Como",away:"Juventus FC",matchday:13},
   {date:"2026-12-06T18:00:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Udinese",venue:"Allianz Stadium · Torino",matchday:14},
   {date:"2026-12-14T20:45:00+01:00",previousKickoff:"2026-12-13T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Monza",venue:"Allianz Stadium · Torino",matchday:15},
@@ -2223,6 +2261,28 @@ function renderSeasonInsights(matches) {
   document.getElementById("seasonPointsMeta").textContent = "Serie A 2026/27 · " + data.total.games + " gare concluse · " + number(data.total.points / data.total.games) + " punti per gara";
 }
 
+function openMatchHubFormMatch(match) {
+  var dialog = document.getElementById("matchHubFormDialog");
+  if (!dialog || dialog.open) return;
+  setMatchHubText("matchHubFormHome", matchHubCompactTeam(match.home));
+  setMatchHubText("matchHubFormAway", matchHubCompactTeam(match.away));
+  setMatchHubText("matchHubFormScore", match.homeScore + "-" + match.awayScore);
+  setMatchHubText("matchHubFormCompetition", match.competition);
+  setMatchHubText("matchHubFormMeta", matchHubDate(match, true));
+  var scorers = document.getElementById("matchHubFormScorers");
+  var goals = String(match.scorers || "").split("·").map(function(goal) { return goal.trim(); }).filter(Boolean);
+  scorers.hidden = !goals.length;
+  document.getElementById("matchHubFormGoals").replaceChildren(...goals.map(function(goal) {
+    var item = document.createElement("li");
+    item.textContent = goal;
+    return item;
+  }));
+  var query = new URLSearchParams(match.matchId ? {match_id:match.matchId}
+    : {date:match.date, home:matchHubCompactTeam(match.home), away:matchHubCompactTeam(match.away)});
+  document.getElementById("matchHubFormSource").href = "/partita?" + query;
+  dialog.showModal();
+}
+
 function renderMatchHub(apiRows) {
   var hub = document.getElementById("homeMatchHub");
   if (!hub) return;
@@ -2276,13 +2336,25 @@ function renderMatchHub(apiRows) {
   var recent = finished.slice(-5);
   var counts = {win:0, draw:0, loss:0};
   var form = document.getElementById("matchHubForm");
-  if (form) form.innerHTML = recent.map(function(match) {
+  var formMarkup = recent.map(function(match, index) {
     var outcome = matchHubOutcome(match) || "draw";
     counts[outcome] += 1;
     var letter = outcome === "win" ? "V" : (outcome === "loss" ? "P" : "N");
-    var label = match.home + " " + match.homeScore + "-" + match.awayScore + " " + match.away;
-    return "<span class=\"match-hub-form-dot " + outcome + "\" title=\"" + icvEsc(label) + "\" aria-label=\"" + icvEsc(label) + "\">" + letter + "</span>";
+    var label = matchHubCompactTeam(match.home) + " " + match.homeScore + "-" + match.awayScore + " " + matchHubCompactTeam(match.away);
+    return "<button type=\"button\" class=\"match-hub-form-dot " + outcome + "\" data-form-match=\"" + index + "\" aria-haspopup=\"dialog\" title=\"" + icvEsc(label) + "\" aria-label=\"" + icvEsc(label) + "\">" + letter + "</button>";
   }).join("");
+  if (form) {
+    if (form.dataset.rendered !== formMarkup) {
+      form.innerHTML = formMarkup;
+      form.dataset.rendered = formMarkup;
+    }
+    form.onclick = function(event) {
+      var button = event.target.closest("button[data-form-match]");
+      if (!button || !form.contains(button)) return;
+      var match = recent[Number(button.dataset.formMatch)];
+      if (match) openMatchHubFormMatch(match);
+    };
+  }
   setMatchHubText("matchHubRecord", [
     matchHubRecordLabel(counts.win, "vittoria", "vittorie"),
     matchHubRecordLabel(counts.draw, "pareggio", "pareggi"),

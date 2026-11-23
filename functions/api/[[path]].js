@@ -773,7 +773,7 @@ async function publicMatchContent(env, url) {
     conferences: (media.conferences || []).filter(item => belongsToMatch(item, match, 'conference')),
     albums: (media.albums || []).filter(item => belongsToMatch(item, match, 'album')),
     community_key: match.community_key || '',
-    partial: results.some(result => result.status === 'rejected'),
+    partial: !hasSupabase(env) || results.some(result => result.status === 'rejected'),
   });
 }
 
@@ -781,14 +781,10 @@ async function publicMatch(env, url, skipEnrichment = false) {
   const matchId = cleanText(url.searchParams.get("match_id") || "");
   const dateValue = cleanText(url.searchParams.get("date") || "");
   if (!matchId && !Number.isFinite(Date.parse(dateValue))) return json({ error: "Partita non valida" }, 400);
-  if (!hasSupabase(env)) {
-    const fixture = scheduledJuventusFixture(dateValue, url.searchParams.get("home"), url.searchParams.get("away"));
-    return fixture ? json(fixture) : json({ error: "Referto non disponibile" }, 404);
-  }
   let rows = [];
-  if (matchId) {
+  if (hasSupabase(env) && matchId) {
     rows = await safeAdminRead(() => sb(env, "/match_reports?match_id=eq." + encodeURIComponent(matchId) + "&limit=1"), []);
-  } else {
+  } else if (hasSupabase(env)) {
     const date = new Date(dateValue);
     const start = new Date(date); start.setUTCHours(0, 0, 0, 0);
     const end = new Date(date); end.setUTCHours(23, 59, 59, 999);
@@ -802,6 +798,10 @@ async function publicMatch(env, url, skipEnrichment = false) {
     });
     rows.sort((a, b) => Math.abs(new Date(a.match_date).getTime() - date.getTime()) - Math.abs(new Date(b.match_date).getTime() - date.getTime()));
   }
+  const verifiedId = matchId || verifiedMatchIdByFixture(dateValue, url.searchParams.get("home"), url.searchParams.get("away"));
+  const verifiedFallback = VERIFIED_PUBLIC_MATCH_DETAILS[verifiedId]?.fallback;
+  const usingVerifiedFallback = !rows.length && !!verifiedFallback;
+  if (usingVerifiedFallback) rows = [{ match_id: verifiedId, ...verifiedFallback }];
   if (!rows.length && !skipEnrichment && env.FOOTBALL_DATA_KEY) {
     try {
       const headers = { "X-Auth-Token": env.FOOTBALL_DATA_KEY, "X-Unfold-Lineups": "true", "X-Unfold-Bookings": "true", "X-Unfold-Goals": "true" };
@@ -826,7 +826,7 @@ async function publicMatch(env, url, skipEnrichment = false) {
   }
   if (!rows.length) {
     const fixture = scheduledJuventusFixture(dateValue, url.searchParams.get("home"), url.searchParams.get("away"));
-    if (fixture) return json(fixture);
+    if (fixture && Date.parse(fixture.date) > Date.now()) return json(fixture);
     return json({ error: "Dettaglio partita non trovato" }, 404);
   }
   let row = rows[0];
@@ -835,7 +835,7 @@ async function publicMatch(env, url, skipEnrichment = false) {
   const needsDetails = !Array.isArray(storedPayload.goals) || !storedPayload.goals.length
     || !Array.isArray(storedPayload.homeTeam?.lineup) || !storedPayload.homeTeam.lineup.length
     || !Array.isArray(storedPayload.awayTeam?.lineup) || !storedPayload.awayTeam.lineup.length;
-  if (!skipEnrichment && env.FOOTBALL_DATA_KEY && /^\d+$/.test(String(row.match_id || ""))
+  if (!skipEnrichment && !usingVerifiedFallback && env.FOOTBALL_DATA_KEY && /^\d+$/.test(String(row.match_id || ""))
       && footballDataMatchStatus(storedStatus) === "finished" && needsDetails) {
     try {
       const id = encodeURIComponent(String(row.match_id));
@@ -872,7 +872,7 @@ async function publicMatch(env, url, skipEnrichment = false) {
       // Keep the stored result available if the provider cannot supply the full report.
     }
   }
-  row = applyVerifiedMatchDetails(row);
+  row = applyVerifiedMatchDetails(row, verifiedId);
   const payload = matchSourcePayload(row.source_payload);
   const manual = payload.icv_manual && payload.icv_manual.active !== false ? payload.icv_manual : {};
   const score = payload.score?.fullTime || payload.score?.regularTime || {};
@@ -924,7 +924,75 @@ async function publicMatch(env, url, skipEnrichment = false) {
   });
 }
 
+function verifiedFinal(date, competition, matchday, home, away, homeScore, awayScore, venue, sourcePath, goals, homeLineup, awayLineup) {
+  return {
+    sourceUrl: "https://www.juventus.com/it/news/articoli/" + sourcePath,
+    fallback: {
+      match_date: date, status: "finished", competition,
+      source_payload: {
+        homeTeam: { name: home }, awayTeam: { name: away },
+        score: { fullTime: { home: homeScore, away: awayScore } }, matchday, venue,
+      },
+    },
+    goals: goals.map(([minute, name, side]) => ({
+      minute, scorer: { name }, team: { name: side === "home" ? home : away }, type: "REGULAR",
+    })),
+    homeLineup: homeLineup.map(name => ({ name })),
+    awayLineup: awayLineup.map(name => ({ name })),
+  };
+}
+
 const VERIFIED_PUBLIC_MATCH_DETAILS = {
+  "558552": verifiedFinal("2026-10-28T19:45:00Z", "Serie A", 9, "Genoa CFC", "Juventus FC", 2, 0,
+    "Stadio Luigi Ferraris · Genova", "serie-a-genoa-juventus-il-tabellino", [
+      [12, "Ehizibue", "home"], [28, "Baldanzi", "home"],
+    ], ["Bijlow", "Marcandalli", "Ostigard", "Vasquez", "Ehizibue", "Frendrup", "Amorim", "Ellertsson", "Baldanzi", "Vitinha", "Osmajic"],
+    ["Vicario", "Gatti", "Bremer", "Lucumi", "Kalulu", "McKennie", "Douglas Luiz", "Sarr", "Cambiaso", "Kolo Muani", "Alajbegovic"]),
+  "558547": verifiedFinal("2026-11-01T19:45:00Z", "Serie A", 10, "Juventus FC", "SSC Napoli", 2, 0,
+    "Allianz Stadium · Torino", "serie-a-juventus-napoli-il-tabellino-x1174", [
+      [70, "Alajbegovic", "home"], [87, "Boga", "home"],
+    ], ["Vicario", "Kalulu", "Bremer", "Lucumi", "Cabal", "Douglas Luiz", "Koopmeiners", "McKennie", "Alajbegovic", "Woltemade", "Kolo Muani"],
+    ["Meret", "Di Lorenzo", "Marianucci", "Marin", "Olivera", "Anguissa", "De Bruyne", "McTominay", "Politano", "Lucca", "Lang"]),
+  "uel-az-20261105": verifiedFinal("2026-11-05T20:00:00Z", "Europa League", 4, "AZ Alkmaar", "Juventus FC", 1, 2,
+    "AFAS Stadion · Alkmaar", "uefa-europa-league-az-alkmaar-juventus-il-tabellino", [
+      [19, "Koopmeiners", "away"], [37, "Kolo Muani", "away"], [88, "Meerdink", "home"],
+    ], ["De Busser", "Kasius", "Goes", "Schouten", "de Wilt", "Kwakman", "Byskov", "Koopmeiners", "Stengs", "Meerdink", "Daal"],
+    ["Vicario", "Gatti", "Lucumi", "Kelly", "Kalulu", "Sarr", "Koopmeiners", "Cambiaso", "Alajbegovic", "Woltemade", "Kolo Muani"]),
+  "558529": verifiedFinal("2026-11-08T19:45:00Z", "Serie A", 11, "ACF Fiorentina", "Juventus FC", 2, 2,
+    "Stadio Artemio Franchi · Firenze", "serie-a-fiorentina-juventus-il-tabellino-x1037", [
+      [4, "Pellegrino", "home"], [32, "Woltemade", "away"], [54, "Njie", "home"], [66, "Bremer", "away"],
+    ], ["De Gea", "Jimenez", "Dragusin", "Viery", "Joao Mario", "Ndour", "Oulai", "Goncalves", "Mastantuono", "Pellegrino", "Njie"],
+    ["Vicario", "Kalulu", "Bremer", "Lucumi", "Cabal", "Douglas Luiz", "Koopmeiners", "McKennie", "Woltemade", "Boga", "Kolo Muani"]),
+  "558521": {
+    sourceUrl: "https://www.juventus.com/it/news/articoli/serie-a-juventus-venezia-il-tabellino",
+    fallback: {
+      match_date: "2026-11-22T11:30:00Z", status: "finished", competition: "Serie A",
+      source_payload: {
+        homeTeam: { name: "Juventus FC" }, awayTeam: { name: "Venezia FC" },
+        score: { fullTime: { home: 4, away: 0 } }, matchday: 12, venue: "Allianz Stadium · Torino",
+      },
+    },
+    goals: [
+      [53, "Woltemade", "REGULAR"], [59, "Koopmeiners", "REGULAR"],
+      [65, "Cabal", "REGULAR"], [71, "Kolo Muani", "PENALTY"],
+    ].map(([minute, name, type]) => ({ minute, scorer: { name }, team: { name: "Juventus FC" }, type })),
+    homeLineup: [
+      "Vicario", "Celik", "Bremer", "Kelly", "Cabal", "McKennie", "Douglas Luiz",
+      "Koopmeiners", "Zhegrova", "Kolo Muani", "Alajbegovic",
+    ].map(name => ({ name })),
+    awayLineup: [
+      "Stankovic", "Halhal", "Moreno", "Juan Jesus", "Hainaut", "Perez", "Busio",
+      "Sohm", "Haps", "Lauberbach", "Adams",
+    ].map(name => ({ name })),
+    substitutions: [
+      [46, "Sarr", "Douglas Luiz"], [46, "Woltemade", "Alajbegovic"], [68, "Gatti", "Celik"],
+      [74, "Cambiaso", "Cabal"], [84, "Boga", "Kolo Muani"],
+    ].map(([minute, player, replacedPlayer]) => ({ minute, player, replacedPlayer, team: "Juventus FC" }))
+      .concat([
+        [64, "Sagrado", "Hainaut"], [67, "Dagasso", "Sohm"], [67, "Yeboah", "Lauberbach"],
+        [84, "Fanne", "Perez"], [87, "Rrahmani", "Adams"],
+      ].map(([minute, player, replacedPlayer]) => ({ minute, player, replacedPlayer, team: "Venezia FC" }))),
+  },
   "558584": {
     sourceUrl: "https://www.juventus.com/it/news/articoli/serie-a-cagliari-juventus-il-tabellino-x8571",
     homeFormation: "4-3-2-1",
@@ -979,19 +1047,36 @@ const VERIFIED_PUBLIC_MATCH_DETAILS = {
   },
 };
 
-function applyVerifiedMatchDetails(row) {
-  const details = VERIFIED_PUBLIC_MATCH_DETAILS[String(row.match_id || "")];
+function verifiedMatchIdByFixture(date, home, away) {
+  const day = matchDay(date);
+  if (!day || !home || !away) return "";
+  return Object.keys(VERIFIED_PUBLIC_MATCH_DETAILS).find(id => {
+    const fallback = VERIFIED_PUBLIC_MATCH_DETAILS[id].fallback;
+    return fallback && matchDay(fallback.match_date) === day
+      && normalizedClubName(fallback.source_payload.homeTeam.name) === normalizedClubName(home)
+      && normalizedClubName(fallback.source_payload.awayTeam.name) === normalizedClubName(away);
+  }) || "";
+}
+
+function applyVerifiedMatchDetails(row, fixtureId) {
+  const details = VERIFIED_PUBLIC_MATCH_DETAILS[String(row.match_id || "")] || VERIFIED_PUBLIC_MATCH_DETAILS[fixtureId];
   if (!details) return row;
   const payload = matchSourcePayload(row.source_payload);
+  const fallback = details.fallback;
+  const useVerifiedFinal = fallback && footballDataMatchStatus(row.status || payload.status) !== "finished";
+  const score = payload.score?.fullTime || payload.score?.regularTime;
   return {
     ...row,
+    status: useVerifiedFinal ? fallback.status : row.status,
     source_payload: {
       ...payload,
+      score: fallback && (useVerifiedFinal || score?.home == null || score?.away == null) ? fallback.source_payload.score : payload.score,
+      venue: payload.venue || fallback?.source_payload.venue,
       homeTeam: { ...payload.homeTeam, formation: payload.homeTeam?.formation || details.homeFormation,
         lineup: payload.homeTeam?.lineup?.length ? payload.homeTeam.lineup : details.homeLineup },
       awayTeam: { ...payload.awayTeam, formation: payload.awayTeam?.formation || details.awayFormation,
         lineup: payload.awayTeam?.lineup?.length ? payload.awayTeam.lineup : details.awayLineup },
-      goals: payload.goals?.length ? payload.goals : details.goals,
+      goals: !useVerifiedFinal && payload.goals?.length ? payload.goals : details.goals,
       bookings: payload.bookings?.length ? payload.bookings : details.bookings,
       icv_verified_details: { ...payload.icv_verified_details, substitutions: payload.icv_verified_details?.substitutions?.length
         ? payload.icv_verified_details.substitutions : details.substitutions },
@@ -3827,7 +3912,9 @@ const JUVENTUS_SERIE_A_2026_27 = [
 }));
 
 function scheduledJuventusFixture(dateValue, home, away) {
-  const day = new Date(dateValue).toISOString().slice(0, 10);
+  const date = new Date(dateValue);
+  if (!Number.isFinite(date.getTime())) return null;
+  const day = date.toISOString().slice(0, 10);
   const homeName = cleanText(home || "");
   const awayName = cleanText(away || "");
   if (!homeName || !awayName) return null;

@@ -80,16 +80,17 @@ test('the public match detail corrects an archived stale 15th-round date',async 
   assert.equal(body.date,'2026-12-14T19:45:00Z');
 });
 
-test('the match page has an official scheduled fallback without a match report',async()=>{
-  const response=await onRequest({request:new Request('https://example.test/api/public/match?date=2026-11-22T11%3A30%3A00.000Z&home=Juventus&away=Venezia'),env:{}});
+test('the match page has an official scheduled fallback without a match report',async t=>{
+  t.mock.method(Date,'now',()=>Date.parse('2026-11-23T12:00:00Z'));
+  const response=await onRequest({request:new Request('https://example.test/api/public/match?date=2026-11-29T19%3A45%3A00.000Z&home=Como&away=Juventus'),env:{}});
   const body=await response.json();
   assert.equal(response.status,200);
-  assert.equal(body.date,'2026-11-22T11:30:00Z');
-  assert.equal(body.broadcaster,'DAZN');
+  assert.equal(body.date,'2026-11-29T19:45:00Z');
   assert.equal(body.status,'scheduled');
 });
 
-test('Coppa Italia match page exposes its official round and kickoff',async()=>{
+test('Coppa Italia match page exposes its official round and kickoff',async t=>{
+  t.mock.method(Date,'now',()=>Date.parse('2026-11-23T12:00:00Z'));
   const response=await onRequest({request:new Request('https://example.test/api/public/match?date=2026-12-03T20%3A00%3A00.000Z&home=Juventus&away=Sassuolo'),env:{}});
   const body=await response.json();
   assert.equal(response.status,200);

@@ -1,13 +1,90 @@
 {
   "version": 1,
-  "updated_at": "2026-11-25T15:44:47Z",
+  "updated_at": "2026-11-25T21:01:29Z",
   "match": {
     "home": "Juventus",
     "away": "Omonia Nicosia",
     "kickoff": "2026-11-26T20:00:00Z",
     "competition": "Europa League"
   },
-  "formation": null,
+  "formation": {
+    "status": "Probabile",
+    "module": "3-4-3",
+    "source": "Sky Sport",
+    "source_url": "https://sport.sky.it/calcio/europa-league/2026/11/25/juventus-omonia-nicosia-probabili-formazioni-5-giornata",
+    "updated_at": "2026-11-25T17:55:00Z",
+    "players": [
+      {
+        "name": "Neto",
+        "x": 0,
+        "z": 7.4
+      },
+      {
+        "name": "Gatti",
+        "x": 3.6,
+        "z": 4.5
+      },
+      {
+        "name": "Bremer",
+        "x": 0,
+        "z": 4.5
+      },
+      {
+        "name": "Lucumí",
+        "x": -3.6,
+        "z": 4.5
+      },
+      {
+        "name": "McKennie",
+        "x": 4.5,
+        "z": 0.5
+      },
+      {
+        "name": "Douglas Luiz",
+        "x": 1.5,
+        "z": 0.5
+      },
+      {
+        "name": "Sarr",
+        "x": -1.5,
+        "z": 0.5
+      },
+      {
+        "name": "Cambiaso",
+        "x": -4.5,
+        "z": 0.5
+      },
+      {
+        "name": "Conceição",
+        "x": 3.6,
+        "z": -5
+      },
+      {
+        "name": "Ekhator",
+        "x": 0,
+        "z": -5.8
+      },
+      {
+        "name": "Boga",
+        "x": -3.6,
+        "z": -5
+      }
+    ],
+    "details": [
+      {
+        "label": "Nota",
+        "text": "Formazione probabile, non ufficiale."
+      },
+      {
+        "label": "Squalificati",
+        "text": "Nessuno segnalato."
+      },
+      {
+        "label": "Indisponibili",
+        "text": "Kalulu, Nico Gonzalez, Yildiz, Thuram, Locatelli e Grabara."
+      }
+    ]
+  },
   "updates": [
     {
       "category": "Conferenza stampa",

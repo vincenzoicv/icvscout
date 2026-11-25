@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-24T20:00:00Z",
+  "updated_at": "2026-11-25T15:44:47Z",
   "match": {
     "home": "Juventus",
     "away": "Omonia Nicosia",
@@ -10,63 +10,23 @@
   "formation": null,
   "updates": [
     {
+      "category": "Conferenza stampa",
+      "title": "Spalletti annuncia Ekhator titolare contro l'Omonia",
+      "summary": "Jeff Ekhator partirà dal primo minuto il 26 novembre. Il tecnico ha confermato anche Cambiaso e ha indicato Zhegrova come possibile titolare.",
+      "detail": "Nella conferenza del 25 novembre, con Neto, Spalletti ha spiegato di vedere Ekhator come una prima punta fisica, capace di attaccare la profondità.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/europa-league/2026/11/25/juventus-omonia-spalletti-conferenza-video",
+      "published_at": "2026-11-25T13:55:00Z",
+      "significant": true
+    },
+    {
       "category": "Condizioni",
-      "title": "Alajbegovic, Kalulu e Nico Gonzalez a parte verso l'Omonia",
-      "summary": "I tre non si sono allenati con il gruppo nella seduta del 24 novembre alla Continassa.",
-      "detail": "Alajbegovic era uscito all'intervallo contro il Venezia e si è sottoposto ad accertamenti il 23 novembre. Non risultano ancora convocazioni ufficiali per l'Omonia.",
-      "source": "Tuttosport",
-      "source_url": "https://www.tuttosport.com/news/calcio/serie-a/juventus/2026/11/24-152803312/juve_le_ultime_dallallenamento_come_stanno_alajbegovic_nico_gonzalez_e_kalulu",
-      "published_at": "2026-11-24T13:06:00Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Juventus-Omonia: conferenza di Spalletti il 25 novembre alle 15:00",
-      "summary": "Spalletti parlerà mercoledì 25 novembre alle 15:00 all'Allianz Stadium, insieme a un giocatore della rosa.",
-      "detail": "La rifinitura è in programma lo stesso giorno alle 11:30 alla Continassa.",
-      "source": "JuventusNews24",
-      "source_url": "https://www.juventusnews24.com/juve-omonia-programma-vigilia-europa-league-news/",
-      "published_at": "2026-11-23T11:15:00Z",
-      "significant": true
-    },
-    {
-      "category": "Risultato finale",
-      "title": "Juventus-Venezia 4-0: quattro gol nella ripresa",
-      "summary": "Dodicesima giornata di Serie A: Woltemade 53', Koopmeiners 59', Cabal 65', Kolo Muani 71' (rig.).",
-      "detail": "Finale all'Allianz Stadium. Prossimo impegno Juventus-Omonia Nicosia, giovedi 26 novembre alle 21:00, in Europa League.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-venezia-il-tabellino",
-      "published_at": "2026-11-22T13:22:57.957Z",
-      "significant": true
-    },
-    {
-      "category": "Convocati",
-      "title": "Juventus-Venezia: Celik e Cambiaso tra i 22 convocati",
-      "summary": "I due esterni tornano nella lista per la sfida di domenica 22 novembre alle 12:30.",
-      "detail": "Convocati anche Conceicao e Zhegrova. Kalulu e Nico Gonzalez non figurano nella lista.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/serie-a-juventus-venezia-i-convocati",
-      "published_at": "2026-11-21T19:38:48.039Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Spalletti conferma: Kalulu e Nico Gonzalez saltano il Venezia",
-      "summary": "Nella conferenza del 21 novembre, Spalletti ha confermato le due assenze oltre a quelle dei lungodegenti. Gli altri sono a disposizione.",
-      "detail": "Il tecnico ha parlato di due buone sedute alla vigilia e ha sottolineato i progressi di Woltemade nella posizione in cui sta giocando.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/la-conferenza-stampa-di-luciano-spalletti-alla-vigilia-di-juventus-venezia",
-      "published_at": "2026-11-21T15:43:45.928Z",
-      "significant": true
-    },
-    {
-      "category": "Bollettino medico",
-      "title": "Kalulu: lesione di basso grado al bicipite femorale sinistro",
-      "summary": "Gli esami al J|medical hanno evidenziato una lesione di basso grado del bicipite femorale sinistro. Kalulu ha iniziato le cure ed e stato sconvocato dalla nazionale francese.",
-      "detail": "Il fastidio alla coscia sinistra e stato accusato al termine di Fiorentina-Juventus. Il club non ha comunicato tempi di recupero.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/bollettino-medico-le-condizioni-di-kalulu-09-11-26",
-      "published_at": "2026-11-09T12:24:14.808Z",
+      "title": "Alajbegovic torna a disposizione; Kalulu e Nico Gonzalez ancora fuori",
+      "summary": "Spalletti ha confermato che Kalulu e Nico Gonzalez restano indisponibili contro l'Omonia, oltre ai lungodegenti.",
+      "detail": "Alajbegovic è tornato ad allenarsi in gruppo nella rifinitura del 25 novembre. Il tecnico non ha indicato date di rientro per gli assenti.",
+      "source": "Sky Sport",
+      "source_url": "https://sport.sky.it/calcio/europa-league/2026/11/25/juventus-omonia-spalletti-conferenza-video",
+      "published_at": "2026-11-25T13:55:00Z",
       "significant": true
     }
   ]

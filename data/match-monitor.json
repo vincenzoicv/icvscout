@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-25T21:01:29Z",
+  "updated_at": "2026-11-26T16:57:44Z",
   "match": {
     "home": "Juventus",
     "away": "Omonia Nicosia",
@@ -86,6 +86,16 @@
     ]
   },
   "updates": [
+    {
+      "category": "Convocati",
+      "title": "Juventus-Omonia: 23 convocati, c'è Alajbegovic",
+      "summary": "Alajbegovic è nella lista ufficiale per la quinta giornata di Europa League. Ci sono anche Durmisi, Merola e Turco.",
+      "detail": "Kalulu e Nico Gonzalez non figurano nella lista. L'undici ufficiale non è ancora stato annunciato.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-juventus-omonia-i-convocati",
+      "published_at": "2026-11-26T12:13:38.5Z",
+      "significant": true
+    },
     {
       "category": "Conferenza stampa",
       "title": "Spalletti annuncia Ekhator titolare contro l'Omonia",

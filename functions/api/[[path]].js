@@ -963,6 +963,14 @@ const VERIFIED_PUBLIC_MATCH_DETAILS = {
       [4, "Pellegrino", "home"], [32, "Woltemade", "away"], [54, "Njie", "home"], [66, "Bremer", "away"],
     ], ["De Gea", "Jimenez", "Dragusin", "Viery", "Joao Mario", "Ndour", "Oulai", "Goncalves", "Mastantuono", "Pellegrino", "Njie"],
     ["Vicario", "Kalulu", "Bremer", "Lucumi", "Cabal", "Douglas Luiz", "Koopmeiners", "McKennie", "Woltemade", "Boga", "Kolo Muani"]),
+  "uel-2050129": { ...verifiedFinal("2026-11-26T20:00:00Z", "Europa League", 5, "Juventus", "Omonia Nicosia", 4, 1,
+    "Allianz Stadium · Torino", "uefa-europa-league-juventus-omonia-il-tabellino", [
+      [15, "Šatka", "away"], [37, "Cambiaso", "home"], [43, "Ekhator", "home"],
+      [68, "Conceição", "home"], [73, "Boga", "home"],
+    ], ["Neto", "Gatti", "Lucumí", "Kelly", "Cambiaso", "Douglas Luiz", "Sarr", "Cabal", "Conceição", "Ekhator", "Boga"],
+    ["Kaminski", "Négo", "Coulibaly", "Šatka", "Duverne", "Andreou", "Marić", "Tănase", "Tanković", "Montnor", "Kakoullis"]),
+    updatedAt: "2026-11-26T21:53:00Z",
+  },
   "558521": {
     sourceUrl: "https://www.juventus.com/it/news/articoli/serie-a-juventus-venezia-il-tabellino",
     fallback: {
@@ -4043,7 +4051,7 @@ async function juventusCalendar(request, env, context) {
   if (request.method !== "GET") return json({ error: "Metodo non consentito" }, 405);
 
   const cache = typeof caches !== "undefined" ? caches.default : null;
-  const key = new Request(new URL("/api/cache/juventus-calendar-2026-27-v1", request.url));
+  const key = new Request(new URL("/api/cache/juventus-calendar-2026-27-v2", request.url));
   if (cache) {
     try {
       const cached = await cache.match(key);
@@ -4100,10 +4108,11 @@ async function juventusCalendar(request, env, context) {
     const end = kickoff ? new Date(kickoff.getTime() + 2 * 60 * 60 * 1000) : null;
     const home = fixture.home;
     const away = fixture.away;
-    const score = match && match.score && match.score.fullTime || {};
-    const finished = match && ["FINISHED", "AWARDED"].includes(match.status)
-      && Number.isFinite(score.home)
-      && Number.isFinite(score.away);
+    const verified = fixture.code === "EL" && VERIFIED_PUBLIC_MATCH_DETAILS[verifiedMatchIdByFixture(fixture.kickoff, home, away)];
+    const providerScore = match && ["FINISHED", "AWARDED"].includes(match.status) ? match.score?.fullTime : null;
+    const verifiedScore = verified?.updatedAt ? verified.fallback?.source_payload.score.fullTime : null;
+    const score = verifiedScore || providerScore || {};
+    const finished = Number.isFinite(score.home) && Number.isFinite(score.away);
     const result = finished ? `${home} ${score.home}-${score.away} ${away}` : "";
     const summary = finished ? `Juventus: ${result}` : `${fixture.competition}: ${home} - ${away}`;
     const description = [
@@ -4119,9 +4128,9 @@ async function juventusCalendar(request, env, context) {
     const modified = match && match.lastUpdated ? new Date(match.lastUpdated) : null;
     const baseModified = modified && Number.isFinite(modified.getTime()) ? modified : new Date(fixture.code === "EL" ? "2026-08-29T00:00:00Z" : "2026-06-05T00:00:00Z");
     const correctedPlaceholder = match?.status === 'SCHEDULED' && !fixture.kickoff;
-    const revisionDate = correctedPlaceholder ? '2026-08-31T11:20:00Z' : fixture.updatedAt;
+    const revisionDate = correctedPlaceholder ? '2026-08-31T11:20:00Z' : verified?.updatedAt || fixture.updatedAt;
     const validModified = revisionDate ? new Date(Math.max(baseModified.getTime(), new Date(revisionDate).getTime())) : baseModified;
-    const sequence = match || fixture.updatedAt ? Math.floor(validModified.getTime() / 1000) : 0;
+    const sequence = match || revisionDate ? Math.floor(validModified.getTime() / 1000) : 0;
 
     lines.push(
       "BEGIN:VEVENT",

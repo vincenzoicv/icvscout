@@ -114,7 +114,7 @@ test("dopo il Celta il referto e le prossime tre sono aggiornati", async () => {
   assert.equal(last.mvp, undefined);
   assert.equal(last.worst, undefined);
   render(rows);
-  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
+  assert.match(box.innerHTML, /Como[\s\S]*Sassuolo[\s\S]*Udinese/);
   assert.doesNotMatch(box.innerHTML, /Celta Vigo/);
 });
 
@@ -136,7 +136,7 @@ test("il finale con la Lazio conserva marcatori verificati e prossime tre senza 
   assert.equal(fallback.awayScore, 3);
   assert.equal(fallback.scorers, match.scorers);
   render(rows);
-  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
+  assert.match(box.innerHTML, /Como[\s\S]*Sassuolo[\s\S]*Udinese/);
   assert.doesNotMatch(box.innerHTML, /Lazio/);
 });
 
@@ -159,7 +159,7 @@ test("il finale col Rennes usa il tabellino ufficiale e deduplica Genoa CFC", as
   assert.equal(phase(null, last, null), "final");
   assert.equal(rows.filter(match => /genoa/i.test(match.home)).length, 1);
   render(rows);
-  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
+  assert.match(box.innerHTML, /Como[\s\S]*Sassuolo[\s\S]*Udinese/);
   assert.doesNotMatch(box.innerHTML, /Rennes/);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
   assert.deepEqual(rows.filter(match => match.status === "finished" && new Date(match.date).getTime() <= MatchDate.now()).slice(-5).map(match => [match.homeScore,match.awayScore]), [[2,0],[1,1],[1,2],[0,3],[2,2]]);
@@ -188,7 +188,7 @@ test("il finale di Lecce resiste a un provider obsoleto e aggiorna forma e pross
   assert.equal(outcome(last), "win");
   assert.deepEqual(rows.filter(match => match.status === "finished" && new Date(match.date).getTime() <= MatchDate.now()).slice(-5).map(outcome), ["draw", "win", "loss", "draw", "win"]);
   render(rows);
-  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
+  assert.match(box.innerHTML, /Como[\s\S]*Sassuolo[\s\S]*Udinese/);
   assert.doesNotMatch(box.innerHTML, /Lecce/);
   const monitor = JSON.parse(await read("data/match-monitor.json"));
   if (monitor.formation) {
@@ -225,7 +225,7 @@ test("il finale di Genoa conserva marcatori, forma e prossime tre senza premi", 
   assert.equal(fallback.mvp, undefined);
   assert.equal(fallback.worst, undefined);
   render(rows);
-  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
+  assert.match(box.innerHTML, /Como[\s\S]*Sassuolo[\s\S]*Udinese/);
   assert.doesNotMatch(box.innerHTML, /Genoa/);
 });
 
@@ -254,7 +254,7 @@ test("il finale col Napoli prevale sul live obsoleto e conserva marcatori e form
   assert.equal(rows.filter(row => /napoli/i.test(row.away)).length, 1);
   assert.deepEqual(rows.filter(row => row.status === "finished" && new Date(row.date).getTime() <= MatchDate.now()).slice(-5).map(outcome), ["loss","draw","win","loss","win"]);
   render(rows);
-  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
+  assert.match(box.innerHTML, /Como[\s\S]*Sassuolo[\s\S]*Udinese/);
   assert.doesNotMatch(box.innerHTML, /Napoli/);
 });
 
@@ -275,7 +275,7 @@ test("il referto AZ verificato aggiorna forma e calendario senza premi editorial
   assert.equal(last.worst, undefined);
   assert.deepEqual(rows.filter(row => row.status === "finished" && new Date(row.date).getTime() <= MatchDate.now()).slice(-5).map(outcome), ["draw","win","loss","win","win"]);
   render(rows);
-  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
+  assert.match(box.innerHTML, /Como[\s\S]*Sassuolo[\s\S]*Udinese/);
   assert.doesNotMatch(box.innerHTML, /AZ Alkmaar/);
 });
 
@@ -296,7 +296,7 @@ test("il calendario deduplica le gare e conserva il referto di Cagliari", async 
   render(upcomingRows);
   assert.equal(panel.hidden, false);
   assert.equal((box.innerHTML.match(/class="match-hub-upcoming-item"/g) || []).length, 3);
-  assert.match(box.innerHTML, /Omonia[\s\S]*Como[\s\S]*Sassuolo/);
+  assert.match(box.innerHTML, /Como[\s\S]*Sassuolo[\s\S]*Udinese/);
   assert.doesNotMatch(box.innerHTML, /Cagliari/);
   const last = allRows([]).find(match => match.matchday === 6 && match.competition === 'Serie A');
   assert.equal(last.status, 'finished');
@@ -326,6 +326,26 @@ test("il finale Venezia prevale sul prepartita del provider", async () => {
   assert.equal(outcome(match), "win");
   assert.equal(match.mvp, undefined);
   assert.equal(match.worst, undefined);
+});
+
+test("il finale Omonia aggiorna referto, forma e prossime tre", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function renderMatchHubScorers("));
+  const box = {innerHTML:""};
+  class MatchDate extends Date { static now() { return Date.parse("2026-11-26T22:00:18Z"); } }
+  const {allRows, outcome, render} = new Function("document", "Date", source + ";return {allRows:allMatchHubRows,outcome:matchHubOutcome,render:renderMatchHubUpcoming}")({getElementById:id => id === "matchHubUpcomingPanel" ? {hidden:true} : box}, MatchDate);
+  const rows = allRows([]);
+  const played = rows.filter(match => match.status === "finished").slice(-5);
+  const last = played.at(-1);
+  assert.equal(last.away, "Omonia Nicosia");
+  assert.deepEqual([last.homeScore, last.awayScore, last.matchday], [4, 1, 5]);
+  assert.equal(last.scorers, "Šatka 15' · Cambiaso 37' · Ekhator 43' · Conceição 68' · Boga 73'");
+  assert.deepEqual(played.map(outcome), ["win", "win", "draw", "win", "win"]);
+  assert.equal(last.mvp, undefined);
+  assert.equal(last.worst, undefined);
+  render(rows);
+  assert.match(box.innerHTML, /Como[\s\S]*Sassuolo[\s\S]*Udinese/);
+  assert.doesNotMatch(box.innerHTML, /Omonia/);
 });
 
 test("la home lascia le amichevoli al calendario ufficiale", async () => {
@@ -692,7 +712,7 @@ test("il calendario Juventus si aggiorna su Apple e Google con i risultati", asy
     europeanEvents.forEach((event, index) => {
       const [utc, local, teams] = expected[index];
       assert.ok(event.includes('DTSTART:' + utc));
-      assert.ok(event.includes('SUMMARY:Europa League: ' + teams));
+      assert.ok(event.includes(index === 4 ? 'SUMMARY:Juventus: Juventus 4-1 Omonia Nicosia' : 'SUMMARY:Europa League: ' + teams));
       assert.ok(event.includes(`UID:juventus-europa-league-2026-27-g${index + 1}@`));
       assert.ok(event.includes('TRIGGER:-PT30M'));
       assert.ok(!event.includes('VALUE=DATE'));

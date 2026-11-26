@@ -1,120 +1,12 @@
 {
   "version": 1,
-  "updated_at": "2026-11-26T16:57:44Z",
+  "updated_at": "2026-11-26T22:00:18Z",
   "match": {
-    "home": "Juventus",
-    "away": "Omonia Nicosia",
-    "kickoff": "2026-11-26T20:00:00Z",
-    "competition": "Europa League"
+    "home": "Como",
+    "away": "Juventus",
+    "kickoff": "2026-11-29T19:45:00Z",
+    "competition": "Serie A"
   },
-  "formation": {
-    "status": "Probabile",
-    "module": "3-4-3",
-    "source": "Sky Sport",
-    "source_url": "https://sport.sky.it/calcio/europa-league/2026/11/25/juventus-omonia-nicosia-probabili-formazioni-5-giornata",
-    "updated_at": "2026-11-25T17:55:00Z",
-    "players": [
-      {
-        "name": "Neto",
-        "x": 0,
-        "z": 7.4
-      },
-      {
-        "name": "Gatti",
-        "x": 3.6,
-        "z": 4.5
-      },
-      {
-        "name": "Bremer",
-        "x": 0,
-        "z": 4.5
-      },
-      {
-        "name": "Lucumí",
-        "x": -3.6,
-        "z": 4.5
-      },
-      {
-        "name": "McKennie",
-        "x": 4.5,
-        "z": 0.5
-      },
-      {
-        "name": "Douglas Luiz",
-        "x": 1.5,
-        "z": 0.5
-      },
-      {
-        "name": "Sarr",
-        "x": -1.5,
-        "z": 0.5
-      },
-      {
-        "name": "Cambiaso",
-        "x": -4.5,
-        "z": 0.5
-      },
-      {
-        "name": "Conceição",
-        "x": 3.6,
-        "z": -5
-      },
-      {
-        "name": "Ekhator",
-        "x": 0,
-        "z": -5.8
-      },
-      {
-        "name": "Boga",
-        "x": -3.6,
-        "z": -5
-      }
-    ],
-    "details": [
-      {
-        "label": "Nota",
-        "text": "Formazione probabile, non ufficiale."
-      },
-      {
-        "label": "Squalificati",
-        "text": "Nessuno segnalato."
-      },
-      {
-        "label": "Indisponibili",
-        "text": "Kalulu, Nico Gonzalez, Yildiz, Thuram, Locatelli e Grabara."
-      }
-    ]
-  },
-  "updates": [
-    {
-      "category": "Convocati",
-      "title": "Juventus-Omonia: 23 convocati, c'è Alajbegovic",
-      "summary": "Alajbegovic è nella lista ufficiale per la quinta giornata di Europa League. Ci sono anche Durmisi, Merola e Turco.",
-      "detail": "Kalulu e Nico Gonzalez non figurano nella lista. L'undici ufficiale non è ancora stato annunciato.",
-      "source": "Juventus.com",
-      "source_url": "https://www.juventus.com/it/news/articoli/uefa-europa-league-juventus-omonia-i-convocati",
-      "published_at": "2026-11-26T12:13:38.5Z",
-      "significant": true
-    },
-    {
-      "category": "Conferenza stampa",
-      "title": "Spalletti annuncia Ekhator titolare contro l'Omonia",
-      "summary": "Jeff Ekhator partirà dal primo minuto il 26 novembre. Il tecnico ha confermato anche Cambiaso e ha indicato Zhegrova come possibile titolare.",
-      "detail": "Nella conferenza del 25 novembre, con Neto, Spalletti ha spiegato di vedere Ekhator come una prima punta fisica, capace di attaccare la profondità.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/europa-league/2026/11/25/juventus-omonia-spalletti-conferenza-video",
-      "published_at": "2026-11-25T13:55:00Z",
-      "significant": true
-    },
-    {
-      "category": "Condizioni",
-      "title": "Alajbegovic torna a disposizione; Kalulu e Nico Gonzalez ancora fuori",
-      "summary": "Spalletti ha confermato che Kalulu e Nico Gonzalez restano indisponibili contro l'Omonia, oltre ai lungodegenti.",
-      "detail": "Alajbegovic è tornato ad allenarsi in gruppo nella rifinitura del 25 novembre. Il tecnico non ha indicato date di rientro per gli assenti.",
-      "source": "Sky Sport",
-      "source_url": "https://sport.sky.it/calcio/europa-league/2026/11/25/juventus-omonia-spalletti-conferenza-video",
-      "published_at": "2026-11-25T13:55:00Z",
-      "significant": true
-    }
-  ]
+  "formation": null,
+  "updates": []
 }

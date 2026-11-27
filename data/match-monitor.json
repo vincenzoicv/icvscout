@@ -1,12 +1,68 @@
 {
   "version": 1,
-  "updated_at": "2026-11-26T22:00:18Z",
+  "updated_at": "2026-11-27T19:48:04Z",
   "match": {
     "home": "Como",
     "away": "Juventus",
     "kickoff": "2026-11-29T19:45:00Z",
     "competition": "Serie A"
   },
-  "formation": null,
-  "updates": []
+  "formation": {
+    "status": "Probabile",
+    "module": "4-3-3",
+    "source": "Sky Sport",
+    "source_url": "https://sport.sky.it/calcio/serie-a/probabili-formazioni/juventus",
+    "updated_at": "2026-11-27T19:48:04Z",
+    "players": [
+      {"name": "Vicario", "x": 0, "z": 7.4},
+      {"name": "Çelik", "x": 4.5, "z": 4.5},
+      {"name": "Bremer", "x": 1.5, "z": 4.5},
+      {"name": "Lucumí", "x": -1.5, "z": 4.5},
+      {"name": "Cambiaso", "x": -4.5, "z": 4.5},
+      {"name": "McKennie", "x": 3.6, "z": 0.5},
+      {"name": "Douglas Luiz", "x": 0, "z": 0.5},
+      {"name": "Koopmeiners", "x": -3.6, "z": 0.5},
+      {"name": "Kolo Muani", "x": 3.6, "z": -5},
+      {"name": "Woltemade", "x": 0, "z": -5.8},
+      {"name": "Alajbegović", "x": -3.6, "z": -5}
+    ],
+    "details": [
+      {"label": "Nota", "text": "Formazione probabile, non ufficiale."},
+      {"label": "Ballottaggio", "text": "Cambiaso-Cabal sulla sinistra."},
+      {"label": "Squalificati", "text": "Nessuno segnalato."},
+      {"label": "Indisponibili", "text": "Yildiz, Locatelli, Thuram e Grabara."}
+    ]
+  },
+  "updates": [
+    {
+      "category": "Bollettino medico",
+      "title": "Adžić operato al ginocchio destro",
+      "summary": "Il centrocampista, in prestito al Sassuolo, ha iniziato la riabilitazione dopo l'intervento del 26 novembre.",
+      "detail": "Il centrocampista, in prestito al Sassuolo, ha subito un piccolo distacco osteocondrale con il Montenegro. Operato a Lione il 26 novembre, ha iniziato la riabilitazione.",
+      "source": "Juventus.com",
+      "source_url": "https://www.juventus.com/it/news/articoli/bollettino-medico-le-condizioni-di-adzic-271126",
+      "published_at": "2026-11-27T16:35:08Z",
+      "significant": true
+    },
+    {
+      "category": "Condizioni",
+      "title": "Kalulu in gruppo, seduta parziale per Nico Gonzalez",
+      "summary": "Il difensore ha svolto tutta la seduta del 27 novembre con i compagni; la disponibilità dell'esterno per Como resta da confermare.",
+      "detail": "Il 27 novembre Kalulu si è allenato regolarmente con i compagni. Nico Gonzalez ha svolto solo una parte della seduta; la disponibilità per Como resta da confermare.",
+      "source": "Tuttosport",
+      "source_url": "https://www.tuttosport.com/news/calcio/serie-a/juventus/2026/11/27-152879143/kalulu-nico_gonzalez_novit_per_como-juve_le_ultime_dalla_continassa",
+      "published_at": "2026-11-27T13:13:00Z",
+      "significant": true
+    },
+    {
+      "category": "Condizioni",
+      "title": "Ekhator, fastidio al polpaccio contro l'Omonia",
+      "summary": "Spalletti ha spiegato il motivo del cambio, senza annunciare uno stop per l'attaccante.",
+      "detail": "Spalletti ha spiegato che l'attaccante ha chiesto il cambio dopo aver avvertito un fastidio al polpaccio. Il tecnico non ha annunciato uno stop.",
+      "source": "Calciomercato.it",
+      "source_url": "https://www.calciomercato.it/2026/11/27/juventus-spalletti-dopo-il-poker-como-fondamentale-problema-per-ekhator-video-cm/",
+      "published_at": "2026-11-27T00:36:14Z",
+      "significant": true
+    }
+  ]
 }

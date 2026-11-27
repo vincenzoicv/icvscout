@@ -164,6 +164,7 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-phase{display:grid;grid-template-columns:auto auto;align-items:center;justify-content:center;column-gap:14px;padding:14px 20px;border-bottom:1px solid var(--bdr2);background:linear-gradient(90deg,transparent,rgba(196,150,42,.085) 50%,transparent);text-align:center;}
 .match-hub-phase span{font-family:"Bebas Neue";font-size:15px;letter-spacing:1.4px;color:var(--gold-l);text-transform:uppercase;}
 .match-hub-phase strong{font-family:"Barlow Condensed";font-size:17px;font-weight:900;color:var(--white);letter-spacing:.4px;}
+.match-hub-phase span[hidden]+strong{grid-column:1/-1;}
 .match-hub-main{min-height:210px;}
 .match-hub-next{display:flex;min-height:210px;flex-direction:column;align-items:center;justify-content:center;min-width:0;padding:24px;text-align:center;}
 .match-hub-kicker{font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:2px;color:var(--gold-l);text-transform:uppercase;margin-bottom:7px;}
@@ -1982,7 +1983,7 @@ function matchHubPhase(upcoming, latest, live) {
 
 function matchHubPhaseContent(phase, match) {
   if (phase === "live") return { state:"Live", eyebrow:"Diretta verificata", title:"La Juventus è in campo" };
-  if (phase === "final") return { state:"Finale", eyebrow:"Referto disponibile", title:"La partita, in un colpo d'occhio" };
+  if (phase === "final") return { state:"Finale", eyebrow:"", title:"La partita, in un colpo d'occhio" };
   if (phase === "matchday") return { state:"Matchday", eyebrow:"Oggi si gioca", title:"Tutto pronto per " + (match ? match.home + "-" + match.away : "la Juventus") };
   if (phase === "post") return { state:"Post partita", eyebrow:"Ultimo finale", title:"Analisi in preparazione" };
   return {
@@ -2304,6 +2305,8 @@ function renderMatchHub(apiRows) {
   hub.dataset.state = phase;
   setMatchHubText("matchHubState", phaseCopy.state);
   setMatchHubText("matchHubPhaseEyebrow", phaseCopy.eyebrow);
+  var phaseEyebrow = document.getElementById("matchHubPhaseEyebrow");
+  if (phaseEyebrow) phaseEyebrow.hidden = !phaseCopy.eyebrow;
   setMatchHubText("matchHubPhaseTitle", phaseCopy.title);
   var freshnessTime = new Date(display && display.updatedAt || 0).getTime();
   hub.classList.toggle("is-stale", phase === "live" && (!freshnessTime || Date.now() - freshnessTime > 5 * 60000));

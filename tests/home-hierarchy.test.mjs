@@ -21,8 +21,8 @@ test('home keeps the conference preview concise while Media can retain the archi
 
 test('Match Hub starts neutral and only becomes ready after current data renders',()=>{
   assert.match(home,/id="homeMatchHub"[^>]*data-state="loading"[^>]*aria-busy="true"/);
-  assert.match(home,/id="matchHubPhaseTitle">Caricamento prossima partita</);
-  assert.doesNotMatch(home,/id="matchHubPhaseTitle">Verso Juventus FC-Parma Calcio 1913</);
+  assert.match(home,/id="matchHubNextDate">Aggiornamento in corso/);
+  assert.match(home,/id="matchHubPrevious" hidden>/);
   assert.match(home,/function renderMatchHub\(apiRows\)[\s\S]*?hub\.setAttribute\("aria-busy", "false"\)/);
 });
 

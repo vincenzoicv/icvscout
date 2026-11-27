@@ -164,9 +164,9 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-phase{display:grid;grid-template-columns:auto auto;align-items:center;justify-content:center;column-gap:14px;padding:14px 20px;border-bottom:1px solid var(--bdr2);background:linear-gradient(90deg,transparent,rgba(196,150,42,.085) 50%,transparent);text-align:center;}
 .match-hub-phase span{font-family:"Bebas Neue";font-size:15px;letter-spacing:1.4px;color:var(--gold-l);text-transform:uppercase;}
 .match-hub-phase strong{font-family:"Barlow Condensed";font-size:17px;font-weight:900;color:var(--white);letter-spacing:.4px;}
-.match-hub-phase span[hidden]+strong{grid-column:1/-1;}
-.match-hub-main{min-height:210px;}
-.match-hub-next{display:flex;min-height:210px;flex-direction:column;align-items:center;justify-content:center;min-width:0;padding:24px;text-align:center;}
+.match-hub-phase[hidden]{display:none;}
+.match-hub-main{min-height:180px;}
+.match-hub-next{display:flex;min-height:180px;flex-direction:column;align-items:center;justify-content:center;min-width:0;padding:24px;text-align:center;}
 .match-hub-kicker{font-family:"Barlow Condensed";font-size:10px;font-weight:900;letter-spacing:2px;color:var(--gold-l);text-transform:uppercase;margin-bottom:7px;}
 .match-hub-date{font-family:"Barlow Condensed";font-size:12px;font-weight:700;letter-spacing:1.3px;color:var(--t3);text-transform:uppercase;}
 .match-hub-teams{display:flex;align-items:center;justify-content:center;gap:14px;min-width:0;margin:8px 0 7px;}
@@ -175,6 +175,7 @@ main{padding-top:58px;position:relative;z-index:1;}
 .home-match-hub[data-state="final"] .match-hub-vs,.home-match-hub[data-state="post"] .match-hub-vs{min-width:112px;font-family:"Bebas Neue";font-size:72px;font-weight:400;line-height:.82;letter-spacing:1px;color:var(--gold-l);}
 .match-hub-meta{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;font-family:"Barlow Condensed";font-size:11px;font-weight:700;letter-spacing:1.1px;color:var(--t2);text-transform:uppercase;}
 .match-hub-meta span+span::before{content:"·";margin-right:8px;color:var(--gold);}
+.match-hub-meta span:empty{display:none;}
 .match-hub-result-scorers{max-width:100%;margin:6px 0 12px;color:var(--white);font-family:"Barlow Condensed";font-size:16px;font-weight:600;line-height:1.4;letter-spacing:0;overflow-wrap:anywhere;}
 .match-hub-countdown{display:inline-flex;align-items:baseline;justify-content:center;gap:6px;margin-top:14px;color:var(--gold-l);font-family:"Barlow Condensed";font-size:12px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase;}
 .match-hub-countdown[hidden]{display:none;}
@@ -183,7 +184,6 @@ main{padding-top:58px;position:relative;z-index:1;}
 .match-hub-upcoming[hidden]{display:none;}
 .match-hub-upcoming-head{display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px;}
 .match-hub-upcoming-head h3{margin:0;font-family:"Bebas Neue";font-size:18px;font-weight:400;letter-spacing:1.5px;color:var(--gold-l);text-transform:uppercase;}
-.match-hub-upcoming-head span{font-family:"Barlow Condensed";font-size:9px;font-weight:800;letter-spacing:1.3px;color:var(--t3);text-transform:uppercase;}
 .match-hub-upcoming-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid rgba(196,150,42,.16);border-bottom:1px solid rgba(196,150,42,.16);}
 .match-hub-upcoming-item{display:flex;min-width:0;flex-direction:column;gap:4px;padding:13px 16px;}
 .match-hub-upcoming-item+.match-hub-upcoming-item{border-left:1px solid rgba(196,150,42,.16);}
@@ -944,12 +944,12 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
         <a class="match-hub-calendar-link" href="/calendario-juventus">Calendario</a>
       </div>
     </div>
-    <div class="match-hub-phase">
-      <span id="matchHubPhaseEyebrow">Calendario Juventus</span>
-      <strong id="matchHubPhaseTitle">Caricamento prossima partita</strong>
+    <div class="match-hub-phase" id="matchHubPrevious" hidden>
+      <span>Ultimo risultato</span>
+      <strong id="matchHubPreviousScore"></strong>
     </div>
     <div class="match-hub-main">
-      <section class="match-hub-next" aria-label="Prossima partita della Juventus">
+      <section class="match-hub-next" aria-labelledby="matchHubPrimaryKicker">
         <div class="match-hub-kicker" id="matchHubPrimaryKicker">Prossimo incontro</div>
         <div class="match-hub-date" id="matchHubNextDate">Aggiornamento in corso</div>
         <div class="match-hub-teams">
@@ -958,14 +958,13 @@ footer{justify-content:center;overflow:hidden;padding:20px 14px calc(96px + env(
           <strong class="match-hub-team" id="matchHubNextAway">Avversario</strong>
         </div>
         <p class="match-hub-result-scorers" id="matchHubResultScorers" aria-label="Marcatori" hidden></p>
-        <div class="match-hub-meta"><span id="matchHubCompetition">Calendario ufficiale</span><span id="matchHubVenue">Verifica dati in corso</span></div>
+        <div class="match-hub-meta"><span id="matchHubCompetition">Calendario ufficiale</span><span id="matchHubVenue"></span></div>
         <div class="match-hub-countdown" id="matchHubCountdownWrap"><span>Al calcio d'inizio</span><strong id="matchHubCountdown">Attendi</strong></div>
       </section>
     </div>
-    <section class="match-hub-upcoming" id="matchHubUpcomingPanel" aria-label="Prossime tre partite della Juventus" hidden>
+    <section class="match-hub-upcoming" id="matchHubUpcomingPanel" aria-labelledby="matchHubUpcomingTitle" hidden>
       <div class="match-hub-upcoming-head">
-        <h3>Prossime 3</h3>
-        <span>Serie A · Europa League</span>
+        <h3 id="matchHubUpcomingTitle">Prossime partite</h3>
       </div>
       <div class="match-hub-upcoming-list" id="matchHubUpcoming"></div>
     </section>
@@ -1677,7 +1676,7 @@ var ICV_MATCH_FALLBACKS = [
   {matchId:"558547",date:"2026-11-01T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Napoli",homeScore:2,awayScore:0,venue:"Allianz Stadium · Torino",matchday:10,scorers:"Alajbegovic 70' · Boga 87'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-juventus-napoli-il-tabellino-x1174"},
   {matchId:"558529",date:"2026-11-08T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Fiorentina",away:"Juventus FC",homeScore:2,awayScore:2,venue:"Stadio Artemio Franchi · Firenze",matchday:11,scorers:"Pellegrino 4' · Woltemade 32' · Njie 54' · Bremer 66'",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-fiorentina-juventus-il-tabellino-x1037"},
   {matchId:"558521",date:"2026-11-22T12:30:00+01:00",previousKickoff:"2026-11-23T20:45:00+01:00",status:"finished",competition:"Serie A",home:"Juventus FC",away:"Venezia FC",homeScore:4,awayScore:0,venue:"Allianz Stadium · Torino",matchday:12,broadcaster:"DAZN",scorers:"Woltemade 53' · Koopmeiners 59' · Cabal 65' · Kolo Muani 71' (rig.)",sourceUrl:"https://www.juventus.com/it/news/articoli/serie-a-juventus-venezia-il-tabellino"},
-  {date:"2026-11-29T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Como",away:"Juventus FC",matchday:13},
+  {date:"2026-11-29T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Como 1907",away:"Juventus FC",venue:"Stadio Giuseppe Sinigaglia · Como",matchday:13},
   {date:"2026-12-06T18:00:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Udinese",venue:"Allianz Stadium · Torino",matchday:14},
   {date:"2026-12-14T20:45:00+01:00",previousKickoff:"2026-12-13T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Juventus FC",away:"Monza",venue:"Allianz Stadium · Torino",matchday:15},
   {date:"2026-12-19T20:45:00+01:00",status:"scheduled",competition:"Serie A",home:"Roma",away:"Juventus FC",matchday:16},
@@ -1981,16 +1980,13 @@ function matchHubPhase(upcoming, latest, live) {
   return matchHubRomeDayNumber(upcoming.date) === matchHubRomeDayNumber(new Date()) ? "matchday" : "buildup";
 }
 
-function matchHubPhaseContent(phase, match) {
-  if (phase === "live") return { state:"Live", eyebrow:"Diretta verificata", title:"La Juventus è in campo" };
-  if (phase === "final") return { state:"Finale", eyebrow:"", title:"La partita, in un colpo d'occhio" };
-  if (phase === "matchday") return { state:"Matchday", eyebrow:"Oggi si gioca", title:"Tutto pronto per " + (match ? match.home + "-" + match.away : "la Juventus") };
-  if (phase === "post") return { state:"Post partita", eyebrow:"Ultimo finale", title:"Analisi in preparazione" };
-  return {
-    state:"Avvicinamento",
-    eyebrow:(match && match.matchday ? match.competition + " · " + match.matchday + "ª giornata" : "Prossima sfida"),
-    title:"Verso " + (match ? match.home + "-" + match.away : "la prossima sfida")
-  };
+function matchHubPreviousScore(latest, display) {
+  if (!latest || latest === display || !matchHubOutcome(latest)) return "";
+  return matchHubCompactTeam(latest.home) + " " + latest.homeScore + "-" + latest.awayScore + " " + matchHubCompactTeam(latest.away);
+}
+
+function matchHubRound(match) {
+  return (match.competition || "Partita") + (match.roundLabel ? " · " + match.roundLabel : match.matchday ? " · " + match.matchday + "ª giornata" : "");
 }
 
 function matchHubVenue(match) {
@@ -2001,7 +1997,7 @@ function matchHubVenue(match) {
     return /frosinone/i.test(venue) ? venue : venue + " · Frosinone";
   }
   if (matchHubIsJuve(home)) return venue || "Allianz Stadium · Torino";
-  return venue || "Stadio da confermare";
+  return venue;
 }
 
 function matchHubCompactTeam(name) {
@@ -2021,19 +2017,20 @@ function matchHubUpcomingDate(match) {
   }).format(date).replace(",", " ·");
 }
 
-function renderMatchHubUpcoming(matches) {
+function renderMatchHubUpcoming(matches, featured) {
   var panel = document.getElementById("matchHubUpcomingPanel");
   var box = document.getElementById("matchHubUpcoming");
   if (!panel || !box) return;
   var now = Date.now();
   var upcoming = (Array.isArray(matches) ? matches : []).filter(function(match) {
-    return match.status === "scheduled" && new Date(match.date).getTime() >= now;
+    return match !== featured && match.status === "scheduled" && new Date(match.date).getTime() >= now;
   }).slice(0, 3);
   panel.hidden = !upcoming.length;
+  setMatchHubText("matchHubUpcomingTitle", featured ? "A seguire" : "Prossime partite");
   box.innerHTML = upcoming.map(function(match) {
     var home = matchHubCompactTeam(match.home);
     var away = matchHubCompactTeam(match.away);
-    var round = match.competition + (match.roundLabel ? " · " + match.roundLabel : match.matchday ? " · " + match.matchday + "ª giornata" : "");
+    var round = matchHubRound(match);
     var side = matchHubIsJuve(match.home) ? "Casa" : "Trasferta";
     return "<div class=\"match-hub-upcoming-item\">" +
       "<span class=\"match-hub-upcoming-round\">" + icvEsc(round) + "</span>" +
@@ -2301,25 +2298,24 @@ function renderMatchHub(apiRows) {
   var latest = finished[finished.length - 1] || null;
   var phase = matchHubPhase(upcoming, latest, live);
   var display = phase === "final" || phase === "post" ? latest : upcoming;
-  var phaseCopy = matchHubPhaseContent(phase, display);
   hub.dataset.state = phase;
-  setMatchHubText("matchHubState", phaseCopy.state);
-  setMatchHubText("matchHubPhaseEyebrow", phaseCopy.eyebrow);
-  var phaseEyebrow = document.getElementById("matchHubPhaseEyebrow");
-  if (phaseEyebrow) phaseEyebrow.hidden = !phaseCopy.eyebrow;
-  setMatchHubText("matchHubPhaseTitle", phaseCopy.title);
+  setMatchHubText("matchHubState", {live:"Live", final:"Finale", post:"Post partita", matchday:"Matchday", buildup:"Avvicinamento"}[phase]);
+  var previousScore = matchHubPreviousScore(latest, display);
+  var previous = document.getElementById("matchHubPrevious");
+  if (previous) previous.hidden = !previousScore;
+  setMatchHubText("matchHubPreviousScore", previousScore);
   var freshnessTime = new Date(display && display.updatedAt || 0).getTime();
   hub.classList.toggle("is-stale", phase === "live" && (!freshnessTime || Date.now() - freshnessTime > 5 * 60000));
-  renderMatchHubUpcoming(matches);
+  renderMatchHubUpcoming(matches, display === upcoming ? display : null);
 
   if (display) {
     var showScore = ["live", "final", "post"].includes(phase) && display.homeScore != null && display.awayScore != null;
     setMatchHubText("matchHubPrimaryKicker", phase === "live" ? "In diretta" : (phase === "final" || phase === "post" ? "Ultimo risultato" : "Prossimo incontro"));
     setMatchHubText("matchHubNextDate", matchHubDate(display, phase === "final" || phase === "post"));
-    setMatchHubText("matchHubNextHome", display.home);
-    setMatchHubText("matchHubNextAway", display.away);
+    setMatchHubText("matchHubNextHome", matchHubCompactTeam(display.home));
+    setMatchHubText("matchHubNextAway", matchHubCompactTeam(display.away));
     setMatchHubText("matchHubVersus", showScore ? display.homeScore + "-" + display.awayScore : (live ? "LIVE" : "VS"));
-    setMatchHubText("matchHubCompetition", display.competition || "Match Center");
+    setMatchHubText("matchHubCompetition", matchHubRound(display));
     setMatchHubText("matchHubVenue", matchHubVenue(display));
     setMatchHubText("matchHubCountdown", phase === "final" || phase === "post" ? "Finale" : matchHubCountdown(display, !!live));
   } else {
@@ -2329,11 +2325,11 @@ function renderMatchHub(apiRows) {
     setMatchHubText("matchHubNextAway", "Da definire");
     setMatchHubText("matchHubVersus", "VS");
     setMatchHubText("matchHubCompetition", "Prossimo incontro");
-    setMatchHubText("matchHubVenue", "Dati in arrivo");
+    setMatchHubText("matchHubVenue", "");
     setMatchHubText("matchHubCountdown", "Da definire");
   }
   var countdownWrap = document.getElementById("matchHubCountdownWrap");
-  if (countdownWrap) countdownWrap.hidden = phase === "final" || phase === "post";
+  if (countdownWrap) countdownWrap.hidden = phase === "final" || phase === "post" || !!live || !display;
   renderMatchHubScorers(display && ["live", "final", "post"].includes(phase) ? display : null);
 
   var recent = finished.slice(-5);

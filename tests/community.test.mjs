@@ -348,6 +348,42 @@ test("il finale Omonia aggiorna referto, forma e prossime tre", async () => {
   assert.doesNotMatch(box.innerHTML, /Omonia/);
 });
 
+test("il Match Hub separa l'ultimo risultato, il prossimo incontro e il calendario", async () => {
+  const html = await read("index.html");
+  const source = html.slice(html.indexOf("function icvEsc("), html.indexOf("function liveDeskTime("));
+  let now = Date.parse("2026-11-27T14:10:00Z");
+  class MatchDate extends Date {
+    constructor(...args) { super(...(args.length ? args : [now])); }
+    static now() { return now; }
+  }
+  const fields = new Map();
+  const document = {querySelectorAll:() => [], getElementById(id) {
+    if (!fields.has(id)) fields.set(id, {dataset:{}, setAttribute(){}, classList:{toggle(){}}});
+    return fields.get(id);
+  }};
+  const stubs = "\nrenderSeasonInsights = function() {}; animateMatchHub = function() {};";
+  const {render, venue} = new Function("document", "Date", source + stubs + "\nreturn {render:renderMatchHub,venue:matchHubVenue};")(document, MatchDate);
+  const get = id => fields.get(id);
+  const fixture = {match_id:"558511",match_date:"2026-11-29T19:45:00Z",status:"pre_match",competition:"Serie A",source_payload:{homeTeam:{name:"Como 1907"},awayTeam:{name:"Juventus FC"},matchday:13}};
+  render([fixture]);
+  assert.equal(get("matchHubPrevious").hidden, false);
+  assert.equal(get("matchHubPreviousScore").textContent, "Juventus 4-1 Omonia Nicosia");
+  assert.equal(get("matchHubNextHome").textContent, "Como 1907");
+  assert.equal(get("matchHubCompetition").textContent, "Serie A · 13ª giornata");
+  assert.equal(get("matchHubVenue").textContent, "Stadio Giuseppe Sinigaglia · Como");
+  assert.equal(venue({home:"Roma"}), "");
+  assert.equal(get("matchHubUpcomingTitle").textContent, "A seguire");
+  assert.match(get("matchHubUpcoming").innerHTML, /Sassuolo[\s\S]*Udinese[\s\S]*Hapoel Beer-Sheva/);
+  assert.doesNotMatch(get("matchHubUpcoming").innerHTML, /Como/);
+
+  now = Date.parse("2026-11-27T08:00:00Z");
+  render([fixture]);
+  assert.equal(get("matchHubPrevious").hidden, true);
+  assert.equal(get("matchHubVersus").textContent, "4-1");
+  assert.equal(get("matchHubUpcomingTitle").textContent, "Prossime partite");
+  assert.match(get("matchHubUpcoming").innerHTML, /Como[\s\S]*Sassuolo[\s\S]*Udinese/);
+});
+
 test("la home lascia le amichevoli al calendario ufficiale", async () => {
   const html = await read("index.html");
   assert.match(html, /class="hero-season-link vb-beam" href="\/calendario-juventus">Calendario ufficiale 2026\/27/);
@@ -448,17 +484,17 @@ test("ICV Match Hub gestisce avvicinamento, live e finale senza stampante refert
   ]) assert.ok(html.includes(marker), `manca ${marker}`);
   assert.doesNotMatch(html, /Verificato ora|matchHubUpdated/);
   assert.match(html, /id="homeMatchHub"[^>]*data-state="loading"[^>]*aria-busy="true"/);
-  assert.match(html, /id="matchHubPhaseTitle">Caricamento prossima partita/);
+  assert.match(html, /id="matchHubPrevious" hidden>/);
   assert.match(html, /id="matchHubNextDate">Aggiornamento in corso/);
   assert.match(html, /id="matchHubNextHome">Juventus FC/);
   assert.match(html, /id="matchHubNextAway">Avversario/);
   assert.match(html, /id="matchHubCompetition">Calendario ufficiale/);
-  assert.match(html, /id="matchHubVenue">Verifica dati in corso/);
+  assert.match(html, /id="matchHubVenue"><\/span>/);
   assert.match(html, /id="matchHubCountdown">Attendi/);
   assert.match(html, /id="matchHubCountdownWrap"/);
   assert.match(html, /id="matchHubUpcomingPanel"/);
   assert.match(html, /id="matchHubUpcoming"/);
-  assert.match(html, /<h3>Prossime 3<\/h3>/);
+  assert.match(html, /<h3 id="matchHubUpcomingTitle">Prossime partite<\/h3>/);
   assert.match(html, /Allianz Stadium · Torino/);
   assert.match(html, /Juventus FC",away:"Parma Calcio 1913"/);
   assert.match(html, /Juventus FC",away:"AC Milan"/);

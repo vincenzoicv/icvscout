@@ -25,12 +25,12 @@
     for (const item of choices) {
       const button=document.createElement('button'),image=document.createElement('img'),title=document.createElement('strong'),date=document.createElement('time');
       button.type='button';button.className='conference-choice';button.dataset.id=String(item.id);
-      button.setAttribute('aria-label','Seleziona '+item.title);button.setAttribute('aria-controls','conferenceStage conferenceTitle');
+      button.setAttribute('aria-controls','conferenceStage conferenceTitle');
       image.alt='';image.width=320;image.height=200;image.loading='lazy';image.decoding='async';
       if(thumbnail(item.thumbnail_url))image.src=item.thumbnail_url;
       image.addEventListener('error',()=>{
         if(image.dataset.fallback){image.style.visibility='hidden';return;}
-        image.dataset.fallback='true';image.classList.add('conference-choice-fallback');image.alt='Anteprima non disponibile';image.src='/assets/icv-logo-160.jpg';
+        image.dataset.fallback='true';image.classList.add('conference-choice-fallback');image.src='/assets/icv-logo-160.jpg';
       });
       title.textContent=item.title;date.dateTime=item.published_at;date.textContent=new Date(item.published_at).toLocaleDateString('it-IT',{day:'numeric',month:'short',timeZone:'Europe/Rome'});
       button.append(image,title,date);

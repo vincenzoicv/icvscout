@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-11-27T19:48:04Z",
+  "updated_at": "2026-11-28T15:46:19Z",
   "match": {
     "home": "Como",
     "away": "Juventus",
@@ -12,7 +12,7 @@
     "module": "4-3-3",
     "source": "Sky Sport",
     "source_url": "https://sport.sky.it/calcio/serie-a/probabili-formazioni/juventus",
-    "updated_at": "2026-11-27T19:48:04Z",
+    "updated_at": "2026-11-28T15:46:19Z",
     "players": [
       {"name": "Vicario", "x": 0, "z": 7.4},
       {"name": "Çelik", "x": 4.5, "z": 4.5},
@@ -30,10 +30,20 @@
       {"label": "Nota", "text": "Formazione probabile, non ufficiale."},
       {"label": "Ballottaggio", "text": "Cambiaso-Cabal sulla sinistra."},
       {"label": "Squalificati", "text": "Nessuno segnalato."},
-      {"label": "Indisponibili", "text": "Yildiz, Locatelli, Thuram e Grabara."}
+      {"label": "Indisponibili", "text": "Yildiz, Locatelli, Thuram, Grabara e Nico Gonzalez."}
     ]
   },
   "updates": [
+    {
+      "category": "Condizioni",
+      "title": "Verso Como: Nico Gonzalez verso il forfait, attesi Kalulu ed Ekhator",
+      "summary": "Kalulu ha recuperato ed Ekhator ha lavorato a parte per precauzione. Entrambi sono attesi nella lista; Nico Gonzalez dovrebbe restare fuori.",
+      "detail": "Dopo la rifinitura del 28 novembre, Kalulu ed Ekhator sono indicati come disponibili per la trasferta. Nico Gonzalez è segnalato in uscita dalla lista. I convocati ufficiali non sono ancora stati pubblicati.",
+      "source": "Tuttomercatoweb",
+      "source_url": "https://www.tuttomercatoweb.com/serie-a/ekhator-kalulu-recuperati-como-ultime-juventus-rientrare-nico-gonzalez-2298400",
+      "published_at": "2026-11-28T12:45:00Z",
+      "significant": true
+    },
     {
       "category": "Bollettino medico",
       "title": "Adžić operato al ginocchio destro",
@@ -42,26 +52,6 @@
       "source": "Juventus.com",
       "source_url": "https://www.juventus.com/it/news/articoli/bollettino-medico-le-condizioni-di-adzic-271126",
       "published_at": "2026-11-27T16:35:08Z",
-      "significant": true
-    },
-    {
-      "category": "Condizioni",
-      "title": "Kalulu in gruppo, seduta parziale per Nico Gonzalez",
-      "summary": "Il difensore ha svolto tutta la seduta del 27 novembre con i compagni; la disponibilità dell'esterno per Como resta da confermare.",
-      "detail": "Il 27 novembre Kalulu si è allenato regolarmente con i compagni. Nico Gonzalez ha svolto solo una parte della seduta; la disponibilità per Como resta da confermare.",
-      "source": "Tuttosport",
-      "source_url": "https://www.tuttosport.com/news/calcio/serie-a/juventus/2026/11/27-152879143/kalulu-nico_gonzalez_novit_per_como-juve_le_ultime_dalla_continassa",
-      "published_at": "2026-11-27T13:13:00Z",
-      "significant": true
-    },
-    {
-      "category": "Condizioni",
-      "title": "Ekhator, fastidio al polpaccio contro l'Omonia",
-      "summary": "Spalletti ha spiegato il motivo del cambio, senza annunciare uno stop per l'attaccante.",
-      "detail": "Spalletti ha spiegato che l'attaccante ha chiesto il cambio dopo aver avvertito un fastidio al polpaccio. Il tecnico non ha annunciato uno stop.",
-      "source": "Calciomercato.it",
-      "source_url": "https://www.calciomercato.it/2026/11/27/juventus-spalletti-dopo-il-poker-como-fondamentale-problema-per-ekhator-video-cm/",
-      "published_at": "2026-11-27T00:36:14Z",
       "significant": true
     }
   ]
